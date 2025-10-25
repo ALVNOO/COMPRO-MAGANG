@@ -54,8 +54,7 @@ class AuthController extends Controller
      */
     public function showRegister()
     {
-        $divisis = Divisi::with('subDirektorat.direktorat')->get();
-        return view('auth.register', compact('divisis'));
+        return view('auth.register');
     }
 
     /**
@@ -64,52 +63,41 @@ class AuthController extends Controller
     public function register(Request $request)
     {
         $request->validate([
-            'username' => 'required|unique:users,username',
-            'password' => 'required|min:6|confirmed|different:username',
-            'name' => 'required',
+            'password' => 'required|min:8|confirmed',
             'email' => 'required|email|unique:users,email',
-            'nim' => 'required',
-            'university' => 'required',
-            'major' => 'required',
-            'phone' => 'required',
-            'ktp_number' => 'required',
-            'divisi_id' => 'required|exists:divisis,id',
-            'ktm' => 'required|file|mimes:jpg,jpeg,png,pdf|max:2048',
-            'start_date' => 'required|date',
-            'end_date' => 'required|date|after_or_equal:start_date',
+            'ktp_number' => 'nullable|regex:/^[0-9]{16}$/',
         ], [
-            'password.different' => 'Password tidak boleh sama dengan username.'
+            'ktp_number.regex' => 'NIK (No.KTP) harus terdiri dari 16 digit angka.',
+            'password.min' => 'Password minimal 8 karakter.',
+            'password.confirmed' => 'Konfirmasi password tidak sesuai.'
         ]);
-
-        // Handle KTM upload
-        $ktmPath = null;
-        if ($request->hasFile('ktm')) {
-            $ktmPath = $request->file('ktm')->store('ktm', 'public');
-        }
 
         // Create user
         $user = User::create([
-            'username' => $request->username,
-            'name' => $request->name,
+            'username' => $request->email, // Use email as username
+            'name' => $request->name ?? null,
             'email' => $request->email,
             'password' => Hash::make($request->password),
-            'nim' => $request->nim,
-            'university' => $request->university,
-            'major' => $request->major,
-            'phone' => $request->phone,
-            'ktp_number' => $request->ktp_number,
-            'ktm' => $ktmPath,
+            'nim' => $request->nim ?? null,
+            'university' => $request->university ?? null,
+            'major' => $request->major ?? null,
+            'phone' => $request->phone ?? null,
+            'ktp_number' => $request->ktp_number ?? null,
+            'ktm' => null, // Will be uploaded later
             'role' => 'peserta',
         ]);
+
+        // Get a random divisi
+        $divisi = Divisi::inRandomOrder()->first();
 
         // Create internship application
         InternshipApplication::create([
             'user_id' => $user->id,
-            'divisi_id' => $request->divisi_id,
+            'divisi_id' => $divisi->id,
             'status' => 'pending',
             'cover_letter_path' => null,
-            'start_date' => $request->start_date,
-            'end_date' => $request->end_date,
+            'start_date' => now()->addDays(7), // Default start date
+            'end_date' => now()->addMonths(6), // Default end date
         ]);
 
         // Auto login after registration

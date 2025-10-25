@@ -1,4 +1,4 @@
-@extends('layouts.app')
+﻿@extends('layouts.app')
 
 @section('title', 'Beranda - Sistem Penerimaan Magang PT Telkom Indonesia')
 
@@ -1027,3 +1027,4 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 </script>
+
