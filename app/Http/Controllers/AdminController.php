@@ -7,6 +7,7 @@ use App\Models\Direktorat;
 use App\Models\SubDirektorat;
 use App\Models\Divisi;
 use App\Models\InternshipApplication;
+use App\Models\FieldOfInterest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -522,5 +523,72 @@ class AdminController extends Controller
         ]);
 
         return redirect()->route('admin.mentors')->with('success', 'Password pembimbing ' . $mentor->name . ' berhasil direset menjadi "mentor123"');
+    }
+
+    // Field of Interest Management
+    public function fields()
+    {
+        $fields = FieldOfInterest::ordered()->get();
+        return view('admin.fields', compact('fields'));
+    }
+
+    public function createField()
+    {
+        return view('admin.field-form');
+    }
+
+    public function storeField(Request $request)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'description' => 'required|string',
+            'icon' => 'nullable|string|max:255',
+            'color' => 'nullable|string|max:7',
+            'division_count' => 'required|integer|min:0',
+            'position_count' => 'required|integer|min:0',
+            'duration_months' => 'required|integer|min:1',
+            'sort_order' => 'required|integer|min:0',
+        ]);
+
+        FieldOfInterest::create($request->all());
+
+        return redirect()->route('admin.fields')->with('success', 'Bidang peminatan berhasil ditambahkan');
+    }
+
+    public function editField(FieldOfInterest $field)
+    {
+        return view('admin.field-form', compact('field'));
+    }
+
+    public function updateField(Request $request, FieldOfInterest $field)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'description' => 'required|string',
+            'icon' => 'nullable|string|max:255',
+            'color' => 'nullable|string|max:7',
+            'division_count' => 'required|integer|min:0',
+            'position_count' => 'required|integer|min:0',
+            'duration_months' => 'required|integer|min:1',
+            'sort_order' => 'required|integer|min:0',
+        ]);
+
+        $field->update($request->all());
+
+        return redirect()->route('admin.fields')->with('success', 'Bidang peminatan berhasil diperbarui');
+    }
+
+    public function toggleFieldStatus(FieldOfInterest $field)
+    {
+        $field->update(['is_active' => !$field->is_active]);
+        
+        $status = $field->is_active ? 'diaktifkan' : 'dinonaktifkan';
+        return redirect()->route('admin.fields')->with('success', "Bidang peminatan {$field->name} berhasil {$status}");
+    }
+
+    public function deleteField(FieldOfInterest $field)
+    {
+        $field->delete();
+        return redirect()->route('admin.fields')->with('success', 'Bidang peminatan berhasil dihapus');
     }
 } 

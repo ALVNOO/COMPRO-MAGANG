@@ -48,6 +48,11 @@
                             <i class="fas fa-sitemap me-2"></i>Divisi
                         </a>
                     </li>
+                    <li>
+                        <a href="{{ route('admin.fields') }}" class="nav-link text-white">
+                            <i class="fas fa-tags me-2"></i>Bidang Peminatan
+                        </a>
+                    </li>
                 </ul>
                 <hr>
                 <div>

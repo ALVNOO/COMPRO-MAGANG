@@ -17,9 +17,10 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // Call DirektoratSeeder to populate direktorat, sub direktorat, and divisi data
+        // Call seeders to populate data
         $this->call([
             DirektoratSeeder::class,
+            FieldOfInterestSeeder::class,
         ]);
 
         // Create default admin user

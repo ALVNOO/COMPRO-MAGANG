@@ -101,6 +101,15 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
     // Rules management
     Route::get('/rules', [AdminController::class, 'editRules'])->name('rules.edit');
     Route::post('/rules', [AdminController::class, 'updateRules'])->name('rules.update');
+    
+    // Field of Interest management
+    Route::get('/fields', [AdminController::class, 'fields'])->name('fields');
+    Route::get('/fields/create', [AdminController::class, 'createField'])->name('fields.create');
+    Route::post('/fields', [AdminController::class, 'storeField'])->name('fields.store');
+    Route::get('/fields/{field}/edit', [AdminController::class, 'editField'])->name('fields.edit');
+    Route::put('/fields/{field}', [AdminController::class, 'updateField'])->name('fields.update');
+    Route::patch('/fields/{field}/toggle', [AdminController::class, 'toggleFieldStatus'])->name('fields.toggle');
+    Route::delete('/fields/{field}', [AdminController::class, 'deleteField'])->name('fields.delete');
 });
 
 // Report peserta magang
