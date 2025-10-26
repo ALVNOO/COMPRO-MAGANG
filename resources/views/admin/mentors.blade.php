@@ -5,20 +5,18 @@ use Carbon\Carbon;
 @endphp
 
 @section('admin-content')
-<div class="container-fluid">
-    <div class="row mb-4">
-        <div class="col-12">
-            <h3 class="mb-0">Monitoring Pembimbing Lapangan</h3>
-        </div>
+<div class="space-y-8">
+    <div class="mb-6">
+        <h2 class="text-2xl font-semibold mb-1 text-[#000000] border-b-4 border-[#B91C1C] inline-block pb-1 pr-6">Monitoring Pembimbing Lapangan</h2>
+        <p class="text-sm text-[#000000]">Pantau kinerja pembimbing dan peserta magang</p>
     </div>
     
-    <div class="row">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="card-title mb-0">Data Pembimbing dan Peserta Magang</h5>
-                </div>
-                <div class="card-body">
+    <div class="bg-white border border-[#e3e3e0] rounded-lg shadow-2xl relative z-10 transform transition-all duration-300 hover:shadow-3xl">
+        <div class="border-b border-[#e3e3e0] px-6 py-4 flex items-center gap-2 relative">
+            <div class="absolute left-6 right-6 -bottom-1 h-1 bg-gradient-to-r from-[#B91C1C] via-[#B91C1C] to-[#B91C1C] rounded opacity-60"></div>
+            <i class="fas fa-user-tie text-[#B91C1C]"></i>
+            <h5 class="text-lg font-bold mb-0 text-[#B91C1C]">Data Pembimbing dan Peserta Magang</h5>
+        </div>
                     @if($mentors->count() > 0)
                         <div class="table-responsive">
                             <table class="table table-bordered table-hover">

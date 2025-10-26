@@ -1,49 +1,15 @@
 @extends('layouts.admin-dashboard')
 
 @section('admin-content')
-<style>
-    .modal-dialog {
-        max-width: 500px;
-    }
-    .accordion-button:not(.collapsed) {
-        background-color: #e7f3ff;
-        color: #0c63e4;
-    }
-    .btn-sm {
-        font-size: 0.875rem;
-        padding: 0.25rem 0.5rem;
-    }
-    .table th {
-        background-color: #f8f9fa;
-        font-weight: 600;
-    }
-    .alert {
-        z-index: 9999;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        border: none;
-        border-radius: 8px;
-    }
-    
-    .alert-success {
-        background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
-        color: #155724;
-        border-left: 4px solid #28a745;
-    }
-    
-    .alert-danger {
-        background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
-        color: #721c24;
-        border-left: 4px solid #dc3545;
-    }
-</style>
-<div class="container-fluid">
-    <div class="row mb-4">
-        <div class="col-12 d-flex justify-content-between align-items-center">
-            <h3 class="mb-0">Kelola Direktorat, Subdirektorat, dan Divisi</h3>
-            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addDirektoratModal">
-                <i class="fas fa-plus me-1"></i>Tambah Direktorat
-            </button>
+<div class="space-y-8">
+    <div class="mb-6 flex justify-between items-center">
+        <div>
+            <h2 class="text-2xl font-semibold mb-1 text-[#B91C1C] border-b-4 border-[#000000] inline-block pb-1 pr-6">Kelola Direktorat, Subdirektorat, dan Divisi</h2>
+            <p class="text-sm text-[#000000]">Kelola struktur organisasi dan divisi perusahaan</p>
         </div>
+        <button class="px-4 py-2 rounded-sm bg-[#B91C1C] text-white font-bold border border-transparent hover:bg-[#991B1B] transition flex items-center gap-2" data-bs-toggle="modal" data-bs-target="#addDirektoratModal">
+            <i class="fas fa-plus"></i>Tambah Direktorat
+        </button>
     </div>
     <div class="row">
         <div class="col-12">

@@ -1,58 +1,79 @@
 @extends('layouts.admin-dashboard')
 
 @section('admin-content')
-<div class="container mt-4">
-    <h2>Laporan Peserta Magang</h2>
-    <div class="row mb-3">
-        <div class="col-md-3">
-            <label for="group_by">Group By</label>
-            <select id="group_by" class="form-control">
-                <option value="direktorat">Direktorat</option>
-                <option value="subdirektorat">Sub Direktorat</option>
-                <option value="divisi">Divisi</option>
-            </select>
+<div class="space-y-8">
+    <div class="mb-6">
+        <h2 class="text-2xl font-semibold mb-1 text-[#000000] border-b-4 border-[#B91C1C] inline-block pb-1 pr-6">Laporan Peserta Magang</h2>
+        <p class="text-sm text-[#000000]">Generate dan export laporan peserta magang berdasarkan periode</p>
+    </div>
+    
+    <!-- Filter Controls -->
+    <div class="bg-white border border-[#e3e3e0] rounded-lg shadow-xl p-6 mb-6">
+        <h5 class="text-lg font-bold text-[#B91C1C] mb-4 flex items-center gap-2">
+            <i class="fas fa-filter"></i> Filter Laporan
+        </h5>
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div>
+                <label for="group_by" class="block text-sm font-medium text-[#B91C1C] mb-2">Group By</label>
+                <select id="group_by" class="block w-full border border-[#e3e3e0] rounded-sm text-base px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#B91C1C] focus:border-[#B91C1C] transition">
+                    <option value="direktorat">Direktorat</option>
+                    <option value="subdirektorat">Sub Direktorat</option>
+                    <option value="divisi">Divisi</option>
+                </select>
+            </div>
+            <div>
+                <label for="classification" class="block text-sm font-medium text-[#B91C1C] mb-2">Klasifikasi</label>
+                <select id="classification" class="block w-full border border-[#e3e3e0] rounded-sm text-base px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#B91C1C] focus:border-[#B91C1C] transition">
+                    <option value="all">All</option>
+                </select>
+            </div>
+            <div>
+                <label for="period" class="block text-sm font-medium text-[#B91C1C] mb-2">Periode</label>
+                <select id="period" class="block w-full border border-[#e3e3e0] rounded-sm text-base px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#B91C1C] focus:border-[#B91C1C] transition">
+                    <option value="mingguan">Mingguan</option>
+                    <option value="bulanan">Bulanan</option>
+                    <option value="tahunan">Tahunan</option>
+                </select>
+            </div>
+            <div>
+                <label for="waktu_detail" class="block text-sm font-medium text-[#B91C1C] mb-2">Waktu</label>
+                <select id="waktu_detail" class="block w-full border border-[#e3e3e0] rounded-sm text-base px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#B91C1C] focus:border-[#B91C1C] transition"></select>
+            </div>
         </div>
-        <div class="col-md-3">
-            <label for="classification">Klasifikasi</label>
-            <select id="classification" class="form-control">
-                <option value="all">All</option>
-            </select>
-        </div>
-        <div class="col-md-3">
-            <label for="period">Periode</label>
-            <select id="period" class="form-control">
-                <option value="mingguan">Mingguan</option>
-                <option value="bulanan">Bulanan</option>
-                <option value="tahunan">Tahunan</option>
-            </select>
-        </div>
-        <div class="col-md-3">
-            <label for="waktu_detail">Waktu</label>
-            <select id="waktu_detail" class="form-control"></select>
+        
+        <!-- Export Buttons -->
+        <div class="mt-6 flex gap-3">
+            <button id="btn-export-pdf" class="px-4 py-2 rounded-sm bg-red-600 text-white font-bold border border-transparent hover:bg-red-700 transition flex items-center gap-2">
+                <i class="fas fa-file-pdf"></i> Export PDF
+            </button>
+            <button id="btn-export-excel" class="px-4 py-2 rounded-sm bg-green-600 text-white font-bold border border-transparent hover:bg-green-700 transition flex items-center gap-2">
+                <i class="fas fa-file-excel"></i> Export Excel
+            </button>
         </div>
     </div>
-    <div class="row mb-2">
-        <div class="col-12 d-flex gap-2">
-            <button id="btn-export-pdf" class="btn btn-danger">Export PDF</button>
-            <button id="btn-export-excel" class="btn btn-success">Export Excel</button>
+    
+    <!-- Report Table -->
+    <div class="bg-white border border-[#e3e3e0] rounded-lg shadow-2xl relative z-10 transform transition-all duration-300 hover:shadow-3xl">
+        <div class="border-b border-[#e3e3e0] px-6 py-4 flex items-center gap-2 relative">
+            <div class="absolute left-6 right-6 -bottom-1 h-1 bg-gradient-to-r from-[#B91C1C] via-[#B91C1C] to-[#B91C1C] rounded opacity-60"></div>
+            <i class="fas fa-chart-bar text-[#B91C1C]"></i>
+            <h5 class="text-lg font-bold mb-0 text-[#B91C1C]">Data Laporan</h5>
         </div>
-    </div>
-    <div class="row">
-        <div class="col-12">
-            <table class="table table-bordered" id="report-table">
-                <thead>
+        <div class="overflow-x-auto">
+            <table class="min-w-full text-sm text-left" id="report-table">
+                <thead class="bg-[#FFF2F2] border-b border-[#e3e3e0]">
                     <tr>
-                        <th>No</th>
-                        <th>Nama Peserta</th>
-                        <th>Universitas/Sekolah</th>
-                        <th>Jurusan</th>
-                        <th>NIM</th>
-                        <th style="min-width: 130px;">Tanggal Mulai</th>
-                        <th style="min-width: 150px;">Tanggal Berakhir</th>
-                        <th>Divisi</th>
-                        <th>Sub Direktorat</th>
-                        <th>Direktorat</th>
-                        <th>Predikat</th>
+                        <th class="px-4 py-2 font-bold text-[#B91C1C]">No</th>
+                        <th class="px-4 py-2 font-bold text-[#B91C1C]">Nama Peserta</th>
+                        <th class="px-4 py-2 font-bold text-[#B91C1C]">Universitas/Sekolah</th>
+                        <th class="px-4 py-2 font-bold text-[#B91C1C]">Jurusan</th>
+                        <th class="px-4 py-2 font-bold text-[#B91C1C]">NIM</th>
+                        <th class="px-4 py-2 font-bold text-[#B91C1C]">Tanggal Mulai</th>
+                        <th class="px-4 py-2 font-bold text-[#B91C1C]">Tanggal Berakhir</th>
+                        <th class="px-4 py-2 font-bold text-[#B91C1C]">Divisi</th>
+                        <th class="px-4 py-2 font-bold text-[#B91C1C]">Sub Direktorat</th>
+                        <th class="px-4 py-2 font-bold text-[#B91C1C]">Direktorat</th>
+                        <th class="px-4 py-2 font-bold text-[#B91C1C]">Predikat</th>
                     </tr>
                 </thead>
                 <tbody>
