@@ -13,6 +13,10 @@ use Illuminate\Support\Facades\Hash;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\ReportExport;
+use App\Mail\AcceptanceLetterMail;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Storage;
+use SimpleSoftwareIO\QrCode\Facades\QrCode;
 
 class AdminController extends Controller
 {
@@ -65,12 +69,29 @@ class AdminController extends Controller
                 'divisi.internshipApplications.user.certificates',
                 'divisi.internshipApplications.user.assignments',
             ])
-            ->get()
-            ->filter(function($mentor) {
-                return $mentor->divisi !== null;
-            });
+            ->whereHas('divisi')
+            ->paginate(10); // ubah jadi paginasi 10 per halaman
 
         return view('admin.mentors', compact('mentors'));
+    }
+
+    public function mentorDetail($id)
+    {
+        $mentor = User::with([
+            'divisi.subDirektorat.direktorat',
+            'divisi.internshipApplications.user.certificates',
+            'divisi.internshipApplications.user.assignments'
+        ])->findOrFail($id);
+        
+        $participants = ($mentor->divisi)
+            ? $mentor->divisi->internshipApplications()
+                ->with('user')
+                ->whereIn('status', ['accepted', 'finished'])
+                ->orderBy('start_date', 'desc')
+                ->get()
+            : collect();
+            
+        return view('admin.mentor-detail', compact('mentor', 'participants'));
     }
 
     /**
@@ -523,6 +544,81 @@ class AdminController extends Controller
         ]);
 
         return redirect()->route('admin.mentors')->with('success', 'Password pembimbing ' . $mentor->name . ' berhasil direset menjadi "mentor123"');
+    }
+
+    public function sendAcceptanceLetter($id)
+    {
+        $application = InternshipApplication::with(['user', 'divisi.subDirektorat.direktorat'])->findOrFail($id);
+        
+        // Check if acceptance letter already exists
+        if ($application->acceptance_letter_path) {
+            // Get existing PDF
+            $pdfPath = storage_path('app/public/' . $application->acceptance_letter_path);
+            if (file_exists($pdfPath)) {
+                $pdfContent = file_get_contents($pdfPath);
+            } else {
+                return redirect()->route('admin.applications')->with('error', 'File surat penerimaan tidak ditemukan.');
+            }
+        } else {
+            // Generate new acceptance letter
+            $data = $this->getAcceptanceLetterDataForAdmin($application);
+            $pdf = Pdf::loadView('surat.surat_penerimaan', $data)->setPaper('A4', 'portrait');
+            $pdfContent = $pdf->output();
+            
+            // Save the PDF
+            $filename = 'surat_penerimaan_' . $application->id . '_' . time() . '.pdf';
+            $path = 'acceptance_letters/' . $filename;
+            Storage::disk('public')->put($path, $pdfContent);
+            
+            // Update application
+            $application->acceptance_letter_path = $path;
+            $application->save();
+        }
+        
+        // Send email
+        try {
+            Mail::to($application->user->email)->send(new AcceptanceLetterMail($application, $pdfContent));
+            
+            return redirect()->route('admin.applications')->with('success', 'Surat penerimaan magang berhasil dikirim ke email peserta: ' . $application->user->email);
+        } catch (\Exception $e) {
+            return redirect()->route('admin.applications')->with('error', 'Gagal mengirim email: ' . $e->getMessage());
+        }
+    }
+
+    private function getAcceptanceLetterDataForAdmin($application)
+    {
+        $user = $application->user;
+        $divisi = $application->divisi;
+        $subdirektorat = $divisi->subDirektorat;
+        $direktorat = $subdirektorat->direktorat;
+        
+        // Format data with prefix to avoid phone number interpretation
+        $qrText = "PESERTA MAGANG PT POS INDONESIA\n\nNama: " . $user->name . "\nID Mahasiswa: " . $user->nim . "\nUniversitas: " . $user->university . "\nDivisi: " . $divisi->name . "\n\nData ini valid dan dapat diverifikasi.";
+        $qrSvg = QrCode::format('svg')->size(400)->margin(10)->backgroundColor(0, 0, 0, 0)->generate($qrText);
+        $qrBase64 = 'data:image/svg+xml;base64,' . base64_encode($qrSvg);
+        
+        // Get default values - you may want to customize these
+        $nomorSurat = 'NOMOR-' . str_pad($application->id, 6, '0', STR_PAD_LEFT) . '/POS/V/' . date('Y');
+        
+        return [
+            'nomor_surat_penerimaan' => $nomorSurat,
+            'nomor_surat_pengantar' => $user->university ?? 'N/A',
+            'tanggal_surat_pengantar' => now()->locale('id')->isoFormat('D MMMM Y'),
+            'tujuan_surat' => $user->university ?? 'Universitas',
+            'tanggal_surat' => now()->locale('id')->isoFormat('D MMMM Y'),
+            'asal_surat' => $user->university,
+            'divisi_mengeluarkan_surat' => $divisi->name,
+            'nama_peserta' => $user->name,
+            'nim' => $user->nim,
+            'jurusan' => $user->major,
+            'jabatan' => $divisi->vp ? 'VP ' . str_replace('Divisi ', '', $divisi->name) : '',
+            'nama_pic' => $divisi->vp,
+            'nippos' => $divisi->nippos,
+            'start_date' => $application->start_date ? \Carbon\Carbon::parse($application->start_date)->locale('id')->isoFormat('D MMMM Y') : '-',
+            'end_date' => $application->end_date ? \Carbon\Carbon::parse($application->end_date)->locale('id')->isoFormat('D MMMM Y') : '-',
+            'ktm' => $user->ktm,
+            'qr_base64' => $qrBase64,
+        ];
     }
 
     // Field of Interest Management

@@ -21,7 +21,8 @@ class FieldOfInterestSeeder extends Seeder
                 'sort_order' => 1,
                 'division_count' => 5,
                 'position_count' => 45,
-                'duration_months' => 6
+                'duration_months' => 6,
+                'is_active' => 1
             ],
             [
                 'name' => 'Finance',
@@ -122,11 +123,50 @@ class FieldOfInterestSeeder extends Seeder
                 'division_count' => 8,
                 'position_count' => 100,
                 'duration_months' => 6
+            ],
+            [
+                'name' => 'Collection Management',
+                'description' => 'Kelola pengumpulan data, arsip, dan dokumentasi untuk mendukung efisiensi operasional dan analisis strategis.',
+                'icon' => 'fas fa-folder-open',
+                'color' => '#EE2E24',
+                'sort_order' => 12,
+                'division_count' => 4,
+                'position_count' => 35,
+                'duration_months' => 6
+            ],
+            [
+                'name' => 'Asset Management',
+                'description' => 'Kelola aset perusahaan secara efektif, optimasi penggunaan sumber daya, dan strategi investasi aset untuk nilai maksimal.',
+                'icon' => 'fas fa-cubes',
+                'color' => '#EE2E24',
+                'sort_order' => 13,
+                'division_count' => 5,
+                'position_count' => 40,
+                'duration_months' => 6
+            ],
+            [
+                'name' => 'Corporate Social Responsibility (CSR)',
+                'description' => 'Kembangkan program sosial dan lingkungan yang berdampak positif bagi masyarakat dan lingkungan sekitar.',
+                'icon' => 'fas fa-hands-helping',
+                'color' => '#EE2E24',
+                'sort_order' => 14,
+                'division_count' => 3,
+                'position_count' => 25,
+                'duration_months' => 6
             ]
         ];
 
         foreach ($fields as $field) {
-            FieldOfInterest::create($field);
+            // Add is_active if not set
+            if (!isset($field['is_active'])) {
+                $field['is_active'] = 1;
+            }
+            
+            // Use updateOrCreate to prevent duplicates based on name
+            FieldOfInterest::updateOrCreate(
+                ['name' => $field['name']], // Match by name
+                $field // Update or create with these values
+            );
         }
     }
 }

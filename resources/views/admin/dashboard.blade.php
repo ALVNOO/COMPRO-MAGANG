@@ -5,44 +5,44 @@
     <!-- Decorative SVG Pattern BG -->
     <svg class="absolute right-0 top-0 opacity-10 w-80 h-80 z-0 pointer-events-none" viewBox="0 0 320 320" fill="none"><ellipse cx="160" cy="160" rx="160" ry="160" fill="url(#paint-red)"/><defs><radialGradient id="paint-red" cx="0" cy="0" r="1" gradientTransform="translate(160 160) scale(180 160)" gradientUnits="userSpaceOnUse"><stop stop-color="#B91C1C"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient></defs></svg>
     <div class="mb-6 relative z-10 mt-8">
-        <h2 class="text-2xl font-semibold mb-1 text-[#000000] border-b-4 border-[#B91C1C] inline-block pb-1 pr-6">Welcome, Admin!</h2>
+        <h2 class="text-2xl font-bold mb-1 text-[#000000] border-b-4 border-[#ee2e24] inline-block pb-1 pr-6">Welcome, Admin!</h2>
         <p class="text-sm text-[#000000]">{{ \Carbon\Carbon::now()->translatedFormat('l, d F Y') }}</p>
     </div>
     <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12 relative z-10">
         <div class="bg-white border border-[#e3e3e0] rounded-lg p-6 flex flex-col items-start shadow-2xl relative transform transition-all duration-300 hover:scale-105 hover:shadow-3xl hover:-translate-y-1">
-            <span class="w-12 h-12 bg-[#B91C1C] text-white flex items-center justify-center rounded-full mb-2 shadow-lg animate-pulse"><i class="fas fa-users text-2xl"></i></span>
-            <div class="flex items-center gap-2 text-[#B91C1C] text-lg font-bold mb-2">Total Peserta Magang</div>
+            <span class="w-12 h-12 bg-[#ee2e24] text-white flex items-center justify-center rounded-full mb-2 shadow-lg animate-pulse"><i class="fas fa-users text-2xl"></i></span>
+            <div class="flex items-center gap-2 text-[#ee2e24] text-lg font-bold mb-2">Total Peserta Magang</div>
             <div class="text-4xl font-bold">{{ $totalParticipants }}</div>
         </div>
         <div class="bg-white border border-[#e3e3e0] rounded-lg p-6 flex flex-col items-start shadow-2xl relative transform transition-all duration-300 hover:scale-105 hover:shadow-3xl hover:-translate-y-1">
-            <span class="w-12 h-12 bg-white border-2 border-[#B91C1C] text-[#B91C1C] flex items-center justify-center rounded-full mb-2 shadow-lg animate-pulse"><i class="fas fa-envelope-open-text text-2xl"></i></span>
+            <span class="w-12 h-12 bg-white border-2 border-[#ee2e24] text-[#ee2e24] flex items-center justify-center rounded-full mb-2 shadow-lg animate-pulse"><i class="fas fa-envelope-open-text text-2xl"></i></span>
             <div class="flex items-center gap-2 text-[#B91C1C] text-lg font-bold mb-2">Total Pengajuan Magang</div>
             <div class="text-4xl font-bold">{{ $totalApplications }}</div>
         </div>
         <div class="bg-white border border-[#e3e3e0] rounded-lg p-6 flex flex-col items-start shadow-2xl relative transform transition-all duration-300 hover:scale-105 hover:shadow-3xl hover:-translate-y-1">
-            <span class="w-12 h-12 bg-white border-2 border-[#B91C1C] text-[#B91C1C] flex items-center justify-center rounded-full mb-2 shadow-lg animate-pulse"><i class="fas fa-check-circle text-2xl"></i></span>
-            <div class="flex items-center gap-2 text-[#B91C1C] text-lg font-bold mb-2">Total Peserta Selesai</div>
+            <span class="w-12 h-12 bg-white border-2 border-[#ee2e24] text-[#ee2e24] flex items-center justify-center rounded-full mb-2 shadow-lg animate-pulse"><i class="fas fa-check-circle text-2xl"></i></span>
+            <div class="flex items-center gap-2 text-[#ee2e24] text-lg font-bold mb-2">Total Peserta Selesai</div>
             <div class="text-4xl font-bold">{{ $totalFinishedParticipants }}</div>
         </div>
     </div>
     <!-- Tabel Pengajuan Terbaru -->
     <div class="bg-white border border-[#e3e3e0] rounded-lg shadow-2xl relative z-10 mb-12 transform transition-all duration-300 hover:shadow-3xl">
         <div class="border-b border-[#e3e3e0] px-6 py-4 flex items-center gap-2 relative">
-            <div class="absolute left-6 right-6 -bottom-1 h-1 bg-gradient-to-r from-[#B91C1C] via-[#B91C1C] to-[#B91C1C] rounded opacity-60"></div>
-            <i class="fas fa-clock text-[#B91C1C]"></i>
-            <h5 class="text-lg font-bold mb-0 text-[#B91C1C]">Pengajuan Magang Terbaru</h5>
+            <div class="absolute left-6 right-6 -bottom-1 h-1 bg-gradient-to-r from-[#ee2e24] via-[#ee2e24] to-[#ee2e24] rounded opacity-60"></div>
+            <i class="fas fa-clock text-[#ee2e24]"></i>
+            <h5 class="text-lg font-bold mb-0 text-[#ee2e24]">Pengajuan Magang Terbaru</h5>
         </div>
         <div class="overflow-x-auto">
             <table class="min-w-full text-sm text-left">
                 <thead class="bg-[#FFF2F2] border-b border-[#e3e3e0]">
                     <tr>
-                        <th class="px-4 py-2 font-bold text-[#B91C1C]">#</th>
-                        <th class="px-4 py-2 font-bold text-[#B91C1C]">Nama Peserta</th>
-                        <th class="px-4 py-2 font-bold text-[#B91C1C]">Divisi</th>
-                        <th class="px-4 py-2 font-bold text-[#B91C1C]">Status</th>
-                        <th class="px-4 py-2 font-bold text-[#B91C1C]">Tanggal Pengajuan</th>
-                        <th class="px-4 py-2 font-bold text-[#B91C1C]">Start Date</th>
-                        <th class="px-4 py-2 font-bold text-[#B91C1C]">End Date</th>
+                        <th class="px-4 py-2 font-bold text-[#ee2e24]">#</th>
+                        <th class="px-4 py-2 font-bold text-[#ee2e24]">Nama Peserta</th>
+                        <th class="px-4 py-2 font-bold text-[#ee2e24]">Divisi</th>
+                        <th class="px-4 py-2 font-bold text-[#ee2e24]">Status</th>
+                        <th class="px-4 py-2 font-bold text-[#ee2e24]">Tanggal Pengajuan</th>
+                        <th class="px-4 py-2 font-bold text-[#ee2e24]">Start Date</th>
+                        <th class="px-4 py-2 font-bold text-[#ee2e24]">End Date</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -53,7 +53,7 @@
                         <td class="px-4 py-2">{{ $app->divisi->name ?? '-' }}</td>
                         <td class="px-4 py-2">
                             <span class="inline-block px-3 py-1 rounded-full text-xs font-bold
-                                @if($app->status=='finished') bg-[#B91C1C] text-white
+                                @if($app->status=='finished') bg-[#ee2e24] text-white
                                 @elseif($app->status=='accepted') bg-[#DCFCE7] text-[#15803D]
                                 @elseif($app->status=='rejected') bg-[#FEE2E2] text-[#DC2626]
                                 @else bg-[#E5E7EB] text-[#6B7280]
@@ -76,9 +76,9 @@
     <!-- Peraturan -->
     <div class="bg-white border border-[#e3e3e0] rounded-lg shadow-2xl relative z-10 mb-12 transform transition-all duration-300 hover:shadow-3xl">
         <div class="border-b border-[#e3e3e0] px-6 py-4 flex items-center justify-between relative">
-            <span class="flex items-center gap-2 text-lg font-bold text-[#B91C1C]"><i class="fas fa-gavel"></i> Peraturan Saat Ini</span>
-            <div class="absolute left-6 right-6 -bottom-1 h-1 bg-gradient-to-r from-[#B91C1C] via-[#B91C1C] to-[#B91C1C] rounded opacity-60"></div>
-            <button type="button" class="px-4 py-2 border border-[#e3e3e0] rounded-sm bg-[#B91C1C] text-white font-bold hover:bg-[#991B1B] transition text-sm" @click="showEditModal = true">
+            <span class="flex items-center gap-2 text-lg font-bold text-[#ee2e24]"><i class="fas fa-gavel"></i> Peraturan Saat Ini</span>
+            <div class="absolute left-6 right-6 -bottom-1 h-1 bg-gradient-to-r from-[#ee2e24] via-[#ee2e24] to-[#ee2e24] rounded opacity-60"></div>
+            <button type="button" class="px-4 py-2 border border-[#e3e3e0] rounded-sm bg-[#ee2e24] text-white font-bold hover:bg-[#991B1B] transition text-sm" @click="showEditModal = true">
                 <i class="fas fa-pen mr-1"></i> Edit Peraturan
             </button>
         </div>
@@ -98,7 +98,7 @@
         <!-- Modal Box -->
         <div class="relative w-full max-w-lg bg-[#FDFDFC] border border-[#e3e3e0] rounded-lg shadow-lg mx-4">
             <div class="flex items-center justify-between px-6 py-4 border-b border-[#e3e3e0]">
-                <h5 class="text-lg font-bold text-[#B91C1C] flex items-center gap-2"><i class="fas fa-gavel"></i>Edit Peraturan</h5>
+                <h5 class="text-lg font-bold text-[#ee2e24] flex items-center gap-2"><i class="fas fa-gavel"></i>Edit Peraturan</h5>
                 <button class="text-[#1b1b18] px-2 py-1 hover:bg-[#dbdbd7] rounded transition" @click="showEditModal = false" aria-label="Tutup">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                 </button>
@@ -107,16 +107,16 @@
                 @csrf
                 <div class="p-6">
                     <div class="mb-4">
-                        <label for="content" class="block text-sm font-bold text-[#B91C1C] mb-2">Isi Peraturan</label>
-                        <textarea name="content" id="content" class="block w-full border border-[#e3e3e0] rounded-sm text-base px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#B91C1C] focus:border-[#B91C1C] transition" rows="8" required>{{ old('content', $rule ? $rule->content : '') }}</textarea>
+                        <label for="content" class="block text-sm font-bold text-[#ee2e24] mb-2">Isi Peraturan</label>
+                        <textarea name="content" id="content" class="block w-full border border-[#e3e3e0] rounded-sm text-base px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#ee2e24] focus:border-[#ee2e24] transition" rows="8" required>{{ old('content', $rule ? $rule->content : '') }}</textarea>
                         @error('content')
                             <div class="text-red-600 text-sm mt-1">{{ $message }}</div>
                         @enderror
                     </div>
                 </div>
                 <div class="flex justify-end gap-3 px-6 pb-6">
-                    <button type="button" class="px-4 py-2 rounded-sm border border-[#e3e3e0] bg-white text-[#B91C1C] font-bold hover:bg-[#FFF2F2] transition" @click="showEditModal = false">Batal</button>
-                    <button type="submit" class="px-4 py-2 rounded-sm bg-[#B91C1C] text-white font-bold border border-transparent hover:bg-[#991B1B] transition">Simpan</button>
+                    <button type="button" class="px-4 py-2 rounded-sm border border-[#e3e3e0] bg-white text-[#ee2e24] font-bold hover:bg-[#FFF2F2] transition" @click="showEditModal = false">Batal</button>
+                    <button type="submit" class="px-4 py-2 rounded-sm bg-[#ee2e24] text-white font-bold border border-transparent hover:bg-[#991B1B] transition">Simpan</button>
                 </div>
             </form>
         </div>

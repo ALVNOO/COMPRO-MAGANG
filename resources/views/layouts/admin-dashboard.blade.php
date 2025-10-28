@@ -9,6 +9,17 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         body, html {font-family: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';}
+        
+        .dropdown-menu {
+            opacity: 0;
+            transform: translateY(-10px);
+            transition: all 0.2s ease;
+        }
+        
+        .dropdown-menu:not(.hidden) {
+            opacity: 1;
+            transform: translateY(0);
+        }
     </style>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 </head>
@@ -55,12 +66,6 @@
                         </a>
                     </li>
                     <li>
-                        <a href="{{ route('admin.divisions') }}"
-                            class="flex items-center px-3 py-2 rounded-sm border-l-4 transition font-medium border-l-transparent hover:border-l-[#B91C1C] hover:text-[#B91C1C] {{ request()->routeIs('admin.divisions') ? 'border-l-[#B91C1C] bg-[#FEF2F2] text-[#B91C1C] font-semibold' : '' }} transform hover:scale-105">
-                            <i class="fas fa-sitemap mr-2"></i>Divisi
-                        </a>
-                    </li>
-                    <li>
                         <a href="{{ route('admin.fields') }}"
                             class="flex items-center px-3 py-2 rounded-sm border-l-4 transition font-medium border-l-transparent hover:border-l-[#B91C1C] hover:text-[#B91C1C] {{ request()->routeIs('admin.fields') ? 'border-l-[#B91C1C] bg-[#FEF2F2] text-[#B91C1C] font-semibold' : '' }} transform hover:scale-105">
                             <i class="fas fa-tags mr-2"></i>Bidang Peminatan
@@ -104,7 +109,7 @@
             @endif
             <div class="mb-4 flex justify-end">
                 <div class="relative">
-                    <button class="px-4 py-2 bg-white border border-[#e3e3e0] rounded-sm text-[#1b1b18] font-medium flex items-center gap-2 hover:bg-[#dbdbd7]" id="adminDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                    <button class="px-4 py-2 bg-white border border-[#e3e3e0] rounded-sm text-[#1b1b18] font-medium flex items-center gap-2 hover:bg-[#dbdbd7]" id="adminDropdown">
                         <i class="fas fa-user"></i> {{ Auth::user()->name }} <i class="fas fa-chevron-down text-xs ml-1"></i>
                     </button>
                     <ul class="dropdown-menu absolute right-0 top-full mt-2 w-48 bg-white shadow-md border rounded-sm text-sm hidden" aria-labelledby="adminDropdown">
@@ -134,12 +139,34 @@
         $(function() {
             $('#adminDropdown').on('click', function(e) {
                 e.preventDefault();
+                e.stopPropagation();
                 $(this).next('.dropdown-menu').toggleClass('hidden');
             });
+            
+            // Close dropdown when clicking outside
             $(document).on('click', function(event) {
-                if (!$(event.target).closest('#adminDropdown').length) {
-                    $('.dropdown-menu').addClass('hidden');
+                const $dropdown = $('.dropdown-menu');
+                const $button = $('#adminDropdown');
+                
+                // Don't close if clicking on a form button
+                if ($(event.target).is('button[type="submit"]') || $(event.target).closest('form').length) {
+                    return;
                 }
+                
+                // Check if click is outside both button and dropdown
+                if (!$button.is(event.target) && !$button.has(event.target).length && 
+                    !$dropdown.is(event.target) && !$dropdown.has(event.target).length) {
+                    $dropdown.addClass('hidden');
+                }
+            });
+            
+            // Close dropdown when clicking on menu items (but not form buttons)
+            $('.dropdown-item').on('click', function(e) {
+                // Don't close if it's a form button
+                if ($(e.target).is('button[type="submit"]') || $(e.target).closest('button[type="submit"]').length) {
+                    return;
+                }
+                $('.dropdown-menu').addClass('hidden');
             });
         });
     </script>

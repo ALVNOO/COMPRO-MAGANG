@@ -3,7 +3,7 @@
 @section('admin-content')
 <div class="space-y-8">
     <div class="mb-6">
-        <h2 class="text-2xl font-semibold mb-1 text-[#000000] border-b-4 border-[#B91C1C] inline-block pb-1 pr-6">Daftar Peserta Magang</h2>
+        <h2 class="text-2xl font-bold mb-1 text-[#000000] border-b-4 border-[#B91C1C] inline-block pb-1 pr-6">Daftar Peserta Magang</h2>
         <p class="text-sm text-[#000000]">Kelola data peserta magang yang telah diterima</p>
     </div>
     

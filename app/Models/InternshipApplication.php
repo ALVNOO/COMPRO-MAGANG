@@ -14,6 +14,7 @@ class InternshipApplication extends Model
         'divisi_id',
         'status',
         'cover_letter_path',
+        'acceptance_letter_path',
         'notes',
         'start_date',
         'end_date'

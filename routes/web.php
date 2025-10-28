@@ -78,9 +78,11 @@ Route::middleware(['auth'])->prefix('mentor')->group(function () {
 Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('dashboard');
     Route::get('/applications', [AdminController::class, 'applications'])->name('applications');
+    Route::post('/send-acceptance-letter/{id}', [AdminController::class, 'sendAcceptanceLetter'])->name('send-acceptance-letter');
     Route::get('/participants', [AdminController::class, 'participants'])->name('participants');
     Route::get('/divisions', [AdminController::class, 'divisions'])->name('divisions');
     Route::get('/mentors', [AdminController::class, 'mentors'])->name('mentors');
+    Route::get('/mentors/{mentor}', [App\Http\Controllers\AdminController::class, 'mentorDetail'])->name('mentor.detail');
 
     // Direktorat CRUD
     Route::post('/direktorat', [AdminController::class, 'storeDirektorat'])->name('direktorat.store');
@@ -97,6 +99,9 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
     
     // Mentor management
     Route::post('/mentor/{id}/reset-password', [AdminController::class, 'resetMentorPassword'])->name('mentor.reset-password');
+    
+    // Send acceptance letter
+    Route::get('/applications/{id}/send-acceptance-letter', [AdminController::class, 'sendAcceptanceLetter'])->name('applications.send-acceptance-letter');
     
     // Rules management
     Route::get('/rules', [AdminController::class, 'editRules'])->name('rules.edit');
