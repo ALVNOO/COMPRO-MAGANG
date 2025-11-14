@@ -125,4 +125,12 @@ Route::get('/admin/reports/export/excel', [\App\Http\Controllers\AdminController
 Route::get('/admin/reports/classifications', [\App\Http\Controllers\AdminController::class, 'getReportClassifications'])->name('admin.reports.classifications');
 Route::get('/admin/reports/periods', [\App\Http\Controllers\AdminController::class, 'getReportPeriods'])->name('admin.reports.periods');
 
+// 2FA
+Route::middleware('auth')->group(function() {
+    Route::get('/2fa/setup', [AuthController::class, 'setup2fa'])->name('2fa.setup');
+    Route::post('/2fa/enable', [AuthController::class, 'enable2fa'])->name('2fa.enable');
+    Route::get('/2fa/verify', [AuthController::class, 'show2faVerify'])->name('2fa.verify');
+    Route::post('/2fa/verify', [AuthController::class, 'verify2fa'])->name('2fa.verify.post');
+});
+
 

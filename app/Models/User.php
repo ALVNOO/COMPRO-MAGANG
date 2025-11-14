@@ -6,6 +6,8 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use PragmaRX\Google2FA\Google2FA;
+
 
 class User extends Authenticatable
 {
@@ -85,5 +87,43 @@ class User extends Authenticatable
     public function certificates()
     {
         return $this->hasMany(Certificate::class);
+    }
+
+    // Cek apakah role wajib 2FA
+    public function requiresTwoFactor()
+    {
+        return $this->role !== 'admin'; // Mentor & Peserta wajib
+    }
+
+    // Cek apakah 2FA sudah aktif dan diverifikasi
+    public function hasTwoFactorEnabled()
+    {
+        return $this->requiresTwoFactor() 
+            && !empty($this->two_factor_secret) 
+            && !is_null($this->two_factor_verified_at);
+    }
+
+    // Generate secret (otomatis untuk non-admin)
+    public function generateTwoFactorSecret()
+    {
+        $google2fa = new Google2FA();
+        $this->two_factor_secret = $google2fa->generateSecretKey();
+        $this->save();
+    }
+
+    // Verify code
+    public function verifyTwoFactorCode($code)
+    {
+        if (empty($this->two_factor_secret)) return false;
+        
+        $google2fa = new Google2FA();
+        return $google2fa->verifyKey($this->two_factor_secret, $code);
+    }
+
+    // Mark as verified
+    public function markTwoFactorAsVerified()
+    {
+        $this->two_factor_verified_at = now();
+        $this->save();
     }
 }

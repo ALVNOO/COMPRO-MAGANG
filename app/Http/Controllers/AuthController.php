@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
+use PragmaRX\Google2FA\Google2FA;
 
 class AuthController extends Controller
 {
@@ -35,13 +36,27 @@ class AuthController extends Controller
         if (Auth::attempt($credentials)) {
             $request->session()->regenerate();
 
-            if (Auth::user()->role === 'admin') {
+            $user = Auth::user();
+            
+            // Admin: langsung ke dashboard (skip 2FA)
+            if ($user->role === 'admin') {
                 return redirect()->intended('/admin/dashboard');
-            } else if (Auth::user()->role === 'pembimbing') {
-                return redirect()->intended('/mentor/dashboard');
-            } else {
-                return redirect()->intended('/dashboard');
             }
+            
+            // Pembimbing & Peserta: Cek 2FA
+            // Jika belum setup, paksa ke setup
+            if (!$user->hasTwoFactorEnabled()) {
+                return redirect()->route('2fa.setup')
+                    ->with('info', 'Anda wajib mengaktifkan 2FA untuk pertama kali login');
+            }
+            
+            // Jika sudah setup tapi belum verified di session
+            if (!session('2fa_verified')) {
+                return redirect()->route('2fa.verify');
+            }
+
+            // Sudah verified, ke dashboard masing-masing
+            return $this->redirectToDashboard($user);
         }
 
         return back()->withErrors([
@@ -74,7 +89,7 @@ class AuthController extends Controller
 
         // Create user
         $user = User::create([
-            'username' => $request->email, // Use email as username
+            'username' => $request->email,
             'name' => $request->name ?? null,
             'email' => $request->email,
             'password' => Hash::make($request->password),
@@ -83,9 +98,12 @@ class AuthController extends Controller
             'major' => $request->major ?? null,
             'phone' => $request->phone ?? null,
             'ktp_number' => $request->ktp_number ?? null,
-            'ktm' => null, // Will be uploaded later
+            'ktm' => null,
             'role' => 'peserta',
         ]);
+
+        // Generate 2FA secret Otomatis untuk peserta
+        $user->generateTwoFactorSecret();
 
         // Get a random divisi
         $divisi = Divisi::inRandomOrder()->first();
@@ -96,14 +114,16 @@ class AuthController extends Controller
             'divisi_id' => $divisi->id,
             'status' => 'pending',
             'cover_letter_path' => null,
-            'start_date' => now()->addDays(7), // Default start date
-            'end_date' => now()->addMonths(6), // Default end date
+            'start_date' => now()->addDays(7),
+            'end_date' => now()->addMonths(6),
         ]);
 
-        // Auto login after registration
+        // Auto login
         Auth::login($user);
 
-        return redirect('/dashboard')->with('success', 'Registrasi berhasil! Pengajuan magang Anda telah dikirim.');
+        // Langsung redirect ke setup 2FA
+        return redirect()->route('2fa.setup')
+            ->with('success', 'Registrasi berhasil! Silakan setup 2FA Anda.');
     }
 
     /**
@@ -115,8 +135,113 @@ class AuthController extends Controller
 
         $request->session()->invalidate();
         $request->session()->regenerateToken();
+        session()->forget('2fa_verified'); // Hapus verifikasi 2FA
 
         return redirect('/');
+    }
+
+    /**
+     * Show 2FA setup form (Hanya untuk non-admin)
+     */
+    public function setup2fa()
+    {
+        $user = Auth::user();
+        
+        // Redirect admin
+        if ($user->role === 'admin') {
+            return redirect($this->getDashboardUrl($user))
+                ->with('error', '2FA tidak tersedia untuk Admin');
+        }
+
+        // Generate secret jika belum ada
+        if (empty($user->two_factor_secret)) {
+            $user->generateTwoFactorSecret();
+        }
+
+        // Generate QR Code
+        $google2fa = new Google2FA();
+        $qrCodeUrl = $google2fa->getQRCodeUrl(
+            config('app.name'),
+            $user->email,
+            $user->two_factor_secret
+        );
+
+        return view('auth.2fa-setup', compact('qrCodeUrl'));
+    }
+
+    /**
+     * Verify and enable 2FA
+     */
+    public function enable2fa(Request $request)
+    {
+        $user = Auth::user();
+        
+        // Validasi role
+        if ($user->role === 'admin') {
+            return back()->withErrors(['error' => 'Akses ditolak']);
+        }
+
+        $request->validate([
+            'code' => 'required|numeric|digits:6'
+        ]);
+
+        if ($user->verifyTwoFactorCode($request->code)) {
+            $user->markTwoFactorAsVerified();
+            return redirect($this->getDashboardUrl($user))
+                ->with('success', '2FA berhasil diaktifkan! Silakan login kembali.');
+        }
+
+        return back()->withErrors(['code' => 'Kode tidak valid']);
+    }
+
+    /**
+     * Show 2FA verification form
+     */
+    public function show2faVerify()
+    {
+        $user = Auth::user();
+        
+        // Admin diarahkan ke dashboard
+        if ($user->role === 'admin' || !$user->requiresTwoFactor()) {
+            return redirect($this->getDashboardUrl($user));
+        }
+
+        return view('auth.2fa-verify');
+    }
+
+    /**
+     * Verify 2FA code during login
+     */
+    public function verify2fa(Request $request)
+    {
+        $user = Auth::user();
+        
+        if ($user->role === 'admin') {
+            return redirect($this->getDashboardUrl($user));
+        }
+
+        $request->validate([
+            'code' => 'required|numeric|digits:6'
+        ]);
+
+        if ($user->verifyTwoFactorCode($request->code)) {
+            session(['2fa_verified' => true]);
+            return redirect()->intended($this->getDashboardUrl($user));
+        }
+
+        return back()->withErrors(['code' => 'Kode tidak valid']);
+    }
+
+    /**
+     * Get dashboard URL based on role
+     */
+    private function getDashboardUrl($user)
+    {
+        return match($user->role) {
+            'admin' => '/admin/dashboard',
+            'pembimbing' => '/mentor/dashboard',
+            default => '/dashboard',
+        };
     }
 
     /**
@@ -139,7 +264,7 @@ class AuthController extends Controller
             'new_password.different' => 'Password baru tidak boleh sama dengan password lama.'
         ]);
 
-        $user = \App\Models\User::find(Auth::id());
+        $user = User::find(Auth::id());
 
         if (!Hash::check($request->current_password, $user->password)) {
             return back()->with('error', 'Password lama tidak sesuai.');

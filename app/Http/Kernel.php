@@ -66,4 +66,8 @@ class Kernel extends HttpKernel
         'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
         'admin' => \App\Http\Middleware\AdminMiddleware::class,
     ];
+
+    protected $middlewareAliases = [
+    '2fa.required' => \App\Http\Middleware\RequireTwoFactor::class,
+    ];
 } 
