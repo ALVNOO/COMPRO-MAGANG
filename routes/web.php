@@ -124,6 +124,7 @@ Route::get('/admin/reports/export/pdf', [\App\Http\Controllers\AdminController::
 Route::get('/admin/reports/export/excel', [\App\Http\Controllers\AdminController::class, 'exportReportExcel'])->name('admin.reports.export.excel');
 Route::get('/admin/reports/classifications', [\App\Http\Controllers\AdminController::class, 'getReportClassifications'])->name('admin.reports.classifications');
 Route::get('/admin/reports/periods', [\App\Http\Controllers\AdminController::class, 'getReportPeriods'])->name('admin.reports.periods');
+Route::get('/admin/reports/years', [\App\Http\Controllers\AdminController::class, 'getReportYears'])->name('admin.reports.years');
 
 // 2FA
 Route::middleware('auth')->group(function() {

@@ -109,12 +109,8 @@ class AdminController extends Controller
      */
     public function getReportData(Request $request)
     {
-        $groupBy = $request->input('group_by', 'direktorat');
-        $period = $request->input('period', 'mingguan');
-        $classification = $request->input('classification', 'all');
         $year = $request->input('year');
         $month = $request->input('month');
-        $week = $request->input('week');
         $now = now();
 
         $query = 
@@ -124,27 +120,20 @@ class AdminController extends Controller
             ->with(['user.certificates', 'divisi.subDirektorat.direktorat']);
 
         // Filter periode
-        if ($period === 'mingguan' && $week) {
-            $start = \Carbon\Carbon::parse($week);
-            $end = (clone $start)->addDays(6);
-        } elseif ($period === 'bulanan' && $year && $month) {
+        if ($year && $month) {
+            // Filter bulan spesifik dalam tahun
             $start = \Carbon\Carbon::create($year, $month, 1)->startOfMonth();
             $end = \Carbon\Carbon::create($year, $month, 1)->endOfMonth();
-        } elseif ($period === 'tahunan' && $year) {
+        } elseif ($year) {
+            // Filter tahun saja (semua bulan dalam tahun tersebut)
             $start = \Carbon\Carbon::create($year, 1, 1)->startOfYear();
-            $end = \Carbon\Carbon::create($year, 1, 1)->endOfYear();
+            $end = \Carbon\Carbon::create($year, 12, 31)->endOfYear();
         } else {
-            if ($period === 'mingguan') {
-                $start = $now->copy()->startOfWeek();
-                $end = $now->copy()->endOfWeek();
-            } elseif ($period === 'bulanan') {
-                $start = $now->copy()->startOfMonth();
-                $end = $now->copy()->endOfMonth();
-            } else { // tahunan
-                $start = $now->copy()->startOfYear();
-                $end = $now->copy()->endOfYear();
-            }
+            // Default ke bulan saat ini
+            $start = $now->copy()->startOfMonth();
+            $end = $now->copy()->endOfMonth();
         }
+        
         // Perbaikan: tampilkan peserta jika ada overlap antara periode magang dan periode yang dipilih
         $query->where(function($q) use ($start, $end) {
             $q->where(function($sub) use ($start, $end) {
@@ -155,23 +144,6 @@ class AdminController extends Controller
                      });
             });
         });
-
-        // Filter klasifikasi
-        if ($classification !== 'all') {
-            if ($groupBy === 'direktorat') {
-                $query->whereHas('divisi.subDirektorat.direktorat', function($q) use ($classification) {
-                    $q->where('id', $classification);
-                });
-            } elseif ($groupBy === 'subdirektorat') {
-                $query->whereHas('divisi.subDirektorat', function($q) use ($classification) {
-                    $q->where('id', $classification);
-                });
-            } else { // divisi
-                $query->whereHas('divisi', function($q) use ($classification) {
-                    $q->where('id', $classification);
-                });
-            }
-        }
 
         $applications = $query->orderBy('start_date', 'asc')->get();
 
@@ -200,71 +172,74 @@ class AdminController extends Controller
     }
 
     /**
-     * Ambil data klasifikasi (direktorat, subdirektorat, divisi) untuk dropdown dinamis
-     */
-    public function getReportClassifications(Request $request)
-    {
-        $groupBy = $request->input('group_by', 'direktorat');
-        if ($groupBy === 'direktorat') {
-            $items = \App\Models\Direktorat::orderBy('name')->get(['id', 'name']);
-        } elseif ($groupBy === 'subdirektorat') {
-            $items = \App\Models\SubDirektorat::orderBy('name')->get(['id', 'name']);
-        } else {
-            $items = \App\Models\Divisi::orderBy('name')->get(['id', 'name']);
-        }
-        return response()->json([
-            'data' => $items
-        ]);
-    }
-
-    /**
-     * Ambil data periode detail (tahun, bulan, minggu) untuk dropdown dinamis
+     * Ambil data periode bulanan untuk dropdown dinamis
      */
     public function getReportPeriods(Request $request)
     {
-        $period = $request->input('period', 'tahunan');
-        $year = $request->input('year');
         $data = [];
 
-        $minDate = \App\Models\InternshipApplication::min('created_at');
-        $maxDate = \App\Models\InternshipApplication::max('created_at');
-        if (!$minDate || !$maxDate) {
-            return response()->json(['data' => []]);
+        // Gunakan start_date untuk menentukan periode yang lebih akurat
+        $minDate = \App\Models\InternshipApplication::whereNotNull('start_date')->min('start_date');
+        $maxDate = \App\Models\InternshipApplication::whereNotNull('start_date')->max('start_date');
+        
+        // Jika tidak ada data, gunakan tahun saat ini sebagai default
+        $currentYear = date('Y');
+        $minYear = $minDate ? date('Y', strtotime($minDate)) : $currentYear;
+        $maxYear = $maxDate ? date('Y', strtotime($maxDate)) : $currentYear;
+        
+        // Pastikan minimal ada tahun saat ini
+        if ($minYear > $currentYear) {
+            $minYear = $currentYear;
         }
-        $minYear = date('Y', strtotime($minDate));
-        $maxYear = date('Y', strtotime($maxDate));
+        if ($maxYear < $currentYear) {
+            $maxYear = $currentYear;
+        }
 
-        if ($period === 'tahunan') {
-            for ($y = $minYear; $y <= $maxYear; $y++) {
-                $data[] = [ 'value' => $y, 'label' => $y ];
-            }
-        } elseif ($period === 'bulanan') {
-            for ($y = $minYear; $y <= $maxYear; $y++) {
-                $months = [
-                    1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April', 5 => 'Mei', 6 => 'Juni',
-                    7 => 'Juli', 8 => 'Agustus', 9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'
-                ];
-                foreach ($months as $num => $name) {
-                    $data[] = [ 'value' => sprintf('%02d', $num).'-'.$y, 'label' => $name.' '.$y ];
-                }
-            }
-        } elseif ($period === 'mingguan') {
-            for ($y = $minYear; $y <= $maxYear; $y++) {
-                $start = new \DateTime("first monday of January $y");
-                $end = new \DateTime("last sunday of December $y");
-                while ($start <= $end) {
-                    $weekStart = clone $start;
-                    $weekEnd = (clone $start)->modify('+6 days');
-                    if ($weekEnd->format('Y') > $y) break;
-                    $data[] = [
-                        'value' => $weekStart->format('Y-m-d'),
-                        'label' => $weekStart->format('d M Y') . ' - ' . $weekEnd->format('d M Y')
-                    ];
-                    $start->modify('+7 days');
-                }
+        // Hanya return data bulanan
+        $months = [
+            1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April', 5 => 'Mei', 6 => 'Juni',
+            7 => 'Juli', 8 => 'Agustus', 9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'
+        ];
+        
+        for ($y = $minYear; $y <= $maxYear; $y++) {
+            foreach ($months as $num => $name) {
+                $data[] = [ 'value' => sprintf('%02d', $num).'-'.$y, 'label' => $name.' '.$y ];
             }
         }
-        return response()->json(['data' => $data, 'minYear' => $minYear, 'maxYear' => $maxYear]);
+        
+        return response()->json(['data' => $data]);
+    }
+
+    /**
+     * Ambil data tahun untuk dropdown dinamis
+     */
+    public function getReportYears(Request $request)
+    {
+        $data = [];
+
+        // Gunakan start_date untuk menentukan periode yang lebih akurat
+        $minDate = \App\Models\InternshipApplication::whereNotNull('start_date')->min('start_date');
+        $maxDate = \App\Models\InternshipApplication::whereNotNull('start_date')->max('start_date');
+        
+        // Jika tidak ada data, gunakan tahun saat ini sebagai default
+        $currentYear = date('Y');
+        $minYear = $minDate ? date('Y', strtotime($minDate)) : $currentYear;
+        $maxYear = $maxDate ? date('Y', strtotime($maxDate)) : $currentYear;
+        
+        // Pastikan minimal ada tahun saat ini
+        if ($minYear > $currentYear) {
+            $minYear = $currentYear;
+        }
+        if ($maxYear < $currentYear) {
+            $maxYear = $currentYear;
+        }
+
+        // Generate list tahun dari minYear sampai maxYear (dari yang terbaru ke yang terlama)
+        for ($y = $maxYear; $y >= $minYear; $y--) {
+            $data[] = [ 'value' => $y, 'label' => $y ];
+        }
+        
+        return response()->json(['data' => $data]);
     }
 
     /**
@@ -272,7 +247,14 @@ class AdminController extends Controller
      */
     public function exportReportPdf(Request $request)
     {
-        $data = $this->getReportData($request)->getData(true)['data'];
+        // Buat request baru dengan parameter yang benar (hanya period, year, month)
+        $exportRequest = new Request([
+            'period' => 'bulanan',
+            'year' => $request->input('year'),
+            'month' => $request->input('month'),
+        ]);
+        
+        $data = $this->getReportData($exportRequest)->getData(true)['data'];
         $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin.report_pdf', [
             'data' => $data,
         ])->setPaper('a4', 'landscape');
@@ -284,7 +266,14 @@ class AdminController extends Controller
      */
     public function exportReportExcel(Request $request)
     {
-        $data = $this->getReportData($request)->getData(true)['data'];
+        // Buat request baru dengan parameter yang benar (hanya period, year, month)
+        $exportRequest = new Request([
+            'period' => 'bulanan',
+            'year' => $request->input('year'),
+            'month' => $request->input('month'),
+        ]);
+        
+        $data = $this->getReportData($exportRequest)->getData(true)['data'];
         $export = new \App\Exports\ReportExport($data);
         return \Maatwebsite\Excel\Facades\Excel::download($export, 'report_peserta_magang.xlsx');
     }

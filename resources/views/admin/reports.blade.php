@@ -12,32 +12,18 @@
         <h5 class="text-lg font-bold text-[#B91C1C] mb-4 flex items-center gap-2">
             <i class="fas fa-filter"></i> Filter Laporan
         </h5>
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-                <label for="group_by" class="block text-sm font-medium text-[#B91C1C] mb-2">Group By</label>
-                <select id="group_by" class="block w-full border border-[#e3e3e0] rounded-sm text-base px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#B91C1C] focus:border-[#B91C1C] transition">
-                    <option value="direktorat">Direktorat</option>
-                    <option value="subdirektorat">Sub Direktorat</option>
-                    <option value="divisi">Divisi</option>
+                <label for="tahun" class="block text-sm font-medium text-[#B91C1C] mb-2">Tahun</label>
+                <select id="tahun" class="block w-full border border-[#e3e3e0] rounded-sm text-base px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#B91C1C] focus:border-[#B91C1C] transition">
+                    <option value="">Pilih Tahun</option>
                 </select>
             </div>
             <div>
-                <label for="classification" class="block text-sm font-medium text-[#B91C1C] mb-2">Klasifikasi</label>
-                <select id="classification" class="block w-full border border-[#e3e3e0] rounded-sm text-base px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#B91C1C] focus:border-[#B91C1C] transition">
-                    <option value="all">All</option>
+                <label for="bulan" class="block text-sm font-medium text-[#B91C1C] mb-2">Bulan</label>
+                <select id="bulan" class="block w-full border border-[#e3e3e0] rounded-sm text-base px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#B91C1C] focus:border-[#B91C1C] transition">
+                    <option value="">Pilih Bulan</option>
                 </select>
-            </div>
-            <div>
-                <label for="period" class="block text-sm font-medium text-[#B91C1C] mb-2">Periode</label>
-                <select id="period" class="block w-full border border-[#e3e3e0] rounded-sm text-base px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#B91C1C] focus:border-[#B91C1C] transition">
-                    <option value="mingguan">Mingguan</option>
-                    <option value="bulanan">Bulanan</option>
-                    <option value="tahunan">Tahunan</option>
-                </select>
-            </div>
-            <div>
-                <label for="waktu_detail" class="block text-sm font-medium text-[#B91C1C] mb-2">Waktu</label>
-                <select id="waktu_detail" class="block w-full border border-[#e3e3e0] rounded-sm text-base px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#B91C1C] focus:border-[#B91C1C] transition"></select>
             </div>
         </div>
         
@@ -87,69 +73,149 @@
 
 @push('scripts')
 <script>
-function loadClassifications() {
-    const groupBy = document.getElementById('group_by').value;
-    const select = document.getElementById('classification');
-    select.innerHTML = '<option value="all">All</option>';
-    fetch(`/admin/reports/classifications?group_by=${groupBy}`)
-        .then(res => res.json())
+function loadTahun() {
+    const tahunSelect = document.getElementById('tahun');
+    // Hapus semua option kecuali placeholder
+    while (tahunSelect.options.length > 1) {
+        tahunSelect.remove(1);
+    }
+    
+    fetch(`/admin/reports/years`)
         .then(res => {
-            res.data.forEach(item => {
-                const opt = document.createElement('option');
-                opt.value = item.id;
-                opt.textContent = item.name;
-                select.appendChild(opt);
-            });
+            if (!res.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return res.json();
+        })
+        .then(res => {
+            if (res.data && Array.isArray(res.data) && res.data.length > 0) {
+                res.data.forEach(item => {
+                    const opt = document.createElement('option');
+                    opt.value = item.value;
+                    opt.textContent = item.label;
+                    tahunSelect.appendChild(opt);
+                });
+                // Set default ke tahun saat ini jika ada
+                const currentYear = new Date().getFullYear();
+                const option = Array.from(tahunSelect.options).find(opt => opt.value == currentYear);
+                if (option) {
+                    tahunSelect.value = currentYear;
+                }
+            } else {
+                console.warn('No year data available');
+            }
+        })
+        .catch(error => {
+            console.error('Error loading tahun:', error);
+            alert('Gagal memuat data tahun. Silakan refresh halaman.');
         });
 }
 
-function loadWaktuDetail() {
-    const period = document.getElementById('period').value;
-    const waktuSelect = document.getElementById('waktu_detail');
-    waktuSelect.innerHTML = '';
-    fetch(`/admin/reports/periods?period=${period}`)
-        .then(res => res.json())
-        .then(res => {
-            res.data.forEach(item => {
-                const opt = document.createElement('option');
-                opt.value = item.value;
-                opt.textContent = item.label;
-                waktuSelect.appendChild(opt);
-            });
+function loadBulan() {
+    const bulanSelect = document.getElementById('bulan');
+    const tahunSelect = document.getElementById('tahun');
+    const selectedYear = tahunSelect.value;
+    
+    // Hapus semua option kecuali placeholder
+    while (bulanSelect.options.length > 1) {
+        bulanSelect.remove(1);
+    }
+    
+    // Nama bulan dalam bahasa Indonesia
+    const namaBulan = [
+        'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+        'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
+    ];
+    
+    // Jika tahun dipilih, tampilkan semua bulan untuk tahun tersebut
+    if (selectedYear) {
+        namaBulan.forEach((nama, index) => {
+            const monthNumber = String(index + 1).padStart(2, '0');
+            const opt = document.createElement('option');
+            // Value format MM-YYYY
+            opt.value = `${monthNumber}-${selectedYear}`;
+            // Text hanya nama bulan
+            opt.textContent = nama;
+            bulanSelect.appendChild(opt);
         });
+        
+        // Set default ke bulan saat ini jika tahun yang dipilih adalah tahun saat ini
+        if (selectedYear == new Date().getFullYear()) {
+            const now = new Date();
+            const currentMonth = String(now.getMonth() + 1).padStart(2, '0');
+            const currentValue = `${currentMonth}-${selectedYear}`;
+            bulanSelect.value = currentValue;
+        }
+    } else {
+        // Jika tidak ada tahun yang dipilih, ambil dari API untuk mendapatkan bulan yang tersedia
+        fetch(`/admin/reports/periods?period=bulanan`)
+            .then(res => {
+                if (!res.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return res.json();
+            })
+            .then(res => {
+                if (res.data && Array.isArray(res.data) && res.data.length > 0) {
+                    // Buat set untuk menghindari duplikasi bulan
+                    const bulanSet = new Set();
+                    
+                    res.data.forEach(item => {
+                        // Ekstrak nama bulan saja (hapus tahun dari label)
+                        const bulanName = item.label.split(' ')[0];
+                        const monthNumber = item.value.split('-')[0];
+                        
+                        if (!bulanSet.has(monthNumber)) {
+                            bulanSet.add(monthNumber);
+                            const opt = document.createElement('option');
+                            // Ambil tahun dari item pertama yang memiliki bulan ini
+                            const year = item.value.split('-')[1];
+                            opt.value = `${monthNumber}-${year}`;
+                            opt.textContent = bulanName;
+                            bulanSelect.appendChild(opt);
+                        }
+                    });
+                } else {
+                    console.warn('No period data available');
+                }
+            })
+            .catch(error => {
+                console.error('Error loading bulan:', error);
+                alert('Gagal memuat data bulan. Silakan refresh halaman.');
+            });
+    }
 }
 
-document.getElementById('group_by').addEventListener('change', function() {
-    loadClassifications();
+// Event listeners
+document.getElementById('tahun').addEventListener('change', function() {
+    // Reset bulan saat tahun berubah
+    document.getElementById('bulan').value = '';
+    loadBulan();
     fetchReport();
 });
-document.getElementById('classification').addEventListener('change', fetchReport);
-document.getElementById('period').addEventListener('change', function() {
-    loadWaktuDetail();
-    fetchReport();
-});
-document.getElementById('waktu_detail').addEventListener('change', fetchReport);
+
+document.getElementById('bulan').addEventListener('change', fetchReport);
 
 function fetchReport() {
-    const groupBy = document.getElementById('group_by').value;
-    const period = document.getElementById('period').value;
-    const classification = document.getElementById('classification').value;
-    const waktu = document.getElementById('waktu_detail').value;
-    let url = `/admin/reports/data?group_by=${groupBy}&period=${period}`;
-    if (classification && classification !== 'all') {
-        url += `&classification=${classification}`;
+    const tahun = document.getElementById('tahun').value;
+    const bulan = document.getElementById('bulan').value;
+    let url = `/admin/reports/data?period=bulanan`;
+    
+    if (bulan && tahun) {
+        // Jika bulan dan tahun dipilih, gunakan keduanya
+        const [month, year] = bulan.split('-');
+        // Prioritaskan tahun dari dropdown tahun jika ada
+        const selectedYear = tahun || year;
+        url += `&year=${selectedYear}&month=${month}`;
+    } else if (bulan) {
+        // Jika hanya bulan dipilih (tidak ada tahun), gunakan tahun dari value bulan
+        const [month, year] = bulan.split('-');
+        url += `&year=${year}&month=${month}`;
+    } else if (tahun) {
+        // Jika hanya tahun dipilih
+        url += `&year=${tahun}`;
     }
-    // Tambahkan filter waktu detail
-    if (waktu) {
-        if (period === 'tahunan') {
-            url += `&year=${waktu}`;
-        } else if (period === 'bulanan') {
-            const [month, year] = waktu.split('-');
-            url += `&year=${year}&month=${month}`;
-        } else if (period === 'mingguan') {
-            url += `&week=${waktu}`;
-        }
-    }
+    
     fetch(url)
         .then(res => res.json())
         .then(res => {
@@ -177,35 +243,61 @@ function fetchReport() {
             } else {
                 tbody.innerHTML = '<tr><td colspan="11" class="text-center">Tidak ada Peserta Magang</td></tr>';
             }
+        })
+        .catch(error => {
+            console.error('Error fetching report:', error);
+            alert('Gagal memuat data laporan.');
         });
 }
 
 // Panggil saat load awal
-loadClassifications();
-loadWaktuDetail();
-fetchReport();
+loadTahun();
+loadBulan();
 
 // Export PDF
-    document.getElementById('btn-export-pdf').addEventListener('click', function() {
-        const groupBy = document.getElementById('group_by').value;
-        const period = document.getElementById('period').value;
-        const classification = document.getElementById('classification').value;
-        let url = `/admin/reports/export/pdf?group_by=${groupBy}&period=${period}`;
-        if (classification && classification !== 'all') {
-            url += `&classification=${classification}`;
-        }
-        window.location.href = url;
-    });
+document.getElementById('btn-export-pdf').addEventListener('click', function() {
+    const tahun = document.getElementById('tahun').value;
+    const bulan = document.getElementById('bulan').value;
+    let url = `/admin/reports/export/pdf?period=bulanan`;
+    
+    if (bulan && tahun) {
+        // Jika bulan dan tahun dipilih, gunakan keduanya
+        const [month, year] = bulan.split('-');
+        // Prioritaskan tahun dari dropdown tahun jika ada
+        const selectedYear = tahun || year;
+        url += `&year=${selectedYear}&month=${month}`;
+    } else if (bulan) {
+        // Jika hanya bulan dipilih (tidak ada tahun), gunakan tahun dari value bulan
+        const [month, year] = bulan.split('-');
+        url += `&year=${year}&month=${month}`;
+    } else if (tahun) {
+        url += `&year=${tahun}`;
+    }
+    
+    window.location.href = url;
+});
+
 // Export Excel
-    document.getElementById('btn-export-excel').addEventListener('click', function() {
-        const groupBy = document.getElementById('group_by').value;
-        const period = document.getElementById('period').value;
-        const classification = document.getElementById('classification').value;
-        let url = `/admin/reports/export/excel?group_by=${groupBy}&period=${period}`;
-        if (classification && classification !== 'all') {
-            url += `&classification=${classification}`;
-        }
-        window.location.href = url;
-    });
+document.getElementById('btn-export-excel').addEventListener('click', function() {
+    const tahun = document.getElementById('tahun').value;
+    const bulan = document.getElementById('bulan').value;
+    let url = `/admin/reports/export/excel?period=bulanan`;
+    
+    if (bulan && tahun) {
+        // Jika bulan dan tahun dipilih, gunakan keduanya
+        const [month, year] = bulan.split('-');
+        // Prioritaskan tahun dari dropdown tahun jika ada
+        const selectedYear = tahun || year;
+        url += `&year=${selectedYear}&month=${month}`;
+    } else if (bulan) {
+        // Jika hanya bulan dipilih (tidak ada tahun), gunakan tahun dari value bulan
+        const [month, year] = bulan.split('-');
+        url += `&year=${year}&month=${month}`;
+    } else if (tahun) {
+        url += `&year=${tahun}`;
+    }
+    
+    window.location.href = url;
+});
 </script>
 @endpush 
