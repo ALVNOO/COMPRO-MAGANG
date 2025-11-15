@@ -111,11 +111,6 @@
                                 
                                 <!-- Timer dengan progress bar -->
                                 <div class="mt-4">
-                                    <small class="text-muted d-block mb-2 fs-6">
-                                        <i class="bi bi-clock-history"></i> 
-                                        Kode akan berubah dalam 
-                                        <span id="timer" class="fw-bold text-danger fs-5">30 detik</span>
-                                    </small>
                                     <div class="progress" style="height: 4px; max-width: 200px; margin: 0 auto;">
                                         <div class="progress-bar bg-danger" id="timerProgress" style="width: 100%;"></div>
                                     </div>
