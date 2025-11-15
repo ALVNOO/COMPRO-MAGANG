@@ -12,6 +12,7 @@ class Assignment extends Model
     protected $fillable = [
         'user_id',
         'title',
+        'assignment_type',
         'description',
         'deadline',
         'file_path',

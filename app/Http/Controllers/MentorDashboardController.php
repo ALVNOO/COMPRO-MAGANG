@@ -157,6 +157,7 @@ class MentorDashboardController extends Controller
         $request->validate([
             'user_id' => 'required|exists:users,id',
             'title' => 'required|string|max:255',
+            'assignment_type' => 'required|in:tugas_harian,tugas_proyek',
             'deadline' => 'required|date',
             'description' => 'nullable|string',
             'file_path' => 'nullable|file|mimes:pdf,doc,docx,zip|max:4096',
@@ -173,6 +174,7 @@ class MentorDashboardController extends Controller
         $data = [
             'user_id' => $request->user_id,
             'title' => $request->title,
+            'assignment_type' => $request->assignment_type,
             'description' => $request->description,
             'deadline' => $request->deadline,
             'online_text' => $request->online_text,
