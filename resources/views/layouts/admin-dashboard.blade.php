@@ -14,11 +14,33 @@
             opacity: 0;
             transform: translateY(-10px);
             transition: all 0.2s ease;
+            pointer-events: none;
+            z-index: 1000;
         }
         
         .dropdown-menu:not(.hidden) {
             opacity: 1;
             transform: translateY(0);
+            pointer-events: auto;
+        }
+        
+        .dropdown-menu form {
+            margin: 0;
+        }
+        
+        .dropdown-menu button[type="submit"] {
+            cursor: pointer;
+            width: 100%;
+            text-align: left;
+            background: none;
+            border: none;
+            padding: 0;
+            font-size: inherit;
+            color: inherit;
+        }
+        
+        .dropdown-menu button[type="submit"]:hover {
+            background-color: #dbdbd7;
         }
     </style>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
@@ -108,17 +130,17 @@
             </div>
             @endif
             <div class="mb-4 flex justify-end">
-                <div class="relative">
-                    <button class="px-4 py-2 bg-white border border-[#e3e3e0] rounded-sm text-[#1b1b18] font-medium flex items-center gap-2 hover:bg-[#dbdbd7]" id="adminDropdown">
+                <div class="relative" style="z-index: 1000;">
+                    <button class="px-4 py-2 bg-white border border-[#e3e3e0] rounded-sm text-[#1b1b18] font-medium flex items-center gap-2 hover:bg-[#dbdbd7] cursor-pointer" id="adminDropdown">
                         <i class="fas fa-user"></i> {{ Auth::user()->name }} <i class="fas fa-chevron-down text-xs ml-1"></i>
                     </button>
-                    <ul class="dropdown-menu absolute right-0 top-full mt-2 w-48 bg-white shadow-md border rounded-sm text-sm hidden" aria-labelledby="adminDropdown">
+                    <ul class="dropdown-menu absolute right-0 top-full mt-2 w-48 bg-white shadow-md border rounded-sm text-sm hidden" aria-labelledby="adminDropdown" style="z-index: 1001;">
                         <li><a class="dropdown-item p-3 hover:bg-[#dbdbd7] block" href="{{ route('admin.dashboard') }}">Dashboard</a></li>
                         <li><hr class="my-1 border-[#e3e3e0]"></li>
                         <li>
-                            <form action="{{ route('logout') }}" method="POST" class="d-inline">
+                            <form action="{{ route('logout') }}" method="POST" class="m-0">
                                 @csrf
-                                <button type="submit" class="p-3 w-full text-left hover:bg-[#dbdbd7]">Logout</button>
+                                <button type="submit" class="dropdown-item p-3 w-full text-left hover:bg-[#dbdbd7] block cursor-pointer">Logout</button>
                             </form>
                         </li>
                     </ul>
@@ -140,33 +162,32 @@
             $('#adminDropdown').on('click', function(e) {
                 e.preventDefault();
                 e.stopPropagation();
-                $(this).next('.dropdown-menu').toggleClass('hidden');
+                const $menu = $(this).next('.dropdown-menu');
+                $menu.toggleClass('hidden');
             });
             
             // Close dropdown when clicking outside
             $(document).on('click', function(event) {
                 const $dropdown = $('.dropdown-menu');
                 const $button = $('#adminDropdown');
-                
-                // Don't close if clicking on a form button
-                if ($(event.target).is('button[type="submit"]') || $(event.target).closest('form').length) {
-                    return;
-                }
+                const $dropdownContainer = $button.parent();
                 
                 // Check if click is outside both button and dropdown
-                if (!$button.is(event.target) && !$button.has(event.target).length && 
-                    !$dropdown.is(event.target) && !$dropdown.has(event.target).length) {
+                if (!$dropdownContainer.is(event.target) && !$dropdownContainer.has(event.target).length) {
                     $dropdown.addClass('hidden');
                 }
             });
             
-            // Close dropdown when clicking on menu items (but not form buttons)
-            $('.dropdown-item').on('click', function(e) {
-                // Don't close if it's a form button
-                if ($(e.target).is('button[type="submit"]') || $(e.target).closest('button[type="submit"]').length) {
-                    return;
-                }
-                $('.dropdown-menu').addClass('hidden');
+            // Prevent dropdown from closing when clicking inside the dropdown menu
+            $('.dropdown-menu').on('click', function(e) {
+                e.stopPropagation();
+            });
+            
+            // Ensure logout button is clickable
+            $('.dropdown-menu button[type="submit"]').on('click', function(e) {
+                // Allow the form to submit normally
+                e.stopPropagation();
+                // Don't prevent default - let the form submit
             });
         });
     </script>

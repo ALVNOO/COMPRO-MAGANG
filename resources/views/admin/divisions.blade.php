@@ -4,7 +4,7 @@
 <div class="space-y-8">
     <div class="mb-6 flex justify-between items-center">
         <div>
-            <h2 class="text-2xl font-semibold mb-1 text-[#B91C1C] border-b-4 border-[#000000] inline-block pb-1 pr-6">Kelola Direktorat, Subdirektorat, dan Divisi</h2>
+            <h2 class="text-2xl font-bold mb-1 text-[#B91C1C] border-b-4 border-[#000000] inline-block pb-1 pr-6">Kelola Direktorat, Subdirektorat, dan Divisi</h2>
             <p class="text-sm text-[#000000]">Kelola struktur organisasi dan divisi perusahaan</p>
         </div>
         <button class="px-4 py-2 rounded-sm bg-[#B91C1C] text-white font-bold border border-transparent hover:bg-[#991B1B] transition flex items-center gap-2" data-bs-toggle="modal" data-bs-target="#addDirektoratModal">

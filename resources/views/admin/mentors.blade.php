@@ -68,72 +68,12 @@ use Carbon\Carbon;
                             <p class="text-muted">Pembimbing akan dibuat otomatis ketika Anda menambahkan divisi baru</p>
                         </div>
                     @endif
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Info Card -->
-    <div class="row mt-4">
-        <div class="col-12">
-            <div class="card border-info">
-                <div class="card-header bg-info text-white">
-                    <h5 class="card-title mb-0">
-                        <i class="fas fa-info-circle me-2"></i>Informasi Penting
-                    </h5>
-                </div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <h6><i class="fas fa-user-plus me-2"></i>Pembuatan Otomatis</h6>
-                            <ul class="list-unstyled">
-                                <li>• User pembimbing dibuat otomatis saat menambah divisi baru</li>
-                                <li>• Username: mentor_[nama_divisi]</li>
-                                <li>• Password default: mentor123</li>
-                                <li>• Email: username@posindonesia.co.id</li>
-                            </ul>
-                        </div>
-                        <div class="col-md-6">
-                            <h6><i class="fas fa-shield-alt me-2"></i>Keamanan</h6>
-                            <ul class="list-unstyled">
-                                <li>• Pembimbing harus mengubah password saat login pertama</li>
-                                <li>• Password dapat direset oleh admin</li>
-                                <li>• Akses terbatas hanya ke divisi masing-masing</li>
-                            </ul>
-                        </div>
-                    </div>
-                    <hr>
-                    <div class="row">
-                        <div class="col-12">
-                            <h6><i class="fas fa-info-circle me-2"></i>Keterangan Status</h6>
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <ul class="list-unstyled">
-                                        <li><i class="fas fa-check text-success me-2"></i>Tugas dikumpulkan</li>
-                                        <li><i class="fas fa-times text-danger me-2"></i>Tugas belum dikumpulkan</li>
-                                        <li><i class="fas fa-star text-success me-2"></i>Sudah dinilai</li>
-                                        <li><i class="fas fa-clock text-warning me-2"></i>Belum dinilai</li>
-                                    </ul>
-                                </div>
-                                <div class="col-md-6">
-                                    <ul class="list-unstyled">
-                                        <li><i class="fas fa-certificate text-success me-2"></i>Lihat sertifikat peserta</li>
-                                        <li><i class="fas fa-times text-danger me-2"></i>Tidak ada sertifikat</li>
-                                        <li><i class="fas fa-times text-danger me-2"></i>Tidak ada tugas</li>
-                                    </ul>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
     </div>
 </div>
 
 <!-- Reset Password Modals -->
 @foreach($mentors as $mentor)
-<div class="modal fade" id="resetPasswordModal{{ $mentor->id }}" tabindex="-1" aria-labelledby="resetPasswordModalLabel{{ $mentor->id }}" aria-hidden="true">
+<div class="modal fade" id="resetPasswordModal{{ $mentor->id }}" tabindex="-1" aria-labelledby="resetPasswordModalLabel{{ $mentor->id }}" aria-hidden="true" aria-modal="true" role="dialog" style="display: none;">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
@@ -171,7 +111,7 @@ use Carbon\Carbon;
             @php
                 $certificate = $participant->user->certificates->first();
             @endphp
-            <div class="modal fade" id="certificateModal{{ $certificate->id }}" tabindex="-1" aria-labelledby="certificateModalLabel{{ $certificate->id }}" aria-hidden="true">
+            <div class="modal fade" id="certificateModal{{ $certificate->id }}" tabindex="-1" aria-labelledby="certificateModalLabel{{ $certificate->id }}" aria-hidden="true" style="display: none;">
                 <div class="modal-dialog modal-lg">
                     <div class="modal-content">
                         <div class="modal-header">
@@ -283,5 +223,40 @@ use Carbon\Carbon;
     setTimeout(function() {
         $('.alert').fadeOut('slow');
     }, 3000);
+    
+    // Ensure modals are hidden by default
+    $(document).ready(function() {
+        $('.modal').hide();
+        $('.modal-backdrop').remove();
+    });
 </script>
+<style>
+    /* Ensure modals are hidden by default - very specific selector */
+    div.modal.fade:not(.show) {
+        display: none !important;
+        visibility: hidden !important;
+        opacity: 0 !important;
+        pointer-events: none !important;
+    }
+    
+    /* Only show modal when Bootstrap adds the 'show' class */
+    div.modal.fade.show {
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        pointer-events: auto !important;
+    }
+    
+    /* Hide modal backdrop by default */
+    .modal-backdrop:not(.show) {
+        display: none !important;
+        visibility: hidden !important;
+    }
+    
+    /* Ensure modal content is also hidden when modal is hidden */
+    div.modal.fade:not(.show) .modal-dialog,
+    div.modal.fade:not(.show) .modal-content {
+        display: none !important;
+    }
+</style>
 @endpush 
