@@ -12,9 +12,13 @@ class InternshipApplication extends Model
     protected $fillable = [
         'user_id',
         'divisi_id',
+        'field_of_interest_id',
         'status',
         'cover_letter_path',
-        'acceptance_letter_path',
+        'ktm_path',
+        'surat_permohonan_path',
+        'cv_path',
+        'good_behavior_path',
         'notes',
         'start_date',
         'end_date'
@@ -39,6 +43,11 @@ class InternshipApplication extends Model
     public function divisi()
     {
         return $this->belongsTo(Divisi::class);
+    }
+
+    public function fieldOfInterest()
+    {
+        return $this->belongsTo(FieldOfInterest::class);
     }
 
     public function certificate()

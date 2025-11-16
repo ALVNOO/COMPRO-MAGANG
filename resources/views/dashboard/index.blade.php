@@ -15,6 +15,101 @@
         </div>
     </div>
 
+    <!-- Calendar & Timeline -->
+    <div class="row mb-4">
+        <div class="col-md-7 mb-4">
+            <div class="card h-100">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0"><i class="fas fa-calendar-alt me-2"></i>Kalender Kegiatan</h5>
+                    <small class="text-muted">{{ now()->translatedFormat('F Y') }}</small>
+                </div>
+                <div class="card-body">
+                    @php
+                        $start = now()->startOfMonth()->startOfWeek();
+                        $end = now()->endOfMonth()->endOfWeek();
+                        $cursor = $start->copy();
+                        $events = collect([]);
+                        // Contoh event: tenggat tugas atau tanggal penting
+                        $eventsMap = [
+                            optional($user->assignments->sortBy('due_date')->first())->due_date?->toDateString() => 'Tenggat Tugas',
+                            optional($application)->start_date?->toDateString() => 'Mulai Magang',
+                            optional($application)->end_date?->toDateString() => 'Selesai Magang',
+                        ];
+                    @endphp
+                    <div class="table-responsive">
+                        <table class="table table-bordered mb-0 align-middle text-center">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Min</th><th>Sen</th><th>Sel</th><th>Rab</th><th>Kam</th><th>Jum</th><th>Sab</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @while($cursor->lte($end))
+                                    <tr>
+                                        @for($i=0;$i<7;$i++)
+                                            @php
+                                                $isCurrentMonth = $cursor->month === now()->month;
+                                                $label = $cursor->day;
+                                                $eventLabel = $eventsMap[$cursor->toDateString()] ?? null;
+                                            @endphp
+                                            <td class="p-2 {{ $isCurrentMonth ? '' : 'text-muted' }}" style="vertical-align: middle;">
+                                                <div class="fw-semibold">{{ $label }}</div>
+                                                @if($eventLabel)
+                                                    <span class="badge bg-primary mt-1">{{ $eventLabel }}</span>
+                                                @endif
+                                            </td>
+                                            @php $cursor->addDay(); @endphp
+                                        @endfor
+                                    </tr>
+                                @endwhile
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-5 mb-4">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5 class="card-title mb-0"><i class="fas fa-timeline me-2"></i>Timeline Aktivitas</h5>
+                </div>
+                <div class="card-body">
+                    <div class="list-group list-group-flush">
+                        <div class="list-group-item d-flex align-items-start">
+                            <i class="fas fa-flag-checkered text-success me-3 mt-1"></i>
+                            <div>
+                                <div class="fw-semibold">Diterima Magang</div>
+                                <small class="text-muted">{{ optional($application?->created_at)->format('d M Y') ?: '-' }}</small>
+                            </div>
+                        </div>
+                        <div class="list-group-item d-flex align-items-start">
+                            <i class="fas fa-briefcase text-primary me-3 mt-1"></i>
+                            <div>
+                                <div class="fw-semibold">Mulai Magang</div>
+                                <small class="text-muted">{{ optional($application?->start_date)->format('d M Y') ?: '-' }}</small>
+                            </div>
+                        </div>
+                        <div class="list-group-item d-flex align-items-start">
+                            <i class="fas fa-calendar-check text-warning me-3 mt-1"></i>
+                            <div>
+                                <div class="fw-semibold">Tenggat Tugas Terdekat</div>
+                                @php $nearestDue = optional($user->assignments->whereNotNull('due_date')->sortBy('due_date')->first())->due_date; @endphp
+                                <small class="text-muted">{{ optional($nearestDue)->format('d M Y') ?: '-' }}</small>
+                            </div>
+                        </div>
+                        <div class="list-group-item d-flex align-items-start">
+                            <i class="fas fa-award text-info me-3 mt-1"></i>
+                            <div>
+                                <div class="fw-semibold">Selesai Magang</div>
+                                <small class="text-muted">{{ optional($application?->end_date)->format('d M Y') ?: '-' }}</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Notifikasi -->
     @php
         $tugasBaru = $user->assignments->where('submitted_at', null)->count();
@@ -134,7 +229,7 @@
     </div>
 
     <!-- Application Status -->
-    @if($application)
+    @if($application && $application->divisi)
     <div class="row mb-4">
         <div class="col-12">
             <div class="card">
@@ -146,10 +241,10 @@
                 <div class="card-body">
                     <div class="row">
                         <div class="col-md-6">
-                            <p class="mb-1"><strong>Divisi:</strong> {{ $application->divisi->name }}</p>
-                            <p class="mb-1"><strong>Sub Direktorat:</strong> {{ $application->divisi->subDirektorat->name }}</p>
-                            <p class="mb-1"><strong>Direktorat:</strong> {{ $application->divisi->subDirektorat->direktorat->name }}</p>
-                            <p class="mb-1"><strong>PIC:</strong> {{ $application->divisi->vp }}</p>
+                            <p class="mb-1"><strong>Divisi:</strong> {{ $application->divisi->name ?? '-' }}</p>
+                            <p class="mb-1"><strong>Sub Direktorat:</strong> {{ $application->divisi->subDirektorat->name ?? '-' }}</p>
+                            <p class="mb-1"><strong>Direktorat:</strong> {{ $application->divisi->subDirektorat->direktorat->name ?? '-' }}</p>
+                            <p class="mb-1"><strong>PIC:</strong> {{ $application->divisi->vp ?? '-' }}</p>
                         </div>
                         <div class="col-md-6">
                             <p class="mb-1"><strong>Status:</strong> 

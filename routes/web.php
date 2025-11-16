@@ -29,6 +29,10 @@ Route::post('/internship/apply/{divisi}', [InternshipController::class, 'submitA
 Route::middleware('auth')->group(function () {
     // Dashboard routes
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/dashboard/pre-acceptance', [DashboardController::class, 'preAcceptance'])->name('dashboard.pre-acceptance');
+    Route::post('/dashboard/pre-acceptance/profile', [DashboardController::class, 'updateProfile'])->name('dashboard.pre-acceptance.profile');
+    Route::post('/dashboard/pre-acceptance/documents', [DashboardController::class, 'uploadDocuments'])->name('dashboard.pre-acceptance.documents');
+    Route::post('/dashboard/pre-acceptance/complete', [DashboardController::class, 'completeApplication'])->name('dashboard.pre-acceptance.complete');
     Route::get('/dashboard/status', [DashboardController::class, 'status'])->name('dashboard.status');
     Route::post('/dashboard/status/acknowledge', [DashboardController::class, 'acknowledgePersyaratanTambahan'])->name('dashboard.status.acknowledge');
     Route::post('/dashboard/status/upload-additional', [DashboardController::class, 'submitAdditionalDocuments'])->name('dashboard.status.upload-additional');
@@ -78,11 +82,11 @@ Route::middleware(['auth'])->prefix('mentor')->group(function () {
 Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('dashboard');
     Route::get('/applications', [AdminController::class, 'applications'])->name('applications');
-    Route::post('/send-acceptance-letter/{id}', [AdminController::class, 'sendAcceptanceLetter'])->name('send-acceptance-letter');
+    Route::post('/applications/{id}/approve', [AdminController::class, 'approveApplication'])->name('applications.approve');
+    Route::post('/applications/{id}/reject', [AdminController::class, 'rejectApplication'])->name('applications.reject');
     Route::get('/participants', [AdminController::class, 'participants'])->name('participants');
     Route::get('/divisions', [AdminController::class, 'divisions'])->name('divisions');
     Route::get('/mentors', [AdminController::class, 'mentors'])->name('mentors');
-    Route::get('/mentors/{mentor}', [App\Http\Controllers\AdminController::class, 'mentorDetail'])->name('mentor.detail');
 
     // Direktorat CRUD
     Route::post('/direktorat', [AdminController::class, 'storeDirektorat'])->name('direktorat.store');
@@ -99,9 +103,6 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
     
     // Mentor management
     Route::post('/mentor/{id}/reset-password', [AdminController::class, 'resetMentorPassword'])->name('mentor.reset-password');
-    
-    // Send acceptance letter
-    Route::get('/applications/{id}/send-acceptance-letter', [AdminController::class, 'sendAcceptanceLetter'])->name('applications.send-acceptance-letter');
     
     // Rules management
     Route::get('/rules', [AdminController::class, 'editRules'])->name('rules.edit');
@@ -124,14 +125,5 @@ Route::get('/admin/reports/export/pdf', [\App\Http\Controllers\AdminController::
 Route::get('/admin/reports/export/excel', [\App\Http\Controllers\AdminController::class, 'exportReportExcel'])->name('admin.reports.export.excel');
 Route::get('/admin/reports/classifications', [\App\Http\Controllers\AdminController::class, 'getReportClassifications'])->name('admin.reports.classifications');
 Route::get('/admin/reports/periods', [\App\Http\Controllers\AdminController::class, 'getReportPeriods'])->name('admin.reports.periods');
-Route::get('/admin/reports/years', [\App\Http\Controllers\AdminController::class, 'getReportYears'])->name('admin.reports.years');
-
-// 2FA
-Route::middleware('auth')->group(function() {
-    Route::get('/2fa/setup', [AuthController::class, 'setup2fa'])->name('2fa.setup');
-    Route::post('/2fa/enable', [AuthController::class, 'enable2fa'])->name('2fa.enable');
-    Route::get('/2fa/verify', [AuthController::class, 'show2faVerify'])->name('2fa.verify');
-    Route::post('/2fa/verify', [AuthController::class, 'verify2fa'])->name('2fa.verify.post');
-});
 
 

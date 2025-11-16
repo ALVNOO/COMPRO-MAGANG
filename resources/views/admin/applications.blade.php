@@ -1,107 +1,102 @@
 @extends('layouts.admin-dashboard')
 
 @section('admin-content')
-<div class="space-y-8">
-    <div class="mb-6">
-        <h2 class="text-2xl font-bold mb-1 text-[#000000] border-b-4 border-[#ee2e24] inline-block pb-1 pr-6">Daftar Pengajuan Magang</h2>
-        <p class="text-sm text-[#000000]">Kelola semua pengajuan magang dan kirim surat penerimaan via email</p>
-    </div>
-    
-    <div class="bg-white border border-[#e3e3e0] rounded-lg shadow-2xl relative z-10 transform transition-all duration-300 hover:shadow-3xl">
-        <div class="border-b border-[#e3e3e0] px-6 py-4 flex items-center gap-2 relative">
-            <div class="absolute left-6 right-6 -bottom-1 h-1 bg-gradient-to-r from-[#ee2e24] via-[#ee2e24] to-[#ee2e24] rounded opacity-60"></div>
-            <i class="fas fa-list text-[#ee2e24]"></i>
-            <h5 class="text-lg font-bold mb-0 text-[#ee2e24]">Semua Pengajuan Magang</h5>
-        </div>
-        <div class="overflow-x-auto">
-            <table class="min-w-full text-sm text-left">
-                <thead class="bg-[#FFF2F2] border-b border-[#e3e3e0]">
-                    <tr>
-                        <th class="px-4 py-2 font-bold text-[#ee2e24]">No</th>
-                        <th class="px-4 py-2 font-bold text-[#ee2e24]">Nama Peserta</th>
-                        <th class="px-4 py-2 font-bold text-[#ee2e24]">KTM</th>
-                        <th class="px-4 py-2 font-bold text-[#ee2e24]">Surat Permohonan Magang</th>
-                        <th class="px-4 py-2 font-bold text-[#ee2e24]">Surat Penerimaan Magang</th>
-                        <th class="px-4 py-2 font-bold text-[#ee2e24]">Email</th>
-                        <th class="px-4 py-2 font-bold text-[#ee2e24]">No HP</th>
-                        <th class="px-4 py-2 font-bold text-[#ee2e24]">Divisi</th>
-                        <th class="px-4 py-2 font-bold text-[#ee2e24]">Tanggal Pengajuan</th>
-                        <th class="px-4 py-2 font-bold text-[#ee2e24]">Start Date</th>
-                        <th class="px-4 py-2 font-bold text-[#ee2e24]">End Date</th>
-                        <th class="px-4 py-2 font-bold text-[#ee2e24]">Status</th>
-                        <th class="px-4 py-2 font-bold text-[#ee2e24]">Aksi</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @forelse($applications as $i => $app)
-                    <tr class="even:bg-[#FDFDFC] border-b border-[#e3e3e0] hover:bg-[#FFF2F2] transition-colors">
-                        <td class="px-4 py-2">{{ $i+1 }}</td>
-                        <td class="px-4 py-2 font-medium">{{ $app->user->name ?? '-' }}</td>
-                        <td class="px-4 py-2">
-                            @if($app->user && $app->user->ktm)
-                                <a href="{{ asset('storage/' . $app->user->ktm) }}" target="_blank" class="inline-block px-3 py-1 rounded-sm border border-[#B91C1C] text-[#B91C1C] font-medium hover:bg-[#B91C1C] hover:text-white transition text-sm">Lihat KTM</a>
-                            @else
-                                <span class="text-[#706f6c]">-</span>
-                            @endif
-                        </td>
-                        <td class="px-4 py-2">
-                            @if($app->cover_letter_path)
-                                <a href="{{ asset('storage/' . $app->cover_letter_path) }}" target="_blank" class="inline-block px-3 py-1 rounded-sm border border-[#B91C1C] text-[#B91C1C] font-medium hover:bg-[#B91C1C] hover:text-white transition text-sm">Lihat Surat</a>
-                            @else
-                                <span class="text-[#706f6c]">-</span>
-                            @endif
-                        </td>
-                        <td class="px-4 py-2">
-                            @if($app->status === 'accepted')
-                                @if($app->acceptance_letter_path)
-                                    <span class="text-green-600 font-semibold">✓ Sudah Terkirim</span>
+<div class="container-fluid">
+    <h2 class="mb-4">Daftar Pengajuan Magang Belum Direspon</h2>
+    <div class="card">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-bordered mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>No</th>
+                            <th>Nama Peserta</th>
+                            <th>Bidang Peminatan</th>
+                            <th>Email</th>
+                            <th>No HP</th>
+                            <th>Dokumen</th>
+                            <th>Tanggal Pengajuan</th>
+                            <th>Status</th>
+                            <th>Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($applications->where('status', 'pending') as $i => $app)
+                        <tr>
+                            <td>{{ $i+1 }}</td>
+                            <td>{{ $app->user->name ?? '-' }}</td>
+                            <td>
+                                @if($app->fieldOfInterest)
+                                    <span class="badge bg-info">{{ $app->fieldOfInterest->name }}</span>
                                 @else
-                                    <span class="text-[#706f6c]">Belum Dikirim</span>
+                                    <span class="badge bg-secondary">Bidang Lainnya</span>
                                 @endif
-                            @else
-                                <span class="text-[#706f6c]">-</span>
-                            @endif
-                        </td>
-                        <td class="px-4 py-2">{{ $app->user->email ?? '-' }}</td>
-                        <td class="px-4 py-2">{{ $app->user->phone ?? '-' }}</td>
-                        <td class="px-4 py-2">{{ $app->divisi->name ?? '-' }}</td>
-                        <td class="px-4 py-2">{{ $app->created_at ? $app->created_at->format('d-m-Y') : '-' }}</td>
-                        <td class="px-4 py-2">{{ $app->start_date ? \Carbon\Carbon::parse($app->start_date)->format('d-m-Y') : '-' }}</td>
-                        <td class="px-4 py-2">{{ $app->end_date ? \Carbon\Carbon::parse($app->end_date)->format('d-m-Y') : '-' }}</td>
-                        <td class="px-4 py-2">
-                            @if($app->status === 'accepted')
-                                <span class="inline-block px-3 py-1 rounded-full text-xs font-bold bg-green-100 text-green-800">Accepted</span>
-                            @elseif($app->status === 'rejected')
-                                <span class="inline-block px-3 py-1 rounded-full text-xs font-bold bg-red-100 text-red-800">Rejected</span>
-                            @elseif($app->status === 'pending')
-                                <span class="inline-block px-3 py-1 rounded-full text-xs font-bold bg-yellow-100 text-yellow-800">Pending</span>
-                            @elseif($app->status === 'postponed')
-                                <span class="inline-block px-3 py-1 rounded-full text-xs font-bold bg-blue-100 text-blue-800">Postponed</span>
-                            @elseif($app->status === 'finished')
-                                <span class="inline-block px-3 py-1 rounded-full text-xs font-bold bg-gray-100 text-gray-800">Finished</span>
-                            @else
-                                <span class="inline-block px-3 py-1 rounded-full text-xs font-bold bg-[#FFF2F2] text-[#B91C1C]">{{ ucfirst($app->status) }}</span>
-                            @endif
-                        </td>
-                        <td class="px-4 py-2">
-                            @if($app->status === 'accepted' && !$app->acceptance_letter_path)
-                                <a href="{{ route('admin.applications.send-acceptance-letter', $app->id) }}" 
-                                   onclick="return confirm('Apakah Anda yakin ingin mengirim surat penerimaan via email ke {{ $app->user->email ?? 'email' }}?')" 
-                                   class="inline-block px-3 py-1 rounded-sm border border-green-600 text-green-600 font-medium hover:bg-green-600 hover:text-white transition text-sm">
-                                    Kirim Surat Penerimaan
-                                </a>
-                            @elseif($app->status === 'accepted' && $app->acceptance_letter_path)
-                                <span class="text-green-600 text-xs">✓ Surat sudah dikirim</span>
-                            @else
-                                <span class="text-[#706f6c]">-</span>
-                            @endif
-                        </td>
-                    </tr>
-                    @empty
-                    <tr><td colspan="13" class="text-center py-8 text-[#706f6c]">Tidak ada pengajuan magang.</td></tr>
-                    @endforelse
-                </tbody>
-            </table>
+                            </td>
+                            <td>{{ $app->user->email ?? '-' }}</td>
+                            <td>{{ $app->user->phone ?? '-' }}</td>
+                            <td>
+                                <div class="btn-group" role="group">
+                                    @if($app->ktm_path)
+                                        <a href="{{ asset('storage/' . $app->ktm_path) }}" target="_blank" class="btn btn-sm btn-outline-primary" title="KTM">KTM</a>
+                                    @endif
+                                    @if($app->surat_permohonan_path)
+                                        <a href="{{ asset('storage/' . $app->surat_permohonan_path) }}" target="_blank" class="btn btn-sm btn-outline-primary" title="Surat Permohonan">SP</a>
+                                    @endif
+                                    @if($app->cv_path)
+                                        <a href="{{ asset('storage/' . $app->cv_path) }}" target="_blank" class="btn btn-sm btn-outline-primary" title="CV">CV</a>
+                                    @endif
+                                    @if($app->good_behavior_path)
+                                        <a href="{{ asset('storage/' . $app->good_behavior_path) }}" target="_blank" class="btn btn-sm btn-outline-primary" title="Surat Berperilaku Baik">SBB</a>
+                                    @endif
+                                </div>
+                            </td>
+                            <td>{{ $app->created_at ? $app->created_at->format('d-m-Y') : '-' }}</td>
+                            <td><span class="badge bg-warning">Pending</span></td>
+                            <td>
+                                <div class="btn-group" role="group">
+                                    <form action="{{ route('admin.applications.approve', $app->id) }}" method="POST" class="d-inline">
+                                        @csrf
+                                        <button type="submit" class="btn btn-sm btn-success" onclick="return confirm('Apakah Anda yakin ingin menerima pengajuan ini?')">
+                                            <i class="fas fa-check"></i> Terima
+                                        </button>
+                                    </form>
+                                    <button type="button" class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#rejectModal{{ $app->id }}">
+                                        <i class="fas fa-times"></i> Tolak
+                                    </button>
+                                </div>
+                                
+                                <!-- Reject Modal -->
+                                <div class="modal fade" id="rejectModal{{ $app->id }}" tabindex="-1">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title">Tolak Pengajuan</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                            </div>
+                                            <form action="{{ route('admin.applications.reject', $app->id) }}" method="POST">
+                                                @csrf
+                                                <div class="modal-body">
+                                                    <div class="mb-3">
+                                                        <label for="notes{{ $app->id }}" class="form-label">Alasan Penolakan (Opsional)</label>
+                                                        <textarea class="form-control" id="notes{{ $app->id }}" name="notes" rows="3"></textarea>
+                                                    </div>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                                                    <button type="submit" class="btn btn-danger">Tolak Pengajuan</button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                        @empty
+                        <tr><td colspan="9" class="text-center">Tidak ada pengajuan pending.</td></tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 </div>

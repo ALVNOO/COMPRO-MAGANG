@@ -120,16 +120,20 @@ class AdminController extends Controller
             ->with(['user.certificates', 'divisi.subDirektorat.direktorat']);
 
         // Filter periode
-        if ($year && $month) {
-            // Filter bulan spesifik dalam tahun
+        if ($period === 'mingguan' && $week) {
+            $start = \Carbon\Carbon::parse($week);
+            $end = (clone $start)->addDays(6);
+        } elseif ($period === 'bulanan' && $year && $month) {
             $start = \Carbon\Carbon::create($year, $month, 1)->startOfMonth();
             $end = \Carbon\Carbon::create($year, $month, 1)->endOfMonth();
-        } elseif ($year) {
-            // Filter tahun saja (semua bulan dalam tahun tersebut)
+        } elseif ($period === 'tahunan' && $year) {
             $start = \Carbon\Carbon::create($year, 1, 1)->startOfYear();
-            $end = \Carbon\Carbon::create($year, 12, 31)->endOfYear();
+            $end = \Carbon\Carbon::create($year, 1, 1)->endOfYear();
         } else {
-            // Default ke bulan saat ini
+            if ($period === 'mingguan') {
+                $start = $now->copy()->startOfWeek();
+                $end = $now->copy()->endOfWeek();
+            } elseif ($period === 'bulanan') {
             $start = $now->copy()->startOfMonth();
             $end = $now->copy()->endOfMonth();
         }
@@ -677,3 +681,4 @@ class AdminController extends Controller
         return redirect()->route('admin.fields')->with('success', 'Bidang peminatan berhasil dihapus');
     }
 } 
+}

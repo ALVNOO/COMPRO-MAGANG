@@ -3,194 +3,329 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@yield('title', 'Dashboard - PT Pos Indonesia')</title>
-    
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    
+    <title>@yield('title', 'Dashboard Peserta')</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f7f8fb;
+            overflow-x: hidden;
+        }
+        
         .sidebar {
             min-height: 100vh;
-            background: linear-gradient(135deg, #e3ecfa 0%, #b6c9e6 100%);
-            color: #223366;
+            background: linear-gradient(135deg, #EE2E24 0%, #F60000 100%);
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 260px;
+            z-index: 1000;
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .sidebar .brand {
+            padding: 1.5rem 1rem;
+            font-weight: 700;
+            color: #ffffff;
+            font-size: 1.25rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        
+        .sidebar .brand i {
+            font-size: 1.5rem;
+            animation: pulse 2s ease-in-out infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+        
+        .sidebar .nav {
+            padding: 1rem 0;
         }
         
         .sidebar .nav-link {
-            color: #223366;
-            padding: 0.75rem 1rem;
-            border-radius: 0.375rem;
-            margin: 0.25rem 0;
-        }
-        
-        .sidebar .nav-link:hover,
-        .sidebar .nav-link.active {
-            color:rgb(0, 213, 246);
-            background-color: #dde6f7;
+            color: rgba(255, 255, 255, 0.9);
+            padding: 0.875rem 1.5rem;
+            border-radius: 0;
+            margin: 0.25rem 0.5rem;
+            border-radius: 0.5rem;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            text-decoration: none;
         }
         
         .sidebar .nav-link i {
-            width: 20px;
-            margin-right: 10px;
+            width: 1.25rem;
+            margin-right: 0.75rem;
+            font-size: 1rem;
         }
         
-        .main-content {
-            background-color: #f8f9fa;
+        .sidebar .nav-link:hover {
+            background: rgba(255, 255, 255, 0.15);
+            color: #ffffff;
+            transform: translateX(5px);
+        }
+        
+        .sidebar .nav-link.active {
+            background: rgba(255, 255, 255, 0.25);
+            color: #ffffff;
+            font-weight: 600;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        }
+        
+        .main {
+            margin-left: 260px;
             min-height: 100vh;
-        }
-        
-        .navbar-brand {
-            font-weight: bold;
-            color: #e74c3c !important;
-        }
-        
-        .btn-primary {
-            background-color: #e74c3c;
-            border-color: #e74c3c;
-        }
-        
-        .btn-primary:hover {
-            background-color: #c0392b;
-            border-color: #c0392b;
+            background: #f7f8fb;
+            padding: 2rem;
+            transition: margin-left 0.3s ease;
         }
         
         .card {
             border: none;
-            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+            border-radius: 1rem;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            background: #ffffff;
         }
         
-        /* Pastikan dropdown tampil di atas konten lain */
-        .dropdown-menu {
-            z-index: 2000 !important;
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
         }
         
-        /* Pastikan parent tidak membatasi overflow */
-        .main-content,
-        .container-fluid,
-        .row {
-            overflow: visible !important;
+        .card-header {
+            background: linear-gradient(135deg, #EE2E24 0%, #F60000 100%);
+            color: #ffffff;
+            border-radius: 1rem 1rem 0 0 !important;
+            padding: 1rem 1.5rem;
+            border: none;
+        }
+        
+        .profile-section {
+            padding: 1.5rem 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 1rem;
+        }
+        
+        .profile-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: white;
+            margin: 0 auto 1rem;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+        
+        .profile-name {
+            color: #ffffff;
+            font-weight: 600;
+            font-size: 0.95rem;
+            text-align: center;
+            margin-bottom: 0.25rem;
+        }
+        
+        .profile-email {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.8rem;
+            text-align: center;
+            word-break: break-word;
+        }
+        
+        .card-header h5 {
+            margin: 0;
+            font-weight: 600;
+        }
+        
+        .btn-logout {
+            margin: 1rem 0.5rem;
+            width: calc(100% - 1rem);
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: #ffffff;
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-logout:hover {
+            background: rgba(255, 255, 255, 0.25);
+            color: #ffffff;
+            transform: translateY(-2px);
+        }
+        
+        .toast-container {
+            z-index: 1055;
+        }
+        
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+            
+            .sidebar.show {
+                transform: translateX(0);
+            }
+            
+            .main {
+                margin-left: 0;
+            }
+        }
+        
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .card {
+            animation: fadeIn 0.5s ease-out;
+        }
+        
+        .table th {
+            font-weight: 600;
+            font-size: 0.875rem;
+            padding: 0.75rem 0.5rem;
+        }
+        
+        .table td {
+            padding: 0.75rem 0.5rem;
+            vertical-align: middle;
+        }
+        
+        .badge {
+            font-size: 0.7rem;
+            padding: 0.25rem 0.5rem;
         }
     </style>
-    
-    @yield('styles')
+    @stack('styles')
 </head>
 <body>
-    <div class="container-fluid">
-        <div class="row">
-            <!-- Sidebar -->
-            <div class="col-md-3 col-lg-2 px-0">
-                <div class="sidebar p-3">
-                    <div class="text-center mb-4">
-                        <img src="/image/PosInd_Logo.png" alt="Logo PT Pos Indonesia" style="height:90px; margin-bottom:10px;">
-                    </div>
-                    
-                    <div class="mb-4">
-                        <h6 class="text-muted mb-2">Welcome</h6>
-                        <p class="mb-0 fw-bold">{{ Auth::user()->name }}</p>
-                    </div>
-                    
-                    <hr class="my-3">
-                    
-                    <nav class="nav flex-column">
-                        <a class="nav-link {{ request()->routeIs('dashboard') ? 'active' : '' }}" href="{{ route('dashboard') }}">
-                            <i class="fas fa-tachometer-alt"></i>Dashboard
-                        </a>
-                        <a class="nav-link {{ request()->routeIs('dashboard.status') ? 'active' : '' }}" href="{{ route('dashboard.status') }}">
-                            <i class="fas fa-clipboard-list"></i>Status Pengajuan
-                        </a>
-                        <a class="nav-link {{ request()->routeIs('dashboard.assignments') ? 'active' : '' }}" href="{{ route('dashboard.assignments') }}">
-                            <i class="fas fa-tasks"></i>Penugasan & Penilaian
-                        </a>
-                        <a class="nav-link {{ request()->routeIs('dashboard.certificates') ? 'active' : '' }}" href="{{ route('dashboard.certificates') }}">
-                            <i class="fas fa-certificate"></i>Sertifikat
-                        </a>
-                        <a class="nav-link {{ request()->routeIs('dashboard.program') ? 'active' : '' }}" href="{{ route('dashboard.program') }}">
-                            <i class="fas fa-graduation-cap"></i>Program Magang
-                        </a>
-                    </nav>
-                    
-                    <hr class="my-3">
-                    
-                    <form action="{{ route('logout') }}" method="POST">
-                        @csrf
-                        <button type="submit" class="btn btn-danger btn-sm w-100">
-                            <i class="fas fa-sign-out-alt me-2"></i>Logout
-                        </button>
-                    </form>
-                </div>
+<div class="container-fluid p-0">
+    <div class="row g-0">
+        <aside class="sidebar">
+            <div class="brand">
+                <i class="fas fa-user-graduate"></i>
+                <span>Peserta Magang</span>
             </div>
             
-            <!-- Main Content -->
-            <div class="col-md-9 col-lg-10 px-0">
-                <div class="main-content">
-                    <!-- Top Navigation -->
-                    <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
-                        <div class="container-fluid">
-                            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                                <span class="navbar-toggler-icon"></span>
-                            </button>
-                            
-                            <div class="navbar-nav ms-auto">
-                                <div class="nav-item dropdown">
-                                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" data-bs-display="static">
-                                        <i class="fas fa-user me-1"></i>{{ Auth::user()->name }}
-                                    </a>
-                                    <ul class="dropdown-menu dropdown-menu-end">
-                                        <li><a class="dropdown-item" href="{{ route('password.change') }}">Ubah Password</a></li>
-                                        <li><hr class="dropdown-divider"></li>
-                                        <li>
-                                            <form action="{{ route('logout') }}" method="POST" class="d-inline">
-                                                @csrf
-                                                <button type="submit" class="dropdown-item">Logout</button>
-                                            </form>
-                                        </li>
-                                    </ul>
-                                </div>
-                            </div>
-                        </div>
-                    </nav>
-                    
-                    <!-- Page Content -->
-                    <div class="p-4">
-                        @if(session('success'))
-                            <div class="alert alert-success alert-dismissible fade show" role="alert">
-                                {{ session('success') }}
-                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                            </div>
-                        @endif
-
-                        @if(session('error'))
-                            <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                                {{ session('error') }}
-                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                            </div>
-                        @endif
-
-                        @yield('content')
-                    </div>
+            <!-- Profile Section -->
+            <div class="profile-section">
+                <div class="profile-avatar">
+                    <i class="fas fa-user"></i>
                 </div>
+                <div class="profile-name">{{ Auth::user()->name ?? 'User' }}</div>
+                <div class="profile-email">{{ Auth::user()->email ?? '' }}</div>
             </div>
-        </div>
+            
+            <nav class="nav flex-column" style="flex: 1; overflow-y: auto;">
+                <a class="nav-link {{ request()->routeIs('dashboard') ? 'active' : '' }}" href="{{ route('dashboard') }}">
+                    <i class="fas fa-gauge"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a class="nav-link {{ request()->routeIs('dashboard.status') ? 'active' : '' }}" href="{{ route('dashboard.status') }}">
+                    <i class="fas fa-clipboard-list"></i>
+                    <span>Status Pengajuan</span>
+                </a>
+                @php
+                    $user = Auth::user();
+                    $application = $user->internshipApplications()
+                        ->whereIn('status', ['accepted', 'finished'])
+                        ->latest()
+                        ->first();
+                    $isAccepted = $application && $application->status === 'accepted';
+                @endphp
+                @if($isAccepted)
+                <a class="nav-link {{ request()->routeIs('dashboard.assignments') ? 'active' : '' }}" href="{{ route('dashboard.assignments') }}">
+                    <i class="fas fa-tasks"></i>
+                    <span>Tugas</span>
+                </a>
+                <a class="nav-link {{ request()->routeIs('dashboard.certificates') ? 'active' : '' }}" href="{{ route('dashboard.certificates') }}">
+                    <i class="fas fa-certificate"></i>
+                    <span>Sertifikat</span>
+                </a>
+                <a class="nav-link {{ request()->routeIs('dashboard.program') ? 'active' : '' }}" href="{{ route('dashboard.program') }}">
+                    <i class="fas fa-sitemap"></i>
+                    <span>Program</span>
+                </a>
+                @endif
+                <a class="nav-link {{ request()->routeIs('password.change') ? 'active' : '' }}" href="{{ route('password.change') }}">
+                    <i class="fas fa-key"></i>
+                    <span>Ganti Password</span>
+                </a>
+            </nav>
+            <form action="{{ route('logout') }}" method="POST" class="mt-auto">
+                @csrf
+                <button type="submit" class="btn btn-logout">
+                    <i class="fas fa-sign-out-alt me-2"></i>Logout
+                </button>
+            </form>
+        </aside>
+        
+        <main class="main">
+            @if(session('success'))
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    <i class="fas fa-check-circle me-2"></i>
+                    {{ session('success') }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            @endif
+            
+            @if(session('error'))
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    {{ session('error') }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            @endif
+            
+            @if(isset($errors) && $errors->any())
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    <strong>Error!</strong>
+                    <ul class="mb-0 mt-2">
+                        @foreach($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            @endif
+            
+            @yield('content')
+        </main>
     </div>
+</div>
 
-    <!-- Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            setTimeout(function() {
-                document.querySelectorAll('.alert-dismissible').forEach(function(alert) {
-                    alert.classList.remove('show');
-                    alert.classList.add('fade');
-                    setTimeout(function() {
-                        alert.remove();
-                    }, 500);
-                });
-            }, 3000);
-        });
-    </script>
-    
-    @yield('scripts')
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+@stack('scripts')
 </body>
-</html> 
+</html>
+
