@@ -656,125 +656,128 @@
 
 @push('scripts')
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    console.log('DOMContentLoaded fired');
+(function() {
+    'use strict';
     
-    // Mencegah auto-fill saat halaman dimuat
-    setTimeout(function() {
-        const form = document.getElementById('registerForm');
-        if (form) {
-            // Hapus auto-fill dari browser (tetapi tidak menghapus old() values)
-            const inputs = form.querySelectorAll('input:not(.is-invalid):not([value])');
-            inputs.forEach(input => {
-                if (!input.value && input.type !== 'hidden') {
-                    input.value = '';
-                }
-            });
-        }
-    }, 50);
-    
-    // Password strength elements
-    const passwordInput = document.getElementById('password');
-    const confirmPasswordInput = document.getElementById('password_confirmation');
-    const strengthFill = document.getElementById('strengthFill');
-    const strengthText = document.getElementById('strengthText');
-    
-    console.log('Elements found:', {
-        passwordInput: !!passwordInput,
-        strengthFill: !!strengthFill,
-        strengthText: !!strengthText
-    });
-    
-    // NIK field
-    const nikInput = document.getElementById('ktp_number');
-    
-    // Password strength checker
-    function updatePasswordStrength() {
+    // Wait for DOM to be ready
+    function initPasswordStrength() {
+        // Password strength elements
+        const passwordInput = document.getElementById('password');
+        const confirmPasswordInput = document.getElementById('password_confirmation');
+        const strengthFill = document.getElementById('strengthFill');
+        const strengthText = document.getElementById('strengthText');
+        
+        // Check if elements exist
         if (!passwordInput || !strengthFill || !strengthText) {
-            console.error('Required elements not found:', {
-                passwordInput: !!passwordInput,
-                strengthFill: !!strengthFill,
-                strengthText: !!strengthText
-            });
+            console.warn('Password strength elements not found, retrying...');
+            setTimeout(initPasswordStrength, 100);
             return;
         }
         
-        const password = passwordInput.value;
-        const strength = checkPasswordStrength(password);
+        console.log('Password strength indicator initialized');
         
-        console.log('Password strength update:', {
-            password: password,
-            strength: strength,
-            length: password.length
-        });
-        
-        // Reset classes
-        strengthFill.className = 'strength-fill';
-        
-        // Update strength bar based on strength
-        if (password.length === 0) {
+        // Password strength checker
+        function updatePasswordStrength() {
+            const password = passwordInput.value;
+            const strength = checkPasswordStrength(password);
+            
+            // Reset classes
+            strengthFill.className = 'strength-fill';
             strengthFill.style.width = '0%';
-            strengthText.textContent = 'Masukkan password';
-            strengthText.className = 'strength-text';
-        } else if (strength < 3) {
-            strengthFill.style.width = '33%';
-            strengthFill.classList.add('strength-weak');
-            strengthText.textContent = 'Password lemah';
-            strengthText.className = 'strength-text text-danger';
-        } else if (strength < 5) {
-            strengthFill.style.width = '66%';
-            strengthFill.classList.add('strength-medium');
-            strengthText.textContent = 'Password sedang';
-            strengthText.className = 'strength-text text-warning';
-        } else {
-            strengthFill.style.width = '100%';
-            strengthFill.classList.add('strength-strong');
-            strengthText.textContent = 'Password kuat';
-            strengthText.className = 'strength-text text-success';
+            
+            // Update strength bar based on strength
+            if (password.length === 0) {
+                strengthFill.style.width = '0%';
+                strengthText.textContent = 'Masukkan password';
+                strengthText.className = 'strength-text';
+            } else if (strength < 3) {
+                strengthFill.style.width = '33%';
+                strengthFill.classList.add('strength-weak');
+                strengthText.textContent = 'Password lemah';
+                strengthText.className = 'strength-text text-danger';
+            } else if (strength < 5) {
+                strengthFill.style.width = '66%';
+                strengthFill.classList.add('strength-medium');
+                strengthText.textContent = 'Password sedang';
+                strengthText.className = 'strength-text text-warning';
+            } else {
+                strengthFill.style.width = '100%';
+                strengthFill.classList.add('strength-strong');
+                strengthText.textContent = 'Password kuat';
+                strengthText.className = 'strength-text text-success';
+            }
         }
         
-        console.log('Strength bar updated:', {
-            width: strengthFill.style.width,
-            classes: strengthFill.className
-        });
-    }
-    
-    // Password input event listeners
-    if (passwordInput) {
-        console.log('Adding event listeners to password input');
-        passwordInput.addEventListener('input', function() {
-            console.log('Password input event fired');
-            updatePasswordStrength();
-        });
+        // Password input event listeners
+        passwordInput.addEventListener('input', updatePasswordStrength);
         passwordInput.addEventListener('keyup', updatePasswordStrength);
         passwordInput.addEventListener('paste', function() {
             setTimeout(updatePasswordStrength, 10);
         });
-    } else {
-        console.error('Password input not found!');
-    }
-    
-    // Password confirmation checker
-    function updatePasswordConfirmation() {
-        const password = passwordInput.value;
-        const confirmPassword = confirmPasswordInput.value;
+        passwordInput.addEventListener('change', updatePasswordStrength);
         
-        if (confirmPassword.length > 0) {
-            if (password === confirmPassword) {
-                confirmPasswordInput.classList.remove('is-invalid');
-                confirmPasswordInput.classList.add('is-valid');
-            } else {
-                confirmPasswordInput.classList.remove('is-valid');
-                confirmPasswordInput.classList.add('is-invalid');
-            }
-        } else {
-            confirmPasswordInput.classList.remove('is-valid', 'is-invalid');
+        // Initialize if password field has value
+        if (passwordInput.value) {
+            updatePasswordStrength();
         }
     }
     
-    if (confirmPasswordInput) {
+    // Initialize when DOM is ready
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', function() {
+            initPasswordStrength();
+            
+            // Mencegah auto-fill saat halaman dimuat
+            setTimeout(function() {
+                const form = document.getElementById('registerForm');
+                if (form) {
+                    const inputs = form.querySelectorAll('input[type="password"]');
+                    inputs.forEach(input => {
+                        input.setAttribute('autocomplete', 'new-password');
+                    });
+                }
+            }, 50);
+        });
+    } else {
+        initPasswordStrength();
+    }
+    
+    // Password confirmation checker
+    function initPasswordConfirmation() {
+        const passwordInput = document.getElementById('password');
+        const confirmPasswordInput = document.getElementById('password_confirmation');
+        
+        if (!passwordInput || !confirmPasswordInput) {
+            setTimeout(initPasswordConfirmation, 100);
+            return;
+        }
+        
+        function updatePasswordConfirmation() {
+            const password = passwordInput.value;
+            const confirmPassword = confirmPasswordInput.value;
+            
+            if (confirmPassword.length > 0) {
+                if (password === confirmPassword) {
+                    confirmPasswordInput.classList.remove('is-invalid');
+                    confirmPasswordInput.classList.add('is-valid');
+                } else {
+                    confirmPasswordInput.classList.remove('is-valid');
+                    confirmPasswordInput.classList.add('is-invalid');
+                }
+            } else {
+                confirmPasswordInput.classList.remove('is-valid', 'is-invalid');
+            }
+        }
+        
         confirmPasswordInput.addEventListener('input', updatePasswordConfirmation);
         confirmPasswordInput.addEventListener('keyup', updatePasswordConfirmation);
+        passwordInput.addEventListener('input', updatePasswordConfirmation);
+    }
+    
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initPasswordConfirmation);
+    } else {
+        initPasswordConfirmation();
     }
     
     function checkPasswordStrength(password) {
@@ -793,9 +796,16 @@ document.addEventListener('DOMContentLoaded', function() {
         return strength;
     }
     
-    // NIK validation - STRONG validation for numbers only
-    function validateNIK() {
-        if (nikInput) {
+    // NIK validation
+    function initNIKValidation() {
+        const nikInput = document.getElementById('ktp_number');
+        
+        if (!nikInput) {
+            setTimeout(initNIKValidation, 100);
+            return;
+        }
+        
+        function validateNIK() {
             // Remove any non-numeric characters
             nikInput.value = nikInput.value.replace(/[^0-9]/g, '');
             
@@ -804,10 +814,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 nikInput.value = nikInput.value.slice(0, 16);
             }
         }
-    }
-    
-    if (nikInput) {
-        // Multiple event listeners for comprehensive validation
+        
         nikInput.addEventListener('input', validateNIK);
         nikInput.addEventListener('keyup', validateNIK);
         nikInput.addEventListener('paste', function() {
@@ -832,16 +839,14 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
         
-        // Additional validation on blur
-        nikInput.addEventListener('blur', function() {
-            validateNIK();
-        });
+        nikInput.addEventListener('blur', validateNIK);
     }
     
-    // Initialize password strength if field has value
-    if (passwordInput && passwordInput.value) {
-        updatePasswordStrength();
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initNIKValidation);
+    } else {
+        initNIKValidation();
     }
-});
+})();
 </script>
 @endpush
