@@ -144,7 +144,8 @@
                 </div>
             </div>
         </div>
-        @else
+        @endif
+        @if($isAccepted)
         <!-- Status Pengajuan untuk User Sudah Diterima (Original) -->
         <div class="row">
             <div class="col-md-8">
@@ -334,6 +335,7 @@
                 </div>
             </div>
         </div>
+        @endif
     @else
         <!-- No Application Found -->
         <div class="row justify-content-center">

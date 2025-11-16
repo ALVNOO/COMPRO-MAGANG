@@ -263,7 +263,19 @@
     padding: 2rem;
     margin-bottom: 2rem;
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+    position: relative;
+    overflow: hidden;
     animation: slideInUp 0.8s ease-out;
+}
+
+.profile-form-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 5px;
+    background: var(--gradient-primary);
 }
 
 .form-floating {
@@ -287,8 +299,42 @@
     background: white;
     border-radius: 20px;
     padding: 2rem;
+    margin-bottom: 2rem;
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+    position: relative;
+    overflow: hidden;
     animation: slideInUp 1s ease-out;
+}
+
+.document-upload-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 5px;
+    background: var(--gradient-primary);
+}
+
+.date-section {
+    background: white;
+    border-radius: 20px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+    position: relative;
+    overflow: hidden;
+    animation: slideInUp 0.6s ease-out;
+}
+
+.date-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 5px;
+    background: var(--gradient-primary);
 }
 
 .upload-card {
@@ -461,7 +507,8 @@
     
     .opportunity-section,
     .profile-form-section,
-    .document-upload-section {
+    .document-upload-section,
+    .date-section {
         padding: 1.5rem;
     }
 }
@@ -642,6 +689,63 @@
             </form>
         </div>
 
+        <!-- Waktu Mulai dan Selesai Magang Section -->
+        <div class="date-section" id="dateSection">
+            <h2 class="mb-4" style="color: var(--telkom-red); font-weight: 700;">
+                <i class="fas fa-calendar-alt me-2"></i>Waktu Mulai dan Selesai Magang
+            </h2>
+            <p class="text-muted mb-4">
+                Tentukan periode magang Anda. Pastikan tanggal yang dipilih sesuai dengan jadwal Anda.
+            </p>
+
+            <form method="POST" action="{{ route('dashboard.pre-acceptance.dates') }}" id="dateForm">
+                @csrf
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <div class="form-floating">
+                            <input type="date" 
+                                   class="form-control @error('start_date') is-invalid @enderror" 
+                                   id="start_date" 
+                                   name="start_date" 
+                                   value="{{ old('start_date', $application && $application->start_date ? $application->start_date->format('Y-m-d') : '') }}" 
+                                   placeholder="Tanggal Mulai"
+                                   min="{{ date('Y-m-d') }}"
+                                   required>
+                            <label for="start_date">
+                                <i class="fas fa-calendar-check me-2"></i>Tanggal Mulai Magang
+                            </label>
+                            @error('start_date')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="form-floating">
+                            <input type="date" 
+                                   class="form-control @error('end_date') is-invalid @enderror" 
+                                   id="end_date" 
+                                   name="end_date" 
+                                   value="{{ old('end_date', $application && $application->end_date ? $application->end_date->format('Y-m-d') : '') }}" 
+                                   placeholder="Tanggal Selesai"
+                                   required>
+                            <label for="end_date">
+                                <i class="fas fa-calendar-times me-2"></i>Tanggal Selesai Magang
+                            </label>
+                            @error('end_date')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+                    </div>
+                </div>
+
+                <div class="d-grid mt-4">
+                    <button type="submit" class="btn btn-submit">
+                        <i class="fas fa-save me-2"></i>Simpan Waktu Magang
+                    </button>
+                </div>
+            </form>
+        </div>
+
         <!-- Step 2: Bidang Peminatan Section -->
         <div class="opportunity-section" id="opportunitySection">
             <h2 class="mb-4" style="color: var(--telkom-red); font-weight: 700;">
@@ -817,63 +921,6 @@
                     @enderror
                 </div>
 
-            </form>
-        </div>
-
-        <!-- Step 4: Waktu Magang Section -->
-        <div class="date-section" id="dateSection">
-            <h2 class="mb-4" style="color: var(--telkom-red); font-weight: 700;">
-                <i class="fas fa-calendar-alt me-2"></i>Waktu Mulai dan Selesai Magang
-            </h2>
-            <p class="text-muted mb-4">
-                Tentukan periode magang Anda. Pastikan tanggal yang dipilih sesuai dengan jadwal Anda.
-            </p>
-
-            <form method="POST" action="{{ route('dashboard.pre-acceptance.dates') }}" id="dateForm">
-                @csrf
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <div class="form-floating">
-                            <input type="date" 
-                                   class="form-control @error('start_date') is-invalid @enderror" 
-                                   id="start_date" 
-                                   name="start_date" 
-                                   value="{{ old('start_date', $application && $application->start_date ? $application->start_date->format('Y-m-d') : '') }}" 
-                                   placeholder="Tanggal Mulai"
-                                   min="{{ date('Y-m-d') }}"
-                                   required>
-                            <label for="start_date">
-                                <i class="fas fa-calendar-check me-2"></i>Tanggal Mulai Magang
-                            </label>
-                            @error('start_date')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <div class="form-floating">
-                            <input type="date" 
-                                   class="form-control @error('end_date') is-invalid @enderror" 
-                                   id="end_date" 
-                                   name="end_date" 
-                                   value="{{ old('end_date', $application && $application->end_date ? $application->end_date->format('Y-m-d') : '') }}" 
-                                   placeholder="Tanggal Selesai"
-                                   required>
-                            <label for="end_date">
-                                <i class="fas fa-calendar-times me-2"></i>Tanggal Selesai Magang
-                            </label>
-                            @error('end_date')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
-                    </div>
-                </div>
-
-                <div class="d-grid mt-4">
-                    <button type="submit" class="btn btn-submit">
-                        <i class="fas fa-save me-2"></i>Simpan Waktu Magang
-                    </button>
-                </div>
             </form>
         </div>
         
