@@ -425,8 +425,13 @@
                 </div>
             @endif
 
-            <form method="POST" action="{{ route('register') }}" id="registerForm">
+            <!-- Form dengan autocomplete="off" dan data-lpignore -->
+            <form method="POST" action="{{ route('register') }}" id="registerForm" autocomplete="off" data-lpignore="true">
                 @csrf
+
+                <!-- Hidden input untuk mengelabui browser -->
+                <input type="text" style="display:none;" autocomplete="false" data-lpignore="true">
+                <input type="password" style="display:none;" autocomplete="false" data-lpignore="true">
 
                 <!-- Personal Information -->
                 <h3 class="section-title">
@@ -447,7 +452,9 @@
                                    id="name" 
                                    name="name" 
                                    value="{{ old('name') }}" 
-                                   placeholder="Nama Lengkap">
+                                   placeholder="Nama Lengkap"
+                                   autocomplete="off"
+                                   data-lpignore="true">
                             <label for="name">
                                 <i class="fas fa-id-card me-2"></i>Nama Lengkap (Opsional)
                             </label>
@@ -464,7 +471,9 @@
                                    name="email" 
                                    value="{{ old('email') }}" 
                                    placeholder="Email Aktif"
-                                   required>
+                                   required
+                                   autocomplete="off"
+                                   data-lpignore="true">
                             <label for="email">
                                 <i class="fas fa-envelope me-2"></i>Email Aktif <span class="required-field">*</span>
                             </label>
@@ -483,7 +492,9 @@
                                    id="nim" 
                                    name="nim" 
                                    value="{{ old('nim') }}" 
-                                   placeholder="NIM">
+                                   placeholder="NIM"
+                                   autocomplete="off"
+                                   data-lpignore="true">
                             <label for="nim">
                                 <i class="fas fa-graduation-cap me-2"></i>NIM (Opsional)
                             </label>
@@ -499,7 +510,9 @@
                                    id="university" 
                                    name="university" 
                                    value="{{ old('university') }}" 
-                                   placeholder="Asal Sekolah/Perguruan Tinggi">
+                                   placeholder="Asal Sekolah/Perguruan Tinggi"
+                                   autocomplete="off"
+                                   data-lpignore="true">
                             <label for="university">
                                 <i class="fas fa-university me-2"></i>Asal Sekolah/Perguruan Tinggi (Opsional)
                             </label>
@@ -518,7 +531,9 @@
                                    id="major" 
                                    name="major" 
                                    value="{{ old('major') }}" 
-                                   placeholder="Jurusan">
+                                   placeholder="Jurusan"
+                                   autocomplete="off"
+                                   data-lpignore="true">
                             <label for="major">
                                 <i class="fas fa-book me-2"></i>Jurusan (Opsional)
                             </label>
@@ -534,7 +549,9 @@
                                    id="phone" 
                                    name="phone" 
                                    value="{{ old('phone') }}" 
-                                   placeholder="No HP Aktif">
+                                   placeholder="No HP Aktif"
+                                   autocomplete="off"
+                                   data-lpignore="true">
                             <label for="phone">
                                 <i class="fas fa-phone me-2"></i>No HP Aktif (Opsional)
                             </label>
@@ -546,9 +563,9 @@
                 </div>
 
                 <div class="row">
-                                          <div class="col-md-6">
-                          <div class="form-floating">
-                              <input type="text" 
+                    <div class="col-md-6">
+                        <div class="form-floating">
+                            <input type="text" 
                                    class="form-control @error('ktp_number') is-invalid @enderror" 
                                    id="ktp_number" 
                                    name="ktp_number" 
@@ -557,8 +574,10 @@
                                    maxlength="16"
                                    pattern="[0-9]{16}"
                                    inputmode="numeric"
-                                   onkeypress="return (event.charCode >= 48 && event.charCode <= 57)">
-                             <label for="ktp_number">
+                                   onkeypress="return (event.charCode >= 48 && event.charCode <= 57)"
+                                   autocomplete="off"
+                                   data-lpignore="true">
+                            <label for="ktp_number">
                                 <i class="fas fa-id-card me-2"></i>NIK (No.KTP) - 16 digit (Opsional)
                             </label>
                             @error('ktp_number')
@@ -581,7 +600,9 @@
                                    id="password" 
                                    name="password" 
                                    placeholder="Password"
-                                   required>
+                                   required
+                                   autocomplete="new-password"
+                                   data-lpignore="true">
                             <label for="password">
                                 <i class="fas fa-key me-2"></i>Password <span class="required-field">*</span>
                             </label>
@@ -606,7 +627,9 @@
                                    id="password_confirmation" 
                                    name="password_confirmation" 
                                    placeholder="Konfirmasi Password"
-                                   required>
+                                   required
+                                   autocomplete="new-password"
+                                   data-lpignore="true">
                             <label for="password_confirmation">
                                 <i class="fas fa-check-circle me-2"></i>Konfirmasi Password <span class="required-field">*</span>
                             </label>
@@ -636,18 +659,30 @@
 document.addEventListener('DOMContentLoaded', function() {
     console.log('DOMContentLoaded fired');
     
+    // Mencegah auto-fill saat halaman dimuat
+    setTimeout(function() {
+        const form = document.getElementById('registerForm');
+        if (form) {
+            // Hapus auto-fill dari browser (tetapi tidak menghapus old() values)
+            const inputs = form.querySelectorAll('input:not(.is-invalid):not([value])');
+            inputs.forEach(input => {
+                if (!input.value && input.type !== 'hidden') {
+                    input.value = '';
+                }
+            });
+        }
+    }, 50);
+    
     // Password strength elements
     const passwordInput = document.getElementById('password');
     const confirmPasswordInput = document.getElementById('password_confirmation');
     const strengthFill = document.getElementById('strengthFill');
     const strengthText = document.getElementById('strengthText');
-    const requirements = document.getElementById('passwordRequirements');
     
     console.log('Elements found:', {
         passwordInput: !!passwordInput,
         strengthFill: !!strengthFill,
-        strengthText: !!strengthText,
-        requirements: !!requirements
+        strengthText: !!strengthText
     });
     
     // NIK field
@@ -757,7 +792,6 @@ document.addEventListener('DOMContentLoaded', function() {
         
         return strength;
     }
-    
     
     // NIK validation - STRONG validation for numbers only
     function validateNIK() {

@@ -435,8 +435,13 @@
                     </div>
                 @endif
 
-                <form method="POST" action="{{ route('login') }}">
+                <!-- Form dengan autocomplete="off" dan data-lpignore -->
+                <form method="POST" action="{{ route('login') }}" autocomplete="off" data-lpignore="true">
                     @csrf
+
+                    <!-- Hidden input untuk mengelabui browser -->
+                    <input type="text" style="display:none;">
+                    <input type="password" style="display:none;">
 
                     <div class="form-floating">
                         <input type="text" 
@@ -446,7 +451,9 @@
                                value="{{ old('username') }}" 
                                placeholder="Username atau Email"
                                required 
-                               autofocus>
+                               autofocus
+                               autocomplete="off"
+                               data-lpignore="true">
                         <label for="username">
                             <i class="fas fa-user me-2"></i>Username atau Email
                         </label>
@@ -463,7 +470,9 @@
                                id="password" 
                                name="password" 
                                placeholder="Password"
-                               required>
+                               required
+                               autocomplete="new-password"
+                               data-lpignore="true">
                         <label for="password">
                             <i class="fas fa-lock me-2"></i>Password
                         </label>
@@ -508,39 +517,34 @@
 </div>
 
 <script>
+// Mencegah auto-fill saat halaman dimuat
+document.addEventListener('DOMContentLoaded', function() {
+    const usernameField = document.getElementById('username');
+    const passwordField = document.getElementById('password');
+    
+    // Kosongkan field setelah halaman load
+    setTimeout(function() {
+        usernameField.value = '';
+        passwordField.value = '';
+        
+        // Pastikan browser tidak menyimpan nilai
+        usernameField.setAttribute('autocomplete', 'off');
+        passwordField.setAttribute('autocomplete', 'new-password');
+    }, 50);
+});
+
 function loginWithGoogle() {
     // Simulasi login dengan Google
-    // Dalam implementasi nyata, ini akan menggunakan Google OAuth API
-    
-    // Tampilkan loading
     const button = event.target;
     const originalText = button.innerHTML;
     button.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Memproses...';
     button.disabled = true;
     
-    // Simulasi delay
     setTimeout(() => {
-        // Reset button
         button.innerHTML = originalText;
         button.disabled = false;
-        
-        // Tampilkan alert untuk demo
         alert('Fitur login dengan Google akan segera tersedia!\n\nUntuk saat ini, silakan gunakan form login biasa.');
     }, 2000);
 }
-
-// Auto-fill form jika ada parameter URL (untuk demo)
-document.addEventListener('DOMContentLoaded', function() {
-    const urlParams = new URLSearchParams(window.location.search);
-    const email = urlParams.get('email');
-    const password = urlParams.get('password');
-    
-    if (email) {
-        document.getElementById('username').value = email;
-    }
-    if (password) {
-        document.getElementById('password').value = password;
-    }
-});
 </script>
-@endsection 
+@endsection
