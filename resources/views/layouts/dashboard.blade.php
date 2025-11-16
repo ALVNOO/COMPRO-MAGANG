@@ -96,6 +96,47 @@
             background: #f7f8fb;
             padding: 2rem;
             transition: margin-left 0.3s ease;
+            overflow-x: hidden;
+            width: calc(100% - 260px);
+        }
+        
+        .container-fluid {
+            max-width: 100%;
+            overflow-x: hidden;
+            padding-left: 0;
+            padding-right: 0;
+        }
+        
+        .row {
+            margin-left: 0;
+            margin-right: 0;
+        }
+        
+        .row > * {
+            padding-left: 0.75rem;
+            padding-right: 0.75rem;
+        }
+        
+        .card {
+            max-width: 100%;
+            overflow: hidden;
+        }
+        
+        .card-body {
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+        }
+        
+        @media (max-width: 768px) {
+            .main {
+                margin-left: 0;
+                padding: 1rem;
+                width: 100%;
+            }
+            
+            .container-fluid {
+                padding: 0.5rem;
+            }
         }
         
         .card {
@@ -237,31 +278,39 @@
             </div>
             
             <!-- Profile Section -->
-            <div class="profile-section">
-                <div class="profile-avatar">
-                    <i class="fas fa-user"></i>
+            <a href="{{ route('dashboard.profile') }}" class="profile-section-link" style="text-decoration: none; color: inherit;">
+                <div class="profile-section">
+                    <div class="profile-avatar">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <div class="profile-name">{{ Auth::user()->name ?? 'User' }}</div>
+                    <div class="profile-email">{{ Auth::user()->email ?? '' }}</div>
                 </div>
-                <div class="profile-name">{{ Auth::user()->name ?? 'User' }}</div>
-                <div class="profile-email">{{ Auth::user()->email ?? '' }}</div>
-            </div>
+            </a>
             
             <nav class="nav flex-column" style="flex: 1; overflow-y: auto;">
+                @php
+                    $user = Auth::user();
+                    $application = $user->internshipApplications()
+                        ->whereIn('status', ['pending', 'accepted', 'finished'])
+                        ->latest()
+                        ->first();
+                    $isAccepted = $application && in_array($application->status, ['accepted', 'finished']);
+                    $isPending = $application && $application->status === 'pending';
+                @endphp
+                
+                @if($isAccepted)
                 <a class="nav-link {{ request()->routeIs('dashboard') ? 'active' : '' }}" href="{{ route('dashboard') }}">
                     <i class="fas fa-gauge"></i>
                     <span>Dashboard</span>
                 </a>
+                @else
                 <a class="nav-link {{ request()->routeIs('dashboard.status') ? 'active' : '' }}" href="{{ route('dashboard.status') }}">
                     <i class="fas fa-clipboard-list"></i>
                     <span>Status Pengajuan</span>
                 </a>
-                @php
-                    $user = Auth::user();
-                    $application = $user->internshipApplications()
-                        ->whereIn('status', ['accepted', 'finished'])
-                        ->latest()
-                        ->first();
-                    $isAccepted = $application && $application->status === 'accepted';
-                @endphp
+                @endif
+                
                 @if($isAccepted)
                 <a class="nav-link {{ request()->routeIs('dashboard.assignments') ? 'active' : '' }}" href="{{ route('dashboard.assignments') }}">
                     <i class="fas fa-tasks"></i>
@@ -271,15 +320,7 @@
                     <i class="fas fa-certificate"></i>
                     <span>Sertifikat</span>
                 </a>
-                <a class="nav-link {{ request()->routeIs('dashboard.program') ? 'active' : '' }}" href="{{ route('dashboard.program') }}">
-                    <i class="fas fa-sitemap"></i>
-                    <span>Program</span>
-                </a>
                 @endif
-                <a class="nav-link {{ request()->routeIs('password.change') ? 'active' : '' }}" href="{{ route('password.change') }}">
-                    <i class="fas fa-key"></i>
-                    <span>Ganti Password</span>
-                </a>
             </nav>
             <form action="{{ route('logout') }}" method="POST" class="mt-auto">
                 @csrf

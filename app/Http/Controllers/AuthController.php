@@ -78,10 +78,12 @@ class AuthController extends Controller
     public function register(Request $request)
     {
         $request->validate([
+            'name' => 'required|string|max:255',
             'password' => 'required|min:8|confirmed',
             'email' => 'required|email|unique:users,email',
             'ktp_number' => 'nullable|regex:/^[0-9]{16}$/',
         ], [
+            'name.required' => 'Nama lengkap wajib diisi.',
             'ktp_number.regex' => 'NIK (No.KTP) harus terdiri dari 16 digit angka.',
             'password.min' => 'Password minimal 8 karakter.',
             'password.confirmed' => 'Konfirmasi password tidak sesuai.'
@@ -121,9 +123,9 @@ class AuthController extends Controller
         // Auto login
         Auth::login($user);
 
-        // Langsung redirect ke setup 2FA
-        return redirect()->route('2fa.setup')
-            ->with('success', 'Registrasi berhasil! Silakan setup 2FA Anda.');
+        // Redirect ke pre-acceptance untuk melengkapi data
+        return redirect()->route('dashboard.pre-acceptance')
+            ->with('success', 'Registrasi berhasil! Silakan lengkapi data diri dan dokumen Anda.');
     }
 
     /**

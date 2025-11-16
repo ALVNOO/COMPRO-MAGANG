@@ -1,6 +1,24 @@
 @extends('layouts.dashboard')
 
-@section('title', 'Sertifikat - PT Pos Indonesia')
+@section('title', 'Sertifikat - PT Telkom Indonesia')
+
+@push('styles')
+<style>
+    .container-fluid {
+        max-width: 100%;
+        overflow-x: hidden;
+        padding-bottom: 2rem;
+    }
+    .card {
+        word-wrap: break-word;
+    }
+    @media (max-width: 768px) {
+        .container-fluid {
+            padding: 1rem;
+        }
+    }
+</style>
+@endpush
 
 @section('content')
 <div class="container-fluid">

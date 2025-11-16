@@ -305,6 +305,9 @@
 
 .password-strength {
     margin-top: 0.5rem;
+    clear: both;
+    position: relative;
+    z-index: 1;
 }
 
 .strength-bar {
@@ -314,6 +317,53 @@
     overflow: hidden;
     margin-top: 0.5rem;
     border: 1px solid #dee2e6;
+    position: relative;
+    z-index: 1;
+    clear: both;
+}
+
+.form-floating.position-relative {
+    position: relative;
+}
+
+.form-floating.position-relative .btn-link {
+    position: absolute;
+    right: 0.5rem;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 10;
+    padding: 0.5rem;
+    border: none;
+    background: none;
+    color: #6c757d;
+    cursor: pointer;
+    width: auto;
+    height: auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.form-floating.position-relative .btn-link:hover {
+    color: var(--telkom-red);
+}
+
+.form-floating.position-relative .btn-link i {
+    font-size: 1rem;
+}
+
+.form-floating.position-relative input {
+    padding-right: 3.5rem;
+}
+
+/* Pastikan icon mata tidak menimpa label atau icon lain */
+.form-floating.position-relative label {
+    z-index: 1;
+    pointer-events: none;
+}
+
+.form-floating.position-relative .btn-link {
+    pointer-events: auto;
 }
 
 .strength-fill {
@@ -385,6 +435,20 @@
         height: 50px;
     }
 }
+/* Remove Bootstrap validation icon untuk password_confirmation agar tidak overlap dengan icon mata */
+#password_confirmation.is-valid {
+    background-image: none !important;
+    padding-right: 3.5rem !important;
+}
+
+#password_confirmation.is-valid ~ label::after {
+    display: none !important;
+}
+
+#password_confirmation.is-invalid {
+    background-image: none !important;
+    padding-right: 3.5rem !important;
+}
 </style>
 @endpush
 
@@ -453,10 +517,11 @@
                                    name="name" 
                                    value="{{ old('name') }}" 
                                    placeholder="Nama Lengkap"
+                                   required
                                    autocomplete="off"
                                    data-lpignore="true">
                             <label for="name">
-                                <i class="fas fa-id-card me-2"></i>Nama Lengkap (Opsional)
+                                <i class="fas fa-id-card me-2"></i>Nama Lengkap <span class="required-field">*</span>
                             </label>
                             @error('name')
                                 <div class="invalid-feedback">{{ $message }}</div>
@@ -594,7 +659,7 @@
                 
                 <div class="row">
                     <div class="col-md-6">
-                        <div class="form-floating mb-3">
+                        <div class="form-floating mb-3 position-relative">
                             <input type="password" 
                                    class="form-control @error('password') is-invalid @enderror" 
                                    id="password" 
@@ -606,6 +671,12 @@
                             <label for="password">
                                 <i class="fas fa-key me-2"></i>Password <span class="required-field">*</span>
                             </label>
+                            <button type="button" class="btn btn-link position-absolute end-0 top-50 translate-middle-y pe-3" 
+                                    id="togglePassword" 
+                                    style="border: none; background: none; color: #6c757d; z-index: 10; padding: 0.5rem 0.75rem;"
+                                    onclick="togglePasswordVisibility('password', 'togglePassword')">
+                                <i class="fas fa-eye" id="togglePasswordIcon"></i>
+                            </button>
                             @error('password')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
@@ -621,7 +692,7 @@
                         
                     </div>
                     <div class="col-md-6">
-                        <div class="form-floating">
+                        <div class="form-floating position-relative">
                             <input type="password" 
                                    class="form-control" 
                                    id="password_confirmation" 
@@ -629,16 +700,23 @@
                                    placeholder="Konfirmasi Password"
                                    required
                                    autocomplete="new-password"
-                                   data-lpignore="true">
+                                   data-lpignore="true"
+                                   style="padding-right: 3.5rem;">
                             <label for="password_confirmation">
-                                <i class="fas fa-check-circle me-2"></i>Konfirmasi Password <span class="required-field">*</span>
+                                <i class="fas fa-lock me-2"></i>Konfirmasi Password <span class="required-field">*</span>
                             </label>
+                            <button type="button" class="btn btn-link position-absolute end-0 top-50 translate-middle-y" 
+                                    id="togglePasswordConfirmation" 
+                                    style="border: none; background: none; color: #6c757d; z-index: 15; padding: 0.5rem; margin-right: 0.5rem;"
+                                    onclick="togglePasswordVisibility('password_confirmation', 'togglePasswordConfirmation')">
+                                <i class="fas fa-eye" id="togglePasswordConfirmationIcon"></i>
+                            </button>
                         </div>
                     </div>
                 </div>
 
                 <div class="d-grid mt-4">
-                    <button type="submit" class="btn btn-register">
+                    <button type="button" class="btn btn-register" id="submitBtn" onclick="confirmSubmit()">
                         <i class="fas fa-paper-plane me-2"></i>Daftar Sekarang
                     </button>
                 </div>
@@ -656,6 +734,51 @@
 
 @push('scripts')
 <script>
+// Toggle password visibility
+function togglePasswordVisibility(inputId, buttonId) {
+    const input = document.getElementById(inputId);
+    const icon = document.getElementById(buttonId + 'Icon');
+    
+    if (input.type === 'password') {
+        input.type = 'text';
+        icon.classList.remove('fa-eye');
+        icon.classList.add('fa-eye-slash');
+    } else {
+        input.type = 'password';
+        icon.classList.remove('fa-eye-slash');
+        icon.classList.add('fa-eye');
+    }
+}
+
+// Confirm before submit
+function confirmSubmit() {
+    const form = document.getElementById('registerForm');
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
+    const name = document.getElementById('name').value || 'Tidak diisi';
+    const nim = document.getElementById('nim').value || 'Tidak diisi';
+    const university = document.getElementById('university').value || 'Tidak diisi';
+    const major = document.getElementById('major').value || 'Tidak diisi';
+    const phone = document.getElementById('phone').value || 'Tidak diisi';
+    const ktp_number = document.getElementById('ktp_number').value || 'Tidak diisi';
+    
+    const confirmMessage = `
+Apakah data yang Anda masukkan sudah benar?\n\n
+📧 Email: ${email}\n
+👤 Nama: ${name}\n
+🎓 NIM: ${nim}\n
+🏫 Universitas: ${university}\n
+📚 Jurusan: ${major}\n
+📱 No HP: ${phone}\n
+🆔 NIK: ${ktp_number}\n\n
+Pastikan semua data sudah benar sebelum melanjutkan.
+    `.trim();
+    
+    if (confirm(confirmMessage)) {
+        form.submit();
+    }
+}
+
 (function() {
     'use strict';
     

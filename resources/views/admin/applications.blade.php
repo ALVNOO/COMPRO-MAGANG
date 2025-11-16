@@ -28,6 +28,8 @@
                         <th class="px-4 py-2 font-bold text-[#B91C1C]">No HP Aktif</th>
                         <th class="px-4 py-2 font-bold text-[#B91C1C]">NIK</th>
                         <th class="px-4 py-2 font-bold text-[#B91C1C]">Bidang Peminatan</th>
+                        <th class="px-4 py-2 font-bold text-[#B91C1C]">Tanggal Mulai</th>
+                        <th class="px-4 py-2 font-bold text-[#B91C1C]">Tanggal Selesai</th>
                         <th class="px-4 py-2 font-bold text-[#B91C1C]">Dokumen</th>
                         <th class="px-4 py-2 font-bold text-[#B91C1C]">Aksi</th>
                     </tr>
@@ -43,6 +45,8 @@
                         <td class="px-4 py-2">{{ $app->user->phone ?? '-' }}</td>
                         <td class="px-4 py-2">{{ $app->user->ktp_number ?? '-' }}</td>
                         <td class="px-4 py-2">{{ $app->fieldOfInterest->name ?? '-' }}</td>
+                        <td class="px-4 py-2">{{ $app->start_date ? \Carbon\Carbon::parse($app->start_date)->format('d M Y') : '-' }}</td>
+                        <td class="px-4 py-2">{{ $app->end_date ? \Carbon\Carbon::parse($app->end_date)->format('d M Y') : '-' }}</td>
                         <td class="px-4 py-2">
                             <div class="d-flex flex-column gap-1">
                                 @if($app->ktm_path)

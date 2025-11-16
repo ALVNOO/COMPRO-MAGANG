@@ -53,11 +53,27 @@ class DashboardController extends Controller
                 ->first();
         }
         
-        // Check if user has pending application
+        // Check if user has pending application yang belum lengkap
+        // Redirect ke pre-acceptance hanya jika aplikasi pending dan belum lengkap (belum ada field_of_interest_id atau dokumen belum lengkap)
         if ($application && $application->status === 'pending') {
-            return redirect()->route('dashboard.pre-acceptance');
+            $profileComplete = (bool) ($user->name && $user->nim && $user->university && $user->major && $user->phone && $user->ktp_number);
+            $documentsComplete = (bool) ($application->ktm_path && $application->surat_permohonan_path && $application->cv_path && $application->good_behavior_path);
+            $fieldOfInterestSelected = (bool) $application->field_of_interest_id;
+            
+            // Jika belum lengkap, redirect ke pre-acceptance
+            if (!$profileComplete || !$documentsComplete || !$fieldOfInterestSelected) {
+                return redirect()->route('dashboard.pre-acceptance');
+            }
+            // Jika sudah lengkap tapi masih pending, redirect ke status pengajuan (bukan dashboard)
+            return redirect()->route('dashboard.status');
         }
         
+        // Jika belum diterima (rejected, postponed) atau tidak ada aplikasi, redirect ke status
+        if (!$application || !in_array($application->status, ['accepted', 'finished'])) {
+            return redirect()->route('dashboard.status');
+        }
+        
+        // Hanya tampilkan dashboard jika status accepted atau finished
         return view('dashboard.index', compact('user', 'application'));
     }
 
@@ -73,13 +89,13 @@ class DashboardController extends Controller
             ->whereDate('end_date', '<', now())
             ->update(['status' => 'finished']);
         $application = $user->internshipApplications()
-            ->with('divisi.subDirektorat.direktorat')
+            ->with('divisi.subDirektorat.direktorat', 'fieldOfInterest')
             ->whereIn('status', ['pending', 'accepted', 'finished'])
             ->latest()
             ->first();
         if (!$application) {
             $application = $user->internshipApplications()
-                ->with('divisi.subDirektorat.direktorat')
+                ->with('divisi.subDirektorat.direktorat', 'fieldOfInterest')
                 ->latest()
                 ->first();
         }
@@ -324,6 +340,21 @@ class DashboardController extends Controller
     }
 
     /**
+     * Display profile page.
+     */
+    public function profile()
+    {
+        $user = Auth::user();
+        $application = $user->internshipApplications()
+            ->with('divisi.subDirektorat.direktorat', 'fieldOfInterest')
+            ->whereIn('status', ['pending', 'accepted', 'finished'])
+            ->latest()
+            ->first();
+        
+        return view('dashboard.profile', compact('user', 'application'));
+    }
+
+    /**
      * Display pre-acceptance page for pending applications.
      */
     public function preAcceptance()
@@ -479,6 +510,42 @@ class DashboardController extends Controller
     }
 
     /**
+     * Update dates for pre-acceptance.
+     */
+    public function updateDates(Request $request)
+    {
+        $user = Auth::user();
+        $application = $user->internshipApplications()
+            ->where('status', 'pending')
+            ->latest()
+            ->first();
+        
+        // Jika belum ada application, buat baru
+        if (!$application) {
+            $application = InternshipApplication::create([
+                'user_id' => $user->id,
+                'status' => 'pending',
+            ]);
+        }
+        
+        $request->validate([
+            'start_date' => 'required|date|after_or_equal:today',
+            'end_date' => 'required|date|after:start_date',
+        ], [
+            'start_date.required' => 'Tanggal mulai magang wajib diisi.',
+            'start_date.after_or_equal' => 'Tanggal mulai magang tidak boleh di masa lalu.',
+            'end_date.required' => 'Tanggal selesai magang wajib diisi.',
+            'end_date.after' => 'Tanggal selesai magang harus setelah tanggal mulai.',
+        ]);
+        
+        $application->start_date = $request->start_date;
+        $application->end_date = $request->end_date;
+        $application->save();
+        
+        return back()->with('success', 'Waktu magang berhasil disimpan!');
+    }
+
+    /**
      * Complete application: create application dengan status pending
      */
     public function completeApplication(Request $request)
@@ -499,9 +566,15 @@ class DashboardController extends Controller
         if ($existingApplication) {
             $documentsComplete = (bool) ($existingApplication->ktm_path && $existingApplication->surat_permohonan_path && $existingApplication->cv_path && $existingApplication->good_behavior_path);
         }
+        
+        // Cek kelengkapan tanggal
+        $datesComplete = false;
+        if ($existingApplication) {
+            $datesComplete = (bool) ($existingApplication->start_date && $existingApplication->end_date);
+        }
 
-        if (!$profileComplete || !$documentsComplete) {
-            return back()->with('error', 'Silakan lengkapi data diri dan semua dokumen terlebih dahulu.');
+        if (!$profileComplete || !$documentsComplete || !$datesComplete) {
+            return back()->with('error', 'Silakan lengkapi data diri, semua dokumen, dan waktu magang terlebih dahulu.');
         }
 
         // Validasi field of interest
@@ -512,9 +585,6 @@ class DashboardController extends Controller
         ]);
 
         $fieldOfInterestId = $request->field_of_interest_id;
-        if ($fieldOfInterestId === 'other') {
-            $fieldOfInterestId = null;
-        }
 
         // Jika sudah ada application pending, update
         if ($existingApplication) {
@@ -534,6 +604,6 @@ class DashboardController extends Controller
             ]);
         }
 
-        return redirect()->route('dashboard')->with('success', 'Pengajuan magang Anda telah dikirim! Silakan tunggu konfirmasi dari admin.');
+        return redirect()->route('dashboard')->with('success', 'Pengajuan magang Anda telah dikirim! Silakan tunggu konfirmasi dari pembimbing. Anda dapat melihat status pengajuan di menu Status Pengajuan.');
     }
 }

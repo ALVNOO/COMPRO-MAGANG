@@ -1,6 +1,44 @@
 @extends('layouts.dashboard')
 
-@section('title', 'Dashboard - PT Pos Indonesia')
+@section('title', 'Dashboard - PT Telkom Indonesia')
+
+@push('styles')
+<style>
+    .container-fluid {
+        padding-bottom: 2rem;
+        max-width: 100%;
+        overflow-x: hidden;
+    }
+    .card {
+        margin-bottom: 1.5rem;
+        overflow: visible;
+        word-wrap: break-word;
+    }
+    .row {
+        margin-bottom: 0;
+        margin-left: 0;
+        margin-right: 0;
+    }
+    .mb-4 {
+        margin-bottom: 1.5rem !important;
+    }
+    .mb-3 {
+        margin-bottom: 1rem !important;
+    }
+    .table-responsive {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    @media (max-width: 768px) {
+        .container-fluid {
+            padding: 1rem;
+        }
+        .card-body {
+            padding: 1rem;
+        }
+    }
+</style>
+@endpush
 
 @section('content')
 <div class="container-fluid">
@@ -118,20 +156,28 @@
         $isEndDatePassed = $latestApp && $latestApp->end_date && now()->isAfter($latestApp->end_date);
         $jumlahSertifikat = $isEndDatePassed ? $user->certificates->count() : 0;
         $revisiBaru = $user->assignments->where('is_revision', 1)->where('feedback', '!=', null)->count();
-        // Notifikasi persyaratan tambahan
-        $notifPersyaratan = false;
-        if(isset($application) && $application && $application->status == 'accepted') {
-            if(!$application->acknowledged_additional_requirements
-                || !$application->cover_letter_path
-                || !$application->foto_nametag_path
-                || !$application->screenshot_pospay_path
-                || !$application->foto_prangko_prisma_path
-                || !$application->ss_follow_ig_museum_path
-                || !$application->ss_follow_ig_posindonesia_path
-                || !$application->ss_subscribe_youtube_path) {
-                $notifPersyaratan = true;
+        
+        // Stats untuk card
+        $tugasSelesai = $user->assignments->whereNotNull('submitted_at')->whereNotNull('grade')->where('is_revision', 0)->count();
+        $tugasPerluRevisi = $user->assignments->where('is_revision', 1)->whereNotNull('feedback')->count();
+        
+        // Hitung hari magang tersisa
+        $hariTersisa = 0;
+        $progressMagang = 0;
+        if($application && $application->start_date && $application->end_date) {
+            $now = now();
+            $start = \Carbon\Carbon::parse($application->start_date);
+            $end = \Carbon\Carbon::parse($application->end_date);
+            
+            if($now->isBefore($end)) {
+                $hariTersisa = max(0, $now->diffInDays($end));
             }
+            
+            $totalHari = $start->diffInDays($end);
+            $hariBerjalan = $now->isAfter($start) ? $start->diffInDays($now) : 0;
+            $progressMagang = $totalHari > 0 ? min(100, round(($hariBerjalan / $totalHari) * 100)) : 0;
         }
+        
         $showAcceptanceNotif = isset($application) && $application && $application->acceptance_letter_path && is_null($application->acceptance_letter_downloaded_at);
     @endphp
     @if($tugasBaru > 0)
@@ -166,145 +212,51 @@
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
     @endif
-    @if($notifPersyaratan)
-        <div class="alert alert-warning alert-dismissible fade show" role="alert">
-            <i class="fas fa-exclamation-triangle me-2"></i>
-            <strong>Lengkapi persyaratan tambahan magang Anda!</strong> Silakan cek dan kumpulkan dokumen tambahan pada menu <a href="{{ route('dashboard.status') }}" class="alert-link">Status Pengajuan</a>.
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-    @endif
     @if($showAcceptanceNotif)
         <div class="alert alert-success alert-dismissible fade show" role="alert">
             <i class="fas fa-envelope-open-text me-2"></i>
-            <strong>Surat Penerimaan Magang Anda sudah tersedia!</strong> Silakan download pada menu <a href="{{ route('dashboard.status') }}" class="alert-link">Status Pengajuan</a>.
+            <strong>Surat Penerimaan Magang Anda sudah tersedia!</strong> Silakan download pada menu <a href="{{ route('dashboard.profile') }}" class="alert-link">Profile</a>.
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
         @php session(['acceptance_letter_notif_shown' => true]); @endphp
     @endif
 
-    <!-- User Info Card -->
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-body">
-                    <div class="row align-items-center">
-                        <div class="col-md-8">
-                            <h5 class="card-title mb-3">Informasi Peserta</h5>
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <p class="mb-1"><strong>Nama:</strong> {{ $user->name }}</p>
-                                    <p class="mb-1"><strong>NIM:</strong> {{ $user->nim }}</p>
-                                    <p class="mb-1"><strong>Universitas/Sekolah:</strong> {{ $user->university }}</p>
-                                    <p class="mb-1"><strong>Jurusan:</strong> {{ $user->major }}</p>
-                                </div>
-                                <div class="col-md-6">
-                                    <p class="mb-1"><strong>Email:</strong> {{ $user->email }}</p>
-                                    <p class="mb-1"><strong>No HP:</strong> {{ $user->phone }}</p>
-                                    <p class="mb-1"><strong>Status:</strong> 
-                                        @if($application)
-                                            @if($application->status == 'accepted')
-                                                <span class="badge bg-success">{{ ucfirst($application->status) }}</span>
-                                            @elseif($application->status == 'rejected')
-                                                <span class="badge bg-danger">{{ ucfirst($application->status) }}</span>
-                                            @elseif($application->status == 'finished')
-                                                <span class="badge bg-primary">{{ ucfirst($application->status) }}</span>
-                                            @else
-                                                <span class="badge bg-warning">{{ ucfirst($application->status) }}</span>
-                                            @endif
-                                        @else
-                                            <span class="badge bg-secondary">Belum ada pengajuan</span>
-                                        @endif
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-4 text-center">
-                            <i class="fas fa-user-graduate fa-4x text-primary mb-3"></i>
-                            <h6>Peserta Magang</h6>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Application Status -->
-    @if($application && $application->divisi)
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="card-title mb-0">
-                        <i class="fas fa-clipboard-list me-2"></i>Status Pengajuan Magang
-                    </h5>
-                </div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <p class="mb-1"><strong>Divisi:</strong> {{ $application->divisi->name ?? '-' }}</p>
-                            <p class="mb-1"><strong>Sub Direktorat:</strong> {{ $application->divisi->subDirektorat->name ?? '-' }}</p>
-                            <p class="mb-1"><strong>Direktorat:</strong> {{ $application->divisi->subDirektorat->direktorat->name ?? '-' }}</p>
-                            <p class="mb-1"><strong>PIC:</strong> {{ $application->divisi->vp ?? '-' }}</p>
-                        </div>
-                        <div class="col-md-6">
-                            <p class="mb-1"><strong>Status:</strong> 
-                                @if($application->status == 'accepted')
-                                    <span class="badge bg-success">{{ ucfirst($application->status) }}</span>
-                                @elseif($application->status == 'rejected')
-                                    <span class="badge bg-danger">{{ ucfirst($application->status) }}</span>
-                                @elseif($application->status == 'finished')
-                                    <span class="badge bg-primary">{{ ucfirst($application->status) }}</span>
-                                @else
-                                    <span class="badge bg-warning">{{ ucfirst($application->status) }}</span>
-                                @endif
-                            </p>
-                            <p class="mb-1"><strong>Tanggal Pengajuan:</strong> {{ $application->created_at->format('d M Y') }}</p>
-                            @if($application->notes)
-                                <p class="mb-1"><strong>Catatan:</strong> {{ $application->notes }}</p>
-                            @endif
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    @endif
 
     <!-- Quick Stats -->
     <div class="row mb-4">
         <div class="col-md-3 mb-3">
-            <div class="card bg-primary text-white">
-                <div class="card-body text-center">
-                    <i class="fas fa-clipboard-list fa-2x mb-2"></i>
-                    <h4 class="mb-0">{{ $user->internshipApplications->count() }}</h4>
-                    <small>Pengajuan Magang</small>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3 mb-3">
             <div class="card bg-success text-white">
                 <div class="card-body text-center">
-                    <i class="fas fa-tasks fa-2x mb-2"></i>
-                    <h4 class="mb-0">{{ $user->assignments->count() }}</h4>
-                    <small>Total Tugas</small>
+                    <i class="fas fa-check-circle fa-2x mb-2"></i>
+                    <h4 class="mb-0">{{ $tugasSelesai }}</h4>
+                    <small>Tugas Selesai</small>
                 </div>
             </div>
         </div>
         <div class="col-md-3 mb-3">
-            <div class="card bg-warning text-white">
+            <div class="card bg-danger text-white">
                 <div class="card-body text-center">
-                    <i class="fas fa-clock fa-2x mb-2"></i>
-                    <h4 class="mb-0">{{ $user->assignments->where('submitted_at', null)->count() }}</h4>
-                    <small>Tugas Pending</small>
+                    <i class="fas fa-exclamation-triangle fa-2x mb-2"></i>
+                    <h4 class="mb-0">{{ $tugasPerluRevisi }}</h4>
+                    <small>Tugas Perlu Revisi</small>
                 </div>
             </div>
         </div>
         <div class="col-md-3 mb-3">
             <div class="card bg-info text-white">
                 <div class="card-body text-center">
-                    <i class="fas fa-certificate fa-2x mb-2"></i>
-                    <h4 class="mb-0">{{ $jumlahSertifikat }}</h4>
-                    <small>Sertifikat</small>
+                    <i class="fas fa-calendar-day fa-2x mb-2"></i>
+                    <h4 class="mb-0">{{ $hariTersisa }}</h4>
+                    <small>Hari Magang Tersisa</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body text-center">
+                    <i class="fas fa-chart-line fa-2x mb-2"></i>
+                    <h4 class="mb-0">{{ $progressMagang }}%</h4>
+                    <small>Progress Magang</small>
                 </div>
             </div>
         </div>

@@ -63,6 +63,7 @@
     font-weight: bold;
     color: #6c757d;
     position: relative;
+    z-index: 2;
     transition: all 0.3s ease;
     animation: stepPulse 2s ease-in-out infinite;
 }
@@ -87,12 +88,33 @@
     background: #dee2e6;
     margin: 0 -25px;
     position: relative;
-    z-index: 0;
+    z-index: 1;
     transition: all 0.3s ease;
 }
 
 .step-line.completed {
     background: var(--gradient-primary);
+}
+
+.step-indicator {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 3rem;
+    position: relative;
+    z-index: 1;
+}
+
+.step-indicator::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 50%;
+    height: 3px;
+    background: #dee2e6;
+    z-index: 0;
+    transform: translateY(-50%);
 }
 
 @keyframes stepPulse {
@@ -463,15 +485,19 @@
         <!-- Step Indicator -->
         <div class="step-indicator">
             <div class="step active" id="step1">
-                <i class="fas fa-search"></i>
+                <i class="fas fa-user"></i>
             </div>
             <div class="step-line" id="line1"></div>
             <div class="step" id="step2">
-                <i class="fas fa-user"></i>
+                <i class="fas fa-briefcase"></i>
             </div>
             <div class="step-line" id="line2"></div>
             <div class="step" id="step3">
                 <i class="fas fa-file-upload"></i>
+            </div>
+            <div class="step-line" id="line3"></div>
+            <div class="step" id="step4">
+                <i class="fas fa-calendar-alt"></i>
             </div>
         </div>
 
@@ -489,71 +515,7 @@
             </div>
         @endif
 
-        <!-- Step 1: Opportunity Section -->
-        <div class="opportunity-section" id="opportunitySection">
-            <h2 class="mb-4" style="color: var(--telkom-red); font-weight: 700;">
-                <i class="fas fa-briefcase me-2"></i>Peluang Magang PT Telkom Indonesia
-            </h2>
-            <p class="lead text-muted mb-4">
-                Pilih bidang peminatan yang sesuai dengan minat dan karir Anda. 
-                Kami juga membuka kesempatan untuk bidang minat khusus Anda.
-            </p>
-            
-            <form id="fieldSelectionForm">
-                <div class="row">
-                    @foreach($fields as $field)
-                    <div class="col-md-6 mb-3">
-                        <label class="field-card" style="cursor: pointer; position: relative;">
-                            <input type="radio" 
-                                   name="field_of_interest_id" 
-                                   value="{{ $field->id }}" 
-                                   class="field-radio"
-                                   style="position: absolute; opacity: 0; width: 100%; height: 100%; cursor: pointer; z-index: 10;"
-                                   onchange="toggleFieldSelection(this)"
-                                   @if($application && $application->field_of_interest_id == $field->id) checked @endif>
-                            <div class="field-icon" style="background: {{ $field->color ?? '#EE2E24' }};">
-                                <i class="{{ $field->icon ?? 'fas fa-briefcase' }}"></i>
-                            </div>
-                            <h5 class="field-title">{{ $field->name }}</h5>
-                            <p class="field-description">{{ $field->description }}</p>
-                            <div class="mt-2">
-                                <small class="text-muted">
-                                    <i class="fas fa-calendar me-1"></i>Durasi: {{ $field->duration_months }} Bulan
-                                </small>
-                            </div>
-                        </label>
-                    </div>
-                    @endforeach
-                    
-                    <!-- Other Field Option -->
-                    <div class="col-md-6 mb-3">
-                        <label class="field-card" style="cursor: pointer; position: relative;">
-                            <input type="radio" 
-                                   name="field_of_interest_id" 
-                                   value="other" 
-                                   class="field-radio"
-                                   style="position: absolute; opacity: 0; width: 100%; height: 100%; cursor: pointer; z-index: 10;"
-                                   onchange="toggleFieldSelection(this)"
-                                   @if($application && !$application->field_of_interest_id) checked @endif>
-                            <div class="field-icon" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
-                                <i class="fas fa-plus-circle"></i>
-                            </div>
-                            <h5 class="field-title">Bidang Lainnya</h5>
-                            <p class="field-description">Bidang minat Anda tidak ada di list? Kami terbuka untuk bidang khusus Anda!</p>
-                            <div class="mt-3">
-                                <small class="text-muted">
-                                    <i class="fas fa-lightbulb me-1"></i>Inovasi | 
-                                    <i class="fas fa-handshake me-1"></i>Kolaborasi | 
-                                    <i class="fas fa-rocket me-1"></i>Pengembangan Karir
-                                </small>
-                            </div>
-                        </label>
-                    </div>
-                </div>
-            </form>
-        </div>
-
-        <!-- Step 2: Profile Form Section -->
+        <!-- Step 1: Profile Form Section -->
         <div class="profile-form-section" id="profileSection">
             <h2 class="mb-4" style="color: var(--telkom-red); font-weight: 700;">
                 <i class="fas fa-user-edit me-2"></i>Lengkapi Data Diri
@@ -676,6 +638,44 @@
                     <button type="submit" class="btn btn-submit">
                         <i class="fas fa-save me-2"></i>Simpan Data Diri
                     </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Step 2: Bidang Peminatan Section -->
+        <div class="opportunity-section" id="opportunitySection">
+            <h2 class="mb-4" style="color: var(--telkom-red); font-weight: 700;">
+                <i class="fas fa-briefcase me-2"></i>Bidang Peminatan yang Tersedia
+            </h2>
+            <p class="lead text-muted mb-4">
+                Pilih bidang peminatan yang sesuai dengan minat dan karir Anda.
+            </p>
+            
+            <form id="fieldSelectionForm">
+                <div class="row">
+                    @foreach($fields as $field)
+                    <div class="col-md-6 mb-3">
+                        <label class="field-card" style="cursor: pointer; position: relative;">
+                            <input type="radio" 
+                                   name="field_of_interest_id" 
+                                   value="{{ $field->id }}" 
+                                   class="field-radio"
+                                   style="position: absolute; opacity: 0; width: 100%; height: 100%; cursor: pointer; z-index: 10;"
+                                   onchange="toggleFieldSelection(this)"
+                                   @if($application && $application->field_of_interest_id == $field->id) checked @endif>
+                            <div class="field-icon" style="background: {{ $field->color ?? '#EE2E24' }};">
+                                <i class="{{ $field->icon ?? 'fas fa-briefcase' }}"></i>
+                            </div>
+                            <h5 class="field-title">{{ $field->name }}</h5>
+                            <p class="field-description">{{ $field->description }}</p>
+                            <div class="mt-2">
+                                <small class="text-muted">
+                                    <i class="fas fa-calendar me-1"></i>Durasi: {{ $field->duration_months }} Bulan
+                                </small>
+                            </div>
+                        </label>
+                    </div>
+                    @endforeach
                 </div>
             </form>
         </div>
@@ -817,6 +817,63 @@
                     @enderror
                 </div>
 
+            </form>
+        </div>
+
+        <!-- Step 4: Waktu Magang Section -->
+        <div class="date-section" id="dateSection">
+            <h2 class="mb-4" style="color: var(--telkom-red); font-weight: 700;">
+                <i class="fas fa-calendar-alt me-2"></i>Waktu Mulai dan Selesai Magang
+            </h2>
+            <p class="text-muted mb-4">
+                Tentukan periode magang Anda. Pastikan tanggal yang dipilih sesuai dengan jadwal Anda.
+            </p>
+
+            <form method="POST" action="{{ route('dashboard.pre-acceptance.dates') }}" id="dateForm">
+                @csrf
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <div class="form-floating">
+                            <input type="date" 
+                                   class="form-control @error('start_date') is-invalid @enderror" 
+                                   id="start_date" 
+                                   name="start_date" 
+                                   value="{{ old('start_date', $application && $application->start_date ? $application->start_date->format('Y-m-d') : '') }}" 
+                                   placeholder="Tanggal Mulai"
+                                   min="{{ date('Y-m-d') }}"
+                                   required>
+                            <label for="start_date">
+                                <i class="fas fa-calendar-check me-2"></i>Tanggal Mulai Magang
+                            </label>
+                            @error('start_date')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="form-floating">
+                            <input type="date" 
+                                   class="form-control @error('end_date') is-invalid @enderror" 
+                                   id="end_date" 
+                                   name="end_date" 
+                                   value="{{ old('end_date', $application && $application->end_date ? $application->end_date->format('Y-m-d') : '') }}" 
+                                   placeholder="Tanggal Selesai"
+                                   required>
+                            <label for="end_date">
+                                <i class="fas fa-calendar-times me-2"></i>Tanggal Selesai Magang
+                            </label>
+                            @error('end_date')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+                    </div>
+                </div>
+
+                <div class="d-grid mt-4">
+                    <button type="submit" class="btn btn-submit">
+                        <i class="fas fa-save me-2"></i>Simpan Waktu Magang
+                    </button>
+                </div>
             </form>
         </div>
         
@@ -1025,9 +1082,10 @@ function updateProgress() {
     const documents = ['ktm_path', 'surat_permohonan_path', 'cv_path', 'good_behavior_path'];
     
     let completed = 0;
-    const total = profileFields.length + documents.length;
+    let total = 0;
     
-    // Check profile fields
+    // Step 1: Profile (6 fields = 25%)
+    total += 6;
     profileFields.forEach(field => {
         const input = document.getElementById(field);
         if (input && input.value && input.value.trim() !== '') {
@@ -1035,7 +1093,14 @@ function updateProgress() {
         }
     });
     
-    // Check documents (from server)
+    // Step 2: Field of interest (1 = 25%)
+    total += 1;
+    if (document.querySelector('input[name="field_of_interest_id"]:checked') !== null) {
+        completed++;
+    }
+    
+    // Step 3: Documents (4 = 25%)
+    total += 4;
     @if($application)
     const applicationData = @json($application);
     documents.forEach(doc => {
@@ -1044,6 +1109,13 @@ function updateProgress() {
         }
     });
     @endif
+    
+    // Step 4: Dates (2 = 25%)
+    total += 2;
+    const startDate = document.getElementById('start_date')?.value;
+    const endDate = document.getElementById('end_date')?.value;
+    if (startDate) completed++;
+    if (endDate) completed++;
     
     const percent = Math.round((completed / total) * 100);
     document.getElementById('progressPercent').textContent = percent + '%';
@@ -1074,15 +1146,38 @@ function updateSteps() {
     let documentsCompleted = false;
     @endif
     
-    // Update step indicators
+    // Check step 2: Field of interest
+    const fieldSelected = document.querySelector('input[name="field_of_interest_id"]:checked') !== null;
+    
+    // Check step 4: Dates
+    const startDate = document.getElementById('start_date')?.value;
+    const endDate = document.getElementById('end_date')?.value;
+    const datesCompleted = startDate && endDate;
+    
+    // Update step 1
     if (profileCompleted) {
-        document.getElementById('step2').classList.add('completed');
+        document.getElementById('step1').classList.add('completed');
+        document.getElementById('step2').classList.add('active');
         document.getElementById('line1').classList.add('completed');
     }
     
+    // Update step 2
+    if (fieldSelected) {
+        document.getElementById('step2').classList.add('completed');
+        document.getElementById('step3').classList.add('active');
+        document.getElementById('line2').classList.add('completed');
+    }
+    
+    // Update step 3
     if (documentsCompleted) {
         document.getElementById('step3').classList.add('completed');
-        document.getElementById('line2').classList.add('completed');
+        document.getElementById('step4').classList.add('active');
+        document.getElementById('line3').classList.add('completed');
+    }
+    
+    // Update step 4
+    if (datesCompleted) {
+        document.getElementById('step4').classList.add('completed');
     }
 }
 
@@ -1095,6 +1190,24 @@ document.getElementById('profileForm')?.addEventListener('input', function() {
 document.getElementById('documentForm')?.addEventListener('change', function() {
     setTimeout(updateProgress, 100);
     setTimeout(updateSteps, 100);
+});
+
+document.getElementById('dateForm')?.addEventListener('input', function() {
+    setTimeout(updateProgress, 100);
+    setTimeout(updateSteps, 100);
+});
+
+document.getElementById('dateForm')?.addEventListener('change', function() {
+    setTimeout(updateProgress, 100);
+    setTimeout(updateSteps, 100);
+});
+
+// Update when field of interest changes
+document.querySelectorAll('input[name="field_of_interest_id"]').forEach(radio => {
+    radio.addEventListener('change', function() {
+        setTimeout(updateProgress, 100);
+        setTimeout(updateSteps, 100);
+    });
 });
 </script>
 @endpush

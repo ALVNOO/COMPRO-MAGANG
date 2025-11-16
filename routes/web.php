@@ -40,6 +40,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/dashboard/pre-acceptance', [DashboardController::class, 'preAcceptance'])->name('dashboard.pre-acceptance');
     Route::post('/dashboard/pre-acceptance/profile', [DashboardController::class, 'updateProfile'])->name('dashboard.pre-acceptance.profile');
     Route::post('/dashboard/pre-acceptance/documents', [DashboardController::class, 'uploadDocuments'])->name('dashboard.pre-acceptance.documents');
+    Route::post('/dashboard/pre-acceptance/dates', [DashboardController::class, 'updateDates'])->name('dashboard.pre-acceptance.dates');
     Route::post('/dashboard/pre-acceptance/complete', [DashboardController::class, 'completeApplication'])->name('dashboard.pre-acceptance.complete');
     Route::get('/dashboard/status', [DashboardController::class, 'status'])->name('dashboard.status');
     Route::post('/dashboard/status/acknowledge', [DashboardController::class, 'acknowledgePersyaratanTambahan'])->name('dashboard.status.acknowledge');
@@ -54,6 +55,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/dashboard/reapply', [DashboardController::class, 'reapply'])->name('dashboard.reapply');
     Route::post('/dashboard/reapply', [DashboardController::class, 'submitReapply'])->name('dashboard.submit-reapply');
 
+    // Profile routes
+    Route::get('/dashboard/profile', [DashboardController::class, 'profile'])->name('dashboard.profile');
+    
     // Change password routes
     Route::get('/dashboard/change-password', [AuthController::class, 'showChangePasswordForm'])->name('password.change');
     Route::post('/dashboard/change-password', [AuthController::class, 'changePassword'])->name('password.update');

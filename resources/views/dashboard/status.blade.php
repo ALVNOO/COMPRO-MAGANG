@@ -1,6 +1,24 @@
 @extends('layouts.dashboard')
 
-@section('title', 'Status Pengajuan - PT Pos Indonesia')
+@section('title', 'Status Pengajuan - PT Telkom Indonesia')
+
+@push('styles')
+<style>
+    .container-fluid {
+        max-width: 100%;
+        overflow-x: hidden;
+        padding-bottom: 2rem;
+    }
+    .card {
+        word-wrap: break-word;
+    }
+    @media (max-width: 768px) {
+        .container-fluid {
+            padding: 1rem;
+        }
+    }
+</style>
+@endpush
 
 @section('content')
 <div class="container-fluid">
@@ -13,6 +31,121 @@
     </div>
 
     @if($application)
+        @php
+            $isAccepted = in_array($application->status, ['accepted', 'finished']);
+        @endphp
+        
+        @if(!$isAccepted)
+        <!-- Status Pengajuan untuk User Belum Diterima -->
+        <div class="row">
+            <div class="col-md-8">
+                <!-- Biodata Card -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-user me-2"></i>Biodata
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <p class="mb-1"><strong>Nama:</strong></p>
+                                <p>{{ $user->name ?? '-' }}</p>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <p class="mb-1"><strong>Email:</strong></p>
+                                <p>{{ $user->email ?? '-' }}</p>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <p class="mb-1"><strong>NIM:</strong></p>
+                                <p>{{ $user->nim ?? '-' }}</p>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <p class="mb-1"><strong>No HP:</strong></p>
+                                <p>{{ $user->phone ?? '-' }}</p>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <p class="mb-1"><strong>Universitas/Sekolah:</strong></p>
+                                <p>{{ $user->university ?? '-' }}</p>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <p class="mb-1"><strong>Jurusan:</strong></p>
+                                <p>{{ $user->major ?? '-' }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bidang Peminatan Card -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-tags me-2"></i>Bidang Peminatan
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="mb-1"><strong>Bidang yang Dipilih:</strong></p>
+                        <p>{{ $application->fieldOfInterest->name ?? '-' }}</p>
+                    </div>
+                </div>
+
+                <!-- Status Card -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-info-circle me-2"></i>Status Pengajuan
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <p class="mb-1"><strong>Status:</strong></p>
+                            @if($application->status == 'pending')
+                                <span class="badge bg-warning text-dark">Pending</span>
+                            @elseif($application->status == 'rejected')
+                                <span class="badge bg-danger">Ditolak</span>
+                            @else
+                                <span class="badge bg-secondary">{{ ucfirst($application->status) }}</span>
+                            @endif
+                        </div>
+                        <div class="mb-3">
+                            <p class="mb-1"><strong>Tanggal Pengajuan:</strong></p>
+                            <p>{{ $application->created_at->format('d M Y H:i') }}</p>
+                        </div>
+                        @if($application->status == 'rejected' && $application->notes)
+                            <div class="mt-3 p-3 bg-light border-start border-danger border-4">
+                                <h6 class="text-danger mb-2">
+                                    <i class="fas fa-exclamation-triangle me-2"></i>Alasan Penolakan:
+                                </h6>
+                                <p class="mb-0">{{ $application->notes }}</p>
+                            </div>
+                        @endif
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <!-- Contact Information -->
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-phone me-2"></i>Kontak HR
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="mb-2"><strong>Email:</strong></p>
+                        <p class="text-primary">hr@telkom.co.id</p>
+                        
+                        <p class="mb-2"><strong>Telepon:</strong></p>
+                        <p>(021) 789-0123</p>
+                        
+                        <p class="mb-2"><strong>Jam Kerja:</strong></p>
+                        <p>Senin - Jumat<br>08:00 - 17:00 WIB</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        @else
+        <!-- Status Pengajuan untuk User Sudah Diterima (Original) -->
         <div class="row">
             <div class="col-md-8">
                 <!-- Application Status Card -->
@@ -36,12 +169,8 @@
                             </div>
                             <div class="col-md-6">
                                 <p class="mb-2"><strong>Status:</strong></p>
-                                @if($application->status == 'pending')
-                                    <span class="badge bg-warning text-dark">Pending</span>
-                                @elseif($application->status == 'accepted')
+                                @if($application->status == 'accepted')
                                     <span class="badge bg-success">Diterima</span>
-                                @elseif($application->status == 'rejected')
-                                    <span class="badge bg-danger">Ditolak</span>
                                 @elseif($application->status == 'finished')
                                     <span class="badge bg-primary">Finished</span>
                                 @endif
@@ -55,15 +184,6 @@
                                 @endif
                             </div>
                         </div>
-
-                        @if($application->status == 'rejected' && $application->notes)
-                            <div class="mt-4 p-3 bg-light border-start border-danger border-4">
-                                <h6 class="text-danger mb-2">
-                                    <i class="fas fa-exclamation-triangle me-2"></i>Alasan Penolakan:
-                                </h6>
-                                <p class="mb-0">{{ $application->notes }}</p>
-                            </div>
-                        @endif
 
                         @if($application->status == 'accepted')
                             @if(!$application->acknowledged_additional_requirements)
@@ -194,46 +314,6 @@
             </div>
 
             <div class="col-md-4">
-                <!-- Action Card -->
-                <div class="card mb-4">
-                    <div class="card-header">
-                        <h5 class="card-title mb-0">
-                            <i class="fas fa-tasks me-2"></i>Aksi
-                        </h5>
-                    </div>
-                    <div class="card-body">
-                        @if($application->status == 'rejected')
-                            <div class="d-grid gap-2">
-                                <a href="{{ route('dashboard.reapply') }}" class="btn btn-warning">
-                                    <i class="fas fa-paper-plane me-2"></i>Ajukan Ulang
-                                </a>
-                                <a href="{{ route('dashboard.program') }}" class="btn btn-outline-primary">
-                                    <i class="fas fa-building me-2"></i>Lihat Divisi Lain
-                                </a>
-                            </div>
-                        @elseif($application->status == 'accepted')
-                            <div class="d-grid gap-2">
-                                <a href="{{ route('dashboard.assignments') }}" class="btn btn-success">
-                                    <i class="fas fa-tasks me-2"></i>Lihat Tugas
-                                </a>
-                            </div>
-                        @elseif($application->status == 'finished')
-                            <div class="d-grid gap-2">
-                                <a href="{{ route('dashboard.certificates') }}" class="btn btn-primary">
-                                    <i class="fas fa-certificate me-2"></i>Lihat Sertifikat
-                                </a>
-                            </div>
-                        @else
-                            <div class="text-center">
-                                <div class="spinner-border text-primary mb-3" role="status">
-                                    <span class="visually-hidden">Loading...</span>
-                                </div>
-                                <p class="text-muted">Menunggu review dari tim HR...</p>
-                            </div>
-                        @endif
-                    </div>
-                </div>
-
                 <!-- Contact Information -->
                 <div class="card">
                     <div class="card-header">
@@ -243,7 +323,7 @@
                     </div>
                     <div class="card-body">
                         <p class="mb-2"><strong>Email:</strong></p>
-                        <p class="text-primary">hr@posindonesia.co.id</p>
+                        <p class="text-primary">hr@telkom.co.id</p>
                         
                         <p class="mb-2"><strong>Telepon:</strong></p>
                         <p>(021) 789-0123</p>
