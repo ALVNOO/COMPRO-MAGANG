@@ -42,8 +42,38 @@ class AdminController extends Controller
 
     public function applications()
     {
-        $applications = InternshipApplication::with(['user', 'divisi.subDirektorat.direktorat'])->latest()->get();
+        $applications = InternshipApplication::with(['user', 'divisi.subDirektorat.direktorat', 'fieldOfInterest'])->latest()->get();
         return view('admin.applications', compact('applications'));
+    }
+
+    public function approveApplication($id)
+    {
+        $application = InternshipApplication::findOrFail($id);
+        $application->status = 'accepted';
+        $application->notes = null; // Clear rejection notes if any
+        $application->save();
+
+        // Set divisi_id user jika diterima
+        if ($application->user) {
+            $application->user->divisi_id = $application->divisi_id;
+            $application->user->save();
+        }
+
+        return redirect()->route('admin.applications')->with('success', 'Pengajuan magang berhasil diterima.');
+    }
+
+    public function rejectApplication(Request $request, $id)
+    {
+        $request->validate([
+            'notes' => 'nullable|string',
+        ]);
+
+        $application = InternshipApplication::findOrFail($id);
+        $application->status = 'rejected';
+        $application->notes = $request->notes;
+        $application->save();
+
+        return redirect()->route('admin.applications')->with('success', 'Pengajuan magang berhasil ditolak.');
     }
 
     public function participants()
@@ -111,6 +141,8 @@ class AdminController extends Controller
     {
         $year = $request->input('year');
         $month = $request->input('month');
+        $period = $request->input('period');
+        $week = $request->input('week');
         $now = now();
 
         $query = 
@@ -134,8 +166,13 @@ class AdminController extends Controller
                 $start = $now->copy()->startOfWeek();
                 $end = $now->copy()->endOfWeek();
             } elseif ($period === 'bulanan') {
-            $start = $now->copy()->startOfMonth();
-            $end = $now->copy()->endOfMonth();
+                $start = $now->copy()->startOfMonth();
+                $end = $now->copy()->endOfMonth();
+            } else {
+                // Default: current month
+                $start = $now->copy()->startOfMonth();
+                $end = $now->copy()->endOfMonth();
+            }
         }
         
         // Perbaikan: tampilkan peserta jika ada overlap antara periode magang dan periode yang dipilih
@@ -680,5 +717,4 @@ class AdminController extends Controller
         $field->delete();
         return redirect()->route('admin.fields')->with('success', 'Bidang peminatan berhasil dihapus');
     }
-} 
 }

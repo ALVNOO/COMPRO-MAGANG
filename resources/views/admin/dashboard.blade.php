@@ -1,7 +1,7 @@
 @extends('layouts.admin-dashboard')
 
 @section('admin-content')
-<div x-data="{ showEditModal: false, showRuleContent: true }" @keydown.escape.window="showEditModal = false" class="space-y-8 relative">
+<div x-data="{ showEditModal: false, showRuleContent: false }" @keydown.escape.window="showEditModal = false" class="space-y-8 relative">
     <!-- Decorative SVG Pattern BG -->
     <svg class="absolute right-0 top-0 opacity-10 w-80 h-80 z-0 pointer-events-none" viewBox="0 0 320 320" fill="none"><ellipse cx="160" cy="160" rx="160" ry="160" fill="url(#paint-red)"/><defs><radialGradient id="paint-red" cx="0" cy="0" r="1" gradientTransform="translate(160 160) scale(180 160)" gradientUnits="userSpaceOnUse"><stop stop-color="#B91C1C"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient></defs></svg>
     <div class="mb-6 relative z-10 mt-8">

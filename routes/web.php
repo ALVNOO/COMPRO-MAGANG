@@ -20,6 +20,14 @@ Route::get('/register', [AuthController::class, 'showRegister'])->name('register
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
+// 2FA routes (require authentication)
+Route::middleware('auth')->group(function () {
+    Route::get('/2fa/setup', [AuthController::class, 'setup2fa'])->name('2fa.setup');
+    Route::post('/2fa/enable', [AuthController::class, 'enable2fa'])->name('2fa.enable');
+    Route::get('/2fa/verify', [AuthController::class, 'show2faVerify'])->name('2fa.verify');
+    Route::post('/2fa/verify', [AuthController::class, 'verify2fa'])->name('2fa.verify.post');
+});
+
 // Internship routes
 Route::get('/internship', [InternshipController::class, 'index'])->name('internship.index');
 Route::get('/internship/apply/{divisi}', [InternshipController::class, 'apply'])->name('internship.apply');
@@ -87,6 +95,7 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
     Route::get('/participants', [AdminController::class, 'participants'])->name('participants');
     Route::get('/divisions', [AdminController::class, 'divisions'])->name('divisions');
     Route::get('/mentors', [AdminController::class, 'mentors'])->name('mentors');
+    Route::get('/mentor/{id}', [AdminController::class, 'mentorDetail'])->name('mentor.detail');
 
     // Direktorat CRUD
     Route::post('/direktorat', [AdminController::class, 'storeDirektorat'])->name('direktorat.store');
@@ -116,14 +125,13 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
     Route::put('/fields/{field}', [AdminController::class, 'updateField'])->name('fields.update');
     Route::patch('/fields/{field}/toggle', [AdminController::class, 'toggleFieldStatus'])->name('fields.toggle');
     Route::delete('/fields/{field}', [AdminController::class, 'deleteField'])->name('fields.delete');
+    
+    // Report peserta magang
+    Route::get('/reports', [AdminController::class, 'report'])->name('reports');
+    Route::get('/reports/data', [AdminController::class, 'getReportData'])->name('reports.data');
+    Route::get('/reports/years', [AdminController::class, 'getReportYears'])->name('reports.years');
+    Route::get('/reports/periods', [AdminController::class, 'getReportPeriods'])->name('reports.periods');
+    Route::get('/reports/export/pdf', [AdminController::class, 'exportReportPdf'])->name('reports.export.pdf');
+    Route::get('/reports/export/excel', [AdminController::class, 'exportReportExcel'])->name('reports.export.excel');
+    Route::get('/reports/classifications', [AdminController::class, 'getReportClassifications'])->name('reports.classifications');
 });
-
-// Report peserta magang
-Route::get('/admin/reports', [\App\Http\Controllers\AdminController::class, 'report'])->name('admin.reports');
-Route::get('/admin/reports/data', [\App\Http\Controllers\AdminController::class, 'getReportData'])->name('admin.reports.data');
-Route::get('/admin/reports/export/pdf', [\App\Http\Controllers\AdminController::class, 'exportReportPdf'])->name('admin.reports.export.pdf');
-Route::get('/admin/reports/export/excel', [\App\Http\Controllers\AdminController::class, 'exportReportExcel'])->name('admin.reports.export.excel');
-Route::get('/admin/reports/classifications', [\App\Http\Controllers\AdminController::class, 'getReportClassifications'])->name('admin.reports.classifications');
-Route::get('/admin/reports/periods', [\App\Http\Controllers\AdminController::class, 'getReportPeriods'])->name('admin.reports.periods');
-
-
