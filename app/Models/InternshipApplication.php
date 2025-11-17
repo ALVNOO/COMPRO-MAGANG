@@ -21,7 +21,8 @@ class InternshipApplication extends Model
         'good_behavior_path',
         'notes',
         'start_date',
-        'end_date'
+        'end_date',
+        'assessment_report_path'
     ];
 
     protected $casts = [

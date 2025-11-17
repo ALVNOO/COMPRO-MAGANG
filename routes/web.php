@@ -89,6 +89,16 @@ Route::middleware(['auth'])->prefix('mentor')->group(function () {
     Route::post('/sertifikat/{user}/send', [MentorDashboardController::class, 'sendCertificate'])->name('mentor.sertifikat.send');
     // Menu profil
     Route::get('/profil', [MentorDashboardController::class, 'profil'])->name('mentor.profil');
+    // Menu absensi
+    Route::get('/absensi', [MentorDashboardController::class, 'absensi'])->name('mentor.absensi');
+    // Menu laporan penilaian
+    Route::get('/laporan-penilaian', [MentorDashboardController::class, 'laporanPenilaian'])->name('mentor.laporan-penilaian');
+    Route::get('/laporan-penilaian/data', [MentorDashboardController::class, 'getLaporanPenilaianData'])->name('mentor.laporan-penilaian.data');
+    Route::get('/laporan-penilaian/years', [MentorDashboardController::class, 'getLaporanPenilaianYears'])->name('mentor.laporan-penilaian.years');
+    Route::get('/laporan-penilaian/periods', [MentorDashboardController::class, 'getLaporanPenilaianPeriods'])->name('mentor.laporan-penilaian.periods');
+    Route::post('/laporan-penilaian/{applicationId}/upload', [MentorDashboardController::class, 'uploadLaporanPenilaian'])->name('mentor.laporan-penilaian.upload');
+    Route::get('/laporan-penilaian/{applicationId}/download', [MentorDashboardController::class, 'downloadLaporanPenilaian'])->name('mentor.laporan-penilaian.download');
+    Route::delete('/laporan-penilaian/{applicationId}/delete', [MentorDashboardController::class, 'deleteLaporanPenilaian'])->name('mentor.laporan-penilaian.delete');
 });
 
 Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () {

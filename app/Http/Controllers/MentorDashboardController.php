@@ -125,6 +125,241 @@ class MentorDashboardController extends Controller
         ]);
     }
 
+    public function absensi()
+    {
+        $user = Auth::user();
+        $divisi = $user->divisi;
+        $participants = $divisi
+            ? \App\Models\InternshipApplication::with(['user'])
+                ->where('divisi_id', $divisi->id)
+                ->where('status', 'accepted')
+                ->get()
+            : collect();
+        
+        return view('mentor.absensi', [
+            'participants' => $participants
+        ]);
+    }
+
+    public function laporanPenilaian()
+    {
+        return view('mentor.laporan-penilaian');
+    }
+
+    public function getLaporanPenilaianData(Request $request)
+    {
+        $user = Auth::user();
+        $divisi = $user->divisi;
+        
+        if (!$divisi) {
+            return response()->json(['data' => []]);
+        }
+
+        $year = $request->input('year');
+        $month = $request->input('month');
+        $now = now();
+
+        $query = \App\Models\InternshipApplication::query()
+            ->where('divisi_id', $divisi->id)
+            ->whereIn('status', ['accepted', 'finished'])
+            ->whereNotNull('start_date')
+            ->with(['user.assignments', 'user.certificates', 'divisi.subDirektorat.direktorat']);
+
+        // Filter periode
+        if ($year && $month) {
+            $start = \Carbon\Carbon::create($year, $month, 1)->startOfMonth();
+            $end = \Carbon\Carbon::create($year, $month, 1)->endOfMonth();
+        } elseif ($year) {
+            $start = \Carbon\Carbon::create($year, 1, 1)->startOfYear();
+            $end = \Carbon\Carbon::create($year, 1, 1)->endOfYear();
+        } else {
+            // Default: current month
+            $start = $now->copy()->startOfMonth();
+            $end = $now->copy()->endOfMonth();
+        }
+        
+        // Filter berdasarkan overlap periode magang
+        $query->where(function($q) use ($start, $end) {
+            $q->where(function($sub) use ($start, $end) {
+                $sub->whereDate('start_date', '<=', $end->toDateString())
+                     ->where(function($sub2) use ($start) {
+                         $sub2->whereNull('end_date')
+                               ->orWhereDate('end_date', '>=', $start->toDateString());
+                     });
+            });
+        });
+
+        $applications = $query->orderBy('start_date', 'asc')->get();
+
+        // Data peserta dengan status upload laporan
+        $peserta = $applications->map(function($app, $i) {
+            $user = $app->user;
+            
+            return [
+                'no' => $i+1,
+                'id' => $app->id,
+                'nama' => $user->name ?? '-',
+                'assessment_report_path' => $app->assessment_report_path,
+                'has_report' => !empty($app->assessment_report_path),
+            ];
+        })->toArray();
+
+        return response()->json([
+            'data' => $peserta
+        ]);
+    }
+
+    public function getLaporanPenilaianYears(Request $request)
+    {
+        $user = Auth::user();
+        $divisi = $user->divisi;
+        
+        if (!$divisi) {
+            return response()->json(['data' => []]);
+        }
+
+        $data = [];
+        $minDate = \App\Models\InternshipApplication::where('divisi_id', $divisi->id)
+            ->whereNotNull('start_date')
+            ->min('start_date');
+        $maxDate = \App\Models\InternshipApplication::where('divisi_id', $divisi->id)
+            ->whereNotNull('start_date')
+            ->max('start_date');
+        
+        $currentYear = date('Y');
+        $minYear = $minDate ? date('Y', strtotime($minDate)) : $currentYear;
+        $maxYear = $maxDate ? date('Y', strtotime($maxDate)) : $currentYear;
+        
+        if ($minYear > $currentYear) {
+            $minYear = $currentYear;
+        }
+        if ($maxYear < $currentYear) {
+            $maxYear = $currentYear;
+        }
+
+        for ($y = $minYear; $y <= $maxYear; $y++) {
+            $data[] = ['value' => $y, 'label' => $y];
+        }
+        
+        return response()->json(['data' => $data]);
+    }
+
+    public function getLaporanPenilaianPeriods(Request $request)
+    {
+        $user = Auth::user();
+        $divisi = $user->divisi;
+        
+        if (!$divisi) {
+            return response()->json(['data' => []]);
+        }
+
+        $data = [];
+        $minDate = \App\Models\InternshipApplication::where('divisi_id', $divisi->id)
+            ->whereNotNull('start_date')
+            ->min('start_date');
+        $maxDate = \App\Models\InternshipApplication::where('divisi_id', $divisi->id)
+            ->whereNotNull('start_date')
+            ->max('start_date');
+        
+        $currentYear = date('Y');
+        $minYear = $minDate ? date('Y', strtotime($minDate)) : $currentYear;
+        $maxYear = $maxDate ? date('Y', strtotime($maxDate)) : $currentYear;
+        
+        if ($minYear > $currentYear) {
+            $minYear = $currentYear;
+        }
+        if ($maxYear < $currentYear) {
+            $maxYear = $currentYear;
+        }
+
+        $months = [
+            1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April', 5 => 'Mei', 6 => 'Juni',
+            7 => 'Juli', 8 => 'Agustus', 9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'
+        ];
+        
+        for ($y = $minYear; $y <= $maxYear; $y++) {
+            foreach ($months as $num => $name) {
+                $data[] = [ 'value' => sprintf('%02d', $num).'-'.$y, 'label' => $name.' '.$y ];
+            }
+        }
+        
+        return response()->json(['data' => $data]);
+    }
+
+    public function uploadLaporanPenilaian(Request $request, $applicationId)
+    {
+        $request->validate([
+            'assessment_report' => 'required|file|mimes:pdf|max:10240',
+        ]);
+
+        $application = \App\Models\InternshipApplication::findOrFail($applicationId);
+        $user = Auth::user();
+        
+        // Pastikan hanya mentor divisi terkait yang bisa upload
+        if ($user->divisi_id !== $application->divisi_id) {
+            abort(403);
+        }
+
+        // Hapus file lama jika ada
+        if ($application->assessment_report_path && \Illuminate\Support\Facades\Storage::disk('public')->exists($application->assessment_report_path)) {
+            \Illuminate\Support\Facades\Storage::disk('public')->delete($application->assessment_report_path);
+        }
+
+        // Simpan file baru
+        $path = $request->file('assessment_report')->store('assessment_reports', 'public');
+        $application->assessment_report_path = $path;
+        $application->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Laporan penilaian berhasil diupload.',
+            'path' => $path
+        ]);
+    }
+
+    public function downloadLaporanPenilaian($applicationId)
+    {
+        $application = \App\Models\InternshipApplication::findOrFail($applicationId);
+        $user = Auth::user();
+        
+        // Pastikan hanya mentor divisi terkait yang bisa download
+        if ($user->divisi_id !== $application->divisi_id) {
+            abort(403);
+        }
+
+        if (!$application->assessment_report_path || !\Illuminate\Support\Facades\Storage::disk('public')->exists($application->assessment_report_path)) {
+            abort(404, 'File tidak ditemukan.');
+        }
+
+        return \Illuminate\Support\Facades\Storage::disk('public')->download(
+            $application->assessment_report_path,
+            'Laporan_Penilaian_' . $application->user->name . '.pdf'
+        );
+    }
+
+    public function deleteLaporanPenilaian($applicationId)
+    {
+        $application = \App\Models\InternshipApplication::findOrFail($applicationId);
+        $user = Auth::user();
+        
+        // Pastikan hanya mentor divisi terkait yang bisa delete
+        if ($user->divisi_id !== $application->divisi_id) {
+            abort(403);
+        }
+
+        if ($application->assessment_report_path && \Illuminate\Support\Facades\Storage::disk('public')->exists($application->assessment_report_path)) {
+            \Illuminate\Support\Facades\Storage::disk('public')->delete($application->assessment_report_path);
+        }
+
+        $application->assessment_report_path = null;
+        $application->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Laporan penilaian berhasil dihapus.'
+        ]);
+    }
+
     public function responPengajuan(Request $request, $id)
     {
         $request->validate([

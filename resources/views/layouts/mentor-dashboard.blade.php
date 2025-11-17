@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'Dashboard Pembimbing Lapangan - PT Telkom Indonesia')</title>
     
     <!-- Bootstrap CSS -->
@@ -175,6 +176,18 @@
                 <a href="{{ route('mentor.penugasan') }}" class="nav-link {{ request()->routeIs('mentor.penugasan') ? 'active' : '' }}">
                     <i class="fas fa-tasks nav-icon"></i>
                     <span class="nav-text">Penugasan & Penilaian</span>
+                </a>
+            </div>
+            <div class="nav-item">
+                <a href="{{ route('mentor.absensi') }}" class="nav-link {{ request()->routeIs('mentor.absensi') ? 'active' : '' }}">
+                    <i class="fas fa-calendar-check nav-icon"></i>
+                    <span class="nav-text">Absensi</span>
+                </a>
+            </div>
+            <div class="nav-item">
+                <a href="{{ route('mentor.laporan-penilaian') }}" class="nav-link {{ request()->routeIs('mentor.laporan-penilaian') ? 'active' : '' }}">
+                    <i class="fas fa-chart-bar nav-icon"></i>
+                    <span class="nav-text">Laporan Penilaian</span>
                 </a>
             </div>
         </nav>
