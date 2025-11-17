@@ -138,4 +138,13 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
     Route::get('/reports/export/pdf', [AdminController::class, 'exportReportPdf'])->name('reports.export.pdf');
     Route::get('/reports/export/excel', [AdminController::class, 'exportReportExcel'])->name('reports.export.excel');
     Route::get('/reports/classifications', [AdminController::class, 'getReportClassifications'])->name('reports.classifications');
+
+   // Divisions (Menu BARU) - SATU FILE BLADE
+Route::get('/divisions', [AdminController::class, 'indexDivisions'])->name('divisions.index');
+Route::get('/divisions/create', [AdminController::class, 'createDivision'])->name('divisions.create');
+Route::post('/divisions', [AdminController::class, 'storeDivision'])->name('divisions.store');
+Route::get('/divisions/{id}/edit', [AdminController::class, 'editDivision'])->name('divisions.edit');
+Route::put('/divisions/{id}', [AdminController::class, 'updateDivision'])->name('divisions.update');
+Route::patch('/divisions/{id}/toggle', [AdminController::class, 'toggleDivision'])->name('divisions.toggle');
+Route::delete('/divisions/{id}', [AdminController::class, 'destroyDivision'])->name('divisions.destroy');
 });

@@ -95,6 +95,12 @@
                             <i class="fas fa-tags mr-2"></i>Bidang Peminatan
                         </a>
                     </li>
+                    <li>
+                        <a href="{{ route('admin.divisions.index') }}"
+                           class="flex items-center px-3 py-2 rounded-sm border-l-4 transition font-medium border-l-transparent hover:border-l-[#B91C1C] hover:text-[#B91C1C] {{ request()->routeIs('admin.divisions.*') ? 'border-l-[#B91C1C] bg-[#FEF2F2] text-[#B91C1C] font-semibold' : '' }} transform hover:scale-105">
+                             <i class="fas fa-sitemap mr-2"></i>Kelola Divisi
+                        </a>
+                    </li>
                 </ul>
             </nav>
             <form action="{{ route('logout') }}" method="POST" class="mt-8">

@@ -6,6 +6,7 @@ use App\Models\User;
 use App\Models\Direktorat;
 use App\Models\SubDirektorat;
 use App\Models\Divisi;
+use App\Models\DivisiAdmin;
 use App\Models\InternshipApplication;
 use App\Models\FieldOfInterest;
 use Illuminate\Http\Request;
@@ -716,5 +717,112 @@ class AdminController extends Controller
     {
         $field->delete();
         return redirect()->route('admin.fields')->with('success', 'Bidang peminatan berhasil dihapus');
+    }
+    public function indexDivisions()
+    {
+        $divisions = DivisiAdmin::orderBy('created_at', 'desc')->get();
+        $view_mode = 'index'; // Mode: tampilkan tabel
+        $division = null;
+        
+        return view('admin.divisions-admin', compact('divisions', 'view_mode', 'division'));
+    }
+
+    /**
+     * Tampilkan form tambah divisi di halaman yang sama
+     */
+    public function createDivision()
+    {
+        $divisions = DivisiAdmin::orderBy('created_at', 'desc')->get();
+        $view_mode = 'create'; // Mode: tampilkan form create
+        $division = null;
+        
+        return view('admin.divisions-admin', compact('divisions', 'view_mode', 'division'));
+    }
+
+    /**
+     * Simpan divisi baru
+     */
+    public function storeDivision(Request $request)
+    {
+        $validated = $request->validate([
+            'division_name' => 'required|string|max:255',
+            'mentor_name' => 'required|string|max:255',
+            'nik_number' => 'required|string|size:16|unique:divisions,nik_number',
+            'is_active' => 'nullable|boolean',
+            'sort_order' => 'nullable|integer|min:0'
+        ]);
+
+        // Set default value for is_active if not provided
+        $validated['is_active'] = $request->has('is_active') ? true : false;
+
+        DivisiAdmin::create($validated);
+        
+        return redirect()->route('admin.divisions.index')
+            ->with('success', 'Divisi berhasil ditambahkan!');
+    }
+
+    /**
+     * Tampilkan form edit divisi di halaman yang sama
+     */
+    public function editDivision($id)
+    {
+        $division = DivisiAdmin::findOrFail($id);
+        $divisions = DivisiAdmin::orderBy('created_at', 'desc')->get();
+        $view_mode = 'edit'; // Mode: tampilkan form edit
+        
+        return view('admin.divisions-admin', compact('divisions', 'view_mode', 'division'));
+    }
+
+    /**
+     * Update divisi
+     */
+    public function updateDivision(Request $request, $id)
+    {
+        $division = DivisiAdmin::findOrFail($id);
+        
+        $validated = $request->validate([
+            'division_name' => 'required|string|max:255',
+            'mentor_name' => 'required|string|max:255',
+            'nik_number' => 'required|string|size:16|unique:divisions,nik_number,' . $division->id,
+            'is_active' => 'nullable|boolean',
+            'sort_order' => 'nullable|integer|min:0'
+        ]);
+
+        // Set default value for is_active if not provided
+        $validated['is_active'] = $request->has('is_active') ? true : false;
+
+        $division->update($validated);
+        
+        return redirect()->route('admin.divisions.index')
+            ->with('success', 'Divisi berhasil diperbarui!');
+    }
+
+    /**
+     * Toggle status aktif/nonaktif divisi
+     */
+    public function toggleDivision($id)
+    {
+        $division = DivisiAdmin::findOrFail($id);
+        $division->update(['is_active' => !$division->is_active]);
+        
+        $status = $division->is_active ? 'diaktifkan' : 'dinonaktifkan';
+        return redirect()->back()->with('success', "Divisi {$division->division_name} berhasil {$status}");
+    }
+
+    /**
+     * Hapus divisi
+     */
+    public function destroyDivision($id)
+    {
+        $division = DivisiAdmin::findOrFail($id);
+        
+        if ($division->internshipApplications()->exists()) {
+            return redirect()->back()
+                ->with('error', "Divisi {$division->division_name} tidak dapat dihapus karena masih memiliki data terkait.");
+        }
+        
+        $division->delete();
+        
+        return redirect()->back()->with('success', 'Divisi berhasil dihapus!');
     }
 }
