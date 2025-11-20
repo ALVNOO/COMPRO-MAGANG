@@ -56,6 +56,7 @@
                                 <th>Judul</th>
                                 <th>Deskripsi</th>
                                 <th>Deadline</th>
+                                <th>Tanggal Presentasi</th>
                                 <th>Status</th>
                                 <th>File Tugas</th>
                                 <th>Nilai</th>
@@ -65,7 +66,7 @@
                         </thead>
                         <tbody>
                             <tr>
-                                <td colspan="9" class="text-center text-muted py-4">
+                                <td colspan="10" class="text-center text-muted py-4">
                                     <i class="fas fa-info-circle me-2"></i>
                                     Belum ada peserta magang diterima di divisi Anda. Tabel akan muncul setelah ada peserta yang diterima.
                                 </td>
@@ -170,6 +171,7 @@
                                     <th>Judul</th>
                                     <th>Deskripsi</th>
                                     <th>Deadline</th>
+                                    <th>Tanggal Presentasi</th>
                                     <th>Status</th>
                                     <th>File Tugas</th>
                                     <th>Nilai</th>
@@ -185,6 +187,7 @@
                                         <td>{{ $assignment->title ?? '-' }}</td>
                                         <td>{{ $assignment->description ?? '-' }}</td>
                                         <td>{{ $assignment->deadline ? \Illuminate\Support\Carbon::parse($assignment->deadline)->format('d-m-Y') : '-' }}</td>
+                                        <td>{{ $assignment->presentation_date ? \Illuminate\Support\Carbon::parse($assignment->presentation_date)->format('d-m-Y') : '-' }}</td>
                                         <td>
                                             <span class="text-success"><i class="fas fa-check"></i> Sudah diberi tugas</span>
                                         </td>
@@ -222,7 +225,7 @@
                                         </td>
                                     </tr>
                                 @empty
-                                    <tr><td colspan="9" class="text-center text-muted">Belum ada tugas proyek yang diberikan</td></tr>
+                                    <tr><td colspan="10" class="text-center text-muted">Belum ada tugas proyek yang diberikan</td></tr>
                                 @endforelse
                             </tbody>
                         </table>
@@ -273,7 +276,7 @@
                             @csrf
                             <input type="hidden" name="user_id" value="{{ $participant->user->id }}">
                             <div class="col-md-3">
-                                <select name="assignment_type" class="form-select" required>
+                                <select name="assignment_type" class="form-select" id="assignmentTypeSelect{{ $participant->user->id }}" required>
                                     <option value="">Pilih Jenis Tugas</option>
                                     <option value="tugas_harian">Tugas Harian</option>
                                     <option value="tugas_proyek">Tugas Proyek</option>
@@ -288,6 +291,9 @@
                             <div class="col-md-3">
                                 <input type="file" name="file_path" class="form-control">
                             </div>
+                            <div class="col-md-3" id="presentationDateWrapper{{ $participant->user->id }}" style="display:none;">
+                                <input type="date" name="presentation_date" class="form-control" placeholder="Tanggal Presentasi">
+                            </div>
                             <div class="col-12">
                                 <textarea name="description" class="form-control" placeholder="Deskripsi atau instruksi tugas (boleh kosong)"></textarea>
                             </div>
@@ -297,9 +303,31 @@
                         </form>
                     </div>
                     <script>
-                        document.getElementById('toggleCreateTaskBtn{{ $participant->user->id }}').addEventListener('click', function() {
+                        document.addEventListener('DOMContentLoaded', function() {
+                            var toggleBtn = document.getElementById('toggleCreateTaskBtn{{ $participant->user->id }}');
                             var form = document.getElementById('createTaskForm{{ $participant->user->id }}');
-                            form.style.display = (form.style.display === 'none') ? 'block' : 'none';
+                            if (toggleBtn && form) {
+                                toggleBtn.addEventListener('click', function() {
+                                    form.style.display = (form.style.display === 'none' || form.style.display === '') ? 'block' : 'none';
+                                });
+                            }
+                            var assignmentTypeSelect = document.getElementById('assignmentTypeSelect{{ $participant->user->id }}');
+                            var presentationWrapper = document.getElementById('presentationDateWrapper{{ $participant->user->id }}');
+                            if (assignmentTypeSelect && presentationWrapper) {
+                                var presentationInput = presentationWrapper.querySelector('input');
+                                var togglePresentationField = function() {
+                                    if (assignmentTypeSelect.value === 'tugas_proyek') {
+                                        presentationWrapper.style.display = 'block';
+                                    } else {
+                                        presentationWrapper.style.display = 'none';
+                                        if (presentationInput) {
+                                            presentationInput.value = '';
+                                        }
+                                    }
+                                };
+                                assignmentTypeSelect.addEventListener('change', togglePresentationField);
+                                togglePresentationField();
+                            }
                         });
                     </script>
                 </div>

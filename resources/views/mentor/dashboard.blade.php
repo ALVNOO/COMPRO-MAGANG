@@ -519,11 +519,11 @@
         <div class="quick-actions-grid">
             <a href="{{ route('mentor.penugasan') }}" class="quick-action-btn">
                 <i class="fas fa-tasks quick-action-icon"></i>
-                <span>Penugasan</span>
+                <span>Penugasan &amp; Penilaian</span>
             </a>
-            <a href="{{ route('mentor.profil') }}" class="quick-action-btn">
-                <i class="fas fa-user quick-action-icon"></i>
-                <span>Profil</span>
+            <a href="{{ route('mentor.absensi') }}" class="quick-action-btn">
+                <i class="fas fa-calendar-check quick-action-icon"></i>
+                <span>Absensi</span>
             </a>
         </div>
     </div>

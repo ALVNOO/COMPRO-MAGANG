@@ -22,7 +22,8 @@ class InternshipApplication extends Model
         'notes',
         'start_date',
         'end_date',
-        'assessment_report_path'
+        'assessment_report_path',
+        'completion_letter_path'
     ];
 
     protected $casts = [

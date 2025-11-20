@@ -394,6 +394,7 @@ class MentorDashboardController extends Controller
             'title' => 'required|string|max:255',
             'assignment_type' => 'required|in:tugas_harian,tugas_proyek',
             'deadline' => 'required|date',
+            'presentation_date' => 'nullable|date|required_if:assignment_type,tugas_proyek',
             'description' => 'nullable|string',
             'file_path' => 'nullable|file|mimes:pdf,doc,docx,zip|max:4096',
             'online_text' => 'nullable|string',
@@ -412,6 +413,9 @@ class MentorDashboardController extends Controller
             'assignment_type' => $request->assignment_type,
             'description' => $request->description,
             'deadline' => $request->deadline,
+            'presentation_date' => $request->assignment_type === 'tugas_proyek'
+                ? $request->presentation_date
+                : null,
             'online_text' => $request->online_text,
         ];
         if ($request->hasFile('file_path')) {

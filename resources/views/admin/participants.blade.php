@@ -1,10 +1,55 @@
 @extends('layouts.admin-dashboard')
 
 @section('admin-content')
+<style>
+    .compact-table {
+        font-size: 13px;
+        table-layout: auto;
+    }
+    .compact-table input[type="file"] {
+        font-size: 12px;
+        padding: 3px;
+        width: 100%;
+        max-width: 120px;
+    }
+    .compact-table button {
+        font-size: 12px;
+        padding: 4px 8px;
+        min-width: auto;
+    }
+    .compact-table th,
+    .compact-table td {
+        padding: 8px 4px !important;
+        vertical-align: middle;
+    }
+    .compact-table .divisi-cell {
+        max-width: 150px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+    .compact-table .email-cell {
+        max-width: 180px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+    .compact-table form {
+        margin: 0;
+    }
+    .compact-table a {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 32px;
+        min-height: 28px;
+        padding: 4px 6px;
+    }
+</style>
 <div class="space-y-8">
     <div class="mb-6">
         <h2 class="text-2xl font-bold mb-1 text-[#000000] border-b-4 border-[#B91C1C] inline-block pb-1 pr-6">Daftar Peserta Magang</h2>
-        <p class="text-sm text-[#000000]">Kelola data peserta magang yang telah diterima</p>
+        <p class="text-sm text-[#000000]">Kelola data pengajuan magang yang sudah diproses (diterima / ditolak)</p>
     </div>
     
     <!-- Status Legend -->
@@ -35,127 +80,115 @@
             <h5 class="text-lg font-bold mb-0 text-[#B91C1C]">Data Peserta Magang</h5>
         </div>
         <div class="overflow-x-auto">
-            <table class="min-w-full text-sm text-left">
+            <table class="w-full text-sm text-left compact-table">
                 <thead class="bg-[#FFF2F2] border-b border-[#e3e3e0]">
                     <tr>
-                        <th class="px-4 py-2 font-bold text-[#B91C1C]">No</th>
-                        <th class="px-4 py-2 font-bold text-[#B91C1C]">Nama Peserta</th>
-                        <th class="px-4 py-2 font-bold text-[#B91C1C]">KTM</th>
-                        <th class="px-4 py-2 font-bold text-[#B91C1C]">Email</th>
-                        <th class="px-4 py-2 font-bold text-[#B91C1C]">No HP</th>
-                        <th class="px-4 py-2 font-bold text-[#B91C1C]">Divisi</th>
-                        <th class="px-4 py-2 font-bold text-[#B91C1C]">Judul Tugas</th>
-                        <th class="px-4 py-2 font-bold text-[#B91C1C]">Status Tugas</th>
-                        <th class="px-4 py-2 font-bold text-[#B91C1C]">Sertifikat</th>
-                        <th class="px-4 py-2 font-bold text-[#B91C1C]">Persyaratan Tambahan</th>
-                        <th class="px-4 py-2 font-bold text-[#B91C1C]">Start Date</th>
-                        <th class="px-4 py-2 font-bold text-[#B91C1C]">End Date</th>
-                        <th class="px-4 py-2 font-bold text-[#B91C1C]">Surat Penerimaan</th>
+                        <th class="px-2 py-2 font-bold text-[#B91C1C]">No</th>
+                        <th class="px-2 py-2 font-bold text-[#B91C1C]">Nama</th>
+                        <th class="px-2 py-2 font-bold text-[#B91C1C]">KTM</th>
+                        <th class="px-2 py-2 font-bold text-[#B91C1C]">Email</th>
+                        <th class="px-2 py-2 font-bold text-[#B91C1C]">HP</th>
+                        <th class="px-2 py-2 font-bold text-[#B91C1C]">Divisi</th>
+                        <th class="px-2 py-2 font-bold text-[#B91C1C]">Start</th>
+                        <th class="px-2 py-2 font-bold text-[#B91C1C]">End</th>
+                        <th class="px-2 py-2 font-bold text-[#B91C1C]">Surat Penerimaan</th>
+                        <th class="px-2 py-2 font-bold text-[#B91C1C]">Laporan</th>
+                        <th class="px-2 py-2 font-bold text-[#B91C1C]">Sertifikat</th>
+                        <th class="px-2 py-2 font-bold text-[#B91C1C]">Surat Selesai</th>
                     </tr>
                 </thead>
                 <tbody>
                     @php $row = 1; @endphp
                     @foreach($participants as $peserta)
-                        @foreach($peserta->internshipApplications->where('status', 'accepted') as $app)
+                        @foreach($peserta->internshipApplications as $app)
                             <tr class="even:bg-[#FDFDFC] border-b border-[#e3e3e0] hover:bg-[#FFF2F2] transition-colors">
-                                <td class="px-4 py-2">{{ $row++ }}</td>
-                                <td class="px-4 py-2 font-medium">{{ $peserta->name }}</td>
-                                <td class="px-4 py-2">
+                                <td class="px-2 py-2">{{ $row++ }}</td>
+                                <td class="px-2 py-2 font-medium">{{ $peserta->name }}</td>
+                                <td class="px-2 py-2">
                                     @if($peserta->ktm)
-                                        <a href="{{ asset('storage/' . $peserta->ktm) }}" target="_blank" class="inline-block px-3 py-1 rounded-sm border border-[#B91C1C] text-[#B91C1C] font-medium hover:bg-[#B91C1C] hover:text-white transition text-sm">Lihat KTM</a>
+                                        <a href="{{ asset('storage/' . $peserta->ktm) }}" target="_blank" class="inline-block px-2 py-1 rounded border border-[#B91C1C] text-[#B91C1C] hover:bg-[#B91C1C] hover:text-white transition">Lihat</a>
                                     @else
                                         <span class="text-[#706f6c]">-</span>
                                     @endif
                                 </td>
-                                <td class="px-4 py-2">{{ $peserta->email ?? '-' }}</td>
-                                <td class="px-4 py-2">{{ $peserta->phone ?? '-' }}</td>
-                                <td class="px-4 py-2">{{ $app->divisi->name ?? '-' }}</td>
-                                <td class="px-4 py-2">
-                                    @if($peserta->assignments && $peserta->assignments->count() > 0)
-                                        @foreach($peserta->assignments as $i => $tugas)
-                                            <div class="pb-2">
-                                                {{ $tugas->title ?? '-' }}
-                                            </div>
-                                            @if($i < $peserta->assignments->count() - 1)
-                                                <hr class="my-1">
-                                            @endif
-                                        @endforeach
-                                    @else
-                                        <span class="text-[#706f6c]">-</span>
-                                    @endif
+                                <td class="px-2 py-2 email-cell" title="{{ $peserta->email ?? '-' }}">{{ Str::limit($peserta->email ?? '-', 25) }}</td>
+                                <td class="px-2 py-2">{{ $peserta->phone ?? '-' }}</td>
+                                <td class="px-2 py-2 divisi-cell" title="{{ $app->divisi->name ?? '-' }}">{{ Str::limit($app->divisi->name ?? '-', 20) }}</td>
+                                <td class="px-2 py-2">{{ $app->start_date ? \Carbon\Carbon::parse($app->start_date)->format('d-m-Y') : '-' }}</td>
+                                <td class="px-2 py-2">{{ $app->end_date ? \Carbon\Carbon::parse($app->end_date)->format('d-m-Y') : '-' }}</td>
+                                <td class="px-2 py-2">
+                                    <div class="flex flex-col gap-1.5">
+                                        @if($app->acceptance_letter_path)
+                                            <a href="{{ asset('storage/' . $app->acceptance_letter_path) }}" target="_blank" class="inline-flex items-center justify-center px-2 py-1 rounded border border-green-600 text-green-600 hover:bg-green-600 hover:text-white transition">
+                                                <i class="fas fa-file-pdf"></i>
+                                            </a>
+                                        @endif
+                                        <form method="POST" action="{{ route('admin.participants.upload-acceptance-letter', $app->id) }}" enctype="multipart/form-data" class="flex flex-col gap-1">
+                                            @csrf
+                                            <input type="file" name="acceptance_letter" accept=".pdf" class="text-xs py-1" required>
+                                            <button type="submit" class="px-2 py-1 bg-[#B91C1C] text-white rounded hover:bg-[#9a1616] transition">
+                                                <i class="fas fa-upload"></i> Upload
+                                            </button>
+                                        </form>
+                                    </div>
                                 </td>
-                                <td class="px-4 py-2">
-                                    @if($peserta->assignments && $peserta->assignments->count() > 0)
-                                        @foreach($peserta->assignments as $i => $tugas)
-                                            <div class="pb-2">
-                                                @if($tugas->is_revision == 1)
-                                                    <span class="text-yellow-600" title="Sedang Revisi"><i class="fas fa-edit"></i></span>
-                                                @elseif($tugas->submitted_at)
-                                                    <span class="text-green-600" title="Sudah Mengumpulkan"><i class="fas fa-check-circle"></i></span>
-                                                @else
-                                                    <span class="text-red-600" title="Belum Mengumpulkan"><i class="fas fa-times-circle"></i></span>
-                                                @endif
-                                            </div>
-                                            @if($i < $peserta->assignments->count() - 1)
-                                                <hr class="my-1">
-                                            @endif
-                                        @endforeach
-                                    @else
-                                        <span class="text-[#706f6c]">-</span>
-                                    @endif
+                                <td class="px-2 py-2">
+                                    <div class="flex flex-col gap-1.5">
+                                        @if($app->assessment_report_path)
+                                            <a href="{{ asset('storage/' . $app->assessment_report_path) }}" target="_blank" class="inline-flex items-center justify-center px-2 py-1 rounded border border-[#B91C1C] text-[#B91C1C] hover:bg-[#B91C1C] hover:text-white transition">
+                                                <i class="fas fa-file-pdf"></i>
+                                            </a>
+                                        @endif
+                                        <form method="POST" action="{{ route('admin.participants.upload-assessment-report', $app->id) }}" enctype="multipart/form-data" class="flex flex-col gap-1">
+                                            @csrf
+                                            <input type="file" name="assessment_report" accept=".pdf" class="text-xs py-1" required>
+                                            <button type="submit" class="px-2 py-1 bg-[#B91C1C] text-white rounded hover:bg-[#9a1616] transition">
+                                                <i class="fas fa-upload"></i> Upload
+                                            </button>
+                                        </form>
+                                    </div>
                                 </td>
-                                <td class="px-4 py-2">
-                                    @php
-                                        $hasCertificate = $peserta->certificates && $peserta->certificates->count() > 0;
-                                    @endphp
-                                    @if($hasCertificate)
-                                        <span class="text-green-600"><i class="fas fa-check-circle"></i></span>
-                                    @else
-                                        <span class="text-red-600"><i class="fas fa-times-circle"></i></span>
-                                    @endif
+                                <td class="px-2 py-2">
+                                    <div class="flex flex-col gap-1.5">
+                                        @php
+                                            $hasCertificate = $peserta->certificates && $peserta->certificates->count() > 0;
+                                            $certificate = $hasCertificate ? $peserta->certificates->first() : null;
+                                        @endphp
+                                        @if($certificate && $certificate->certificate_path)
+                                            <a href="{{ asset('storage/' . $certificate->certificate_path) }}" target="_blank" class="inline-flex items-center justify-center px-2 py-1 rounded border border-green-600 text-green-600 hover:bg-green-600 hover:text-white transition">
+                                                <i class="fas fa-file-pdf"></i>
+                                            </a>
+                                        @endif
+                                        <form method="POST" action="{{ route('admin.participants.upload-certificate', $peserta->id) }}" enctype="multipart/form-data" class="flex flex-col gap-1">
+                                            @csrf
+                                            <input type="file" name="certificate" accept=".pdf" class="text-xs py-1" required>
+                                            <button type="submit" class="px-2 py-1 bg-[#B91C1C] text-white rounded hover:bg-[#9a1616] transition">
+                                                <i class="fas fa-upload"></i> Upload
+                                            </button>
+                                        </form>
+                                    </div>
                                 </td>
-                                <td class="px-4 py-2">
-                                    <ul class="mb-0 space-y-1" style="list-style: none; padding-left: 0;">
-                                        @if($app->cover_letter_path)
-                                            <li><a href="{{ asset('storage/' . $app->cover_letter_path) }}" target="_blank" class="inline-block px-2 py-1 rounded-sm border border-[#B91C1C] text-[#B91C1C] font-medium hover:bg-[#B91C1C] hover:text-white transition text-xs">Surat Pengantar Kampus</a></li>
+                                <td class="px-2 py-2">
+                                    <div class="flex flex-col gap-1.5">
+                                        @if(!empty($app->completion_letter_path))
+                                            <a href="{{ asset('storage/' . $app->completion_letter_path) }}" target="_blank" class="inline-flex items-center justify-center px-2 py-1 rounded border border-[#16a34a] text-[#16a34a] hover:bg-[#16a34a] hover:text-white transition">
+                                                <i class="fas fa-file-alt"></i>
+                                            </a>
                                         @endif
-                                        @if($app->foto_nametag_path)
-                                            <li><a href="{{ asset('storage/' . $app->foto_nametag_path) }}" target="_blank" class="inline-block px-2 py-1 rounded-sm border border-[#B91C1C] text-[#B91C1C] font-medium hover:bg-[#B91C1C] hover:text-white transition text-xs">Foto Name Tag</a></li>
-                                        @endif
-                                        @if($app->screenshot_pospay_path)
-                                            <li><a href="{{ asset('storage/' . $app->screenshot_pospay_path) }}" target="_blank" class="inline-block px-2 py-1 rounded-sm border border-[#B91C1C] text-[#B91C1C] font-medium hover:bg-[#B91C1C] hover:text-white transition text-xs">Screenshot aplikasi PosPay</a></li>
-                                        @endif
-                                        @if($app->foto_prangko_prisma_path)
-                                            <li><a href="{{ asset('storage/' . $app->foto_prangko_prisma_path) }}" target="_blank" class="inline-block px-2 py-1 rounded-sm border border-[#B91C1C] text-[#B91C1C] font-medium hover:bg-[#B91C1C] hover:text-white transition text-xs">Foto Prangko Prisma</a></li>
-                                        @endif
-                                        @if($app->ss_follow_ig_museum_path)
-                                            <li><a href="{{ asset('storage/' . $app->ss_follow_ig_museum_path) }}" target="_blank" class="inline-block px-2 py-1 rounded-sm border border-[#B91C1C] text-[#B91C1C] font-medium hover:bg-[#B91C1C] hover:text-white transition text-xs">Screenshot follow IG museumposindonesia</a></li>
-                                        @endif
-                                        @if($app->ss_follow_ig_posindonesia_path)
-                                            <li><a href="{{ asset('storage/' . $app->ss_follow_ig_posindonesia_path) }}" target="_blank" class="inline-block px-2 py-1 rounded-sm border border-[#B91C1C] text-[#B91C1C] font-medium hover:bg-[#B91C1C] hover:text-white transition text-xs">Screenshot follow IG posindonesia.ig</a></li>
-                                        @endif
-                                        @if($app->ss_subscribe_youtube_path)
-                                            <li><a href="{{ asset('storage/' . $app->ss_subscribe_youtube_path) }}" target="_blank" class="inline-block px-2 py-1 rounded-sm border border-[#B91C1C] text-[#B91C1C] font-medium hover:bg-[#B91C1C] hover:text-white transition text-xs">Screenshot subscribe Youtube</a></li>
-                                        @endif
-                                        @if(!$app->cover_letter_path && !$app->foto_nametag_path && !$app->screenshot_pospay_path && !$app->foto_prangko_prisma_path && !$app->ss_follow_ig_museum_path && !$app->ss_follow_ig_posindonesia_path && !$app->ss_subscribe_youtube_path)
-                                            <li><span class="text-[#706f6c]">-</span></li>
-                                        @endif
-                                    </ul>
-                                </td>
-                                <td class="px-4 py-2">{{ $app->start_date ? \Carbon\Carbon::parse($app->start_date)->format('d-m-Y') : '-' }}</td>
-                                <td class="px-4 py-2">{{ $app->end_date ? \Carbon\Carbon::parse($app->end_date)->format('d-m-Y') : '-' }}</td>
-                                <td class="px-4 py-2">
-                                    @if($app->acceptance_letter_path)
-                                        <span class="text-green-600"><i class="fas fa-check-circle"></i></span>
-                                    @else
-                                        <span class="text-red-600"><i class="fas fa-times-circle"></i></span>
-                                    @endif
+                                        <form method="POST" action="{{ route('admin.participants.upload-completion-letter', $app->id) }}" enctype="multipart/form-data" class="flex flex-col gap-1">
+                                            @csrf
+                                            <input type="file" name="completion_letter" accept=".pdf" class="text-xs py-1" required>
+                                            <button type="submit" class="px-2 py-1 bg-[#B91C1C] text-white rounded hover:bg-[#9a1616] transition">
+                                                <i class="fas fa-upload"></i> Upload
+                                            </button>
+                                        </form>
+                                    </div>
                                 </td>
                             </tr>
                         @endforeach
                     @endforeach
                     @if($row === 1)
-                        <tr><td colspan="13" class="text-center py-8 text-[#706f6c]">Tidak ada peserta magang berstatus accepted.</td></tr>
+                        <tr><td colspan="12" class="text-center py-8 text-[#706f6c]">Tidak ada peserta magang yang sudah diproses.</td></tr>
                     @endif
                 </tbody>
             </table>

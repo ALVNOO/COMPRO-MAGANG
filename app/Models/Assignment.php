@@ -15,6 +15,7 @@ class Assignment extends Model
         'assignment_type',
         'description',
         'deadline',
+        'presentation_date',
         'file_path',
         'submission_file_path',
         'grade',
@@ -24,6 +25,7 @@ class Assignment extends Model
     protected $casts = [
         'submitted_at' => 'datetime',
         'deadline' => 'date',
+        'presentation_date' => 'date',
     ];
 
     /**

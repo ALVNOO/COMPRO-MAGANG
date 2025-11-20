@@ -31,7 +31,8 @@ class AdminController extends Controller
         $totalApplications = InternshipApplication::count();
         $totalFinishedParticipants = InternshipApplication::where('status', 'finished')->count();
         $recentApplications = InternshipApplication::with(['user', 'divisi'])
-            ->latest()
+            ->where('status', 'pending')
+            ->orderByDesc('created_at')
             ->take(10)
             ->get();
         $divisions = Divisi::withCount(['internshipApplications' => function($q) {
@@ -43,20 +44,29 @@ class AdminController extends Controller
 
     public function applications()
     {
-        $applications = InternshipApplication::with(['user', 'divisi.subDirektorat.direktorat', 'fieldOfInterest'])->latest()->get();
-        return view('admin.applications', compact('applications'));
+        $applications = InternshipApplication::with(['user', 'divisi.subDirektorat.direktorat', 'fieldOfInterest'])
+            ->where('status', 'pending')
+            ->latest()
+            ->get();
+        $divisions = Divisi::orderBy('name')->get();
+        return view('admin.applications', compact('applications', 'divisions'));
     }
 
-    public function approveApplication($id)
+    public function approveApplication(Request $request, $id)
     {
+        $request->validate([
+            'divisi_id' => 'required|exists:divisis,id',
+        ]);
+
         $application = InternshipApplication::findOrFail($id);
+        $application->divisi_id = $request->divisi_id;
         $application->status = 'accepted';
         $application->notes = null; // Clear rejection notes if any
         $application->save();
 
         // Set divisi_id user jika diterima
         if ($application->user) {
-            $application->user->divisi_id = $application->divisi_id;
+            $application->user->divisi_id = $request->divisi_id;
             $application->user->save();
         }
 
@@ -80,9 +90,114 @@ class AdminController extends Controller
     public function participants()
     {
         $participants = User::where('role', 'peserta')
-            ->with(['internshipApplications.divisi', 'certificates', 'assignments'])
+            ->with(['internshipApplications' => function($query) {
+                $query->whereIn('status', ['accepted', 'rejected', 'finished'])
+                    ->with('divisi');
+            }, 'certificates', 'assignments'])
             ->get();
         return view('admin.participants', compact('participants'));
+    }
+
+    public function uploadAcceptanceLetter(Request $request, $applicationId)
+    {
+        $request->validate([
+            'acceptance_letter' => 'required|file|mimes:pdf|max:10240',
+        ]);
+
+        $application = InternshipApplication::findOrFail($applicationId);
+
+        // Hapus file lama jika ada
+        if ($application->acceptance_letter_path && Storage::disk('public')->exists($application->acceptance_letter_path)) {
+            Storage::disk('public')->delete($application->acceptance_letter_path);
+        }
+
+        // Simpan file baru
+        $path = $request->file('acceptance_letter')->store('acceptance_letters', 'public');
+        $application->acceptance_letter_path = $path;
+        $application->save();
+
+        return redirect()->route('admin.participants')->with('success', 'Surat penerimaan berhasil diupload.');
+    }
+
+    public function uploadAssessmentReport(Request $request, $applicationId)
+    {
+        $request->validate([
+            'assessment_report' => 'required|file|mimes:pdf|max:10240',
+        ]);
+
+        $application = InternshipApplication::findOrFail($applicationId);
+
+        // Hapus file lama jika ada
+        if ($application->assessment_report_path && Storage::disk('public')->exists($application->assessment_report_path)) {
+            Storage::disk('public')->delete($application->assessment_report_path);
+        }
+
+        // Simpan file baru
+        $path = $request->file('assessment_report')->store('assessment_reports', 'public');
+        $application->assessment_report_path = $path;
+        $application->save();
+
+        return redirect()->route('admin.participants')->with('success', 'Laporan penilaian berhasil diupload.');
+    }
+
+    public function uploadCompletionLetter(Request $request, $applicationId)
+    {
+        $request->validate([
+            'completion_letter' => 'required|file|mimes:pdf|max:10240',
+        ]);
+
+        $application = InternshipApplication::findOrFail($applicationId);
+
+        // Hapus file lama jika ada
+        if ($application->completion_letter_path && Storage::disk('public')->exists($application->completion_letter_path)) {
+            Storage::disk('public')->delete($application->completion_letter_path);
+        }
+
+        // Simpan file baru
+        $path = $request->file('completion_letter')->store('completion_letters', 'public');
+        $application->completion_letter_path = $path;
+        $application->save();
+
+        return redirect()->route('admin.participants')->with('success', 'Surat keterangan selesai magang berhasil diupload.');
+    }
+
+    public function uploadCertificate(Request $request, $userId)
+    {
+        $request->validate([
+            'certificate' => 'required|file|mimes:pdf|max:10240',
+        ]);
+
+        $user = User::findOrFail($userId);
+
+        // Cari atau buat certificate record
+        $certificate = \App\Models\Certificate::where('user_id', $userId)->first();
+        
+        if ($certificate) {
+            // Hapus file lama jika ada
+            if ($certificate->certificate_path && Storage::disk('public')->exists($certificate->certificate_path)) {
+                Storage::disk('public')->delete($certificate->certificate_path);
+            }
+        } else {
+            // Buat certificate baru
+            $certificate = new \App\Models\Certificate();
+            $certificate->user_id = $userId;
+            // Ambil internship application yang accepted
+            $application = InternshipApplication::where('user_id', $userId)
+                ->whereIn('status', ['accepted', 'finished'])
+                ->latest()
+                ->first();
+            if ($application) {
+                $certificate->internship_application_id = $application->id;
+            }
+        }
+
+        // Simpan file baru
+        $path = $request->file('certificate')->store('certificates', 'public');
+        $certificate->certificate_path = $path;
+        $certificate->issued_at = now();
+        $certificate->save();
+
+        return redirect()->route('admin.participants')->with('success', 'Sertifikat berhasil diupload.');
     }
 
     public function divisions()
