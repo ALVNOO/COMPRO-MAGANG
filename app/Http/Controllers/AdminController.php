@@ -7,6 +7,7 @@ use App\Models\Direktorat;
 use App\Models\SubDirektorat;
 use App\Models\Divisi;
 use App\Models\DivisiAdmin;
+use App\Models\DivisionMentor;
 use App\Models\InternshipApplication;
 use App\Models\FieldOfInterest;
 use Illuminate\Http\Request;
@@ -48,14 +49,14 @@ class AdminController extends Controller
             ->where('status', 'pending')
             ->latest()
             ->get();
-        $divisions = Divisi::orderBy('name')->get();
+        $divisions = DivisiAdmin::where('is_active', true)->orderBy('sort_order')->orderBy('division_name')->get();
         return view('admin.applications', compact('applications', 'divisions'));
     }
 
     public function approveApplication(Request $request, $id)
     {
         $request->validate([
-            'divisi_id' => 'required|exists:divisis,id',
+            'divisi_id' => 'required|exists:divisions,id',
         ]);
 
         $application = InternshipApplication::findOrFail($id);
@@ -119,25 +120,18 @@ class AdminController extends Controller
         return redirect()->route('admin.participants')->with('success', 'Surat penerimaan berhasil diupload.');
     }
 
-    public function uploadAssessmentReport(Request $request, $applicationId)
+    public function downloadAssessmentReport($applicationId)
     {
-        $request->validate([
-            'assessment_report' => 'required|file|mimes:pdf|max:10240',
-        ]);
-
         $application = InternshipApplication::findOrFail($applicationId);
 
-        // Hapus file lama jika ada
-        if ($application->assessment_report_path && Storage::disk('public')->exists($application->assessment_report_path)) {
-            Storage::disk('public')->delete($application->assessment_report_path);
+        if (!$application->assessment_report_path || !Storage::disk('public')->exists($application->assessment_report_path)) {
+            return redirect()->route('admin.participants')->with('error', 'File laporan tidak ditemukan.');
         }
 
-        // Simpan file baru
-        $path = $request->file('assessment_report')->store('assessment_reports', 'public');
-        $application->assessment_report_path = $path;
-        $application->save();
-
-        return redirect()->route('admin.participants')->with('success', 'Laporan penilaian berhasil diupload.');
+        return Storage::disk('public')->download(
+            $application->assessment_report_path,
+            'Laporan_Penilaian_' . $application->user->name . '.pdf'
+        );
     }
 
     public function uploadCompletionLetter(Request $request, $applicationId)
@@ -835,7 +829,7 @@ class AdminController extends Controller
     }
     public function indexDivisions()
     {
-        $divisions = DivisiAdmin::orderBy('created_at', 'desc')->get();
+        $divisions = DivisiAdmin::with('mentors')->orderBy('created_at', 'desc')->get();
         $view_mode = 'index'; // Mode: tampilkan tabel
         $division = null;
         
@@ -847,7 +841,7 @@ class AdminController extends Controller
      */
     public function createDivision()
     {
-        $divisions = DivisiAdmin::orderBy('created_at', 'desc')->get();
+        $divisions = DivisiAdmin::with('mentors')->orderBy('created_at', 'desc')->get();
         $view_mode = 'create'; // Mode: tampilkan form create
         $division = null;
         
@@ -861,16 +855,47 @@ class AdminController extends Controller
     {
         $validated = $request->validate([
             'division_name' => 'required|string|max:255',
-            'mentor_name' => 'required|string|max:255',
-            'nik_number' => 'required|string|size:16|unique:divisions,nik_number',
+            'mentors' => 'required|array|min:1',
+            'mentors.*.mentor_name' => 'required|string|max:255',
+            'mentors.*.nik_number' => 'required|string|size:16',
             'is_active' => 'nullable|boolean',
             'sort_order' => 'nullable|integer|min:0'
         ]);
 
+        // Validate unique NIK for all mentors
+        $nikNumbers = collect($request->mentors)->pluck('nik_number');
+        if ($nikNumbers->duplicates()->isNotEmpty()) {
+            return redirect()->back()
+                ->withInput()
+                ->withErrors(['mentors' => 'NIK mentor tidak boleh duplikat.']);
+        }
+
+        // Check if NIK already exists in division_mentors
+        $existingNiks = DivisionMentor::whereIn('nik_number', $nikNumbers)->pluck('nik_number');
+        if ($existingNiks->isNotEmpty()) {
+            return redirect()->back()
+                ->withInput()
+                ->withErrors(['mentors' => 'NIK ' . $existingNiks->implode(', ') . ' sudah digunakan.']);
+        }
+
         // Set default value for is_active if not provided
         $validated['is_active'] = $request->has('is_active') ? true : false;
 
-        DivisiAdmin::create($validated);
+        // Create division
+        $division = DivisiAdmin::create([
+            'division_name' => $validated['division_name'],
+            'is_active' => $validated['is_active'],
+            'sort_order' => $validated['sort_order'] ?? 0,
+        ]);
+
+        // Create mentors
+        foreach ($request->mentors as $mentorData) {
+            DivisionMentor::create([
+                'division_id' => $division->id,
+                'mentor_name' => $mentorData['mentor_name'],
+                'nik_number' => $mentorData['nik_number'],
+            ]);
+        }
         
         return redirect()->route('admin.divisions.index')
             ->with('success', 'Divisi berhasil ditambahkan!');
@@ -881,8 +906,8 @@ class AdminController extends Controller
      */
     public function editDivision($id)
     {
-        $division = DivisiAdmin::findOrFail($id);
-        $divisions = DivisiAdmin::orderBy('created_at', 'desc')->get();
+        $division = DivisiAdmin::with('mentors')->findOrFail($id);
+        $divisions = DivisiAdmin::with('mentors')->orderBy('created_at', 'desc')->get();
         $view_mode = 'edit'; // Mode: tampilkan form edit
         
         return view('admin.divisions-admin', compact('divisions', 'view_mode', 'division'));
@@ -897,16 +922,69 @@ class AdminController extends Controller
         
         $validated = $request->validate([
             'division_name' => 'required|string|max:255',
-            'mentor_name' => 'required|string|max:255',
-            'nik_number' => 'required|string|size:16|unique:divisions,nik_number,' . $division->id,
+            'mentors' => 'required|array|min:1',
+            'mentors.*.mentor_name' => 'required|string|max:255',
+            'mentors.*.nik_number' => 'required|string|size:16',
             'is_active' => 'nullable|boolean',
             'sort_order' => 'nullable|integer|min:0'
         ]);
 
+        // Validate unique NIK for all mentors
+        $nikNumbers = collect($request->mentors)->pluck('nik_number');
+        if ($nikNumbers->duplicates()->isNotEmpty()) {
+            return redirect()->back()
+                ->withInput()
+                ->withErrors(['mentors' => 'NIK mentor tidak boleh duplikat.']);
+        }
+
+        // Check if NIK already exists in other division_mentors (excluding current division)
+        $existingNiks = DivisionMentor::where('division_id', '!=', $division->id)
+            ->whereIn('nik_number', $nikNumbers)
+            ->pluck('nik_number');
+        if ($existingNiks->isNotEmpty()) {
+            return redirect()->back()
+                ->withInput()
+                ->withErrors(['mentors' => 'NIK ' . $existingNiks->implode(', ') . ' sudah digunakan di divisi lain.']);
+        }
+
         // Set default value for is_active if not provided
         $validated['is_active'] = $request->has('is_active') ? true : false;
 
-        $division->update($validated);
+        // Update division
+        $division->update([
+            'division_name' => $validated['division_name'],
+            'is_active' => $validated['is_active'],
+            'sort_order' => $validated['sort_order'] ?? 0,
+        ]);
+
+        // Get existing mentor IDs from request
+        $existingMentorIds = collect($request->mentors)
+            ->filter(fn($m) => isset($m['id']))
+            ->pluck('id')
+            ->filter();
+
+        // Delete mentors that are not in the request
+        $division->mentors()->whereNotIn('id', $existingMentorIds)->delete();
+
+        // Update or create mentors
+        foreach ($request->mentors as $mentorData) {
+            if (isset($mentorData['id']) && $mentorData['id']) {
+                // Update existing mentor
+                DivisionMentor::where('id', $mentorData['id'])
+                    ->where('division_id', $division->id)
+                    ->update([
+                        'mentor_name' => $mentorData['mentor_name'],
+                        'nik_number' => $mentorData['nik_number'],
+                    ]);
+            } else {
+                // Create new mentor
+                DivisionMentor::create([
+                    'division_id' => $division->id,
+                    'mentor_name' => $mentorData['mentor_name'],
+                    'nik_number' => $mentorData['nik_number'],
+                ]);
+            }
+        }
         
         return redirect()->route('admin.divisions.index')
             ->with('success', 'Divisi berhasil diperbarui!');

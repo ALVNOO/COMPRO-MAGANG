@@ -17,53 +17,94 @@
                 @method('PUT')
             @endif
             
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">
-                        Nama Divisi <span class="text-red-500">*</span>
+            <div class="mb-6">
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                    Nama Divisi <span class="text-red-500">*</span>
+                </label>
+                <input type="text" name="division_name" value="{{ old('division_name', $division->division_name ?? '') }}" 
+                       class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-red-500 focus:border-red-500 @error('division_name') border-red-500 @enderror"
+                       placeholder="Contoh: IT & Digital" required>
+                @error('division_name')
+                    <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                @enderror
+            </div>
+
+            <div class="mb-6">
+                <div class="flex justify-between items-center mb-3">
+                    <label class="block text-sm font-medium text-gray-700">
+                        Mentor <span class="text-red-500">*</span>
                     </label>
-                    <input type="text" name="division_name" value="{{ old('division_name', $division->division_name ?? '') }}" 
-                           class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-red-500 focus:border-red-500 @error('division_name') border-red-500 @enderror"
-                           placeholder="Contoh: IT & Digital" required>
-                    @error('division_name')
-                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                    @enderror
+                    <button type="button" onclick="addMentorField()" class="px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700 transition text-sm">
+                        <i class="fas fa-plus"></i> Tambah Mentor
+                    </button>
                 </div>
-                
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">
-                        Nama Mentor <span class="text-red-500">*</span>
-                    </label>
-                    <input type="text" name="mentor_name" value="{{ old('mentor_name', $division->mentor_name ?? '') }}" 
-                           class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-red-500 focus:border-red-500 @error('mentor_name') border-red-500 @enderror"
-                           placeholder="Contoh: Budi Santoso" required>
-                    @error('mentor_name')
-                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                    @enderror
+                <div id="mentors-container" class="space-y-4">
+                    @if($view_mode == 'edit' && $division->mentors && $division->mentors->count() > 0)
+                        @foreach($division->mentors as $index => $mentor)
+                            <div class="mentor-item border border-gray-300 rounded-lg p-4 bg-gray-50">
+                                <input type="hidden" name="mentors[{{ $index }}][id]" value="{{ $mentor->id }}">
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-xs font-medium text-gray-700 mb-1">
+                                            Nama Mentor <span class="text-red-500">*</span>
+                                        </label>
+                                        <input type="text" name="mentors[{{ $index }}][mentor_name]" value="{{ old("mentors.$index.mentor_name", $mentor->mentor_name) }}" 
+                                               class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-red-500 focus:border-red-500" 
+                                               placeholder="Contoh: Budi Santoso" required>
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-medium text-gray-700 mb-1">
+                                            NIK <span class="text-red-500">*</span>
+                                        </label>
+                                        <div class="flex gap-2">
+                                            <input type="text" name="mentors[{{ $index }}][nik_number]" value="{{ old("mentors.$index.nik_number", $mentor->nik_number) }}" 
+                                                   class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-red-500 focus:border-red-500" 
+                                                   placeholder="16 digit NIK" maxlength="16" pattern="[0-9]{16}" required>
+                                            @if($division->mentors->count() > 1)
+                                                <button type="button" onclick="removeMentorField(this)" class="px-3 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition text-sm">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            @endif
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        @endforeach
+                    @else
+                        <div class="mentor-item border border-gray-300 rounded-lg p-4 bg-gray-50">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-700 mb-1">
+                                        Nama Mentor <span class="text-red-500">*</span>
+                                    </label>
+                                    <input type="text" name="mentors[0][mentor_name]" value="{{ old('mentors.0.mentor_name', '') }}" 
+                                           class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-red-500 focus:border-red-500" 
+                                           placeholder="Contoh: Budi Santoso" required>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-700 mb-1">
+                                        NIK <span class="text-red-500">*</span>
+                                    </label>
+                                    <input type="text" name="mentors[0][nik_number]" value="{{ old('mentors.0.nik_number', '') }}" 
+                                           class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-red-500 focus:border-red-500" 
+                                           placeholder="16 digit NIK" maxlength="16" pattern="[0-9]{16}" required>
+                                </div>
+                            </div>
+                        </div>
+                    @endif
                 </div>
+                @error('mentors')
+                    <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                @enderror
             </div>
             
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">
-                        NIK <span class="text-red-500">*</span>
-                    </label>
-                    <input type="text" name="nik_number" value="{{ old('nik_number', $division->nik_number ?? '') }}" 
-                           class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-red-500 focus:border-red-500 @error('nik_number') border-red-500 @enderror"
-                           placeholder="16 digit NIK" maxlength="16" pattern="[0-9]{16}" required>
-                    @error('nik_number')
-                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                    @enderror
-                </div>
-                
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">
-                        Urutan Tampil
-                    </label>
-                    <input type="number" name="sort_order" value="{{ old('sort_order', $division->sort_order ?? 0) }}" 
-                           class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-red-500 focus:border-red-500"
-                           placeholder="0" min="0">
-                </div>
+            <div class="mb-6">
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                    Urutan Tampil
+                </label>
+                <input type="number" name="sort_order" value="{{ old('sort_order', $division->sort_order ?? 0) }}" 
+                       class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                       placeholder="0" min="0">
             </div>
             
             <div class="mb-6">
@@ -114,8 +155,7 @@
                         <tr>
                             <th class="px-4 py-2 font-bold text-[#ee2e24]">No</th>
                             <th class="px-4 py-2 font-bold text-[#ee2e24]">Nama Divisi</th>
-                            <th class="px-4 py-2 font-bold text-[#ee2e24]">Nama Mentor</th>
-                            <th class="px-4 py-2 font-bold text-[#ee2e24]">NIK</th>
+                            <th class="px-4 py-2 font-bold text-[#ee2e24]">Mentor</th>
                             <th class="px-4 py-2 font-bold text-[#ee2e24]">Status</th>
                             <th class="px-4 py-2 font-bold text-[#ee2e24]">Aksi</th>
                         </tr>
@@ -125,8 +165,20 @@
                             <tr class="even:bg-[#FDFDFC] border-b border-[#e3e3e0] hover:bg-[#FFF2F2] transition-colors">
                                 <td class="px-4 py-2 font-bold">{{ $index + 1 }}</td>
                                 <td class="px-4 py-2 font-medium">{{ $division->division_name }}</td>
-                                <td class="px-4 py-2 text-[#706f6c]">{{ $division->mentor_name }}</td>
-                                <td class="px-4 py-2 text-[#706f6c] font-mono">{{ $division->nik_number }}</td>
+                                <td class="px-4 py-2 text-[#706f6c]">
+                                    @if($division->mentors && $division->mentors->count() > 0)
+                                        <div class="space-y-1">
+                                            @foreach($division->mentors as $mentor)
+                                                <div class="text-sm">
+                                                    <span class="font-medium">{{ $mentor->mentor_name }}</span>
+                                                    <span class="text-xs text-gray-500 font-mono">({{ $mentor->nik_number }})</span>
+                                                </div>
+                                            @endforeach
+                                        </div>
+                                    @else
+                                        <span class="text-gray-400">-</span>
+                                    @endif
+                                </td>
                                 <td class="px-4 py-2">
                                     @if($division->is_active)
                                         <span class="inline-block px-2 py-1 rounded-full text-xs font-bold bg-green-100 text-green-800">Aktif</span>
@@ -160,7 +212,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="6" class="text-center py-8 text-[#706f6c]">
+                                <td colspan="5" class="text-center py-8 text-[#706f6c]">
                                     <i class="fas fa-inbox fa-2x mb-2"></i><br>
                                     Belum ada data divisi
                                 </td>
@@ -174,4 +226,52 @@
     
     @endif
 </div>
+
+@if($view_mode == 'create' || $view_mode == 'edit')
+<script>
+let mentorIndex = {{ $view_mode == 'edit' && $division->mentors ? $division->mentors->count() : 1 }};
+
+function addMentorField() {
+    const container = document.getElementById('mentors-container');
+    const newMentor = document.createElement('div');
+    newMentor.className = 'mentor-item border border-gray-300 rounded-lg p-4 bg-gray-50';
+    newMentor.innerHTML = `
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+                <label class="block text-xs font-medium text-gray-700 mb-1">
+                    Nama Mentor <span class="text-red-500">*</span>
+                </label>
+                <input type="text" name="mentors[${mentorIndex}][mentor_name]" 
+                       class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-red-500 focus:border-red-500" 
+                       placeholder="Contoh: Budi Santoso" required>
+            </div>
+            <div>
+                <label class="block text-xs font-medium text-gray-700 mb-1">
+                    NIK <span class="text-red-500">*</span>
+                </label>
+                <div class="flex gap-2">
+                    <input type="text" name="mentors[${mentorIndex}][nik_number]" 
+                           class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-red-500 focus:border-red-500" 
+                           placeholder="16 digit NIK" maxlength="16" pattern="[0-9]{16}" required>
+                    <button type="button" onclick="removeMentorField(this)" class="px-3 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition text-sm">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+    container.appendChild(newMentor);
+    mentorIndex++;
+}
+
+function removeMentorField(button) {
+    const container = document.getElementById('mentors-container');
+    if (container.children.length > 1) {
+        button.closest('.mentor-item').remove();
+    } else {
+        alert('Minimal harus ada 1 mentor.');
+    }
+}
+</script>
+@endif
 @endsection

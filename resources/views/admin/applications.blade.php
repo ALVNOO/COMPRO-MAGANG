@@ -102,7 +102,7 @@
                                             <select id="divisi-{{ $app->id }}" name="divisi_id" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-green-500" required>
                                                 <option value="">-- Pilih Divisi --</option>
                                                 @forelse($divisionsList as $division)
-                                                    <option value="{{ $division->id }}">{{ $division->name }}</option>
+                                                    <option value="{{ $division->id }}">{{ $division->division_name }}</option>
                                                 @empty
                                                     <option value="" disabled>Belum ada data divisi</option>
                                                 @endforelse

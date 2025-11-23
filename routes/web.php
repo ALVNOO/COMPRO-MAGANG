@@ -108,7 +108,7 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
     Route::post('/applications/{id}/reject', [AdminController::class, 'rejectApplication'])->name('applications.reject');
     Route::get('/participants', [AdminController::class, 'participants'])->name('participants');
     Route::post('/participants/{applicationId}/upload-acceptance-letter', [AdminController::class, 'uploadAcceptanceLetter'])->name('participants.upload-acceptance-letter');
-    Route::post('/participants/{applicationId}/upload-assessment-report', [AdminController::class, 'uploadAssessmentReport'])->name('participants.upload-assessment-report');
+    Route::get('/participants/{applicationId}/download-assessment-report', [AdminController::class, 'downloadAssessmentReport'])->name('participants.download-assessment-report');
     Route::post('/participants/{applicationId}/upload-completion-letter', [AdminController::class, 'uploadCompletionLetter'])->name('participants.upload-completion-letter');
     Route::post('/participants/{userId}/upload-certificate', [AdminController::class, 'uploadCertificate'])->name('participants.upload-certificate');
     Route::get('/divisions', [AdminController::class, 'divisions'])->name('divisions');

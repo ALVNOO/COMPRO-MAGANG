@@ -28,4 +28,12 @@ class DivisiAdmin extends Model
     {
         return $this->hasMany(InternshipApplication::class);
     }
+
+    /**
+     * Get the mentors for the division.
+     */
+    public function mentors()
+    {
+        return $this->hasMany(DivisionMentor::class, 'division_id');
+    }
 }

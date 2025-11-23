@@ -133,20 +133,13 @@
                                     </div>
                                 </td>
                                 <td class="px-2 py-2">
-                                    <div class="flex flex-col gap-1.5">
-                                        @if($app->assessment_report_path)
-                                            <a href="{{ asset('storage/' . $app->assessment_report_path) }}" target="_blank" class="inline-flex items-center justify-center px-2 py-1 rounded border border-[#B91C1C] text-[#B91C1C] hover:bg-[#B91C1C] hover:text-white transition">
-                                                <i class="fas fa-file-pdf"></i>
-                                            </a>
-                                        @endif
-                                        <form method="POST" action="{{ route('admin.participants.upload-assessment-report', $app->id) }}" enctype="multipart/form-data" class="flex flex-col gap-1">
-                                            @csrf
-                                            <input type="file" name="assessment_report" accept=".pdf" class="text-xs py-1" required>
-                                            <button type="submit" class="px-2 py-1 bg-[#B91C1C] text-white rounded hover:bg-[#9a1616] transition">
-                                                <i class="fas fa-upload"></i> Upload
-                                            </button>
-                                        </form>
-                                    </div>
+                                    @if($app->assessment_report_path)
+                                        <a href="{{ route('admin.participants.download-assessment-report', $app->id) }}" class="inline-flex items-center justify-center px-2 py-1 rounded border border-[#B91C1C] text-[#B91C1C] hover:bg-[#B91C1C] hover:text-white transition" title="Download Laporan PDF">
+                                            <i class="fas fa-download"></i> Download PDF
+                                        </a>
+                                    @else
+                                        <span class="text-[#706f6c] text-xs">Belum ada laporan</span>
+                                    @endif
                                 </td>
                                 <td class="px-2 py-2">
                                     <div class="flex flex-col gap-1.5">
