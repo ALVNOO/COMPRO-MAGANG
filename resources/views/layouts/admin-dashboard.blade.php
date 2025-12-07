@@ -84,6 +84,12 @@
                         </a>
                     </li>
                     <li>
+                        <a href="{{ route('admin.attendance') }}"
+                            class="flex items-center px-3 py-2 rounded-sm border-l-4 transition font-medium border-l-transparent hover:border-l-[#B91C1C] hover:text-[#B91C1C] {{ request()->routeIs('admin.attendance') ? 'border-l-[#B91C1C] bg-[#FEF2F2] text-[#B91C1C] font-semibold' : '' }} transform hover:scale-105">
+                            <i class="fas fa-calendar-check mr-2"></i>Absensi
+                        </a>
+                    </li>
+                    <li>
                         <a href="{{ route('admin.reports') }}"
                             class="flex items-center px-3 py-2 rounded-sm border-l-4 transition font-medium border-l-transparent hover:border-l-[#B91C1C] hover:text-[#B91C1C] {{ request()->routeIs('admin.reports') ? 'border-l-[#B91C1C] bg-[#FEF2F2] text-[#B91C1C] font-semibold' : '' }} transform hover:scale-105">
                             <i class="fas fa-chart-bar mr-2"></i>Report Peserta Magang
@@ -118,17 +124,17 @@
             <svg class="absolute bottom-0 right-0 w-96 h-96 opacity-30 z-0 pointer-events-none" viewBox="0 0 380 380" fill="none"><circle cx="320" cy="320" r="160" fill="url(#br-red2)"/><defs><radialGradient id="br-red2" cx="0" cy="0" r="1" gradientTransform="translate(320 320) scale(180 160)" gradientUnits="userSpaceOnUse"><stop stop-color="#fff2f2"/><stop offset="0.4" stop-color="#B91C1C" stop-opacity="0.5"/><stop offset="1" stop-color="#B91C1C" stop-opacity="0.18"/></radialGradient></defs></svg>
             <!-- Session Messages -->
             @if(session('success'))
-            <div class="bg-green-100 border border-green-300 text-green-800 px-4 py-3 rounded mb-4 flex items-center gap-3">
+            <div class="bg-green-100 border border-green-300 text-green-800 px-4 py-3 rounded mb-4 flex items-center gap-3 alert-notification">
                 <i class="fas fa-check-circle"></i> <span><strong>Berhasil!</strong> {{ session('success') }}</span>
             </div>
             @endif
             @if(session('error'))
-            <div class="bg-red-100 border border-red-300 text-red-800 px-4 py-3 rounded mb-4 flex items-center gap-3">
+            <div class="bg-red-100 border border-red-300 text-red-800 px-4 py-3 rounded mb-4 flex items-center gap-3 alert-notification">
                 <i class="fas fa-exclamation-triangle"></i><span><strong>Error!</strong> {{ session('error') }}</span>
             </div>
             @endif
             @if($errors->any())
-            <div class="bg-red-100 border border-red-300 text-red-800 px-4 py-3 rounded mb-4">
+            <div class="bg-red-100 border border-red-300 text-red-800 px-4 py-3 rounded mb-4 alert-notification">
                 <strong>Error!</strong>
                 <ul class="mt-1 list-disc list-inside text-sm">
                     @foreach($errors->all() as $error)
@@ -200,5 +206,20 @@
         });
     </script>
     @stack('scripts')
+    <script>
+        // Auto-hide notifications after 3 seconds
+        document.addEventListener('DOMContentLoaded', function() {
+            const notifications = document.querySelectorAll('.alert-notification');
+            notifications.forEach(function(notification) {
+                setTimeout(function() {
+                    notification.style.transition = 'opacity 0.5s ease-out';
+                    notification.style.opacity = '0';
+                    setTimeout(function() {
+                        notification.remove();
+                    }, 500);
+                }, 3000);
+            });
+        });
+    </script>
 </body>
 </html> 

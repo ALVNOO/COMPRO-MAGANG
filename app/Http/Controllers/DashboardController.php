@@ -346,7 +346,7 @@ class DashboardController extends Controller
     {
         $user = Auth::user();
         $application = $user->internshipApplications()
-            ->with('divisi.subDirektorat.direktorat', 'fieldOfInterest')
+            ->with('divisi.subDirektorat.direktorat', 'fieldOfInterest', 'divisionAdmin', 'divisionMentor')
             ->whereIn('status', ['pending', 'accepted', 'finished'])
             ->latest()
             ->first();

@@ -15,11 +15,13 @@
             <div class="flex items-center justify-between">
                 <div class="flex items-center">
                     <div>
-                        <h3 class="text-2xl font-bold text-[#000000]">{{ $mentor->divisi->vp ?? $mentor->name }}</h3>
-                        <p class="text-[#706f6c]">{{ $mentor->divisi->name ?? '-' }}</p>
-                        <p class="text-[#706f6c] text-sm">{{ $mentor->divisi->subDirektorat->name ?? '-' }} • {{ $mentor->divisi->subDirektorat->direktorat->name ?? '-' }}</p>
+                        <h3 class="text-2xl font-bold text-[#000000]">{{ $mentor->division_mentor->mentor_name ?? $mentor->name }}</h3>
+                        <p class="text-[#706f6c]">{{ $mentor->division_admin->division_name ?? '-' }}</p>
                         <p class="text-[#706f6c] text-sm mt-1">
                             <i class="fas fa-envelope"></i> {{ $mentor->email }}
+                        </p>
+                        <p class="text-[#706f6c] text-sm mt-1">
+                            <i class="fas fa-id-card"></i> NIK: {{ $mentor->division_mentor->nik_number ?? $mentor->username }}
                         </p>
                     </div>
                 </div>

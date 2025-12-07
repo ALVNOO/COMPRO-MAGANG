@@ -339,27 +339,45 @@
                     <i class="fas fa-clipboard-list"></i>
                     <h5>Status Pengajuan Magang</h5>
                 </div>
+                <!-- 1. Divisi Penempatan -->
+                @if($application->status == 'accepted' || $application->status == 'finished')
                 <div class="info-item">
                     <div class="info-item-label">
                         <i class="fas fa-building"></i>
-                        <span>Divisi</span>
+                        <span>Divisi Penempatan</span>
                     </div>
-                    <div class="info-item-value">{{ $application->divisi->name ?? '-' }}</div>
+                    <div class="info-item-value">{{ $application->divisionAdmin->division_name ?? '-' }}</div>
                 </div>
+                @else
                 <div class="info-item">
                     <div class="info-item-label">
-                        <i class="fas fa-sitemap"></i>
-                        <span>Sub Direktorat</span>
+                        <i class="fas fa-building"></i>
+                        <span>Divisi Penempatan</span>
                     </div>
-                    <div class="info-item-value">{{ $application->divisi->subDirektorat->name ?? '-' }}</div>
+                    <div class="info-item-value">-</div>
                 </div>
+                @endif
+                
+                <!-- 2. Mentor -->
+                @if($application->status == 'accepted' || $application->status == 'finished')
                 <div class="info-item">
                     <div class="info-item-label">
-                        <i class="fas fa-network-wired"></i>
-                        <span>Direktorat</span>
+                        <i class="fas fa-user-tie"></i>
+                        <span>Mentor</span>
                     </div>
-                    <div class="info-item-value">{{ $application->divisi->subDirektorat->direktorat->name ?? '-' }}</div>
+                    <div class="info-item-value">{{ $application->divisionMentor->mentor_name ?? '-' }}</div>
                 </div>
+                @else
+                <div class="info-item">
+                    <div class="info-item-label">
+                        <i class="fas fa-user-tie"></i>
+                        <span>Mentor</span>
+                    </div>
+                    <div class="info-item-value">-</div>
+                </div>
+                @endif
+                
+                <!-- 3. Bidang Peminatan -->
                 <div class="info-item">
                     <div class="info-item-label">
                         <i class="fas fa-tags"></i>
@@ -367,6 +385,8 @@
                     </div>
                     <div class="info-item-value">{{ $application->fieldOfInterest->name ?? '-' }}</div>
                 </div>
+                
+                <!-- 4. Status -->
                 <div class="info-item">
                     <div class="info-item-label">
                         <i class="fas fa-info-circle"></i>
@@ -384,13 +404,82 @@
                         @endif
                     </div>
                 </div>
+                
+                <!-- 5. Tanggal Pengajuan -->
                 <div class="info-item">
                     <div class="info-item-label">
                         <i class="fas fa-calendar"></i>
                         <span>Tanggal Pengajuan</span>
                     </div>
-                    <div class="info-item-value">{{ $application->created_at->format('d M Y') }}</div>
+                    <div class="info-item-value">{{ $application->created_at ? $application->created_at->format('d M Y') : '-' }}</div>
                 </div>
+                
+                <!-- 6. Tanggal Mulai Magang -->
+                @if($application->start_date)
+                <div class="info-item">
+                    <div class="info-item-label">
+                        <i class="fas fa-calendar-check"></i>
+                        <span>Tanggal Mulai Magang</span>
+                    </div>
+                    <div class="info-item-value">{{ \Carbon\Carbon::parse($application->start_date)->format('d M Y') }}</div>
+                </div>
+                @else
+                <div class="info-item">
+                    <div class="info-item-label">
+                        <i class="fas fa-calendar-check"></i>
+                        <span>Tanggal Mulai Magang</span>
+                    </div>
+                    <div class="info-item-value">-</div>
+                </div>
+                @endif
+                
+                <!-- 7. Tanggal Selesai Magang -->
+                @if($application->end_date)
+                <div class="info-item">
+                    <div class="info-item-label">
+                        <i class="fas fa-calendar-times"></i>
+                        <span>Tanggal Selesai Magang</span>
+                    </div>
+                    <div class="info-item-value">{{ \Carbon\Carbon::parse($application->end_date)->format('d M Y') }}</div>
+                </div>
+                @else
+                <div class="info-item">
+                    <div class="info-item-label">
+                        <i class="fas fa-calendar-times"></i>
+                        <span>Tanggal Selesai Magang</span>
+                    </div>
+                    <div class="info-item-value">-</div>
+                </div>
+                @endif
+                
+                <!-- 8. Surat Penerimaan -->
+                @if($application->status == 'accepted' || $application->status == 'finished')
+                <div class="info-item">
+                    <div class="info-item-label">
+                        <i class="fas fa-file-pdf"></i>
+                        <span>Surat Penerimaan</span>
+                    </div>
+                    <div class="info-item-value">
+                        @if($application->acceptance_letter_path && \Illuminate\Support\Facades\Storage::disk('public')->exists($application->acceptance_letter_path))
+                            <a href="{{ route('dashboard.acceptance-letter.download') }}" class="btn btn-sm btn-primary" target="_blank">
+                                <i class="fas fa-download me-1"></i>Download Surat Penerimaan
+                            </a>
+                        @else
+                            <span class="text-muted">Belum tersedia</span>
+                        @endif
+                    </div>
+                </div>
+                @else
+                <div class="info-item">
+                    <div class="info-item-label">
+                        <i class="fas fa-file-pdf"></i>
+                        <span>Surat Penerimaan</span>
+                    </div>
+                    <div class="info-item-value">
+                        <span class="text-muted">-</span>
+                    </div>
+                </div>
+                @endif
                 @if($application->notes)
                 <div class="info-item">
                     <div class="info-item-label">

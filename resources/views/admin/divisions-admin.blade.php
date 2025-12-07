@@ -59,7 +59,7 @@
                                         <div class="flex gap-2">
                                             <input type="text" name="mentors[{{ $index }}][nik_number]" value="{{ old("mentors.$index.nik_number", $mentor->nik_number) }}" 
                                                    class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-red-500 focus:border-red-500" 
-                                                   placeholder="16 digit NIK" maxlength="16" pattern="[0-9]{16}" required>
+                                                   placeholder="6 digit NIK" maxlength="6" pattern="[0-9]{6}" required>
                                             @if($division->mentors->count() > 1)
                                                 <button type="button" onclick="removeMentorField(this)" class="px-3 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition text-sm">
                                                     <i class="fas fa-trash"></i>
@@ -87,7 +87,7 @@
                                     </label>
                                     <input type="text" name="mentors[0][nik_number]" value="{{ old('mentors.0.nik_number', '') }}" 
                                            class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-red-500 focus:border-red-500" 
-                                           placeholder="16 digit NIK" maxlength="16" pattern="[0-9]{16}" required>
+                                           placeholder="6 digit NIK" maxlength="6" pattern="[0-9]{6}" required>
                                 </div>
                             </div>
                         </div>
@@ -252,7 +252,7 @@ function addMentorField() {
                 <div class="flex gap-2">
                     <input type="text" name="mentors[${mentorIndex}][nik_number]" 
                            class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-red-500 focus:border-red-500" 
-                           placeholder="16 digit NIK" maxlength="16" pattern="[0-9]{16}" required>
+                           placeholder="6 digit NIK" maxlength="6" pattern="[0-9]{6}" required>
                     <button type="button" onclick="removeMentorField(this)" class="px-3 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition text-sm">
                         <i class="fas fa-trash"></i>
                     </button>

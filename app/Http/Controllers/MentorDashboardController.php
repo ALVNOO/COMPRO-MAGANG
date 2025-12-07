@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\InternshipApplication;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 
@@ -15,31 +16,42 @@ class MentorDashboardController extends Controller
     public function index()
     {
         $user = Auth::user();
+        // Cari division_mentor berdasarkan username (nik_number) mentor yang login
+        $divisionMentor = \App\Models\DivisionMentor::where('nik_number', $user->username)->first();
         $divisi = $user->divisi;
+        
+        // Pengajuan pending masih menggunakan divisi (karena belum di-assign ke mentor)
         $pendingApplications = $divisi
             ? $divisi->internshipApplications()->where('status', 'pending')->count()
             : 0;
-        $activeParticipants = $divisi
-            ? $divisi->internshipApplications()
+        
+        // Peserta aktif menggunakan division_mentor_id
+        $activeParticipants = $divisionMentor
+            ? \App\Models\InternshipApplication::where('division_mentor_id', $divisionMentor->id)
                 ->where('status', 'accepted')
                 ->where(function($q) {
                     $q->whereNull('end_date')->orWhere('end_date', '>=', now());
                 })
                 ->count()
             : 0;
-        $assignmentsToGrade = $divisi
-            ? \App\Models\Assignment::whereHas('user.internshipApplications', function($q) use ($divisi) {
-                $q->where('divisi_id', $divisi->id)->where('status', 'accepted');
+        
+        // Tugas yang perlu dinilai menggunakan division_mentor_id
+        $assignmentsToGrade = $divisionMentor
+            ? \App\Models\Assignment::whereHas('user.internshipApplications', function($q) use ($divisionMentor) {
+                $q->where('division_mentor_id', $divisionMentor->id)->where('status', 'accepted');
             })->whereNotNull('submission_file_path')->whereNull('grade')->count()
             : 0;
+        
         $pengajuanBaru = $divisi
             ? $divisi->internshipApplications()->where('status', 'pending')->count()
             : 0;
-        $tugasBaruDiupload = $divisi
-            ? \App\Models\Assignment::whereHas('user.internshipApplications', function($q) use ($divisi) {
-                $q->where('divisi_id', $divisi->id)->where('status', 'accepted');
+        
+        $tugasBaruDiupload = $divisionMentor
+            ? \App\Models\Assignment::whereHas('user.internshipApplications', function($q) use ($divisionMentor) {
+                $q->where('division_mentor_id', $divisionMentor->id)->where('status', 'accepted');
             })->whereNotNull('submission_file_path')->whereNull('grade')->count()
             : 0;
+        
         return view('mentor.dashboard', [
             'pendingApplications' => $pendingApplications,
             'activeParticipants' => $activeParticipants,
@@ -62,10 +74,11 @@ class MentorDashboardController extends Controller
     public function penugasan()
     {
         $user = Auth::user();
-        $divisi = $user->divisi;
-        $acceptedParticipants = $divisi
+        // Cari division_mentor berdasarkan username (nik_number) mentor yang login
+        $divisionMentor = \App\Models\DivisionMentor::where('nik_number', $user->username)->first();
+        $acceptedParticipants = $divisionMentor
             ? \App\Models\InternshipApplication::with(['user.assignments' => function($q) { $q->orderBy('created_at', 'desc'); }])
-                ->where('divisi_id', $divisi->id)
+                ->where('division_mentor_id', $divisionMentor->id)
                 ->where('status', 'accepted')
                 ->get()
             : collect();
@@ -77,10 +90,11 @@ class MentorDashboardController extends Controller
     public function sertifikat()
     {
         $user = Auth::user();
-        $divisi = $user->divisi;
-        $participants = $divisi
+        // Cari division_mentor berdasarkan username (nik_number) mentor yang login
+        $divisionMentor = \App\Models\DivisionMentor::where('nik_number', $user->username)->first();
+        $participants = $divisionMentor
             ? \App\Models\InternshipApplication::with(['user.assignments', 'user.certificates'])
-                ->where('divisi_id', $divisi->id)
+                ->where('division_mentor_id', $divisionMentor->id)
                 ->whereIn('status', ['accepted', 'finished'])
                 ->get()
             : collect();
@@ -128,10 +142,11 @@ class MentorDashboardController extends Controller
     public function absensi()
     {
         $user = Auth::user();
-        $divisi = $user->divisi;
-        $participants = $divisi
+        // Cari division_mentor berdasarkan username (nik_number) mentor yang login
+        $divisionMentor = \App\Models\DivisionMentor::where('nik_number', $user->username)->first();
+        $participants = $divisionMentor
             ? \App\Models\InternshipApplication::with(['user'])
-                ->where('divisi_id', $divisi->id)
+                ->where('division_mentor_id', $divisionMentor->id)
                 ->where('status', 'accepted')
                 ->get()
             : collect();
@@ -149,9 +164,10 @@ class MentorDashboardController extends Controller
     public function getLaporanPenilaianData(Request $request)
     {
         $user = Auth::user();
-        $divisi = $user->divisi;
+        // Cari division_mentor berdasarkan username (nik_number) mentor yang login
+        $divisionMentor = \App\Models\DivisionMentor::where('nik_number', $user->username)->first();
         
-        if (!$divisi) {
+        if (!$divisionMentor) {
             return response()->json(['data' => []]);
         }
 
@@ -160,7 +176,7 @@ class MentorDashboardController extends Controller
         $now = now();
 
         $query = \App\Models\InternshipApplication::query()
-            ->where('divisi_id', $divisi->id)
+            ->where('division_mentor_id', $divisionMentor->id)
             ->whereIn('status', ['accepted', 'finished'])
             ->whereNotNull('start_date')
             ->with(['user.assignments', 'user.certificates', 'divisi.subDirektorat.direktorat']);
@@ -212,17 +228,18 @@ class MentorDashboardController extends Controller
     public function getLaporanPenilaianYears(Request $request)
     {
         $user = Auth::user();
-        $divisi = $user->divisi;
+        // Cari division_mentor berdasarkan username (nik_number) mentor yang login
+        $divisionMentor = \App\Models\DivisionMentor::where('nik_number', $user->username)->first();
         
-        if (!$divisi) {
+        if (!$divisionMentor) {
             return response()->json(['data' => []]);
         }
 
         $data = [];
-        $minDate = \App\Models\InternshipApplication::where('divisi_id', $divisi->id)
+        $minDate = \App\Models\InternshipApplication::where('division_mentor_id', $divisionMentor->id)
             ->whereNotNull('start_date')
             ->min('start_date');
-        $maxDate = \App\Models\InternshipApplication::where('divisi_id', $divisi->id)
+        $maxDate = \App\Models\InternshipApplication::where('division_mentor_id', $divisionMentor->id)
             ->whereNotNull('start_date')
             ->max('start_date');
         
@@ -247,17 +264,18 @@ class MentorDashboardController extends Controller
     public function getLaporanPenilaianPeriods(Request $request)
     {
         $user = Auth::user();
-        $divisi = $user->divisi;
+        // Cari division_mentor berdasarkan username (nik_number) mentor yang login
+        $divisionMentor = \App\Models\DivisionMentor::where('nik_number', $user->username)->first();
         
-        if (!$divisi) {
+        if (!$divisionMentor) {
             return response()->json(['data' => []]);
         }
 
         $data = [];
-        $minDate = \App\Models\InternshipApplication::where('divisi_id', $divisi->id)
+        $minDate = \App\Models\InternshipApplication::where('division_mentor_id', $divisionMentor->id)
             ->whereNotNull('start_date')
             ->min('start_date');
-        $maxDate = \App\Models\InternshipApplication::where('divisi_id', $divisi->id)
+        $maxDate = \App\Models\InternshipApplication::where('division_mentor_id', $divisionMentor->id)
             ->whereNotNull('start_date')
             ->max('start_date');
         
@@ -389,47 +407,128 @@ class MentorDashboardController extends Controller
 
     public function tambahPenugasan(Request $request)
     {
-        $request->validate([
+        // Validasi dasar terlebih dahulu
+        $validated = $request->validate([
             'user_id' => 'required|exists:users,id',
             'title' => 'required|string|max:255',
             'assignment_type' => 'required|in:tugas_harian,tugas_proyek',
             'deadline' => 'required|date',
-            'presentation_date' => 'nullable|date|required_if:assignment_type,tugas_proyek',
-            'description' => 'nullable|string',
+            'presentation_date' => 'nullable|date',
+            'description' => 'nullable|string|max:5000',
             'file_path' => 'nullable|file|mimes:pdf,doc,docx,zip|max:4096',
-            'online_text' => 'nullable|string',
         ]);
-        // Cek apakah peserta sudah mulai magang
-        $application = \App\Models\InternshipApplication::where('user_id', $request->user_id)
-            ->where('status', 'accepted')
-            ->latest('start_date')
-            ->first();
-        if (!$application || ($application->start_date && \Carbon\Carbon::parse($application->start_date)->gt(now()))) {
-            return redirect()->back()->with('error', 'Penugasan hanya dapat diberikan setelah peserta mulai periode magang.');
+        
+        // Validasi deadline manual untuk fleksibilitas lebih baik
+        $deadline = \Carbon\Carbon::parse($request->deadline);
+        if ($deadline->lt(now()->startOfDay())) {
+            return redirect()->back()
+                ->withErrors(['deadline' => 'Deadline harus hari ini atau setelahnya.'])
+                ->withInput($request->except('file_path'));
         }
+        
+        // Validasi presentation_date jika diisi
+        if ($request->presentation_date) {
+            $presentationDate = \Carbon\Carbon::parse($request->presentation_date);
+            if ($presentationDate->lt(now()->startOfDay())) {
+                return redirect()->back()
+                    ->withErrors(['presentation_date' => 'Tanggal presentasi harus hari ini atau setelahnya.'])
+                    ->withInput($request->except('file_path'));
+            }
+        }
+        
+        // Validasi khusus untuk tugas proyek
+        if ($request->assignment_type === 'tugas_proyek' && !$request->presentation_date) {
+            return redirect()->back()
+                ->withErrors(['presentation_date' => 'Tanggal presentasi wajib diisi untuk tugas proyek.'])
+                ->withInput($request->except('file_path'));
+        }
+        
+        $user = Auth::user();
+        
+        // Cari division_mentor dengan caching untuk performa lebih baik
+        $divisionMentor = \App\Models\DivisionMentor::where('nik_number', $user->username)->first();
+        
+        if (!$divisionMentor) {
+            return redirect()->back()
+                ->with('error', 'Anda tidak memiliki akses untuk membuat penugasan.')
+                ->withInput($request->except('file_path'));
+        }
+        
+        // Optimasi query dengan select hanya field yang diperlukan
+        $application = \App\Models\InternshipApplication::select('id', 'user_id', 'status', 'start_date', 'division_mentor_id')
+            ->where('user_id', $request->user_id)
+            ->where('status', 'accepted')
+            ->where('division_mentor_id', $divisionMentor->id)
+            ->orderBy('start_date', 'desc')
+            ->first();
+            
+        if (!$application) {
+            return redirect()->back()
+                ->with('error', 'Peserta tidak ditemukan atau tidak di-assign ke Anda.')
+                ->withInput($request->except('file_path'));
+        }
+        
+        // Cek apakah peserta sudah mulai magang
+        if ($application->start_date) {
+            $startDate = \Carbon\Carbon::parse($application->start_date);
+            if ($startDate->gt(now())) {
+                return redirect()->back()
+                    ->with('error', 'Penugasan hanya dapat diberikan setelah peserta mulai periode magang.')
+                    ->withInput($request->except('file_path'));
+            }
+        }
+        
+        // Siapkan data untuk assignment
         $data = [
             'user_id' => $request->user_id,
-            'title' => $request->title,
+            'title' => trim($request->title),
             'assignment_type' => $request->assignment_type,
-            'description' => $request->description,
+            'description' => $request->description ? trim($request->description) : null,
             'deadline' => $request->deadline,
-            'presentation_date' => $request->assignment_type === 'tugas_proyek'
-                ? $request->presentation_date
+            'presentation_date' => ($request->assignment_type === 'tugas_proyek' && $request->presentation_date) 
+                ? $request->presentation_date 
                 : null,
-            'online_text' => $request->online_text,
         ];
+        
+        // Handle file upload jika ada
         if ($request->hasFile('file_path')) {
-            $data['file_path'] = $request->file('file_path')->store('assignments', 'public');
+            try {
+                $data['file_path'] = $request->file('file_path')->store('assignments', 'public');
+            } catch (\Exception $e) {
+                Log::error('Error uploading file: ' . $e->getMessage());
+                return redirect()->back()
+                    ->with('error', 'Gagal mengupload file. Pastikan file tidak terlalu besar dan format sesuai.')
+                    ->withInput($request->except('file_path'));
+            }
         }
-        \App\Models\Assignment::create($data);
-        return redirect()->route('mentor.penugasan')->with('success', 'Penugasan berhasil ditambahkan.');
+        
+        // Buat assignment
+        try {
+            \App\Models\Assignment::create($data);
+            return redirect()->route('mentor.penugasan')
+                ->with('success', 'Penugasan berhasil ditambahkan.');
+        } catch (\Illuminate\Database\QueryException $e) {
+            Log::error('Database error creating assignment: ' . $e->getMessage());
+            return redirect()->back()
+                ->with('error', 'Terjadi kesalahan database. Silakan coba lagi.')
+                ->withInput($request->except('file_path'));
+        } catch (\Exception $e) {
+            Log::error('Error creating assignment: ' . $e->getMessage());
+            return redirect()->back()
+                ->with('error', 'Terjadi kesalahan saat membuat penugasan. Silakan coba lagi.')
+                ->withInput($request->except('file_path'));
+        }
     }
 
     public function beriNilaiPenugasan(Request $request, $assignmentId)
     {
         $assignment = \App\Models\Assignment::findOrFail($assignmentId);
         $user = Auth::user();
-        if (!$assignment->user || $assignment->user->divisi_id !== $user->divisi_id) {
+        // Cari division_mentor berdasarkan username (nik_number) mentor yang login
+        $divisionMentor = \App\Models\DivisionMentor::where('nik_number', $user->username)->first();
+        // Validasi: pastikan assignment milik peserta yang di-assign ke mentor ini
+        $application = $assignment->user ? $assignment->user->internshipApplications()->where('status', 'accepted')->first() : null;
+        if (!$application || !$divisionMentor || $application->division_mentor_id !== $divisionMentor->id) {
             abort(403);
         }
         // Jika revisi diizinkan, hanya feedback yang bisa diinput
@@ -460,7 +559,11 @@ class MentorDashboardController extends Controller
         ]);
         $assignment = \App\Models\Assignment::findOrFail($assignmentId);
         $user = Auth::user();
-        if (!$assignment->user || $assignment->user->divisi_id !== $user->divisi_id) {
+        // Cari division_mentor berdasarkan username (nik_number) mentor yang login
+        $divisionMentor = \App\Models\DivisionMentor::where('nik_number', $user->username)->first();
+        // Validasi: pastikan assignment milik peserta yang di-assign ke mentor ini
+        $application = $assignment->user ? $assignment->user->internshipApplications()->where('status', 'accepted')->first() : null;
+        if (!$application || !$divisionMentor || $application->division_mentor_id !== $divisionMentor->id) {
             abort(403);
         }
         $assignment->is_revision = $request->is_revision;

@@ -438,14 +438,14 @@
     <!-- Main Content -->
     <main style="padding-top: 80px;">
         @if(session('success'))
-            <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <div class="alert alert-success alert-dismissible fade show alert-notification" role="alert">
                 {{ session('success') }}
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
         @endif
 
         @if(session('error'))
-            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <div class="alert alert-danger alert-dismissible fade show alert-notification" role="alert">
                 {{ session('error') }}
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
@@ -486,5 +486,20 @@
     
     @stack('scripts')
     @yield('scripts')
+    <script>
+        // Auto-hide notifications after 3 seconds
+        document.addEventListener('DOMContentLoaded', function() {
+            const notifications = document.querySelectorAll('.alert-notification');
+            notifications.forEach(function(notification) {
+                setTimeout(function() {
+                    notification.style.transition = 'opacity 0.5s ease-out';
+                    notification.style.opacity = '0';
+                    setTimeout(function() {
+                        notification.remove();
+                    }, 500);
+                }, 3000);
+            });
+        });
+    </script>
 </body>
 </html> 

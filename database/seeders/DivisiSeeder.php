@@ -21,7 +21,7 @@ class DivisiSeeder extends Seeder
                 'mentors' => [
                     [
                         'mentor_name' => 'Mentor Business Service',
-                        'nik_number' => '1000000000000001',
+                        'nik_number' => '100001',
                     ],
                 ],
             ],
@@ -32,7 +32,7 @@ class DivisiSeeder extends Seeder
                 'mentors' => [
                     [
                         'mentor_name' => 'Mentor Government Service',
-                        'nik_number' => '1000000000000002',
+                        'nik_number' => '100002',
                     ],
                 ],
             ],
@@ -43,7 +43,7 @@ class DivisiSeeder extends Seeder
                 'mentors' => [
                     [
                         'mentor_name' => 'Mentor Performance & Risk Management',
-                        'nik_number' => '1000000000000003',
+                        'nik_number' => '100003',
                     ],
                 ],
             ],
@@ -54,7 +54,7 @@ class DivisiSeeder extends Seeder
                 'mentors' => [
                     [
                         'mentor_name' => 'Mentor Shared Service & General Support',
-                        'nik_number' => '1000000000000004',
+                        'nik_number' => '100004',
                     ],
                 ],
             ],
@@ -64,6 +64,12 @@ class DivisiSeeder extends Seeder
             $mentors = $divisionData['mentors'];
             unset($divisionData['mentors']);
 
+            // Add mentor_name and nik_number from first mentor to division data
+            if (!empty($mentors)) {
+                $divisionData['mentor_name'] = $mentors[0]['mentor_name'];
+                $divisionData['nik_number'] = $mentors[0]['nik_number'];
+            }
+
             $division = DivisiAdmin::updateOrCreate(
                 ['division_name' => $divisionData['division_name']],
                 $divisionData
@@ -71,13 +77,33 @@ class DivisiSeeder extends Seeder
 
             // Create mentors for this division
             foreach ($mentors as $mentorData) {
-                DivisionMentor::updateOrCreate(
+                $mentor = DivisionMentor::updateOrCreate(
                     [
                         'division_id' => $division->id,
                         'nik_number' => $mentorData['nik_number'],
                     ],
                     $mentorData
                 );
+
+                // Create or update user account for mentor
+                $existingUser = \App\Models\User::where('username', $mentorData['nik_number'])->first();
+                if (!$existingUser) {
+                    \App\Models\User::create([
+                        'username' => $mentorData['nik_number'],
+                        'name' => $mentorData['mentor_name'],
+                        'email' => 'mentor_' . $mentorData['nik_number'] . '@posindonesia.co.id',
+                        'password' => \Illuminate\Support\Facades\Hash::make('mentor123'),
+                        'role' => 'pembimbing',
+                    ]);
+                } else {
+                    // Update existing user to sync with seeder data
+                    $existingUser->update([
+                        'name' => $mentorData['mentor_name'],
+                        'email' => 'mentor_' . $mentorData['nik_number'] . '@posindonesia.co.id',
+                        'role' => 'pembimbing',
+                        'password' => \Illuminate\Support\Facades\Hash::make('mentor123'),
+                    ]);
+                }
             }
         }
     }

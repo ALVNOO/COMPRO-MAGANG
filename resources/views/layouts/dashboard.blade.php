@@ -316,6 +316,10 @@
                     <i class="fas fa-tasks"></i>
                     <span>Tugas</span>
                 </a>
+                <a class="nav-link {{ request()->routeIs('attendance.index') ? 'active' : '' }}" href="{{ route('attendance.index') }}">
+                    <i class="fas fa-calendar-check"></i>
+                    <span>Absensi</span>
+                </a>
                 <a class="nav-link {{ request()->routeIs('dashboard.certificates') ? 'active' : '' }}" href="{{ route('dashboard.certificates') }}">
                     <i class="fas fa-certificate"></i>
                     <span>Sertifikat</span>
@@ -332,7 +336,7 @@
         
         <main class="main">
             @if(session('success'))
-                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <div class="alert alert-success alert-dismissible fade show alert-notification" role="alert">
                     <i class="fas fa-check-circle me-2"></i>
                     {{ session('success') }}
                     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
@@ -340,7 +344,7 @@
             @endif
             
             @if(session('error'))
-                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <div class="alert alert-danger alert-dismissible fade show alert-notification" role="alert">
                     <i class="fas fa-exclamation-triangle me-2"></i>
                     {{ session('error') }}
                     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
@@ -348,7 +352,7 @@
             @endif
             
             @if(isset($errors) && $errors->any())
-                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <div class="alert alert-danger alert-dismissible fade show alert-notification" role="alert">
                     <i class="fas fa-exclamation-triangle me-2"></i>
                     <strong>Error!</strong>
                     <ul class="mb-0 mt-2">
@@ -367,6 +371,21 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 @stack('scripts')
+<script>
+    // Auto-hide notifications after 3 seconds
+    document.addEventListener('DOMContentLoaded', function() {
+        const notifications = document.querySelectorAll('.alert-notification');
+        notifications.forEach(function(notification) {
+            setTimeout(function() {
+                notification.style.transition = 'opacity 0.5s ease-out';
+                notification.style.opacity = '0';
+                setTimeout(function() {
+                    notification.remove();
+                }, 500);
+            }, 3000);
+        });
+    });
+</script>
 </body>
 </html>
 

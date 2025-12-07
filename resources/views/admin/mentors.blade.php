@@ -32,17 +32,22 @@ use Carbon\Carbon;
                                 <tbody>
                                     @foreach($mentors as $mentor)
                                     @php
-                                        $divisi = $mentor->divisi;
-                                        $participant = $divisi ? $divisi->internshipApplications->whereIn('status', ['accepted', 'finished'])->filter(function($p) {
-                                            return !$p->end_date || \Carbon\Carbon::parse($p->end_date)->gte(now());
-                                        }) : collect();
+                                        $division = $mentor->division_admin ?? null;
+                                        $divisionMentor = $mentor->division_mentor ?? null;
+                                        // Hitung peserta berdasarkan division_mentor_id, bukan division_admin_id
+                                        $participant = $divisionMentor ? \App\Models\InternshipApplication::where('division_mentor_id', $divisionMentor->id)
+                                            ->whereIn('status', ['accepted', 'finished'])
+                                            ->where(function($q) {
+                                                $q->whereNull('end_date')->orWhere('end_date', '>=', now());
+                                            })
+                                            ->get() : collect();
                                         $participantCount = $participant->count();
                                     @endphp
                                     <tr>
                                         <td class="align-middle text-start">{{ $loop->iteration + ($mentors->currentPage() - 1) * $mentors->perPage() }}</td>
                                         <td class="align-middle text-start">
                                             <a href="{{ route('admin.mentor.detail', $mentor->id) }}">
-                                                <strong>{{ $mentor->divisi->vp ?? '-' }}</strong>
+                                                <strong>{{ $divisionMentor->mentor_name ?? $mentor->name }}</strong>
                                             </a>
                                         </td>
                                         <td class="align-middle text-start">{{ $mentor->email }}</td>
@@ -143,7 +148,7 @@ use Carbon\Carbon;
                                         </tr>
                                         <tr>
                                             <td><strong>Pembimbing:</strong></td>
-                                            <td>{{ $mentor->divisi->vp ?? '-' }}</td>
+                                            <td>{{ $mentor->division_mentor->mentor_name ?? $mentor->name }}</td>
                                         </tr>
                                     </table>
                                 </div>

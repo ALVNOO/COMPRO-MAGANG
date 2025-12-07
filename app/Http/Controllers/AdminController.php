@@ -45,11 +45,11 @@ class AdminController extends Controller
 
     public function applications()
     {
-        $applications = InternshipApplication::with(['user', 'divisi.subDirektorat.direktorat', 'fieldOfInterest'])
+        $applications = InternshipApplication::with(['user', 'fieldOfInterest'])
             ->where('status', 'pending')
             ->latest()
             ->get();
-        $divisions = DivisiAdmin::where('is_active', true)->orderBy('sort_order')->orderBy('division_name')->get();
+        $divisions = DivisiAdmin::with('mentors')->where('is_active', true)->orderBy('sort_order')->orderBy('division_name')->get();
         return view('admin.applications', compact('applications', 'divisions'));
     }
 
@@ -57,19 +57,18 @@ class AdminController extends Controller
     {
         $request->validate([
             'divisi_id' => 'required|exists:divisions,id',
+            'division_mentor_id' => 'nullable|exists:division_mentors,id',
         ]);
 
         $application = InternshipApplication::findOrFail($id);
-        $application->divisi_id = $request->divisi_id;
+        $application->division_admin_id = $request->divisi_id; // divisi_id dari form sebenarnya adalah division_admin_id
+        $application->division_mentor_id = $request->division_mentor_id;
         $application->status = 'accepted';
         $application->notes = null; // Clear rejection notes if any
         $application->save();
 
-        // Set divisi_id user jika diterima
-        if ($application->user) {
-            $application->user->divisi_id = $request->divisi_id;
-            $application->user->save();
-        }
+        // Note: divisi_id di tabel users hanya untuk pembimbing (mentor), bukan untuk peserta magang
+        // Divisi peserta sudah disimpan di InternshipApplication.division_admin_id
 
         return redirect()->route('admin.applications')->with('success', 'Pengajuan magang berhasil diterima.');
     }
@@ -202,29 +201,55 @@ class AdminController extends Controller
 
     public function mentors()
     {
-        $mentors = User::where('role', 'pembimbing')
-            ->whereNotNull('divisi_id')
-            ->with([
-                'divisi.subDirektorat.direktorat',
-                'divisi.internshipApplications.user.certificates',
-                'divisi.internshipApplications.user.assignments',
-            ])
-            ->whereHas('divisi')
-            ->paginate(10); // ubah jadi paginasi 10 per halaman
+        // Get all mentors from division_mentors table
+        $divisionMentors = \App\Models\DivisionMentor::with([
+            'division',
+        ])->get();
+
+        // Get corresponding users
+        $mentors = collect();
+        foreach ($divisionMentors as $divisionMentor) {
+            $user = User::where('username', $divisionMentor->nik_number)
+                ->where('role', 'pembimbing')
+                ->first();
+            
+            if ($user) {
+                // Attach division mentor data to user
+                $user->division_mentor = $divisionMentor;
+                $user->division_admin = $divisionMentor->division;
+                $mentors->push($user);
+            }
+        }
+
+        // Paginate manually
+        $perPage = 10;
+        $currentPage = request()->get('page', 1);
+        $items = $mentors->slice(($currentPage - 1) * $perPage, $perPage)->values();
+        $mentors = new \Illuminate\Pagination\LengthAwarePaginator(
+            $items,
+            $mentors->count(),
+            $perPage,
+            $currentPage,
+            ['path' => request()->url(), 'query' => request()->query()]
+        );
 
         return view('admin.mentors', compact('mentors'));
     }
 
     public function mentorDetail($id)
     {
-        $mentor = User::with([
-            'divisi.subDirektorat.direktorat',
-            'divisi.internshipApplications.user.certificates',
-            'divisi.internshipApplications.user.assignments'
-        ])->findOrFail($id);
+        $mentor = User::findOrFail($id);
         
-        $participants = ($mentor->divisi)
-            ? $mentor->divisi->internshipApplications()
+        // Get division mentor data
+        $divisionMentor = \App\Models\DivisionMentor::where('nik_number', $mentor->username)->first();
+        $division = $divisionMentor ? $divisionMentor->division : null;
+        
+        // Attach to mentor object
+        $mentor->division_mentor = $divisionMentor;
+        $mentor->division_admin = $division;
+        
+        $participants = $division
+            ? \App\Models\InternshipApplication::where('division_admin_id', $division->id)
                 ->with('user')
                 ->whereIn('status', ['accepted', 'finished'])
                 ->orderBy('start_date', 'desc')
@@ -259,7 +284,7 @@ class AdminController extends Controller
             \App\Models\InternshipApplication::query()
             ->whereIn('status', ['accepted', 'finished']) // Perbaikan: tampilkan peserta sedang dan sudah selesai
             ->whereNotNull('start_date')
-            ->with(['user.certificates', 'divisi.subDirektorat.direktorat']);
+            ->with(['user.certificates']);
 
         // Filter periode
         if ($period === 'mingguan' && $week) {
@@ -311,8 +336,6 @@ class AdminController extends Controller
                 'tanggal_mulai' => $app->start_date ? \Carbon\Carbon::parse($app->start_date)->format('d-m-Y') : '-',
                 'tanggal_berakhir' => $app->end_date ? \Carbon\Carbon::parse($app->end_date)->format('d-m-Y') : '-',
                 'divisi' => $app->divisi->name ?? '-',
-                'subdirektorat' => $app->divisi->subDirektorat->name ?? '-',
-                'direktorat' => $app->divisi->subDirektorat->direktorat->name ?? '-',
                 'predikat' => $certificate && $certificate->predikat ? $certificate->predikat : '-',
             ];
         })->toArray();
@@ -729,8 +752,13 @@ class AdminController extends Controller
     {
         $user = $application->user;
         $divisi = $application->divisi;
-        $subdirektorat = $divisi->subDirektorat;
-        $direktorat = $subdirektorat->direktorat;
+        
+        // Get division admin data if available
+        $divisionAdmin = null;
+        if ($application->divisi_id) {
+            // Try to find matching division admin by name
+            $divisionAdmin = \App\Models\DivisiAdmin::where('division_name', 'like', '%' . $divisi->name . '%')->first();
+        }
         
         // Format data with prefix to avoid phone number interpretation
         $qrText = "PESERTA MAGANG PT POS INDONESIA\n\nNama: " . $user->name . "\nID Mahasiswa: " . $user->nim . "\nUniversitas: " . $user->university . "\nDivisi: " . $divisi->name . "\n\nData ini valid dan dapat diverifikasi.";
@@ -752,8 +780,8 @@ class AdminController extends Controller
             'nim' => $user->nim,
             'jurusan' => $user->major,
             'jabatan' => $divisi->vp ? 'VP ' . str_replace('Divisi ', '', $divisi->name) : '',
-            'nama_pic' => $divisi->vp,
-            'nippos' => $divisi->nippos,
+            'nama_pic' => $divisi->vp ?? ($divisionAdmin ? $divisionAdmin->mentor_name : ''),
+            'nippos' => $divisi->nippos ?? '',
             'start_date' => $application->start_date ? \Carbon\Carbon::parse($application->start_date)->locale('id')->isoFormat('D MMMM Y') : '-',
             'end_date' => $application->end_date ? \Carbon\Carbon::parse($application->end_date)->locale('id')->isoFormat('D MMMM Y') : '-',
             'ktm' => $user->ktm,
@@ -857,7 +885,7 @@ class AdminController extends Controller
             'division_name' => 'required|string|max:255',
             'mentors' => 'required|array|min:1',
             'mentors.*.mentor_name' => 'required|string|max:255',
-            'mentors.*.nik_number' => 'required|string|size:16',
+            'mentors.*.nik_number' => 'required|string|size:6|regex:/^[0-9]{6}$/',
             'is_active' => 'nullable|boolean',
             'sort_order' => 'nullable|integer|min:0'
         ]);
@@ -881,20 +909,44 @@ class AdminController extends Controller
         // Set default value for is_active if not provided
         $validated['is_active'] = $request->has('is_active') ? true : false;
 
+        // Get first mentor data for division
+        $firstMentor = $request->mentors[0] ?? null;
+
         // Create division
         $division = DivisiAdmin::create([
             'division_name' => $validated['division_name'],
+            'mentor_name' => $firstMentor['mentor_name'] ?? null,
+            'nik_number' => $firstMentor['nik_number'] ?? null,
             'is_active' => $validated['is_active'],
             'sort_order' => $validated['sort_order'] ?? 0,
         ]);
 
-        // Create mentors
+        // Create mentors and user accounts
         foreach ($request->mentors as $mentorData) {
-            DivisionMentor::create([
+            $mentor = DivisionMentor::create([
                 'division_id' => $division->id,
                 'mentor_name' => $mentorData['mentor_name'],
                 'nik_number' => $mentorData['nik_number'],
             ]);
+
+            // Create user account for mentor
+            $existingUser = User::where('username', $mentorData['nik_number'])->first();
+            if (!$existingUser) {
+                User::create([
+                    'username' => $mentorData['nik_number'],
+                    'name' => $mentorData['mentor_name'],
+                    'email' => 'mentor_' . $mentorData['nik_number'] . '@posindonesia.co.id',
+                    'password' => Hash::make('mentor123'),
+                    'role' => 'pembimbing',
+                ]);
+            } else {
+                // Update existing user
+                $existingUser->update([
+                    'name' => $mentorData['mentor_name'],
+                    'password' => Hash::make('mentor123'),
+                    'role' => 'pembimbing',
+                ]);
+            }
         }
         
         return redirect()->route('admin.divisions.index')
@@ -924,7 +976,7 @@ class AdminController extends Controller
             'division_name' => 'required|string|max:255',
             'mentors' => 'required|array|min:1',
             'mentors.*.mentor_name' => 'required|string|max:255',
-            'mentors.*.nik_number' => 'required|string|size:16',
+            'mentors.*.nik_number' => 'required|string|size:6|regex:/^[0-9]{6}$/',
             'is_active' => 'nullable|boolean',
             'sort_order' => 'nullable|integer|min:0'
         ]);
@@ -950,9 +1002,14 @@ class AdminController extends Controller
         // Set default value for is_active if not provided
         $validated['is_active'] = $request->has('is_active') ? true : false;
 
+        // Get first mentor data for division
+        $firstMentor = $request->mentors[0] ?? null;
+
         // Update division
         $division->update([
             'division_name' => $validated['division_name'],
+            'mentor_name' => $firstMentor['mentor_name'] ?? $division->mentor_name,
+            'nik_number' => $firstMentor['nik_number'] ?? $division->nik_number,
             'is_active' => $validated['is_active'],
             'sort_order' => $validated['sort_order'] ?? 0,
         ]);
@@ -966,23 +1023,65 @@ class AdminController extends Controller
         // Delete mentors that are not in the request
         $division->mentors()->whereNotIn('id', $existingMentorIds)->delete();
 
-        // Update or create mentors
+        // Update or create mentors and user accounts
         foreach ($request->mentors as $mentorData) {
             if (isset($mentorData['id']) && $mentorData['id']) {
                 // Update existing mentor
-                DivisionMentor::where('id', $mentorData['id'])
+                $mentor = DivisionMentor::where('id', $mentorData['id'])
                     ->where('division_id', $division->id)
-                    ->update([
+                    ->first();
+                
+                if ($mentor) {
+                    $oldNik = $mentor->nik_number;
+                    $mentor->update([
                         'mentor_name' => $mentorData['mentor_name'],
                         'nik_number' => $mentorData['nik_number'],
                     ]);
+
+                    // Update user account if NIK changed
+                    $user = User::where('username', $oldNik)->first();
+                    if ($user) {
+                        if ($oldNik !== $mentorData['nik_number']) {
+                            // NIK changed, update username
+                            $user->update([
+                                'username' => $mentorData['nik_number'],
+                                'name' => $mentorData['mentor_name'],
+                                'email' => 'mentor_' . $mentorData['nik_number'] . '@posindonesia.co.id',
+                            ]);
+                        } else {
+                            // Only update name
+                            $user->update([
+                                'name' => $mentorData['mentor_name'],
+                            ]);
+                        }
+                    }
+                }
             } else {
                 // Create new mentor
-                DivisionMentor::create([
+                $mentor = DivisionMentor::create([
                     'division_id' => $division->id,
                     'mentor_name' => $mentorData['mentor_name'],
                     'nik_number' => $mentorData['nik_number'],
                 ]);
+
+                // Create user account for new mentor
+                $existingUser = User::where('username', $mentorData['nik_number'])->first();
+                if (!$existingUser) {
+                    User::create([
+                        'username' => $mentorData['nik_number'],
+                        'name' => $mentorData['mentor_name'],
+                        'email' => 'mentor_' . $mentorData['nik_number'] . '@posindonesia.co.id',
+                        'password' => Hash::make('mentor123'),
+                        'role' => 'pembimbing',
+                    ]);
+                } else {
+                    // Update existing user
+                    $existingUser->update([
+                        'name' => $mentorData['mentor_name'],
+                        'password' => Hash::make('mentor123'),
+                        'role' => 'pembimbing',
+                    ]);
+                }
             }
         }
         

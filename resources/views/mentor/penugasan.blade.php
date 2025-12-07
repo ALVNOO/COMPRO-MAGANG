@@ -298,7 +298,13 @@
                                 <textarea name="description" class="form-control" placeholder="Deskripsi atau instruksi tugas (boleh kosong)"></textarea>
                             </div>
                             <div class="col-12 text-end">
-                                <button type="submit" class="btn btn-primary">Buat Penugasan</button>
+                                <button type="submit" class="btn btn-primary" id="submitBtn{{ $participant->user->id }}">
+                                    <span class="btn-text">Buat Penugasan</span>
+                                    <span class="btn-loading d-none">
+                                        <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                                        Loading...
+                                    </span>
+                                </button>
                             </div>
                         </form>
                     </div>
@@ -306,9 +312,25 @@
                         document.addEventListener('DOMContentLoaded', function() {
                             var toggleBtn = document.getElementById('toggleCreateTaskBtn{{ $participant->user->id }}');
                             var form = document.getElementById('createTaskForm{{ $participant->user->id }}');
+                            var submitBtn = document.getElementById('submitBtn{{ $participant->user->id }}');
+                            
                             if (toggleBtn && form) {
                                 toggleBtn.addEventListener('click', function() {
                                     form.style.display = (form.style.display === 'none' || form.style.display === '') ? 'block' : 'none';
+                                });
+                            }
+                            
+                            // Handle form submission dengan loading state
+                            if (form && submitBtn) {
+                                form.addEventListener('submit', function(e) {
+                                    var btnText = submitBtn.querySelector('.btn-text');
+                                    var btnLoading = submitBtn.querySelector('.btn-loading');
+                                    
+                                    if (btnText && btnLoading) {
+                                        btnText.classList.add('d-none');
+                                        btnLoading.classList.remove('d-none');
+                                        submitBtn.disabled = true;
+                                    }
                                 });
                             }
                             var assignmentTypeSelect = document.getElementById('assignmentTypeSelect{{ $participant->user->id }}');

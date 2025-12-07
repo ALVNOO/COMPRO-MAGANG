@@ -19,4 +19,12 @@ class DivisionMentor extends Model
     {
         return $this->belongsTo(DivisiAdmin::class, 'division_id');
     }
+
+    /**
+     * Get the internship applications assigned to this mentor.
+     */
+    public function internshipApplications()
+    {
+        return $this->hasMany(InternshipApplication::class, 'division_mentor_id');
+    }
 }

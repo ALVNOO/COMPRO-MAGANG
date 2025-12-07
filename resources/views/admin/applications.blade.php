@@ -13,9 +13,6 @@
             <i class="fas fa-file-alt text-[#B91C1C]"></i>
             <h5 class="text-lg font-bold mb-0 text-[#B91C1C]">Data Pengajuan Magang</h5>
         </div>
-        @php
-            $divisionsList = isset($divisions) ? $divisions : collect();
-        @endphp
         <div class="overflow-x-auto">
             @if($applications->isEmpty())
                 <div class="px-6 py-8 text-center text-[#706f6c]">Belum ada pengajuan magang.</div>
@@ -86,33 +83,37 @@
                             @elseif($app->status === 'pending')
                                 <!-- Button Aksi Awal -->
                                 <div id="actionButtons{{ $app->id }}" class="flex gap-2">
-                                    <button type="button" class="px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700 transition assign-btn" title="Terima & Pilih Divisi" data-app-id="{{ $app->id }}">
+                                    <button type="button" class="px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700 transition approve-btn" title="Diterima" data-app-id="{{ $app->id }}">
                                         <i class="fas fa-check"></i>
                                     </button>
                                     <button type="button" class="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 transition reject-btn" title="Ditolak" data-app-id="{{ $app->id }}">
                                         <i class="fas fa-times"></i>
                                     </button>
                                 </div>
-                                <!-- Form Penempatan Divisi (Hidden Awal) -->
-                                <div id="assignForm{{ $app->id }}" class="hidden">
+                                <!-- Form Approve dengan Pilihan Divisi dan Mentor (Hidden Awal) -->
+                                <div id="approveForm{{ $app->id }}" class="hidden">
                                     <form method="POST" action="{{ route('admin.applications.approve', $app->id) }}" class="space-y-2">
                                         @csrf
                                         <div>
-                                            <label for="divisi-{{ $app->id }}" class="block text-xs font-medium text-gray-700 mb-1">Pilih Divisi Penempatan</label>
-                                            <select id="divisi-{{ $app->id }}" name="divisi_id" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-green-500" required>
+                                            <label for="divisi_id-{{ $app->id }}" class="block text-xs font-medium text-gray-700 mb-1">Pilih Divisi <span class="text-red-500">*</span></label>
+                                            <select name="divisi_id" id="divisi_id-{{ $app->id }}" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-green-500 division-select" data-app-id="{{ $app->id }}" required>
                                                 <option value="">-- Pilih Divisi --</option>
-                                                @forelse($divisionsList as $division)
-                                                    <option value="{{ $division->id }}">{{ $division->division_name }}</option>
-                                                @empty
-                                                    <option value="" disabled>Belum ada data divisi</option>
-                                                @endforelse
+                                                @foreach($divisions as $div)
+                                                    <option value="{{ $div->id }}">{{ $div->division_name }}</option>
+                                                @endforeach
+                                            </select>
+                                        </div>
+                                        <div id="mentor-select-{{ $app->id }}" class="hidden">
+                                            <label for="division_mentor_id-{{ $app->id }}" class="block text-xs font-medium text-gray-700 mb-1">Pilih Mentor <span class="text-gray-400">(Opsional)</span></label>
+                                            <select name="division_mentor_id" id="division_mentor_id-{{ $app->id }}" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-green-500">
+                                                <option value="">-- Pilih Mentor --</option>
                                             </select>
                                         </div>
                                         <div class="flex gap-2">
                                             <button type="submit" class="px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700 transition text-sm font-medium">
-                                                Simpan Penempatan
+                                                Terima
                                             </button>
-                                            <button type="button" class="px-3 py-1.5 bg-black text-white rounded hover:bg-gray-800 transition text-sm font-medium border-2 border-gray-800 shadow-sm cancel-assign-btn" data-app-id="{{ $app->id }}">
+                                            <button type="button" class="px-3 py-1.5 bg-black text-white rounded hover:bg-gray-800 transition text-sm font-medium border-2 border-gray-800 shadow-sm cancel-approve-btn" data-app-id="{{ $app->id }}">
                                                 Batal
                                             </button>
                                         </div>
@@ -159,71 +160,90 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Event listener untuk tombol Terima (assign divisi)
-    document.querySelectorAll('.assign-btn').forEach(function(button) {
+    const divisions = @json($divisions->map(function($div) {
+        return [
+            'id' => $div->id,
+            'mentors' => $div->mentors->map(function($mentor) {
+                return ['id' => $mentor->id, 'name' => $mentor->mentor_name];
+            })
+        ];
+    }));
+
+    // Event listener untuk tombol Terima
+    document.querySelectorAll('.approve-btn').forEach(function(button) {
         button.addEventListener('click', function() {
             const appId = this.getAttribute('data-app-id');
             document.getElementById('actionButtons' + appId).classList.add('hidden');
-            const assignForm = document.getElementById('assignForm' + appId);
-            if (assignForm) {
-                assignForm.classList.remove('hidden');
-            }
-            const rejectForm = document.getElementById('rejectForm' + appId);
-            if (rejectForm) {
-                rejectForm.classList.add('hidden');
-            }
+            document.getElementById('approveForm' + appId).classList.remove('hidden');
         });
     });
 
-    // Event listener untuk tombol Batal pada form assign divisi
-    document.querySelectorAll('.cancel-assign-btn').forEach(function(button) {
+    // Event listener untuk tombol Batal (Approve)
+    document.querySelectorAll('.cancel-approve-btn').forEach(function(button) {
         button.addEventListener('click', function() {
             const appId = this.getAttribute('data-app-id');
             document.getElementById('actionButtons' + appId).classList.remove('hidden');
-            const assignForm = document.getElementById('assignForm' + appId);
-            if (assignForm) {
-                assignForm.classList.add('hidden');
-                const select = assignForm.querySelector('select');
-                if (select) {
-                    select.value = '';
+            document.getElementById('approveForm' + appId).classList.add('hidden');
+            // Reset form
+            const divisiSelect = document.getElementById('divisi_id-' + appId);
+            const mentorSelect = document.getElementById('division_mentor_id-' + appId);
+            const mentorDiv = document.getElementById('mentor-select-' + appId);
+            if (divisiSelect) divisiSelect.value = '';
+            if (mentorSelect) mentorSelect.innerHTML = '<option value="">-- Pilih Mentor --</option>';
+            if (mentorDiv) mentorDiv.classList.add('hidden');
+        });
+    });
+
+    // Event listener untuk perubahan divisi
+    document.querySelectorAll('.division-select').forEach(function(select) {
+        select.addEventListener('change', function() {
+            const appId = this.getAttribute('data-app-id');
+            const divisionId = this.value;
+            const mentorSelect = document.getElementById('division_mentor_id-' + appId);
+            const mentorDiv = document.getElementById('mentor-select-' + appId);
+            
+            if (mentorSelect && mentorDiv) {
+                mentorSelect.innerHTML = '<option value="">-- Pilih Mentor --</option>';
+                
+                if (divisionId) {
+                    const division = divisions.find(d => d.id == divisionId);
+                    if (division && division.mentors && division.mentors.length > 0) {
+                        division.mentors.forEach(function(mentor) {
+                            const option = document.createElement('option');
+                            option.value = mentor.id;
+                            option.textContent = mentor.name;
+                            mentorSelect.appendChild(option);
+                        });
+                        mentorDiv.classList.remove('hidden');
+                    } else {
+                        mentorDiv.classList.add('hidden');
+                    }
+                } else {
+                    mentorDiv.classList.add('hidden');
                 }
             }
         });
     });
-
+    
     // Event listener untuk tombol Ditolak
     document.querySelectorAll('.reject-btn').forEach(function(button) {
         button.addEventListener('click', function() {
             const appId = this.getAttribute('data-app-id');
             document.getElementById('actionButtons' + appId).classList.add('hidden');
-            const rejectForm = document.getElementById('rejectForm' + appId);
-            if (rejectForm) {
-                rejectForm.classList.remove('hidden');
-            }
-            const assignForm = document.getElementById('assignForm' + appId);
-            if (assignForm) {
-                assignForm.classList.add('hidden');
-            }
+            document.getElementById('rejectForm' + appId).classList.remove('hidden');
         });
     });
     
-    // Event listener untuk tombol Batal
+    // Event listener untuk tombol Batal (Reject)
     document.querySelectorAll('.cancel-reject-btn').forEach(function(button) {
         button.addEventListener('click', function() {
             const appId = this.getAttribute('data-app-id');
             document.getElementById('actionButtons' + appId).classList.remove('hidden');
-            const rejectForm = document.getElementById('rejectForm' + appId);
-            if (rejectForm) {
-                rejectForm.classList.add('hidden');
-            }
+            document.getElementById('rejectForm' + appId).classList.add('hidden');
             // Clear textarea
             const textarea = document.getElementById('notes-' + appId);
             if (textarea) {
                 textarea.value = '';
-            }
-            const assignForm = document.getElementById('assignForm' + appId);
-            if (assignForm) {
-                assignForm.classList.add('hidden');
             }
         });
     });

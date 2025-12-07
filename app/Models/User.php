@@ -89,6 +89,14 @@ class User extends Authenticatable
         return $this->hasMany(Certificate::class);
     }
 
+    /**
+     * Get the attendances for the user.
+     */
+    public function attendances()
+    {
+        return $this->hasMany(Attendance::class);
+    }
+
     // Cek apakah role wajib 2FA
     public function requiresTwoFactor()
     {

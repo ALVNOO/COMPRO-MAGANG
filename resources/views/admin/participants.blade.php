@@ -105,8 +105,10 @@
                                 <td class="px-2 py-2">{{ $row++ }}</td>
                                 <td class="px-2 py-2 font-medium">{{ $peserta->name }}</td>
                                 <td class="px-2 py-2">
-                                    @if($peserta->ktm)
-                                        <a href="{{ asset('storage/' . $peserta->ktm) }}" target="_blank" class="inline-block px-2 py-1 rounded border border-[#B91C1C] text-[#B91C1C] hover:bg-[#B91C1C] hover:text-white transition">Lihat</a>
+                                    @if($app->ktm_path)
+                                        <a href="{{ asset('storage/' . $app->ktm_path) }}" target="_blank" class="inline-block px-2 py-1 rounded border border-[#B91C1C] text-[#B91C1C] hover:bg-[#B91C1C] hover:text-white transition">
+                                            <i class="fas fa-file-pdf me-1"></i>KTM
+                                        </a>
                                     @else
                                         <span class="text-[#706f6c]">-</span>
                                     @endif

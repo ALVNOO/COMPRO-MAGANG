@@ -7,6 +7,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\InternshipController;
 use App\Http\Controllers\MentorDashboardController;
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\AttendanceController;
 
 // Public routes
 Route::get('/', [HomeController::class, 'index'])->name('home');
@@ -58,6 +59,11 @@ Route::middleware('auth')->group(function () {
     // Profile routes
     Route::get('/dashboard/profile', [DashboardController::class, 'profile'])->name('dashboard.profile');
     
+    // Attendance routes (Peserta)
+    Route::get('/attendance', [AttendanceController::class, 'index'])->name('attendance.index');
+    Route::post('/attendance/check-in', [AttendanceController::class, 'checkIn'])->name('attendance.check-in');
+    Route::post('/attendance/absent', [AttendanceController::class, 'absent'])->name('attendance.absent');
+    
     // Change password routes
     Route::get('/dashboard/change-password', [AuthController::class, 'showChangePasswordForm'])->name('password.change');
     Route::post('/dashboard/change-password', [AuthController::class, 'changePassword'])->name('password.update');
@@ -90,7 +96,7 @@ Route::middleware(['auth'])->prefix('mentor')->group(function () {
     // Menu profil
     Route::get('/profil', [MentorDashboardController::class, 'profil'])->name('mentor.profil');
     // Menu absensi
-    Route::get('/absensi', [MentorDashboardController::class, 'absensi'])->name('mentor.absensi');
+    Route::get('/absensi', [AttendanceController::class, 'mentorIndex'])->name('mentor.absensi');
     // Menu laporan penilaian
     Route::get('/laporan-penilaian', [MentorDashboardController::class, 'laporanPenilaian'])->name('mentor.laporan-penilaian');
     Route::get('/laporan-penilaian/data', [MentorDashboardController::class, 'getLaporanPenilaianData'])->name('mentor.laporan-penilaian.data');
@@ -103,6 +109,7 @@ Route::middleware(['auth'])->prefix('mentor')->group(function () {
 
 Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('dashboard');
+    Route::get('/attendance', [AttendanceController::class, 'adminIndex'])->name('attendance');
     Route::get('/applications', [AdminController::class, 'applications'])->name('applications');
     Route::post('/applications/{id}/approve', [AdminController::class, 'approveApplication'])->name('applications.approve');
     Route::post('/applications/{id}/reject', [AdminController::class, 'rejectApplication'])->name('applications.reject');

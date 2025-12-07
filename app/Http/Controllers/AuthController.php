@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use App\Models\InternshipApplication;
-use App\Models\Divisi;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -31,32 +30,64 @@ class AuthController extends Controller
             'password' => 'required',
         ]);
 
-        $credentials = $request->only('username', 'password');
-
-        if (Auth::attempt($credentials)) {
-            $request->session()->regenerate();
-
-            $user = Auth::user();
+        // Cek apakah input adalah NIK (6 digit angka) untuk mentor
+        $isNIK = preg_match('/^[0-9]{6}$/', $request->username);
+        
+        if ($isNIK) {
+            // Cari user dengan NIK sebagai username atau ktp_number
+            $user = User::where(function($query) use ($request) {
+                $query->where('username', $request->username)
+                      ->orWhere('ktp_number', $request->username);
+            })->where('role', 'pembimbing')->first();
             
-            // Admin: langsung ke dashboard (skip 2FA)
-            if ($user->role === 'admin') {
-                return redirect()->intended('/admin/dashboard');
-            }
-            
-            // Pembimbing & Peserta: Cek 2FA
-            // Jika belum setup, paksa ke setup
-            if (!$user->hasTwoFactorEnabled()) {
-                return redirect()->route('2fa.setup')
-                    ->with('info', 'Anda wajib mengaktifkan 2FA untuk pertama kali login');
-            }
-            
-            // Jika sudah setup tapi belum verified di session
-            if (!session('2fa_verified')) {
-                return redirect()->route('2fa.verify');
-            }
+            if ($user && Hash::check($request->password, $user->password)) {
+                Auth::login($user);
+                $request->session()->regenerate();
+                
+                // Pembimbing: Cek 2FA
+                // Jika belum setup, paksa ke setup
+                if (!$user->hasTwoFactorEnabled()) {
+                    return redirect()->route('2fa.setup')
+                        ->with('info', 'Anda wajib mengaktifkan 2FA untuk pertama kali login');
+                }
+                
+                // Jika sudah setup tapi belum verified di session
+                if (!session('2fa_verified')) {
+                    return redirect()->route('2fa.verify');
+                }
 
-            // Sudah verified, ke dashboard masing-masing
-            return $this->redirectToDashboard($user);
+                // Sudah verified, ke dashboard mentor
+                return $this->redirectToDashboard($user);
+            }
+        } else {
+            // Login normal dengan username
+            $credentials = $request->only('username', 'password');
+
+            if (Auth::attempt($credentials)) {
+                $request->session()->regenerate();
+
+                $user = Auth::user();
+                
+                // Admin: langsung ke dashboard (skip 2FA)
+                if ($user->role === 'admin') {
+                    return redirect()->intended('/admin/dashboard');
+                }
+                
+                // Pembimbing & Peserta: Cek 2FA
+                // Jika belum setup, paksa ke setup
+                if (!$user->hasTwoFactorEnabled()) {
+                    return redirect()->route('2fa.setup')
+                        ->with('info', 'Anda wajib mengaktifkan 2FA untuk pertama kali login');
+                }
+                
+                // Jika sudah setup tapi belum verified di session
+                if (!session('2fa_verified')) {
+                    return redirect()->route('2fa.verify');
+                }
+
+                // Sudah verified, ke dashboard masing-masing
+                return $this->redirectToDashboard($user);
+            }
         }
 
         return back()->withErrors([
@@ -107,13 +138,10 @@ class AuthController extends Controller
         // Generate 2FA secret Otomatis untuk peserta
         $user->generateTwoFactorSecret();
 
-        // Get a random divisi
-        $divisi = Divisi::inRandomOrder()->first();
-
-        // Create internship application
+        // Create internship application (divisi_id akan di-assign oleh admin setelah diterima)
         InternshipApplication::create([
             'user_id' => $user->id,
-            'divisi_id' => $divisi->id,
+            'divisi_id' => null,
             'status' => 'pending',
             'cover_letter_path' => null,
             'start_date' => now()->addDays(7),

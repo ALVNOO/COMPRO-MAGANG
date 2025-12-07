@@ -26,7 +26,7 @@ class DivisiAdmin extends Model
     // Relasi jika ada
     public function internshipApplications()
     {
-        return $this->hasMany(InternshipApplication::class);
+        return $this->hasMany(InternshipApplication::class, 'division_admin_id');
     }
 
     /**

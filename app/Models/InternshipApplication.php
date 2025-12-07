@@ -12,6 +12,8 @@ class InternshipApplication extends Model
     protected $fillable = [
         'user_id',
         'divisi_id',
+        'division_admin_id',
+        'division_mentor_id',
         'field_of_interest_id',
         'status',
         'cover_letter_path',
@@ -23,7 +25,9 @@ class InternshipApplication extends Model
         'start_date',
         'end_date',
         'assessment_report_path',
-        'completion_letter_path'
+        'completion_letter_path',
+        'acceptance_letter_path',
+        'acceptance_letter_downloaded_at',
     ];
 
     protected $casts = [
@@ -40,11 +44,19 @@ class InternshipApplication extends Model
     }
 
     /**
-     * Get the divisi that owns the internship application.
+     * Get the divisi that owns the internship application (old structure).
      */
     public function divisi()
     {
         return $this->belongsTo(Divisi::class);
+    }
+
+    /**
+     * Get the division admin that owns the internship application (new structure).
+     */
+    public function divisionAdmin()
+    {
+        return $this->belongsTo(DivisiAdmin::class, 'division_admin_id');
     }
 
     public function fieldOfInterest()
@@ -55,5 +67,13 @@ class InternshipApplication extends Model
     public function certificate()
     {
         return $this->hasOne(Certificate::class);
+    }
+
+    /**
+     * Get the division mentor assigned to this application.
+     */
+    public function divisionMentor()
+    {
+        return $this->belongsTo(DivisionMentor::class, 'division_mentor_id');
     }
 }

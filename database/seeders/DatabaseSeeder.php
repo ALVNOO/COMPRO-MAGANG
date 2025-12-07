@@ -19,9 +19,10 @@ class DatabaseSeeder extends Seeder
     {
         // Call seeders to populate data
         $this->call([
-            DirektoratSeeder::class,
+            // DirektoratSeeder::class, // Disabled - using DivisiSeeder instead
             FieldOfInterestSeeder::class,
             DivisiSeeder::class,
+            MentorUserSeeder::class,
         ]);
 
         // Create default admin user
