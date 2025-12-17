@@ -8,6 +8,7 @@ use App\Http\Controllers\InternshipController;
 use App\Http\Controllers\MentorDashboardController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AttendanceController;
+use App\Http\Controllers\LogbookController;
 
 // Public routes
 Route::get('/', [HomeController::class, 'index'])->name('home');
@@ -64,6 +65,12 @@ Route::middleware('auth')->group(function () {
     Route::post('/attendance/check-in', [AttendanceController::class, 'checkIn'])->name('attendance.check-in');
     Route::post('/attendance/absent', [AttendanceController::class, 'absent'])->name('attendance.absent');
     
+    // Logbook routes (Peserta)
+    Route::get('/logbook', [LogbookController::class, 'index'])->name('logbook.index');
+    Route::post('/logbook', [LogbookController::class, 'store'])->name('logbook.store');
+    Route::put('/logbook/{id}', [LogbookController::class, 'update'])->name('logbook.update');
+    Route::delete('/logbook/{id}', [LogbookController::class, 'destroy'])->name('logbook.destroy');
+    
     // Change password routes
     Route::get('/dashboard/change-password', [AuthController::class, 'showChangePasswordForm'])->name('password.change');
     Route::post('/dashboard/change-password', [AuthController::class, 'changePassword'])->name('password.update');
@@ -97,6 +104,8 @@ Route::middleware(['auth'])->prefix('mentor')->group(function () {
     Route::get('/profil', [MentorDashboardController::class, 'profil'])->name('mentor.profil');
     // Menu absensi
     Route::get('/absensi', [AttendanceController::class, 'mentorIndex'])->name('mentor.absensi');
+    // Menu logbook
+    Route::get('/logbook', [LogbookController::class, 'mentorIndex'])->name('mentor.logbook');
     // Menu laporan penilaian
     Route::get('/laporan-penilaian', [MentorDashboardController::class, 'laporanPenilaian'])->name('mentor.laporan-penilaian');
     Route::get('/laporan-penilaian/data', [MentorDashboardController::class, 'getLaporanPenilaianData'])->name('mentor.laporan-penilaian.data');
@@ -110,6 +119,8 @@ Route::middleware(['auth'])->prefix('mentor')->group(function () {
 Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('dashboard');
     Route::get('/attendance', [AttendanceController::class, 'adminIndex'])->name('attendance');
+    Route::get('/logbook', [LogbookController::class, 'adminIndex'])->name('logbook');
+    Route::get('/logbook/mentors', [LogbookController::class, 'getMentorsByDivision'])->name('logbook.mentors');
     Route::get('/applications', [AdminController::class, 'applications'])->name('applications');
     Route::post('/applications/{id}/approve', [AdminController::class, 'approveApplication'])->name('applications.approve');
     Route::post('/applications/{id}/reject', [AdminController::class, 'rejectApplication'])->name('applications.reject');

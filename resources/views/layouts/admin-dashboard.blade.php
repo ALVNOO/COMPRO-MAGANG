@@ -90,6 +90,12 @@
                         </a>
                     </li>
                     <li>
+                        <a href="{{ route('admin.logbook') }}"
+                            class="flex items-center px-3 py-2 rounded-sm border-l-4 transition font-medium border-l-transparent hover:border-l-[#B91C1C] hover:text-[#B91C1C] {{ request()->routeIs('admin.logbook') ? 'border-l-[#B91C1C] bg-[#FEF2F2] text-[#B91C1C] font-semibold' : '' }} transform hover:scale-105">
+                            <i class="fas fa-book mr-2"></i>Logbook
+                        </a>
+                    </li>
+                    <li>
                         <a href="{{ route('admin.reports') }}"
                             class="flex items-center px-3 py-2 rounded-sm border-l-4 transition font-medium border-l-transparent hover:border-l-[#B91C1C] hover:text-[#B91C1C] {{ request()->routeIs('admin.reports') ? 'border-l-[#B91C1C] bg-[#FEF2F2] text-[#B91C1C] font-semibold' : '' }} transform hover:scale-105">
                             <i class="fas fa-chart-bar mr-2"></i>Report Peserta Magang

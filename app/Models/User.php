@@ -97,6 +97,14 @@ class User extends Authenticatable
         return $this->hasMany(Attendance::class);
     }
 
+    /**
+     * Get the logbooks for the user.
+     */
+    public function logbooks()
+    {
+        return $this->hasMany(Logbook::class);
+    }
+
     // Cek apakah role wajib 2FA
     public function requiresTwoFactor()
     {

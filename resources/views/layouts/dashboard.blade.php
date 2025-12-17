@@ -320,6 +320,10 @@
                     <i class="fas fa-calendar-check"></i>
                     <span>Absensi</span>
                 </a>
+                <a class="nav-link {{ request()->routeIs('logbook.index') ? 'active' : '' }}" href="{{ route('logbook.index') }}">
+                    <i class="fas fa-book"></i>
+                    <span>Logbook</span>
+                </a>
                 <a class="nav-link {{ request()->routeIs('dashboard.certificates') ? 'active' : '' }}" href="{{ route('dashboard.certificates') }}">
                     <i class="fas fa-certificate"></i>
                     <span>Sertifikat</span>

@@ -185,6 +185,12 @@
                 </a>
             </div>
             <div class="nav-item">
+                <a href="{{ route('mentor.logbook') }}" class="nav-link {{ request()->routeIs('mentor.logbook') ? 'active' : '' }}">
+                    <i class="fas fa-book nav-icon"></i>
+                    <span class="nav-text">Logbook</span>
+                </a>
+            </div>
+            <div class="nav-item">
                 <a href="{{ route('mentor.laporan-penilaian') }}" class="nav-link {{ request()->routeIs('mentor.laporan-penilaian') ? 'active' : '' }}">
                     <i class="fas fa-chart-bar nav-icon"></i>
                     <span class="nav-text">Laporan Penilaian</span>
