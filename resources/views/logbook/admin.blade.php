@@ -172,31 +172,41 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // Update mentor dropdown when division changes
-    document.getElementById('division_id').addEventListener('change', function() {
-        const divisionId = this.value;
-        const mentorSelect = document.getElementById('mentor_id');
-        const currentMentorId = '{{ $filterMentor }}';
-        
-        // Fetch mentors for selected division
-        fetch(`{{ route('admin.logbook.mentors') }}?division_id=${divisionId}`)
-            .then(response => response.json())
-            .then(data => {
-                mentorSelect.innerHTML = '<option value="">All Mentor</option>';
-                data.mentors.forEach(mentor => {
-                    const option = document.createElement('option');
-                    option.value = mentor.id;
-                    option.textContent = mentor.mentor_name;
-                    if (mentor.id == currentMentorId) {
-                        option.selected = true;
-                    }
-                    mentorSelect.appendChild(option);
+    // Update mentor dropdown + auto-submit when division changes
+    const divisionSelect = document.getElementById('division_id');
+    const filterForm = document.getElementById('filterForm');
+
+    if (divisionSelect && filterForm) {
+        divisionSelect.addEventListener('change', function() {
+            const divisionId = this.value;
+            const mentorSelect = document.getElementById('mentor_id');
+            const currentMentorId = '{{ $filterMentor }}';
+
+            // Fetch mentors for selected division (agar dropdown mentor tetap dinamis)
+            fetch(`{{ route('admin.logbook.mentors') }}?division_id=${divisionId}`)
+                .then(response => response.json())
+                .then(data => {
+                    mentorSelect.innerHTML = '<option value="">All Mentor</option>';
+                    data.mentors.forEach(mentor => {
+                        const option = document.createElement('option');
+                        option.value = mentor.id;
+                        option.textContent = mentor.mentor_name;
+                        if (mentor.id == currentMentorId) {
+                            option.selected = true;
+                        }
+                        mentorSelect.appendChild(option);
+                    });
+
+                    // Setelah dropdown mentor ter-update, auto-submit form untuk filter data
+                    filterForm.submit();
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    // Kalau gagal fetch, tetap submit supaya filter divisi jalan
+                    filterForm.submit();
                 });
-            })
-            .catch(error => {
-                console.error('Error:', error);
-            });
-    });
+        });
+    }
 });
 </script>
 @endsection

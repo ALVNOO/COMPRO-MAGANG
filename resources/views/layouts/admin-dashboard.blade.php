@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@yield('title', 'Admin Dashboard')</title>
+    <!-- Bootstrap CSS (agar komponen seperti card, table, btn punya style yang sama dengan mentor) -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
     <!-- Import Tailwind & custom app.css (same as landing page) -->
     @if (file_exists(public_path('build/manifest.json')) || file_exists(public_path('hot')))
         @vite(['resources/css/app.css', 'resources/js/app.js'])
@@ -11,6 +14,16 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         body, html {font-family: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';}
+
+        /* Override warna link bawaan Bootstrap di sidebar admin */
+        aside a {
+            color: #1b1b18;
+            text-decoration: none;
+        }
+
+        aside a:hover {
+            color: #B91C1C;
+        }
         
         .dropdown-menu {
             opacity: 0;
@@ -20,7 +33,9 @@
             z-index: 1000;
         }
         
+        /* Override Bootstrap: jika class hidden dihapus, paksa tampil */
         .dropdown-menu:not(.hidden) {
+            display: block;
             opacity: 1;
             transform: translateY(0);
             pointer-events: auto;

@@ -1,49 +1,52 @@
 @extends('layouts.admin-dashboard')
 
 @section('admin-content')
-<div class="space-y-8">
-    <div class="mb-6">
-        <h2 class="text-2xl font-bold mb-1 text-[#000000] border-b-4 border-[#B91C1C] inline-block pb-1 pr-6">Daily Attendance</h2>
-        <p class="text-sm text-[#000000]">Pantau absensi peserta magang</p>
-    </div>
-
-    <!-- Filter Section -->
-    <div class="bg-white border border-[#e3e3e0] rounded-lg shadow-2xl p-6 mb-6">
-        <form method="GET" action="{{ route('admin.attendance') }}" class="row g-3">
-            <div class="col-md-4">
-                <label for="division_id" class="form-label">Filter Divisi</label>
-                <select class="form-select" id="division_id" name="division_id">
-                    <option value="">Semua Divisi</option>
-                    @foreach($divisions as $division)
-                        <option value="{{ $division->id }}" {{ $filterDivision == $division->id ? 'selected' : '' }}>
-                            {{ $division->division_name }}
-                        </option>
-                    @endforeach
-                </select>
-            </div>
-            <div class="col-md-4">
-                <label for="date" class="form-label">Filter Tanggal</label>
-                <input type="date" class="form-control" id="date" name="date" value="{{ $filterDate }}" required>
-            </div>
-            <div class="col-md-4 d-flex align-items-end">
-                <button type="submit" class="btn btn-primary me-2">
-                    <i class="fas fa-search me-2"></i>Filter
-                </button>
-                <a href="{{ route('admin.attendance') }}" class="btn btn-secondary">
-                    <i class="fas fa-redo me-2"></i>Reset
-                </a>
-            </div>
-        </form>
-    </div>
-
-    <!-- Attendance Table -->
-    <div class="bg-white border border-[#e3e3e0] rounded-lg shadow-2xl relative z-10">
-        <div class="border-b border-[#e3e3e0] px-6 py-4 flex items-center gap-2 relative">
-            <div class="absolute left-6 right-6 -bottom-1 h-1 bg-gradient-to-r from-[#B91C1C] via-[#B91C1C] to-[#B91C1C] rounded opacity-60"></div>
-            <i class="fas fa-calendar-check text-[#B91C1C]"></i>
-            <h5 class="text-lg font-bold mb-0 text-[#B91C1C]">Data Absensi - {{ \Carbon\Carbon::parse($filterDate)->format('d M Y') }}</h5>
+<div class="container-fluid">
+    <div class="mx-auto" style="max-width: 1100px;">
+        <div class="mb-4">
+            <h2 class="text-2xl font-bold mb-1 text-[#000000] border-b-4 border-[#B91C1C] inline-block pb-1 pr-6">
+                Daily Attendance
+            </h2>
+            <p class="text-sm text-[#000000]">Pantau absensi peserta magang</p>
         </div>
-        <div class="p-6">
+
+        <!-- Filter Section (mirip halaman mentor + filter divisi) -->
+        <div class="card mb-4 shadow-sm">
+            <div class="card-body">
+            <form id="adminAttendanceFilterForm" method="GET" action="{{ route('admin.attendance') }}" class="row g-3 align-items-end">
+                <div class="col-md-4">
+                    <label for="division_id" class="form-label">Filter Divisi</label>
+                    <select class="form-select" id="division_id" name="division_id">
+                        <option value="">Semua Divisi</option>
+                        @foreach($divisions as $division)
+                            <option value="{{ $division->id }}" {{ $filterDivision == $division->id ? 'selected' : '' }}>
+                                {{ $division->division_name }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label for="date" class="form-label">Filter Tanggal</label>
+                    <input type="date" class="form-control" id="date" name="date" value="{{ $filterDate }}" required>
+                </div>
+                <div class="col-md-4 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary me-2">
+                        <i class="fas fa-search me-2"></i>Filter
+                    </button>
+                    <a href="{{ route('admin.attendance') }}" class="btn btn-secondary">
+                        <i class="fas fa-redo me-2"></i>Reset
+                    </a>
+                </div>
+            </form>
+            </div>
+        </div>
+
+        <!-- Attendance Table (struktur dan styling mengikuti halaman mentor) -->
+        <div class="card shadow-sm">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">Data Absensi - {{ \Carbon\Carbon::parse($filterDate)->format('d M Y') }}</h5>
+            </div>
+            <div class="card-body">
             @if($participants->count() > 0)
             <div class="table-responsive">
                 <table class="table table-hover table-bordered align-middle">
@@ -158,8 +161,23 @@
                 Belum ada data absensi untuk filter yang dipilih.
             </div>
             @endif
+            </div>
         </div>
     </div>
 </div>
 @endsection
 
+@push('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const divisionSelect = document.getElementById('division_id');
+        const filterForm = document.getElementById('adminAttendanceFilterForm');
+
+        if (divisionSelect && filterForm) {
+            divisionSelect.addEventListener('change', function () {
+                filterForm.submit();
+            });
+        }
+    });
+</script>
+@endpush
