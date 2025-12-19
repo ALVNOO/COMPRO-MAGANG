@@ -106,6 +106,7 @@
                                     <th>Nilai</th>
                                     <th>Feedback</th>
                                     <th>Revisi</th>
+                                    <th>Aksi</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -151,9 +152,23 @@
                                                 <span class="text-muted">-</span>
                                             @endif
                                         </td>
+                                        <td>
+                                            <div class="btn-group" role="group">
+                                                <button type="button" class="btn btn-warning btn-sm" onclick="openEditModal({{ $assignment->id }})" title="Edit Tugas">
+                                                    <i class="fas fa-edit"></i>
+                                                </button>
+                                                <form method="POST" action="{{ route('mentor.penugasan.delete', $assignment->id) }}" style="display:inline" onsubmit="return confirm('Apakah Anda yakin ingin menghapus tugas ini?')">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" class="btn btn-danger btn-sm" title="Hapus Tugas" @if($assignment->submission_file_path || ($assignment->submissions && $assignment->submissions->count() > 0)) disabled @endif>
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </td>
                                     </tr>
                                 @empty
-                                    <tr><td colspan="9" class="text-center text-muted">Belum ada tugas harian yang diberikan</td></tr>
+                                    <tr><td colspan="10" class="text-center text-muted">Belum ada tugas harian yang diberikan</td></tr>
                                 @endforelse
                             </tbody>
                         </table>
@@ -177,6 +192,7 @@
                                     <th>Nilai</th>
                                     <th>Feedback</th>
                                     <th>Revisi</th>
+                                    <th>Aksi</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -223,9 +239,23 @@
                                                 <span class="text-muted">-</span>
                                             @endif
                                         </td>
+                                        <td>
+                                            <div class="btn-group" role="group">
+                                                <button type="button" class="btn btn-warning btn-sm" onclick="openEditModal({{ $assignment->id }})" title="Edit Tugas">
+                                                    <i class="fas fa-edit"></i>
+                                                </button>
+                                                <form method="POST" action="{{ route('mentor.penugasan.delete', $assignment->id) }}" style="display:inline" onsubmit="return confirm('Apakah Anda yakin ingin menghapus tugas ini?')">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" class="btn btn-danger btn-sm" title="Hapus Tugas" @if($assignment->submission_file_path || ($assignment->submissions && $assignment->submissions->count() > 0)) disabled @endif>
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </td>
                                     </tr>
                                 @empty
-                                    <tr><td colspan="10" class="text-center text-muted">Belum ada tugas proyek yang diberikan</td></tr>
+                                    <tr><td colspan="11" class="text-center text-muted">Belum ada tugas proyek yang diberikan</td></tr>
                                 @endforelse
                             </tbody>
                         </table>
@@ -356,5 +386,140 @@
             </div>
         @endforeach
     @endif
+
+    <!-- Modal Edit Tugas -->
+    <div class="modal fade" id="editTaskModal" tabindex="-1" aria-labelledby="editTaskModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <form method="POST" id="editTaskForm" enctype="multipart/form-data">
+                    @csrf
+                    @method('PUT')
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="editTaskModalLabel">Edit Penugasan</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Jenis Tugas <span class="text-danger">*</span></label>
+                                <select name="assignment_type" class="form-select" id="editAssignmentType" required>
+                                    <option value="">Pilih Jenis Tugas</option>
+                                    <option value="tugas_harian">Tugas Harian</option>
+                                    <option value="tugas_proyek">Tugas Proyek</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Judul Penugasan <span class="text-danger">*</span></label>
+                                <input type="text" name="title" class="form-control" id="editTitle" placeholder="Judul Penugasan" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Deadline <span class="text-danger">*</span></label>
+                                <input type="date" name="deadline" class="form-control" id="editDeadline" required>
+                            </div>
+                            <div class="col-md-6" id="editPresentationDateWrapper" style="display:none;">
+                                <label class="form-label">Tanggal Presentasi <span class="text-danger">*</span></label>
+                                <input type="date" name="presentation_date" class="form-control" id="editPresentationDate">
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label">File Tugas (Opsional)</label>
+                                <input type="file" name="file_path" class="form-control" id="editFile">
+                                <small class="text-muted">Biarkan kosong jika tidak ingin mengganti file</small>
+                                <div id="currentFileInfo" class="mt-2"></div>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label">Deskripsi atau Instruksi Tugas</label>
+                                <textarea name="description" class="form-control" id="editDescription" rows="4" placeholder="Deskripsi atau instruksi tugas (boleh kosong)"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                        <button type="submit" class="btn btn-primary" id="editSubmitBtn">
+                            <span class="btn-text">Simpan Perubahan</span>
+                            <span class="btn-loading d-none">
+                                <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                                Loading...
+                            </span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Function untuk open edit modal
+        function openEditModal(assignmentId) {
+            fetch(`/mentor/penugasan/${assignmentId}/edit`)
+                .then(response => response.json())
+                .then(result => {
+                    if (result.success) {
+                        const data = result.data;
+
+                        // Set form action
+                        document.getElementById('editTaskForm').action = `/mentor/penugasan/${data.id}/update`;
+
+                        // Fill form fields
+                        document.getElementById('editTitle').value = data.title || '';
+                        document.getElementById('editDescription').value = data.description || '';
+                        document.getElementById('editAssignmentType').value = data.assignment_type || '';
+                        document.getElementById('editDeadline').value = data.deadline || '';
+                        document.getElementById('editPresentationDate').value = data.presentation_date || '';
+
+                        // Show/hide presentation date based on assignment type
+                        const presentationWrapper = document.getElementById('editPresentationDateWrapper');
+                        if (data.assignment_type === 'tugas_proyek') {
+                            presentationWrapper.style.display = 'block';
+                        } else {
+                            presentationWrapper.style.display = 'none';
+                        }
+
+                        // Show current file info
+                        const fileInfo = document.getElementById('currentFileInfo');
+                        if (data.file_path) {
+                            fileInfo.innerHTML = `<small class="text-info"><i class="fas fa-file"></i> File saat ini: ${data.file_path.split('/').pop()}</small>`;
+                        } else {
+                            fileInfo.innerHTML = '';
+                        }
+
+                        // Show modal
+                        const modal = new bootstrap.Modal(document.getElementById('editTaskModal'));
+                        modal.show();
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Gagal memuat data tugas. Silakan coba lagi.');
+                });
+        }
+
+        // Handle assignment type change in edit modal
+        document.getElementById('editAssignmentType').addEventListener('change', function() {
+            const presentationWrapper = document.getElementById('editPresentationDateWrapper');
+            const presentationInput = document.getElementById('editPresentationDate');
+
+            if (this.value === 'tugas_proyek') {
+                presentationWrapper.style.display = 'block';
+                presentationInput.required = true;
+            } else {
+                presentationWrapper.style.display = 'none';
+                presentationInput.required = false;
+                presentationInput.value = '';
+            }
+        });
+
+        // Handle form submission with loading state
+        document.getElementById('editTaskForm').addEventListener('submit', function() {
+            const submitBtn = document.getElementById('editSubmitBtn');
+            const btnText = submitBtn.querySelector('.btn-text');
+            const btnLoading = submitBtn.querySelector('.btn-loading');
+
+            if (btnText && btnLoading) {
+                btnText.classList.add('d-none');
+                btnLoading.classList.remove('d-none');
+                submitBtn.disabled = true;
+            }
+        });
+    </script>
 </div>
 @endsection 

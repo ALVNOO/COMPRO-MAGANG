@@ -92,6 +92,9 @@ Route::middleware(['auth'])->prefix('mentor')->group(function () {
     // Menu penugasan dan penilaian
     Route::get('/penugasan', [MentorDashboardController::class, 'penugasan'])->name('mentor.penugasan');
     Route::post('/penugasan/tambah', [MentorDashboardController::class, 'tambahPenugasan'])->name('mentor.penugasan.tambah');
+    Route::get('/penugasan/{assignment}/edit', [MentorDashboardController::class, 'editPenugasan'])->name('mentor.penugasan.edit');
+    Route::put('/penugasan/{assignment}/update', [MentorDashboardController::class, 'updatePenugasan'])->name('mentor.penugasan.update');
+    Route::delete('/penugasan/{assignment}/delete', [MentorDashboardController::class, 'deletePenugasan'])->name('mentor.penugasan.delete');
     Route::post('/penugasan/{assignment}/nilai', [MentorDashboardController::class, 'beriNilaiPenugasan'])->name('mentor.penugasan.nilai');
     Route::post('/penugasan/{assignment}/revisi', [MentorDashboardController::class, 'setRevisiPenugasan'])->name('mentor.penugasan.revisi');
     // Menu sertifikat

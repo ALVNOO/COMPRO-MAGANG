@@ -571,6 +571,177 @@ class MentorDashboardController extends Controller
         return redirect()->route('mentor.penugasan')->with('success', 'Status revisi tugas berhasil diperbarui.');
     }
 
+    public function editPenugasan($assignmentId)
+    {
+        $user = Auth::user();
+        $divisionMentor = \App\Models\DivisionMentor::where('nik_number', $user->username)->first();
+
+        if (!$divisionMentor) {
+            abort(403, 'Anda tidak memiliki akses untuk mengedit penugasan.');
+        }
+
+        $assignment = \App\Models\Assignment::with('user')->findOrFail($assignmentId);
+
+        // Validasi: pastikan assignment milik peserta yang di-assign ke mentor ini
+        $application = $assignment->user ? $assignment->user->internshipApplications()
+            ->where('status', 'accepted')
+            ->where('division_mentor_id', $divisionMentor->id)
+            ->first() : null;
+
+        if (!$application) {
+            abort(403, 'Anda tidak memiliki akses untuk mengedit penugasan ini.');
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'id' => $assignment->id,
+                'title' => $assignment->title,
+                'description' => $assignment->description,
+                'assignment_type' => $assignment->assignment_type,
+                'deadline' => $assignment->deadline,
+                'presentation_date' => $assignment->presentation_date,
+                'file_path' => $assignment->file_path,
+            ]
+        ]);
+    }
+
+    public function updatePenugasan(Request $request, $assignmentId)
+    {
+        $validated = $request->validate([
+            'title' => 'required|string|max:255',
+            'assignment_type' => 'required|in:tugas_harian,tugas_proyek',
+            'deadline' => 'required|date',
+            'presentation_date' => 'nullable|date',
+            'description' => 'nullable|string|max:5000',
+            'file_path' => 'nullable|file|mimes:pdf,doc,docx,zip|max:4096',
+        ]);
+
+        $user = Auth::user();
+        $divisionMentor = \App\Models\DivisionMentor::where('nik_number', $user->username)->first();
+
+        if (!$divisionMentor) {
+            return redirect()->back()->with('error', 'Anda tidak memiliki akses untuk mengupdate penugasan.');
+        }
+
+        $assignment = \App\Models\Assignment::with('user')->findOrFail($assignmentId);
+
+        // Validasi: pastikan assignment milik peserta yang di-assign ke mentor ini
+        $application = $assignment->user ? $assignment->user->internshipApplications()
+            ->where('status', 'accepted')
+            ->where('division_mentor_id', $divisionMentor->id)
+            ->first() : null;
+
+        if (!$application) {
+            return redirect()->back()->with('error', 'Anda tidak memiliki akses untuk mengupdate penugasan ini.');
+        }
+
+        // Validasi deadline
+        $deadline = \Carbon\Carbon::parse($request->deadline);
+        if ($deadline->lt(now()->startOfDay())) {
+            return redirect()->back()
+                ->withErrors(['deadline' => 'Deadline harus hari ini atau setelahnya.'])
+                ->withInput($request->except('file_path'));
+        }
+
+        // Validasi presentation_date jika diisi
+        if ($request->presentation_date) {
+            $presentationDate = \Carbon\Carbon::parse($request->presentation_date);
+            if ($presentationDate->lt(now()->startOfDay())) {
+                return redirect()->back()
+                    ->withErrors(['presentation_date' => 'Tanggal presentasi harus hari ini atau setelahnya.'])
+                    ->withInput($request->except('file_path'));
+            }
+        }
+
+        // Validasi khusus untuk tugas proyek
+        if ($request->assignment_type === 'tugas_proyek' && !$request->presentation_date) {
+            return redirect()->back()
+                ->withErrors(['presentation_date' => 'Tanggal presentasi wajib diisi untuk tugas proyek.'])
+                ->withInput($request->except('file_path'));
+        }
+
+        // Update data
+        $assignment->title = trim($request->title);
+        $assignment->assignment_type = $request->assignment_type;
+        $assignment->description = $request->description ? trim($request->description) : null;
+        $assignment->deadline = $request->deadline;
+        $assignment->presentation_date = ($request->assignment_type === 'tugas_proyek' && $request->presentation_date)
+            ? $request->presentation_date
+            : null;
+
+        // Handle file upload jika ada
+        if ($request->hasFile('file_path')) {
+            // Hapus file lama jika ada
+            if ($assignment->file_path && Storage::disk('public')->exists($assignment->file_path)) {
+                Storage::disk('public')->delete($assignment->file_path);
+            }
+
+            try {
+                $assignment->file_path = $request->file('file_path')->store('assignments', 'public');
+            } catch (\Exception $e) {
+                Log::error('Error uploading file: ' . $e->getMessage());
+                return redirect()->back()
+                    ->with('error', 'Gagal mengupload file. Pastikan file tidak terlalu besar dan format sesuai.')
+                    ->withInput($request->except('file_path'));
+            }
+        }
+
+        try {
+            $assignment->save();
+            return redirect()->route('mentor.penugasan')
+                ->with('success', 'Penugasan berhasil diperbarui.');
+        } catch (\Exception $e) {
+            Log::error('Error updating assignment: ' . $e->getMessage());
+            return redirect()->back()
+                ->with('error', 'Terjadi kesalahan saat mengupdate penugasan. Silakan coba lagi.')
+                ->withInput($request->except('file_path'));
+        }
+    }
+
+    public function deletePenugasan($assignmentId)
+    {
+        $user = Auth::user();
+        $divisionMentor = \App\Models\DivisionMentor::where('nik_number', $user->username)->first();
+
+        if (!$divisionMentor) {
+            return redirect()->back()->with('error', 'Anda tidak memiliki akses untuk menghapus penugasan.');
+        }
+
+        $assignment = \App\Models\Assignment::with('user')->findOrFail($assignmentId);
+
+        // Validasi: pastikan assignment milik peserta yang di-assign ke mentor ini
+        $application = $assignment->user ? $assignment->user->internshipApplications()
+            ->where('status', 'accepted')
+            ->where('division_mentor_id', $divisionMentor->id)
+            ->first() : null;
+
+        if (!$application) {
+            return redirect()->back()->with('error', 'Anda tidak memiliki akses untuk menghapus penugasan ini.');
+        }
+
+        // Cek apakah sudah ada submission
+        if ($assignment->submission_file_path || ($assignment->submissions && $assignment->submissions->count() > 0)) {
+            return redirect()->back()->with('error', 'Tidak dapat menghapus tugas yang sudah dikumpulkan oleh peserta.');
+        }
+
+        try {
+            // Hapus file assignment jika ada
+            if ($assignment->file_path && Storage::disk('public')->exists($assignment->file_path)) {
+                Storage::disk('public')->delete($assignment->file_path);
+            }
+
+            $assignment->delete();
+
+            return redirect()->route('mentor.penugasan')
+                ->with('success', 'Penugasan berhasil dihapus.');
+        } catch (\Exception $e) {
+            Log::error('Error deleting assignment: ' . $e->getMessage());
+            return redirect()->back()
+                ->with('error', 'Terjadi kesalahan saat menghapus penugasan. Silakan coba lagi.');
+        }
+    }
+
     public function uploadSertifikat(Request $request, $userId)
     {
         $request->validate([

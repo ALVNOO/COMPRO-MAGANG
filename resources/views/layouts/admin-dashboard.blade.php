@@ -4,14 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@yield('title', 'Admin Dashboard')</title>
-    <!-- Bootstrap CSS (agar komponen seperti card, table, btn punya style yang sama dengan mentor) -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 
-    <!-- Import Tailwind & custom app.css (same as landing page) -->
-    @if (file_exists(public_path('build/manifest.json')) || file_exists(public_path('hot')))
-        @vite(['resources/css/app.css', 'resources/js/app.js'])
-    @endif
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- Vite Assets -->
+    @vite(['resources/css/admin-dashboard.css', 'resources/js/admin-dashboard.js'])
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
+
     <style>
         body, html {font-family: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';}
 
@@ -60,7 +57,6 @@
             background-color: #dbdbd7;
         }
     </style>
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 </head>
 <body class="min-h-screen flex flex-col">
     <div class="flex flex-1 min-h-0 bg-gradient-to-br from-[#B91C1C] via-[#fff2f2] to-[#F8F9FB]">
@@ -184,63 +180,7 @@
             @yield('admin-content')
         </main>
     </div>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script>
-        // Alert auto hide
-        setTimeout(function() {
-            $('.alert').fadeOut('slow');
-        }, 3000);
 
-        // Dropdown (simple Tailwind, manual toggle)
-        $(function() {
-            $('#adminDropdown').on('click', function(e) {
-                e.preventDefault();
-                e.stopPropagation();
-                const $menu = $(this).next('.dropdown-menu');
-                $menu.toggleClass('hidden');
-            });
-            
-            // Close dropdown when clicking outside
-            $(document).on('click', function(event) {
-                const $dropdown = $('.dropdown-menu');
-                const $button = $('#adminDropdown');
-                const $dropdownContainer = $button.parent();
-                
-                // Check if click is outside both button and dropdown
-                if (!$dropdownContainer.is(event.target) && !$dropdownContainer.has(event.target).length) {
-                    $dropdown.addClass('hidden');
-                }
-            });
-            
-            // Prevent dropdown from closing when clicking inside the dropdown menu
-            $('.dropdown-menu').on('click', function(e) {
-                e.stopPropagation();
-            });
-            
-            // Ensure logout button is clickable
-            $('.dropdown-menu button[type="submit"]').on('click', function(e) {
-                // Allow the form to submit normally
-                e.stopPropagation();
-                // Don't prevent default - let the form submit
-            });
-        });
-    </script>
     @stack('scripts')
-    <script>
-        // Auto-hide notifications after 3 seconds
-        document.addEventListener('DOMContentLoaded', function() {
-            const notifications = document.querySelectorAll('.alert-notification');
-            notifications.forEach(function(notification) {
-                setTimeout(function() {
-                    notification.style.transition = 'opacity 0.5s ease-out';
-                    notification.style.opacity = '0';
-                    setTimeout(function() {
-                        notification.remove();
-                    }, 500);
-                }, 3000);
-            });
-        });
-    </script>
 </body>
 </html> 
