@@ -178,34 +178,34 @@ document.addEventListener('DOMContentLoaded', function() {
 
     if (divisionSelect && filterForm) {
         divisionSelect.addEventListener('change', function() {
-            const divisionId = this.value;
-            const mentorSelect = document.getElementById('mentor_id');
-            const currentMentorId = '{{ $filterMentor }}';
-
+        const divisionId = this.value;
+        const mentorSelect = document.getElementById('mentor_id');
+        const currentMentorId = '{{ $filterMentor }}';
+        
             // Fetch mentors for selected division (agar dropdown mentor tetap dinamis)
-            fetch(`{{ route('admin.logbook.mentors') }}?division_id=${divisionId}`)
-                .then(response => response.json())
-                .then(data => {
-                    mentorSelect.innerHTML = '<option value="">All Mentor</option>';
-                    data.mentors.forEach(mentor => {
-                        const option = document.createElement('option');
-                        option.value = mentor.id;
-                        option.textContent = mentor.mentor_name;
-                        if (mentor.id == currentMentorId) {
-                            option.selected = true;
-                        }
-                        mentorSelect.appendChild(option);
-                    });
+        fetch(`{{ route('admin.logbook.mentors') }}?division_id=${divisionId}`)
+            .then(response => response.json())
+            .then(data => {
+                mentorSelect.innerHTML = '<option value="">All Mentor</option>';
+                data.mentors.forEach(mentor => {
+                    const option = document.createElement('option');
+                    option.value = mentor.id;
+                    option.textContent = mentor.mentor_name;
+                    if (mentor.id == currentMentorId) {
+                        option.selected = true;
+                    }
+                    mentorSelect.appendChild(option);
+                });
 
                     // Setelah dropdown mentor ter-update, auto-submit form untuk filter data
                     filterForm.submit();
-                })
-                .catch(error => {
-                    console.error('Error:', error);
+            })
+            .catch(error => {
+                console.error('Error:', error);
                     // Kalau gagal fetch, tetap submit supaya filter divisi jalan
                     filterForm.submit();
-                });
-        });
+            });
+    });
     }
 });
 </script>

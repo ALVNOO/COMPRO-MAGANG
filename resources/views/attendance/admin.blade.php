@@ -7,38 +7,38 @@
             <h2 class="text-2xl font-bold mb-1 text-[#000000] border-b-4 border-[#B91C1C] inline-block pb-1 pr-6">
                 Daily Attendance
             </h2>
-            <p class="text-sm text-[#000000]">Pantau absensi peserta magang</p>
-        </div>
+        <p class="text-sm text-[#000000]">Pantau absensi peserta magang</p>
+    </div>
 
         <!-- Filter Section (mirip halaman mentor + filter divisi) -->
         <div class="card mb-4 shadow-sm">
             <div class="card-body">
             <form id="adminAttendanceFilterForm" method="GET" action="{{ route('admin.attendance') }}" class="row g-3 align-items-end">
-                <div class="col-md-4">
-                    <label for="division_id" class="form-label">Filter Divisi</label>
-                    <select class="form-select" id="division_id" name="division_id">
-                        <option value="">Semua Divisi</option>
-                        @foreach($divisions as $division)
-                            <option value="{{ $division->id }}" {{ $filterDivision == $division->id ? 'selected' : '' }}>
-                                {{ $division->division_name }}
-                            </option>
-                        @endforeach
-                    </select>
-                </div>
-                <div class="col-md-4">
-                    <label for="date" class="form-label">Filter Tanggal</label>
-                    <input type="date" class="form-control" id="date" name="date" value="{{ $filterDate }}" required>
-                </div>
-                <div class="col-md-4 d-flex align-items-end">
-                    <button type="submit" class="btn btn-primary me-2">
-                        <i class="fas fa-search me-2"></i>Filter
-                    </button>
-                    <a href="{{ route('admin.attendance') }}" class="btn btn-secondary">
-                        <i class="fas fa-redo me-2"></i>Reset
-                    </a>
-                </div>
-            </form>
+            <div class="col-md-4">
+                <label for="division_id" class="form-label">Filter Divisi</label>
+                <select class="form-select" id="division_id" name="division_id">
+                    <option value="">Semua Divisi</option>
+                    @foreach($divisions as $division)
+                        <option value="{{ $division->id }}" {{ $filterDivision == $division->id ? 'selected' : '' }}>
+                            {{ $division->division_name }}
+                        </option>
+                    @endforeach
+                </select>
             </div>
+            <div class="col-md-4">
+                <label for="date" class="form-label">Filter Tanggal</label>
+                <input type="date" class="form-control" id="date" name="date" value="{{ $filterDate }}" required>
+            </div>
+            <div class="col-md-4 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary me-2">
+                    <i class="fas fa-search me-2"></i>Filter
+                </button>
+                <a href="{{ route('admin.attendance') }}" class="btn btn-secondary">
+                    <i class="fas fa-redo me-2"></i>Reset
+                </a>
+            </div>
+        </form>
+    </div>
         </div>
 
         <!-- Attendance Table (struktur dan styling mengikuti halaman mentor) -->

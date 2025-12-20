@@ -61,6 +61,43 @@
         border-radius: 8px;
         margin-top: 1rem;
     }
+    #cameraPreview {
+        width: 100%;
+        max-width: 500px;
+        border-radius: 8px;
+        margin: 1rem auto;
+        display: block;
+        background: #000;
+    }
+    #capturedPhoto {
+        width: 100%;
+        max-width: 500px;
+        border-radius: 8px;
+        margin: 1rem auto;
+        display: none;
+    }
+    .camera-controls {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        margin-top: 1rem;
+    }
+    .btn-capture {
+        background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        border: none;
+        padding: 0.75rem 2rem;
+        font-weight: 600;
+        border-radius: 8px;
+        color: white;
+    }
+    .btn-retake {
+        background: linear-gradient(135deg, #6c757d 0%, #5a6268 100%);
+        border: none;
+        padding: 0.75rem 2rem;
+        font-weight: 600;
+        border-radius: 8px;
+        color: white;
+    }
 </style>
 @endpush
 
@@ -193,14 +230,46 @@
                     <h5 class="modal-title">Check In</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
-                <form action="{{ route('attendance.check-in') }}" method="POST" enctype="multipart/form-data">
+                <form action="{{ route('attendance.check-in') }}" method="POST" enctype="multipart/form-data" id="checkInForm">
                     @csrf
                     <div class="modal-body">
                         <div class="mb-3">
-                            <label for="photo" class="form-label">Upload Foto Selfie <span class="text-danger">*</span></label>
-                            <input type="file" class="form-control" id="photo" name="photo" accept="image/*" required>
-                            <small class="text-muted">Format: JPG, PNG. Maksimal 2MB</small>
-                            <div id="photoPreview" class="mt-2"></div>
+                            <label class="form-label">Ambil Foto Selfie <span class="text-danger">*</span></label>
+                            
+                            <!-- Camera Preview -->
+                            <video id="cameraPreview" autoplay playsinline style="display: none;"></video>
+                            
+                            <!-- Captured Photo Preview -->
+                            <img id="capturedPhoto" alt="Captured Photo">
+                            
+                            <!-- Hidden input untuk menyimpan foto -->
+                            <input type="file" id="photo" name="photo" accept="image/*" required style="display: none;">
+                            
+                            <!-- Camera Controls -->
+                            <div id="cameraControls" class="camera-controls" style="display: none;">
+                                <button type="button" class="btn btn-capture" id="captureBtn">
+                                    <i class="fas fa-camera me-2"></i>Ambil Foto
+                                </button>
+                                <button type="button" class="btn btn-secondary" id="stopCameraBtn">
+                                    <i class="fas fa-stop me-2"></i>Batal
+                                </button>
+                            </div>
+                            
+                            <!-- Photo Controls (setelah capture) -->
+                            <div id="photoControls" class="camera-controls" style="display: none;">
+                                <button type="button" class="btn btn-retake" id="retakeBtn">
+                                    <i class="fas fa-redo me-2"></i>Ambil Ulang
+                                </button>
+                            </div>
+                            
+                            <!-- Start Camera Button -->
+                            <div id="startCameraSection" class="text-center">
+                                <button type="button" class="btn btn-primary" id="startCameraBtn">
+                                    <i class="fas fa-camera me-2"></i>Buka Kamera
+                                </button>
+                            </div>
+                            
+                            <small class="text-muted d-block mt-2">Pastikan wajah Anda terlihat jelas dalam foto</small>
                         </div>
                         <div class="alert alert-info">
                             <i class="fas fa-info-circle me-2"></i>
@@ -208,8 +277,8 @@
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                        <button type="submit" class="btn btn-success">Check In</button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" id="closeModalBtn">Batal</button>
+                        <button type="submit" class="btn btn-success" id="submitBtn" disabled>Check In</button>
                     </div>
                 </form>
             </div>
@@ -249,17 +318,124 @@
 
 @push('scripts')
 <script>
-    // Photo preview
-    document.getElementById('photo').addEventListener('change', function(e) {
-        const file = e.target.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const preview = document.getElementById('photoPreview');
-                preview.innerHTML = '<img src="' + e.target.result + '" class="photo-preview" alt="Preview">';
-            };
-            reader.readAsDataURL(file);
+    let stream = null;
+    let canvas = null;
+    
+    // Elements
+    const startCameraBtn = document.getElementById('startCameraBtn');
+    const cameraPreview = document.getElementById('cameraPreview');
+    const capturedPhoto = document.getElementById('capturedPhoto');
+    const cameraControls = document.getElementById('cameraControls');
+    const photoControls = document.getElementById('photoControls');
+    const startCameraSection = document.getElementById('startCameraSection');
+    const captureBtn = document.getElementById('captureBtn');
+    const retakeBtn = document.getElementById('retakeBtn');
+    const stopCameraBtn = document.getElementById('stopCameraBtn');
+    const photoInput = document.getElementById('photo');
+    const submitBtn = document.getElementById('submitBtn');
+    const checkInForm = document.getElementById('checkInForm');
+    const closeModalBtn = document.getElementById('closeModalBtn');
+    const checkInModal = document.getElementById('checkInModal');
+    
+    // Start camera
+    startCameraBtn.addEventListener('click', async function() {
+        try {
+            stream = await navigator.mediaDevices.getUserMedia({ 
+                video: { 
+                    facingMode: 'user', // Front camera
+                    width: { ideal: 1280 },
+                    height: { ideal: 720 }
+                } 
+            });
+            
+            cameraPreview.srcObject = stream;
+            cameraPreview.style.display = 'block';
+            cameraControls.style.display = 'flex';
+            startCameraSection.style.display = 'none';
+            capturedPhoto.style.display = 'none';
+            photoControls.style.display = 'none';
+        } catch (error) {
+            console.error('Error accessing camera:', error);
+            alert('Tidak dapat mengakses kamera. Pastikan Anda memberikan izin akses kamera dan menggunakan browser yang mendukung.');
         }
+    });
+    
+    // Capture photo
+    captureBtn.addEventListener('click', function() {
+        canvas = document.createElement('canvas');
+        canvas.width = cameraPreview.videoWidth;
+        canvas.height = cameraPreview.videoHeight;
+        
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(cameraPreview, 0, 0);
+        
+        // Convert canvas to blob and create file
+        canvas.toBlob(function(blob) {
+            const file = new File([blob], 'selfie.jpg', { type: 'image/jpeg' });
+            
+            // Create a new FileList-like object
+            const dataTransfer = new DataTransfer();
+            dataTransfer.items.add(file);
+            photoInput.files = dataTransfer.files;
+            
+            // Show captured photo
+            capturedPhoto.src = canvas.toDataURL('image/jpeg');
+            capturedPhoto.style.display = 'block';
+            
+            // Stop camera stream
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+                stream = null;
+            }
+            
+            cameraPreview.style.display = 'none';
+            cameraControls.style.display = 'none';
+            photoControls.style.display = 'flex';
+            submitBtn.disabled = false;
+        }, 'image/jpeg', 0.9);
+    });
+    
+    // Retake photo
+    retakeBtn.addEventListener('click', function() {
+        capturedPhoto.style.display = 'none';
+        photoControls.style.display = 'none';
+        submitBtn.disabled = true;
+        startCameraSection.style.display = 'block';
+        
+        // Clear photo input
+        photoInput.value = '';
+    });
+    
+    // Stop camera
+    stopCameraBtn.addEventListener('click', function() {
+        if (stream) {
+            stream.getTracks().forEach(track => track.stop());
+            stream = null;
+        }
+        
+        cameraPreview.style.display = 'none';
+        cameraControls.style.display = 'none';
+        startCameraSection.style.display = 'block';
+        capturedPhoto.style.display = 'none';
+        photoControls.style.display = 'none';
+        submitBtn.disabled = true;
+        photoInput.value = '';
+    });
+    
+    // Clean up when modal is closed
+    checkInModal.addEventListener('hidden.bs.modal', function() {
+        if (stream) {
+            stream.getTracks().forEach(track => track.stop());
+            stream = null;
+        }
+        
+        cameraPreview.style.display = 'none';
+        cameraControls.style.display = 'none';
+        photoControls.style.display = 'none';
+        capturedPhoto.style.display = 'none';
+        startCameraSection.style.display = 'block';
+        submitBtn.disabled = true;
+        photoInput.value = '';
     });
 </script>
 @endpush
