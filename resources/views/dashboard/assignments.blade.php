@@ -99,7 +99,7 @@
                                     </td>
                                     <td>
                                         @if($assignment->grade !== null)
-                                            <span class="badge bg-info fs-6">{{ $assignment->grade }}/100</span>
+                                            <span class="badge bg-info fs-6">{{ $assignment->grade }}/10</span>
                                         @else
                                             <span class="text-muted">Belum dinilai</span>
                                         @endif

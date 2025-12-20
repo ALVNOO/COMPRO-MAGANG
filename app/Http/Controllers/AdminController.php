@@ -92,7 +92,7 @@ class AdminController extends Controller
         $participants = User::where('role', 'peserta')
             ->with(['internshipApplications' => function($query) {
                 $query->whereIn('status', ['accepted', 'rejected', 'finished'])
-                    ->with('divisi');
+                    ->with('divisionAdmin');
             }, 'certificates', 'assignments'])
             ->get();
         return view('admin.participants', compact('participants'));
@@ -284,7 +284,7 @@ class AdminController extends Controller
             \App\Models\InternshipApplication::query()
             ->whereIn('status', ['accepted', 'finished']) // Perbaikan: tampilkan peserta sedang dan sudah selesai
             ->whereNotNull('start_date')
-            ->with(['user.certificates']);
+            ->with(['user.certificates', 'divisionAdmin']);
 
         // Filter periode
         if ($period === 'mingguan' && $week) {
@@ -326,7 +326,6 @@ class AdminController extends Controller
         // Data peserta detail
         $peserta = $applications->map(function($app, $i) {
             $user = $app->user;
-            $certificate = $user && $user->certificates ? $user->certificates->sortByDesc('issued_at')->first() : null;
             return [
                 'no' => $i+1,
                 'nama' => $user->name ?? '-',
@@ -335,8 +334,7 @@ class AdminController extends Controller
                 'nim' => $user->nim ?? '-',
                 'tanggal_mulai' => $app->start_date ? \Carbon\Carbon::parse($app->start_date)->format('d-m-Y') : '-',
                 'tanggal_berakhir' => $app->end_date ? \Carbon\Carbon::parse($app->end_date)->format('d-m-Y') : '-',
-                'divisi' => $app->divisi->name ?? '-',
-                'predikat' => $certificate && $certificate->predikat ? $certificate->predikat : '-',
+                'divisi' => $app->divisionAdmin->division_name ?? '-',
             ];
         })->toArray();
 
@@ -935,7 +933,7 @@ class AdminController extends Controller
                 User::create([
                     'username' => $mentorData['nik_number'],
                     'name' => $mentorData['mentor_name'],
-                    'email' => 'mentor_' . $mentorData['nik_number'] . '@posindonesia.co.id',
+                    'email' => 'mentor_' . $mentorData['nik_number'] . '@telkomindonesia.co.id',
                     'password' => Hash::make('mentor123'),
                     'role' => 'pembimbing',
                 ]);
@@ -943,6 +941,7 @@ class AdminController extends Controller
                 // Update existing user
                 $existingUser->update([
                     'name' => $mentorData['mentor_name'],
+                    'email' => 'mentor_' . $mentorData['nik_number'] . '@telkomindonesia.co.id',
                     'password' => Hash::make('mentor123'),
                     'role' => 'pembimbing',
                 ]);
@@ -1046,7 +1045,7 @@ class AdminController extends Controller
                             $user->update([
                                 'username' => $mentorData['nik_number'],
                                 'name' => $mentorData['mentor_name'],
-                                'email' => 'mentor_' . $mentorData['nik_number'] . '@posindonesia.co.id',
+                                'email' => 'mentor_' . $mentorData['nik_number'] . '@telkomindonesia.co.id',
                             ]);
                         } else {
                             // Only update name
@@ -1070,7 +1069,7 @@ class AdminController extends Controller
                     User::create([
                         'username' => $mentorData['nik_number'],
                         'name' => $mentorData['mentor_name'],
-                        'email' => 'mentor_' . $mentorData['nik_number'] . '@posindonesia.co.id',
+                        'email' => 'mentor_' . $mentorData['nik_number'] . '@telkomindonesia.co.id',
                         'password' => Hash::make('mentor123'),
                         'role' => 'pembimbing',
                     ]);
@@ -1078,6 +1077,7 @@ class AdminController extends Controller
                     // Update existing user
                     $existingUser->update([
                         'name' => $mentorData['mentor_name'],
+                        'email' => 'mentor_' . $mentorData['nik_number'] . '@telkomindonesia.co.id',
                         'password' => Hash::make('mentor123'),
                         'role' => 'pembimbing',
                     ]);

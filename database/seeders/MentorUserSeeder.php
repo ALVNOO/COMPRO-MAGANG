@@ -27,7 +27,7 @@ class MentorUserSeeder extends Seeder
                 User::create([
                     'username' => $mentor->nik_number,
                     'name' => $mentor->mentor_name,
-                    'email' => 'mentor_' . $mentor->nik_number . '@posindonesia.co.id',
+                    'email' => 'mentor_' . $mentor->nik_number . '@telkomindonesia.co.id',
                     'password' => Hash::make('mentor123'),
                     'role' => 'pembimbing',
                     // NIK tidak diassign sebagai ktp_number karena berbeda
@@ -36,7 +36,7 @@ class MentorUserSeeder extends Seeder
                 // Update user yang sudah ada - sync dengan data mentor terbaru
                 $existingUser->update([
                     'name' => $mentor->mentor_name,
-                    'email' => 'mentor_' . $mentor->nik_number . '@posindonesia.co.id',
+                    'email' => 'mentor_' . $mentor->nik_number . '@telkomindonesia.co.id',
                     'role' => 'pembimbing',
                     'password' => Hash::make('mentor123'), // Reset password ke default
                 ]);

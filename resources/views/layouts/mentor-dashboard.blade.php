@@ -22,10 +22,14 @@
         </div>
         
         <div class="user-info">
+            @php
+                $divisionMentor = \App\Models\DivisionMentor::where('nik_number', Auth::user()->username)->first();
+                $mentorName = $divisionMentor ? $divisionMentor->mentor_name : Auth::user()->name;
+            @endphp
             <div class="user-avatar">
-                {{ substr(Auth::user()->divisi && Auth::user()->divisi->vp ? Auth::user()->divisi->vp : Auth::user()->name, 0, 1) }}
+                {{ strtoupper(substr($mentorName, 0, 1)) }}
             </div>
-            <div class="user-name">{{ Auth::user()->divisi && Auth::user()->divisi->vp ? Auth::user()->divisi->vp : Auth::user()->name }}</div>
+            <div class="user-name">{{ $mentorName }}</div>
             <div class="user-role">Pembimbing Lapangan</div>
         </div>
         
@@ -86,10 +90,14 @@
                 <div class="navbar-actions">
                     <div class="user-dropdown">
                         <button class="user-menu-trigger">
+                            @php
+                                $divisionMentor = \App\Models\DivisionMentor::where('nik_number', Auth::user()->username)->first();
+                                $mentorName = $divisionMentor ? $divisionMentor->mentor_name : Auth::user()->name;
+                            @endphp
                             <div class="user-menu-avatar">
-                                {{ substr(Auth::user()->divisi && Auth::user()->divisi->vp ? Auth::user()->divisi->vp : Auth::user()->name, 0, 1) }}
+                                {{ strtoupper(substr($mentorName, 0, 1)) }}
                             </div>
-                            <span class="user-menu-name">{{ Auth::user()->divisi && Auth::user()->divisi->vp ? Auth::user()->divisi->vp : Auth::user()->name }}</span>
+                            <span class="user-menu-name">{{ $mentorName }}</span>
                             <i class="fas fa-chevron-down"></i>
                         </button>
                         <ul class="dropdown-menu dropdown-menu-end">

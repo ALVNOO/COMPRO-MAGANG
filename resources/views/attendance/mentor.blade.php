@@ -2,10 +2,42 @@
 
 @section('title', 'Absensi Peserta Magang - Mentor Dashboard')
 
+@push('styles')
+<style>
+    /* Ensure content area has proper spacing and doesn't overflow */
+    .content-area {
+        padding: 1.5rem !important;
+        overflow-x: hidden !important;
+        width: 100% !important;
+    }
+    
+    /* Fix table overflow */
+    .table-responsive {
+        overflow-x: auto !important;
+        overflow-y: visible !important;
+        -webkit-overflow-scrolling: touch;
+        width: 100% !important;
+    }
+    
+    /* Ensure container doesn't cause horizontal scroll */
+    .container-fluid {
+        max-width: 100% !important;
+        overflow-x: hidden !important;
+        padding: 1.5rem !important;
+    }
+    
+    /* Fix card width */
+    .card {
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+</style>
+@endpush
+
 @section('content')
 <div class="container-fluid">
     <!-- Page Header -->
-    <div class="page-header" style="background: linear-gradient(135deg, #EE2E24 0%, #F60000 100%); padding: 2rem; border-radius: 16px; color: white; margin-bottom: 2rem;">
+    <div class="page-header" style="background: linear-gradient(135deg, #EE2E24 0%, #F60000 100%); padding: 2rem; border-radius: 16px; color: white; margin-bottom: 2rem; margin-top: 0;">
         <h1 style="font-size: 1.75rem; font-weight: 600; margin-bottom: 0.5rem;">
             <i class="fas fa-calendar-check me-2"></i>
             Absensi Peserta Magang
@@ -31,15 +63,15 @@
         <!-- Date Filter Section -->
         <div class="card mb-4" style="border-radius: 16px; border: none; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
             <div class="card-body" style="padding: 1.5rem;">
-                <form method="GET" action="{{ route('mentor.absensi') }}" class="row align-items-end">
+                <form method="GET" action="{{ route('mentor.absensi') }}" id="attendanceFilterForm" class="row align-items-end">
                     <div class="col-md-4">
                         <label class="form-label" style="font-weight: 600; color: #000;">
                             <i class="fas fa-calendar me-2 text-danger"></i>Filter Tanggal
                         </label>
-                        <input type="date" name="date" class="form-control" value="{{ $filterDate ?? today()->toDateString() }}" max="{{ today()->toDateString() }}" style="border-radius: 12px; border: 2px solid #EE2E24;">
+                        <input type="date" name="date" id="filterDate" class="form-control" value="{{ $filterDate ?? today()->toDateString() }}" max="{{ today()->toDateString() }}" style="border-radius: 12px; border: 2px solid #EE2E24;">
                     </div>
                     <div class="col-md-2">
-                        <button type="submit" class="btn w-100" style="background: linear-gradient(135deg, #EE2E24 0%, #F60000 100%); color: white; border-radius: 12px; font-weight: 600; padding: 0.75rem;">
+                        <button type="submit" id="applyFilterBtn" class="btn w-100" style="background: linear-gradient(135deg, #EE2E24 0%, #F60000 100%); color: white; border-radius: 12px; font-weight: 600; padding: 0.75rem;">
                             <i class="fas fa-filter me-2"></i>Terapkan
                         </button>
                     </div>
@@ -118,10 +150,10 @@
         </div>
 
         <!-- Attendance Table -->
-        <div class="card" style="border-radius: 16px; border: none; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
+        <div class="card" style="border-radius: 16px; border: none; box-shadow: 0 10px 30px rgba(0,0,0,0.1); overflow: hidden; width: 100%;">
             <div class="card-body" style="padding: 0;">
-                <div class="table-responsive">
-                    <table class="table table-hover" style="margin-bottom: 0;">
+                <div class="table-responsive" style="overflow-x: auto; overflow-y: visible; width: 100%; -webkit-overflow-scrolling: touch;">
+                    <table class="table table-hover" style="margin-bottom: 0; width: 100%; min-width: 900px; table-layout: auto;">
                         <thead style="background: linear-gradient(135deg, #EE2E24 0%, #F60000 100%); color: white;">
                             <tr>
                                 <th style="padding: 1.25rem; border: none;">Peserta</th>
@@ -246,7 +278,7 @@
                     <i class="fas fa-camera me-2"></i>
                     Foto Absensi - <span id="modalName"></span>
                 </h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                <button type="button" class="btn-close btn-close-white" aria-label="Close" id="closePhotoModalBtn" onclick="window.closePhotoModal && window.closePhotoModal()"></button>
             </div>
             <div class="modal-body" style="padding: 2rem;">
                 <div class="row">
@@ -270,17 +302,135 @@
                     </div>
                 </div>
             </div>
+            <div class="modal-footer" style="border-top: none; padding: 1rem 2rem;">
+                <button type="button" class="btn btn-secondary" id="closePhotoModalFooterBtn" onclick="window.closePhotoModal && window.closePhotoModal()">Tutup</button>
+            </div>
         </div>
     </div>
 </div>
 
+@section('scripts')
 <script>
-// Show photo modal
-function showPhoto(name, photo, status, time, reason) {
-    document.getElementById('modalName').textContent = name;
-    document.getElementById('modalPhoto').src = photo;
-    document.getElementById('modalTime').textContent = time;
-    document.getElementById('modalReason').textContent = reason || '-';
+// Function to close modal properly
+function closePhotoModal() {
+    const modalElement = document.getElementById('photoModal');
+    if (!modalElement) return;
+    
+    // Check for Bootstrap in multiple ways
+    let bootstrapObj = null;
+    if (typeof window !== 'undefined' && window.bootstrap) {
+        bootstrapObj = window.bootstrap;
+    } else if (typeof bootstrap !== 'undefined') {
+        bootstrapObj = bootstrap;
+    }
+    
+    if (bootstrapObj && bootstrapObj.Modal) {
+        try {
+            const modal = bootstrapObj.Modal.getInstance(modalElement);
+            if (modal) {
+                modal.hide();
+                return;
+            }
+        } catch (e) {
+            console.log('Error getting modal instance:', e);
+        }
+    }
+    
+    // Fallback: manually hide modal (always works)
+    modalElement.classList.remove('show');
+    modalElement.style.display = 'none';
+    modalElement.setAttribute('aria-hidden', 'true');
+    modalElement.removeAttribute('aria-modal');
+    document.body.classList.remove('modal-open');
+    document.body.style.overflow = '';
+    document.body.style.paddingRight = '';
+    
+    // Remove backdrop
+    const backdrop = document.querySelector('.modal-backdrop');
+    if (backdrop) {
+        backdrop.classList.remove('show');
+        setTimeout(function() {
+            backdrop.remove();
+        }, 150);
+    }
+}
+
+// Make it available globally immediately
+window.closePhotoModal = closePhotoModal;
+
+// Ensure filter form submits correctly - prevent loading animation from blocking GET form
+document.addEventListener('DOMContentLoaded', function() {
+    const filterForm = document.getElementById('attendanceFilterForm');
+    const applyBtn = document.getElementById('applyFilterBtn');
+    
+    if (filterForm && applyBtn) {
+        // Override any loading animation for this specific button
+        applyBtn.addEventListener('click', function(e) {
+            // For GET forms, don't show loading animation and allow immediate submit
+            e.stopPropagation(); // Prevent other handlers
+            // Form will submit normally
+        }, true); // Use capture phase to run before other handlers
+        
+        // Ensure form submits
+        filterForm.addEventListener('submit', function(e) {
+            // Allow GET forms to submit normally
+            return true;
+        });
+    }
+});
+
+// Use event delegation for close buttons (works even if buttons are added dynamically)
+document.addEventListener('click', function(e) {
+    // Check if clicked element is close button or inside close button
+    if (e.target.id === 'closePhotoModalBtn' || e.target.closest('#closePhotoModalBtn')) {
+        e.preventDefault();
+        e.stopPropagation();
+        closePhotoModal();
+        return false;
+    }
+    
+    // Check if clicked element is footer close button
+    if (e.target.id === 'closePhotoModalFooterBtn' || e.target.closest('#closePhotoModalFooterBtn')) {
+        e.preventDefault();
+        e.stopPropagation();
+        closePhotoModal();
+        return false;
+    }
+    
+    // Close modal when clicking on backdrop
+    const modalElement = document.getElementById('photoModal');
+    if (modalElement && e.target === modalElement && modalElement.classList.contains('show')) {
+        closePhotoModal();
+    }
+});
+
+// Close modal on Escape key
+document.addEventListener('keydown', function(e) {
+    const modalElement = document.getElementById('photoModal');
+    if (e.key === 'Escape' && modalElement && modalElement.classList.contains('show')) {
+        closePhotoModal();
+    }
+});
+
+// Define showPhoto function immediately so it's available for onclick handlers
+// This will be available as soon as the script loads
+window.showPhoto = function(name, photo, status, time, reason) {
+    const modalNameEl = document.getElementById('modalName');
+    const modalPhotoEl = document.getElementById('modalPhoto');
+    const modalTimeEl = document.getElementById('modalTime');
+    const modalReasonEl = document.getElementById('modalReason');
+    const modalStatusEl = document.getElementById('modalStatus');
+    const modalElement = document.getElementById('photoModal');
+    
+    if (!modalElement || !modalNameEl || !modalPhotoEl || !modalTimeEl || !modalReasonEl || !modalStatusEl) {
+        console.error('Modal elements not found');
+        return;
+    }
+    
+    modalNameEl.textContent = name;
+    modalPhotoEl.src = photo;
+    modalTimeEl.textContent = time;
+    modalReasonEl.textContent = reason || '-';
 
     // Set status badge
     let statusBadge = '';
@@ -291,19 +441,107 @@ function showPhoto(name, photo, status, time, reason) {
     } else {
         statusBadge = '<span class="badge" style="background: #dc3545; color: white; padding: 0.5rem 1rem; border-radius: 8px;"><i class="fas fa-times-circle me-1"></i>Absen</span>';
     }
-    document.getElementById('modalStatus').innerHTML = statusBadge;
+    modalStatusEl.innerHTML = statusBadge;
 
-    // Show modal
-    const modal = new bootstrap.Modal(document.getElementById('photoModal'));
-    modal.show();
-}
+    // Show modal using Bootstrap 5 - wait for Bootstrap to be available
+    function showModal() {
+        // Check for Bootstrap in multiple ways
+        let bootstrapObj = null;
+        if (typeof window !== 'undefined' && window.bootstrap) {
+            bootstrapObj = window.bootstrap;
+        } else if (typeof bootstrap !== 'undefined') {
+            bootstrapObj = bootstrap;
+        }
+        
+        if (bootstrapObj && bootstrapObj.Modal) {
+                try {
+                    const modal = bootstrapObj.Modal.getOrCreateInstance(modalElement);
+                    modal.show();
+                    
+                    // Ensure closePhotoModal is available
+                    window.closePhotoModal = closePhotoModal;
+                    
+                    // Add event listener for when modal is hidden to clean up
+                    modalElement.addEventListener('hidden.bs.modal', function() {
+                        document.body.classList.remove('modal-open');
+                        document.body.style.overflow = '';
+                        document.body.style.paddingRight = '';
+                        const backdrop = document.querySelector('.modal-backdrop');
+                        if (backdrop) {
+                            backdrop.remove();
+                        }
+                    }, { once: true });
+            } catch (e) {
+                console.error('Error showing modal:', e);
+                // Fallback: try to create new modal instance
+                try {
+                    const modal = new bootstrapObj.Modal(modalElement);
+                    modal.show();
+                    
+                    // Add event listener for when modal is hidden to clean up
+                    modalElement.addEventListener('hidden.bs.modal', function() {
+                        document.body.classList.remove('modal-open');
+                        document.body.style.overflow = '';
+                        document.body.style.paddingRight = '';
+                        const backdrop = document.querySelector('.modal-backdrop');
+                        if (backdrop) {
+                            backdrop.remove();
+                        }
+                    }, { once: true });
+                } catch (e2) {
+                    console.error('Error creating modal:', e2);
+                    // Last resort: show modal manually
+                    modalElement.classList.add('show');
+                    modalElement.style.display = 'block';
+                    document.body.classList.add('modal-open');
+                    const backdrop = document.createElement('div');
+                    backdrop.className = 'modal-backdrop fade show';
+                    backdrop.setAttribute('id', 'photoModalBackdrop');
+                    document.body.appendChild(backdrop);
+                    
+                    // Add click handler to backdrop
+                    backdrop.addEventListener('click', function() {
+                        window.closePhotoModal();
+                    });
+                }
+            }
+        } else {
+            // Retry after a short delay if Bootstrap is not yet loaded
+            setTimeout(showModal, 100);
+        }
+    }
+    showModal();
+};
 
-// Initialize tooltips
-document.addEventListener('DOMContentLoaded', function() {
-    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-    tooltipTriggerList.map(function (tooltipTriggerEl) {
-        return new bootstrap.Tooltip(tooltipTriggerEl);
-    });
-});
+// Initialize tooltips when DOM and Bootstrap are ready
+(function() {
+    function initTooltips() {
+        let bootstrapObj = null;
+        if (typeof window !== 'undefined' && window.bootstrap) {
+            bootstrapObj = window.bootstrap;
+        } else if (typeof bootstrap !== 'undefined') {
+            bootstrapObj = bootstrap;
+        }
+        
+        if (bootstrapObj && bootstrapObj.Tooltip) {
+            const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            tooltipTriggerList.map(function (tooltipTriggerEl) {
+                return new bootstrapObj.Tooltip(tooltipTriggerEl);
+            });
+        } else {
+            setTimeout(initTooltips, 100);
+        }
+    }
+    
+    // Wait for both DOM and window load
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', function() {
+            window.addEventListener('load', initTooltips);
+        });
+    } else {
+        window.addEventListener('load', initTooltips);
+    }
+})();
+
 </script>
 @endsection

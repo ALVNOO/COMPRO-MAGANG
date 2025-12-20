@@ -176,11 +176,21 @@ class DashboardController extends Controller
     {
         $user = Auth::user();
         $certificates = collect();
-        $latestApp = $user->internshipApplications()->whereIn('status', ['accepted', 'finished'])->latest()->first();
-        // Tampilkan sertifikat hanya jika end_date sudah lewat
-        if ($latestApp && $latestApp->end_date && now()->isAfter($latestApp->end_date)) {
+        
+        // Get latest application
+        $latestApp = $user->internshipApplications()
+            ->whereIn('status', ['accepted', 'finished'])
+            ->latest()
+            ->first();
+        
+        // Tampilkan sertifikat hanya jika sudah selesai magang atau melampaui end_date
+        if ($latestApp && $latestApp->end_date && now()->isAfter(\Carbon\Carbon::parse($latestApp->end_date))) {
+            $certificates = $user->certificates()->orderBy('created_at', 'desc')->get();
+        } elseif ($latestApp && $latestApp->status === 'finished') {
+            // Jika status sudah finished, tampilkan sertifikat
             $certificates = $user->certificates()->orderBy('created_at', 'desc')->get();
         }
+        
         return view('dashboard.certificates', compact('user', 'certificates'));
     }
 

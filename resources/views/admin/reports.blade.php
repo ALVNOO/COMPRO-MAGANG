@@ -57,9 +57,6 @@
                         <th class="px-4 py-2 font-bold text-[#B91C1C]">Tanggal Mulai</th>
                         <th class="px-4 py-2 font-bold text-[#B91C1C]">Tanggal Berakhir</th>
                         <th class="px-4 py-2 font-bold text-[#B91C1C]">Divisi</th>
-                        <th class="px-4 py-2 font-bold text-[#B91C1C]">Sub Direktorat</th>
-                        <th class="px-4 py-2 font-bold text-[#B91C1C]">Direktorat</th>
-                        <th class="px-4 py-2 font-bold text-[#B91C1C]">Predikat</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -234,14 +231,11 @@ function fetchReport() {
                         <td>${row.tanggal_mulai}</td>
                         <td>${row.tanggal_berakhir}</td>
                         <td>${row.divisi}</td>
-                        <td>${row.subdirektorat}</td>
-                        <td>${row.direktorat}</td>
-                        <td>${row.predikat}</td>
                     `;
                     tbody.appendChild(tr);
                 });
             } else {
-                tbody.innerHTML = '<tr><td colspan="11" class="text-center">Tidak ada Peserta Magang</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="8" class="text-center">Tidak ada Peserta Magang</td></tr>';
             }
         })
         .catch(error => {

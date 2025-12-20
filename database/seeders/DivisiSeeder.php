@@ -91,7 +91,7 @@ class DivisiSeeder extends Seeder
                     \App\Models\User::create([
                         'username' => $mentorData['nik_number'],
                         'name' => $mentorData['mentor_name'],
-                        'email' => 'mentor_' . $mentorData['nik_number'] . '@posindonesia.co.id',
+                        'email' => 'mentor_' . $mentorData['nik_number'] . '@telkomindonesia.co.id',
                         'password' => \Illuminate\Support\Facades\Hash::make('mentor123'),
                         'role' => 'pembimbing',
                     ]);
@@ -99,7 +99,7 @@ class DivisiSeeder extends Seeder
                     // Update existing user to sync with seeder data
                     $existingUser->update([
                         'name' => $mentorData['mentor_name'],
-                        'email' => 'mentor_' . $mentorData['nik_number'] . '@posindonesia.co.id',
+                        'email' => 'mentor_' . $mentorData['nik_number'] . '@telkomindonesia.co.id',
                         'role' => 'pembimbing',
                         'password' => \Illuminate\Support\Facades\Hash::make('mentor123'),
                     ]);

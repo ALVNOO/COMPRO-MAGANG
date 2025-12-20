@@ -1,5 +1,8 @@
 // Import Bootstrap Bundle (includes Popper.js)
-import 'bootstrap';
+import * as bootstrap from 'bootstrap';
+
+// Make Bootstrap available globally for inline scripts
+window.bootstrap = bootstrap;
 
 // Import jQuery
 import $ from 'jquery';

@@ -1,5 +1,8 @@
 // Import Bootstrap Bundle (includes Popper.js)
-import 'bootstrap';
+import * as bootstrap from 'bootstrap';
+
+// Make Bootstrap available globally for inline scripts
+window.bootstrap = bootstrap;
 
 // Import Chart.js
 import Chart from 'chart.js/auto';
@@ -71,6 +74,11 @@ document.addEventListener('DOMContentLoaded', function() {
             // Skip buttons that have custom loading structure (.btn-text + .btn-loading)
             if (this.querySelector('.btn-text') && this.querySelector('.btn-loading')) {
                 return;
+            }
+
+            // Skip loading animation for GET forms (like filter forms)
+            if (this.form && this.form.method && this.form.method.toLowerCase() === 'get') {
+                return; // Allow GET forms to submit immediately without loading animation
             }
 
             if (this.form && this.form.checkValidity()) {

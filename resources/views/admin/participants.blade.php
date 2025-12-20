@@ -115,7 +115,7 @@
                                 </td>
                                 <td class="px-2 py-2 email-cell" title="{{ $peserta->email ?? '-' }}">{{ Str::limit($peserta->email ?? '-', 25) }}</td>
                                 <td class="px-2 py-2">{{ $peserta->phone ?? '-' }}</td>
-                                <td class="px-2 py-2 divisi-cell" title="{{ $app->divisi->name ?? '-' }}">{{ Str::limit($app->divisi->name ?? '-', 20) }}</td>
+                                <td class="px-2 py-2 divisi-cell" title="{{ $app->divisionAdmin->division_name ?? '-' }}">{{ Str::limit($app->divisionAdmin->division_name ?? '-', 20) }}</td>
                                 <td class="px-2 py-2">{{ $app->start_date ? \Carbon\Carbon::parse($app->start_date)->format('d-m-Y') : '-' }}</td>
                                 <td class="px-2 py-2">{{ $app->end_date ? \Carbon\Carbon::parse($app->end_date)->format('d-m-Y') : '-' }}</td>
                                 <td class="px-2 py-2">

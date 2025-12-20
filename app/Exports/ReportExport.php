@@ -30,9 +30,6 @@ class ReportExport implements FromArray, WithHeadings
             'Tanggal Mulai',
             'Tanggal Berakhir',
             'Divisi',
-            'Sub Direktorat',
-            'Direktorat',
-            'Predikat',
         ];
     }
 } 

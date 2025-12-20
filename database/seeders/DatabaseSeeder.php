@@ -39,7 +39,7 @@ class DatabaseSeeder extends Seeder
             User::create([
                 'username' => 'mentor_' . Str::slug($divisi->name, '_'),
                 'name' => 'Pembimbing ' . $divisi->name,
-                'email' => 'mentor_' . Str::slug($divisi->name, '_') . '@posindonesia.co.id',
+                'email' => 'mentor_' . Str::slug($divisi->name, '_') . '@telkomindonesia.co.id',
                 'password' => Hash::make('mentor123'),
                 'role' => 'pembimbing',
                 'divisi_id' => $divisi->id,

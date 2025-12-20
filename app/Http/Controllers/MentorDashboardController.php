@@ -258,14 +258,15 @@ class MentorDashboardController extends Controller
     public function profil()
     {
         $user = Auth::user();
-        $divisi = $user->divisi;
-        $subdirektorat = $divisi ? $divisi->subDirektorat : null;
-        $direktorat = $subdirektorat ? $subdirektorat->direktorat : null;
+        
+        // Get division mentor data based on username (NIK)
+        $divisionMentor = \App\Models\DivisionMentor::where('nik_number', $user->username)->first();
+        $divisionAdmin = $divisionMentor ? $divisionMentor->division : null;
+        
         return view('mentor.profil', [
             'user' => $user,
-            'divisi' => $divisi,
-            'subdirektorat' => $subdirektorat,
-            'direktorat' => $direktorat
+            'divisionMentor' => $divisionMentor,
+            'divisionAdmin' => $divisionAdmin
         ]);
     }
 

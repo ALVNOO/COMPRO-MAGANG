@@ -23,9 +23,6 @@
                 <th>Tanggal Mulai</th>
                 <th>Tanggal Berakhir</th>
                 <th>Divisi</th>
-                <th>Sub Direktorat</th>
-                <th>Direktorat</th>
-                <th>Predikat</th>
             </tr>
         </thead>
         <tbody>
@@ -39,9 +36,6 @@
                     <td>{{ $row['tanggal_mulai'] }}</td>
                     <td>{{ $row['tanggal_berakhir'] }}</td>
                     <td>{{ $row['divisi'] }}</td>
-                    <td>{{ $row['subdirektorat'] }}</td>
-                    <td>{{ $row['direktorat'] }}</td>
-                    <td>{{ $row['predikat'] }}</td>
                 </tr>
             @endforeach
         </tbody>
