@@ -8,7 +8,7 @@
 
     <!-- Vite Assets -->
     @vite(['resources/css/mentor-dashboard.css', 'resources/js/mentor-dashboard.js'])
-    
+
     @yield('styles')
 </head>
 <body>

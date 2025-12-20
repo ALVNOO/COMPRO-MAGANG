@@ -489,8 +489,32 @@
         </div>
     @endif
 
-    <!-- Statistics Cards -->
+    <!-- Charts Section -->
+    <div class="row mb-4 animate-slide-up animate-delay-2">
+        <div class="col-lg-8 mb-3">
+            <div class="stat-card" style="padding: 2rem;">
+                <h5 class="mb-3" style="font-weight: 600; color: var(--telkom-black);">
+                    <i class="fas fa-chart-bar me-2" style="color: var(--telkom-red);"></i>
+                    Persentase Penyelesaian Tugas per Peserta
+                </h5>
+                <canvas id="participantCompletionChart" style="max-height: 300px;"></canvas>
+            </div>
+        </div>
+
+        <div class="col-lg-4 mb-3">
+            <div class="stat-card" style="padding: 2rem;">
+                <h5 class="mb-3" style="font-weight: 600; color: var(--telkom-black);">
+                    <i class="fas fa-chart-pie me-2" style="color: var(--telkom-red);"></i>
+                    Distribusi Penyelesaian Tugas
+                </h5>
+                <canvas id="completionDistributionChart" style="max-height: 300px;"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics Cards - Enhanced 8-Card Grid -->
     <div class="stats-grid">
+        <!-- Card 1: Active Participants -->
         <div class="stat-card animate-slide-up animate-delay-1">
             <div class="stat-icon active">
                 <i class="fas fa-users"></i>
@@ -500,14 +524,130 @@
             <div class="stat-description">Sedang menjalani program magang</div>
         </div>
 
-        <div class="stat-card animate-slide-up animate-delay-3">
+        <!-- Card 2: Total Assignments -->
+        <div class="stat-card animate-slide-up animate-delay-1">
             <div class="stat-icon tasks">
                 <i class="fas fa-tasks"></i>
             </div>
-            <div class="stat-number">{{ $assignmentsToGrade }}</div>
-            <div class="stat-label">Tugas Harus Dinilai</div>
-            <div class="stat-description">Menunggu penilaian dari Anda</div>
+            <div class="stat-number">{{ $totalAssignments }}</div>
+            <div class="stat-label">Total Tugas</div>
+            <div class="stat-description">Tugas yang telah diberikan</div>
         </div>
+
+        <!-- Card 3: Completed Assignments -->
+        <div class="stat-card animate-slide-up animate-delay-2">
+            <div class="stat-icon" style="background: linear-gradient(135deg, #198754 0%, #20c997 100%); color: white;">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <div class="stat-number">{{ $completedAssignments }}</div>
+            <div class="stat-label">Tugas Selesai</div>
+            <div class="stat-description">Telah dinilai dan selesai</div>
+        </div>
+
+        <!-- Card 4: Pending Grades -->
+        <div class="stat-card animate-slide-up animate-delay-2">
+            <div class="stat-icon" style="background: linear-gradient(135deg, #fd7e14 0%, #ffc107 100%); color: white;">
+                <i class="fas fa-clock"></i>
+            </div>
+            <div class="stat-number">{{ $assignmentsToGrade }}</div>
+            <div class="stat-label">Perlu Dinilai</div>
+            <div class="stat-description">Menunggu penilaian Anda</div>
+        </div>
+
+        <!-- Card 5: Average Grade -->
+        <div class="stat-card animate-slide-up animate-delay-3">
+            <div class="stat-icon" style="background: linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%); color: white;">
+                <i class="fas fa-star"></i>
+            </div>
+            <div class="stat-number">{{ $averageGrade }}</div>
+            <div class="stat-label">Nilai Rata-Rata</div>
+            <div class="stat-description">Rata-rata nilai tugas</div>
+        </div>
+
+        <!-- Card 6: Completion Rate -->
+        <div class="stat-card animate-slide-up animate-delay-3">
+            <div class="stat-icon" style="background: linear-gradient(135deg, #0dcaf0 0%, #0d6efd 100%); color: white;">
+                <i class="fas fa-chart-line"></i>
+            </div>
+            <div class="stat-number">{{ $completionRate }}%</div>
+            <div class="stat-label">Tingkat Penyelesaian</div>
+            <div class="stat-description">Persentase tugas selesai</div>
+        </div>
+
+        <!-- Card 7: Present Today -->
+        <div class="stat-card animate-slide-up animate-delay-4">
+            <div class="stat-icon" style="background: linear-gradient(135deg, #198754 0%, #20c997 100%); color: white;">
+                <i class="fas fa-user-check"></i>
+            </div>
+            <div class="stat-number">{{ $attendanceStats['present'] }}</div>
+            <div class="stat-label">Hadir Hari Ini</div>
+            <div class="stat-description">Peserta yang sudah absen</div>
+        </div>
+
+        <!-- Card 8: Late/Absent Today -->
+        <div class="stat-card animate-slide-up animate-delay-4">
+            <div class="stat-icon" style="background: linear-gradient(135deg, #ffc107 0%, #ff8c00 100%); color: white;">
+                <i class="fas fa-exclamation-triangle"></i>
+            </div>
+            <div class="stat-number">{{ $attendanceStats['late'] + $attendanceStats['absent'] }}</div>
+            <div class="stat-label">Terlambat/Absen</div>
+            <div class="stat-description">Perlu perhatian hari ini</div>
+        </div>
+    </div>
+
+    <!-- Recent Activity Timeline -->
+    <div class="action-card animate-slide-up animate-delay-3" style="margin-bottom: 2rem;">
+        <div class="action-header">
+            <div class="action-icon">
+                <i class="fas fa-history"></i>
+            </div>
+            <div>
+                <h4 class="action-title">Aktivitas Terbaru</h4>
+                <p class="action-subtitle">7 hari terakhir</p>
+            </div>
+        </div>
+
+        @if($recentSubmissions->isEmpty())
+            <p class="text-muted text-center py-4">
+                <i class="fas fa-info-circle me-2"></i>
+                Belum ada aktivitas dalam 7 hari terakhir
+            </p>
+        @else
+            <div class="timeline-container" style="max-height: 400px; overflow-y: auto;">
+                @foreach($recentSubmissions as $submission)
+                    @php
+                        $latestSubmission = $submission->submissions->first();
+                        $submittedAt = $latestSubmission ? $latestSubmission->submitted_at : null;
+                    @endphp
+                    <div class="timeline-item" style="display: flex; gap: 1rem; padding: 1rem 0; border-bottom: 1px solid rgba(0,0,0,0.05);">
+                        <div class="timeline-icon" style="width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, var(--telkom-red) 0%, var(--telkom-red-pure) 100%); display: flex; align-items: center; justify-content: center; color: white; flex-shrink: 0;">
+                            <i class="fas fa-file-upload"></i>
+                        </div>
+                        <div style="flex: 1;">
+                            <div style="font-weight: 600; color: var(--telkom-black); margin-bottom: 0.25rem;">
+                                {{ $submission->user->name }}
+                            </div>
+                            <div style="color: var(--telkom-gray); font-size: 0.9rem; margin-bottom: 0.25rem;">
+                                Mengumpulkan: {{ $submission->title }}
+                            </div>
+                            <div style="color: var(--telkom-gray); font-size: 0.85rem;">
+                                <i class="fas fa-clock me-1"></i>
+                                {{ $submittedAt ? \Carbon\Carbon::parse($submittedAt)->diffForHumans() : '-' }}
+                            </div>
+                        </div>
+                        @if($submission->grade)
+                        <div style="padding: 0.5rem 1rem; background: linear-gradient(135deg, #198754 0%, #20c997 100%); color: white; border-radius: 12px; font-weight: 600;">
+                            {{ $submission->grade }}
+                        </div>
+                        @else
+                        <div style="padding: 0.5rem 1rem; background: linear-gradient(135deg, #ffc107 0%, #ff8c00 100%); color: white; border-radius: 12px; font-weight: 600; font-size: 0.85rem;">
+                            Belum Dinilai
+                        </div>
+                        @endif
+                    </div>
+                @endforeach
+            </div>
+        @endif
     </div>
 
     <!-- Quick Actions -->
@@ -614,7 +754,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const originalText = this.innerHTML;
             this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading...';
             this.style.pointerEvents = 'none';
-            
+
             // Reset after navigation (this will be overridden by page navigation)
             setTimeout(() => {
                 this.innerHTML = originalText;
@@ -622,6 +762,154 @@ document.addEventListener('DOMContentLoaded', function() {
             }, 2000);
         });
     });
+
+    // ========== Chart.js Implementation ==========
+    if (typeof Chart !== 'undefined') {
+        // Participant Completion Chart (Bar Chart)
+        const participantCompletionCtx = document.getElementById('participantCompletionChart');
+        if (participantCompletionCtx) {
+            const participantData = @json($participantCompletionData);
+            const labels = participantData.map(d => d.name);
+            const percentages = participantData.map(d => d.percentage);
+
+            // Color bars based on completion percentage
+            const backgroundColors = percentages.map(p => {
+                if (p === 100) return '#198754'; // Green for 100%
+                if (p >= 75) return '#0dcaf0';   // Cyan for 75-99%
+                if (p >= 50) return '#ffc107';   // Yellow for 50-74%
+                if (p >= 25) return '#fd7e14';   // Orange for 25-49%
+                return '#dc3545';                 // Red for 0-24%
+            });
+
+            new Chart(participantCompletionCtx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Persentase Selesai',
+                        data: percentages,
+                        backgroundColor: backgroundColors,
+                        borderColor: backgroundColors,
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            padding: 12,
+                            cornerRadius: 8,
+                            callbacks: {
+                                label: function(context) {
+                                    const index = context.dataIndex;
+                                    const participant = participantData[index];
+                                    return [
+                                        `Penyelesaian: ${participant.percentage}%`,
+                                        `Selesai: ${participant.completed} dari ${participant.total} tugas`
+                                    ];
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            ticks: {
+                                callback: function(value) {
+                                    return value + '%';
+                                }
+                            },
+                            grid: { color: 'rgba(0, 0, 0, 0.05)' }
+                        },
+                        x: {
+                            ticks: {
+                                maxRotation: 45,
+                                minRotation: 45,
+                                font: { size: 11 }
+                            },
+                            grid: { display: false }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Completion Distribution Chart (Pie Chart)
+        const completionDistCtx = document.getElementById('completionDistributionChart');
+        if (completionDistCtx) {
+            const distributionData = @json($completionDistributionData);
+            const completedAllCount = distributionData.completedAll.length;
+            const incompleteCount = distributionData.incomplete.length;
+
+            new Chart(completionDistCtx, {
+                type: 'pie',
+                data: {
+                    labels: ['Selesai Semua', 'Belum Selesai'],
+                    datasets: [{
+                        data: [completedAllCount, incompleteCount],
+                        backgroundColor: [
+                            '#198754', // Green for completed all
+                            '#ffc107'  // Yellow for incomplete
+                        ],
+                        borderWidth: 2,
+                        borderColor: '#fff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                padding: 15,
+                                usePointStyle: true,
+                                font: { size: 12 }
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            padding: 12,
+                            cornerRadius: 8,
+                            callbacks: {
+                                label: function(context) {
+                                    const label = context.label || '';
+                                    const value = context.parsed || 0;
+                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : 0;
+                                    return `${label}: ${value} peserta (${percentage}%)`;
+                                },
+                                afterLabel: function(context) {
+                                    // Show participant names
+                                    const participants = context.dataIndex === 0
+                                        ? distributionData.completedAll
+                                        : distributionData.incomplete;
+
+                                    if (participants.length === 0) return '';
+
+                                    // Limit to first 5 names to avoid tooltip overflow
+                                    const displayNames = participants.slice(0, 5);
+                                    const moreCount = participants.length - 5;
+
+                                    let result = displayNames.map(name => `• ${name}`);
+                                    if (moreCount > 0) {
+                                        result.push(`... dan ${moreCount} lainnya`);
+                                    }
+                                    return result;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    } else {
+        console.warn('Chart.js is not loaded. Charts will not be displayed.');
+    }
 });
 </script>
 @endsection 

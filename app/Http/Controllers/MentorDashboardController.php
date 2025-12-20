@@ -51,13 +51,139 @@ class MentorDashboardController extends Controller
                 $q->where('division_mentor_id', $divisionMentor->id)->where('status', 'accepted');
             })->whereNotNull('submission_file_path')->whereNull('grade')->count()
             : 0;
-        
+
+        // ========== NEW COMPREHENSIVE STATISTICS ==========
+
+        // Task Statistics
+        $totalAssignments = $divisionMentor
+            ? \App\Models\Assignment::whereHas('user.internshipApplications', function($q) use ($divisionMentor) {
+                $q->where('division_mentor_id', $divisionMentor->id)->where('status', 'accepted');
+            })->count()
+            : 0;
+
+        $completedAssignments = $divisionMentor
+            ? \App\Models\Assignment::whereHas('user.internshipApplications', function($q) use ($divisionMentor) {
+                $q->where('division_mentor_id', $divisionMentor->id)->where('status', 'accepted');
+            })->whereNotNull('grade')->count()
+            : 0;
+
+        // Performance Metrics
+        $averageGrade = $divisionMentor
+            ? \App\Models\Assignment::whereHas('user.internshipApplications', function($q) use ($divisionMentor) {
+                $q->where('division_mentor_id', $divisionMentor->id)->where('status', 'accepted');
+            })->whereNotNull('grade')->avg('grade')
+            : 0;
+
+        $completionRate = $totalAssignments > 0
+            ? round(($completedAssignments / $totalAssignments) * 100, 1)
+            : 0;
+
+        // Recent Activity (Last 7 days) - with submissions relationship
+        $recentSubmissions = $divisionMentor
+            ? \App\Models\Assignment::whereHas('user.internshipApplications', function($q) use ($divisionMentor) {
+                $q->where('division_mentor_id', $divisionMentor->id)->where('status', 'accepted');
+            })
+            ->with(['user', 'submissions' => function($q) {
+                $q->orderBy('submitted_at', 'desc')->limit(1);
+            }])
+            ->whereHas('submissions', function($q) {
+                $q->where('submitted_at', '>=', now()->subDays(7));
+            })
+            ->orderByDesc(function($query) {
+                $query->select('submitted_at')
+                    ->from('assignment_submissions')
+                    ->whereColumn('assignment_id', 'assignments.id')
+                    ->orderBy('submitted_at', 'desc')
+                    ->limit(1);
+            })
+            ->limit(10)
+            ->get()
+            : collect();
+
+        // Today's Attendance Summary
+        $todayAttendance = $divisionMentor
+            ? \App\Models\Attendance::whereDate('date', today())
+                ->whereIn('user_id', function($query) use ($divisionMentor) {
+                    $query->select('user_id')
+                          ->from('internship_applications')
+                          ->where('division_mentor_id', $divisionMentor->id)
+                          ->where('status', 'accepted');
+                })
+                ->get()
+            : collect();
+
+        $attendanceStats = [
+            'present' => $todayAttendance->where('status', 'Hadir')->count(),
+            'late' => $todayAttendance->where('status', 'Terlambat')->count(),
+            'absent' => $todayAttendance->where('status', 'Absen')->count(),
+        ];
+
+        // Chart Data: Participant Completion Percentage
+        $participantCompletionData = collect();
+        if ($divisionMentor) {
+            $acceptedParticipants = \App\Models\InternshipApplication::with('user.assignments')
+                ->where('division_mentor_id', $divisionMentor->id)
+                ->where('status', 'accepted')
+                ->get();
+
+            foreach ($acceptedParticipants as $participant) {
+                $totalTasks = $participant->user->assignments->count();
+                $completedTasks = $participant->user->assignments->whereNotNull('grade')->count();
+                $completionPercentage = $totalTasks > 0 ? round(($completedTasks / $totalTasks) * 100, 1) : 0;
+
+                $participantCompletionData->push([
+                    'name' => $participant->user->name ?? 'Unknown',
+                    'percentage' => $completionPercentage,
+                    'completed' => $completedTasks,
+                    'total' => $totalTasks
+                ]);
+            }
+        }
+
+        // Chart Data: Completion Distribution (Completed All vs Incomplete)
+        $completionDistributionData = [
+            'completedAll' => collect(),
+            'incomplete' => collect()
+        ];
+
+        if ($divisionMentor) {
+            $acceptedParticipants = \App\Models\InternshipApplication::with('user.assignments')
+                ->where('division_mentor_id', $divisionMentor->id)
+                ->where('status', 'accepted')
+                ->get();
+
+            foreach ($acceptedParticipants as $participant) {
+                $totalTasks = $participant->user->assignments->count();
+                $completedTasks = $participant->user->assignments->whereNotNull('grade')->count();
+                $userName = $participant->user->name ?? 'Unknown';
+
+                if ($totalTasks > 0 && $completedTasks === $totalTasks) {
+                    $completionDistributionData['completedAll']->push($userName);
+                } else {
+                    $completionDistributionData['incomplete']->push($userName);
+                }
+            }
+        }
+
         return view('mentor.dashboard', [
+            // Existing statistics
             'pendingApplications' => $pendingApplications,
             'activeParticipants' => $activeParticipants,
             'assignmentsToGrade' => $assignmentsToGrade,
             'pengajuanBaru' => $pengajuanBaru,
             'tugasBaruDiupload' => $tugasBaruDiupload,
+
+            // New comprehensive statistics
+            'totalAssignments' => $totalAssignments,
+            'completedAssignments' => $completedAssignments,
+            'averageGrade' => round($averageGrade ?? 0, 1),
+            'completionRate' => $completionRate,
+            'recentSubmissions' => $recentSubmissions,
+            'attendanceStats' => $attendanceStats,
+
+            // New chart data
+            'participantCompletionData' => $participantCompletionData,
+            'completionDistributionData' => $completionDistributionData,
         ]);
     }
 
@@ -77,7 +203,11 @@ class MentorDashboardController extends Controller
         // Cari division_mentor berdasarkan username (nik_number) mentor yang login
         $divisionMentor = \App\Models\DivisionMentor::where('nik_number', $user->username)->first();
         $acceptedParticipants = $divisionMentor
-            ? \App\Models\InternshipApplication::with(['user.assignments' => function($q) { $q->orderBy('created_at', 'desc'); }])
+            ? \App\Models\InternshipApplication::with(['user.assignments.submissions' => function($q) {
+                $q->orderBy('submitted_at', 'desc');
+              }, 'user.assignments' => function($q) {
+                $q->orderBy('created_at', 'desc');
+              }])
                 ->where('division_mentor_id', $divisionMentor->id)
                 ->where('status', 'accepted')
                 ->get()
@@ -407,9 +537,10 @@ class MentorDashboardController extends Controller
 
     public function tambahPenugasan(Request $request)
     {
-        // Validasi dasar terlebih dahulu
+        // Validasi dasar terlebih dahulu - support multiple user_ids
         $validated = $request->validate([
-            'user_id' => 'required|exists:users,id',
+            'user_ids' => 'required|array|min:1',
+            'user_ids.*' => 'required|exists:users,id',
             'title' => 'required|string|max:255',
             'assignment_type' => 'required|in:tugas_harian,tugas_proyek',
             'deadline' => 'required|date',
@@ -444,56 +575,21 @@ class MentorDashboardController extends Controller
         }
         
         $user = Auth::user();
-        
+
         // Cari division_mentor dengan caching untuk performa lebih baik
         $divisionMentor = \App\Models\DivisionMentor::where('nik_number', $user->username)->first();
-        
+
         if (!$divisionMentor) {
             return redirect()->back()
                 ->with('error', 'Anda tidak memiliki akses untuk membuat penugasan.')
                 ->withInput($request->except('file_path'));
         }
-        
-        // Optimasi query dengan select hanya field yang diperlukan
-        $application = \App\Models\InternshipApplication::select('id', 'user_id', 'status', 'start_date', 'division_mentor_id')
-            ->where('user_id', $request->user_id)
-            ->where('status', 'accepted')
-            ->where('division_mentor_id', $divisionMentor->id)
-            ->orderBy('start_date', 'desc')
-            ->first();
-            
-        if (!$application) {
-            return redirect()->back()
-                ->with('error', 'Peserta tidak ditemukan atau tidak di-assign ke Anda.')
-                ->withInput($request->except('file_path'));
-        }
-        
-        // Cek apakah peserta sudah mulai magang
-        if ($application->start_date) {
-            $startDate = \Carbon\Carbon::parse($application->start_date);
-            if ($startDate->gt(now())) {
-                return redirect()->back()
-                    ->with('error', 'Penugasan hanya dapat diberikan setelah peserta mulai periode magang.')
-                    ->withInput($request->except('file_path'));
-            }
-        }
-        
-        // Siapkan data untuk assignment
-        $data = [
-            'user_id' => $request->user_id,
-            'title' => trim($request->title),
-            'assignment_type' => $request->assignment_type,
-            'description' => $request->description ? trim($request->description) : null,
-            'deadline' => $request->deadline,
-            'presentation_date' => ($request->assignment_type === 'tugas_proyek' && $request->presentation_date) 
-                ? $request->presentation_date 
-                : null,
-        ];
-        
-        // Handle file upload jika ada
+
+        // Handle file upload sekali saja jika ada
+        $filePath = null;
         if ($request->hasFile('file_path')) {
             try {
-                $data['file_path'] = $request->file('file_path')->store('assignments', 'public');
+                $filePath = $request->file('file_path')->store('assignments', 'public');
             } catch (\Exception $e) {
                 Log::error('Error uploading file: ' . $e->getMessage());
                 return redirect()->back()
@@ -501,23 +597,65 @@ class MentorDashboardController extends Controller
                     ->withInput($request->except('file_path'));
             }
         }
-        
-        // Buat assignment
-        try {
-            \App\Models\Assignment::create($data);
-            return redirect()->route('mentor.penugasan')
-                ->with('success', 'Penugasan berhasil ditambahkan.');
-        } catch (\Illuminate\Database\QueryException $e) {
-            Log::error('Database error creating assignment: ' . $e->getMessage());
-            return redirect()->back()
-                ->with('error', 'Terjadi kesalahan database. Silakan coba lagi.')
-                ->withInput($request->except('file_path'));
-        } catch (\Exception $e) {
-            Log::error('Error creating assignment: ' . $e->getMessage());
-            return redirect()->back()
-                ->with('error', 'Terjadi kesalahan saat membuat penugasan. Silakan coba lagi.')
-                ->withInput($request->except('file_path'));
+
+        // Loop through each selected user and create assignment
+        $successCount = 0;
+        $errorUsers = [];
+
+        foreach ($request->user_ids as $userId) {
+            // Optimasi query dengan select hanya field yang diperlukan
+            $application = \App\Models\InternshipApplication::select('id', 'user_id', 'status', 'start_date', 'division_mentor_id')
+                ->where('user_id', $userId)
+                ->where('status', 'accepted')
+                ->where('division_mentor_id', $divisionMentor->id)
+                ->orderBy('start_date', 'desc')
+                ->first();
+
+            if (!$application) {
+                $errorUsers[] = $userId;
+                continue;
+            }
+
+            // Cek apakah peserta sudah mulai magang
+            if ($application->start_date) {
+                $startDate = \Carbon\Carbon::parse($application->start_date);
+                if ($startDate->gt(now())) {
+                    $errorUsers[] = $userId;
+                    continue;
+                }
+            }
+
+            // Siapkan data untuk assignment
+            $data = [
+                'user_id' => $userId,
+                'title' => trim($request->title),
+                'assignment_type' => $request->assignment_type,
+                'description' => $request->description ? trim($request->description) : null,
+                'deadline' => $request->deadline,
+                'presentation_date' => ($request->assignment_type === 'tugas_proyek' && $request->presentation_date)
+                    ? $request->presentation_date
+                    : null,
+                'file_path' => $filePath,
+            ];
+
+            // Buat assignment
+            try {
+                \App\Models\Assignment::create($data);
+                $successCount++;
+            } catch (\Exception $e) {
+                Log::error('Error creating assignment for user ' . $userId . ': ' . $e->getMessage());
+                $errorUsers[] = $userId;
+            }
         }
+
+        // Generate response message
+        $message = "Berhasil membuat {$successCount} penugasan.";
+        if (!empty($errorUsers)) {
+            $message .= " Gagal untuk " . count($errorUsers) . " peserta.";
+        }
+
+        return redirect()->route('mentor.penugasan')
+            ->with('success', $message);
     }
 
     public function beriNilaiPenugasan(Request $request, $assignmentId)

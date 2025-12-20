@@ -1,6 +1,12 @@
 // Import Bootstrap Bundle (includes Popper.js)
 import 'bootstrap';
 
+// Import Chart.js
+import Chart from 'chart.js/auto';
+
+// Make Chart available globally for inline scripts
+window.Chart = Chart;
+
 // Sidebar Toggle
 document.addEventListener('DOMContentLoaded', function() {
     const sidebarToggle = document.getElementById('sidebarToggle');
