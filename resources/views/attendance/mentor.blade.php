@@ -4,45 +4,92 @@
 
 @push('styles')
 <style>
-    /* Ensure content area has proper spacing and doesn't overflow */
-    .content-area {
-        padding: 1.5rem !important;
-        overflow-x: hidden !important;
-        width: 100% !important;
+    /* Reset container to prevent glitches */
+    .attendance-container-fluid {
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+        max-width: 100% !important;
     }
-    
-    /* Fix table overflow */
-    .table-responsive {
-        overflow-x: auto !important;
-        overflow-y: visible !important;
+
+    /* Compact table cells */
+    .attendance-table td,
+    .attendance-table th {
+        padding: 0.75rem 0.5rem !important;
+        white-space: nowrap;
+        vertical-align: middle;
+    }
+
+    .attendance-table td:first-child {
+        white-space: normal;
+        min-width: 160px;
+        max-width: 200px;
+    }
+
+    /* Smaller history boxes */
+    .history-box {
+        width: 26px;
+        height: 26px;
+        border-radius: 4px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        cursor: pointer;
+        flex-shrink: 0;
+    }
+
+    .history-box i {
+        font-size: 0.65rem;
+    }
+
+    /* Compact badges */
+    .status-badge {
+        padding: 0.3rem 0.6rem !important;
+        border-radius: 6px !important;
+        font-weight: 600;
+        font-size: 0.75rem !important;
+        white-space: nowrap;
+        display: inline-block;
+    }
+
+    /* Compact participant info */
+    .participant-avatar-sm {
+        width: 38px;
+        height: 38px;
+        font-size: 1rem;
+    }
+
+    /* Ensure cards don't overflow */
+    .attendance-card {
+        margin-bottom: 1rem;
+    }
+
+    /* Fix row margins */
+    .attendance-row {
+        margin-left: 0;
+        margin-right: 0;
+    }
+
+    /* Make table responsive without overflow */
+    .attendance-table-wrapper {
+        overflow-x: auto;
         -webkit-overflow-scrolling: touch;
-        width: 100% !important;
-    }
-    
-    /* Ensure container doesn't cause horizontal scroll */
-    .container-fluid {
-        max-width: 100% !important;
-        overflow-x: hidden !important;
-        padding: 1.5rem !important;
-    }
-    
-    /* Fix card width */
-    .card {
-        width: 100% !important;
-        max-width: 100% !important;
+        margin: 0;
     }
 </style>
 @endpush
 
 @section('content')
-<div class="container-fluid">
+<div class="container-fluid px-3">
     <!-- Page Header -->
-    <div class="page-header" style="background: linear-gradient(135deg, #EE2E24 0%, #F60000 100%); padding: 2rem; border-radius: 16px; color: white; margin-bottom: 2rem; margin-top: 0;">
-        <h1 style="font-size: 1.75rem; font-weight: 600; margin-bottom: 0.5rem;">
+    <div class="page-header" style="background: linear-gradient(135deg, #EE2E24 0%, #F60000 100%); padding: 1.25rem 1.5rem; border-radius: 12px; color: white; margin-bottom: 1rem;">
+        <h1 style="font-size: 1.4rem; font-weight: 600; margin-bottom: 0.25rem;">
             <i class="fas fa-calendar-check me-2"></i>
             Absensi Peserta Magang
         </h1>
-        <p style="opacity: 0.9; margin-bottom: 0;">
+        <p style="opacity: 0.9; margin-bottom: 0; font-size: 0.85rem;">
             Pantau kehadiran peserta magang Anda
         </p>
     </div>
@@ -61,18 +108,18 @@
         </div>
     @else
         <!-- Date Filter Section -->
-        <div class="card mb-4" style="border-radius: 16px; border: none; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
-            <div class="card-body" style="padding: 1.5rem;">
-                <form method="GET" action="{{ route('mentor.absensi') }}" id="attendanceFilterForm" class="row align-items-end">
+        <div class="card attendance-card" style="border-radius: 10px; border: none; box-shadow: 0 2px 8px rgba(0,0,0,0.06);">
+            <div class="card-body" style="padding: 0.875rem;">
+                <form method="GET" action="{{ route('mentor.absensi') }}" id="attendanceFilterForm" class="row attendance-row align-items-end g-2">
                     <div class="col-md-4">
-                        <label class="form-label" style="font-weight: 600; color: #000;">
-                            <i class="fas fa-calendar me-2 text-danger"></i>Filter Tanggal
+                        <label class="form-label mb-1" style="font-weight: 600; color: #000; font-size: 0.85rem;">
+                            <i class="fas fa-calendar me-1 text-danger"></i>Filter Tanggal
                         </label>
-                        <input type="date" name="date" id="filterDate" class="form-control" value="{{ $filterDate ?? today()->toDateString() }}" max="{{ today()->toDateString() }}" style="border-radius: 12px; border: 2px solid #EE2E24;">
+                        <input type="date" name="date" id="filterDate" class="form-control form-control-sm" value="{{ $filterDate ?? today()->toDateString() }}" max="{{ today()->toDateString() }}" style="border-radius: 6px; border: 1.5px solid #EE2E24; font-size: 0.875rem;">
                     </div>
                     <div class="col-md-2">
-                        <button type="submit" id="applyFilterBtn" class="btn w-100" style="background: linear-gradient(135deg, #EE2E24 0%, #F60000 100%); color: white; border-radius: 12px; font-weight: 600; padding: 0.75rem;">
-                            <i class="fas fa-filter me-2"></i>Terapkan
+                        <button type="submit" id="applyFilterBtn" class="btn btn-sm w-100" style="background: linear-gradient(135deg, #EE2E24 0%, #F60000 100%); color: white; border-radius: 6px; font-weight: 600; padding: 0.45rem; font-size: 0.85rem;">
+                            <i class="fas fa-filter me-1"></i>Terapkan
                         </button>
                     </div>
                 </form>
@@ -80,7 +127,7 @@
         </div>
 
         <!-- Summary Cards -->
-        <div class="row mb-4">
+        <div class="row attendance-row mb-3">
             @php
                 $totalParticipants = $participants->count();
                 $presentCount = 0;
@@ -97,70 +144,70 @@
             @endphp
 
             <!-- Total Participants -->
-            <div class="col-md-3 mb-3">
-                <div class="card h-100" style="border-radius: 16px; border: none; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
-                    <div class="card-body text-center">
-                        <div style="width: 60px; height: 60px; border-radius: 50%; background: linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%); display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem; color: white;">
-                            <i class="fas fa-users" style="font-size: 1.5rem;"></i>
+            <div class="col-md-3 col-6 mb-2">
+                <div class="card h-100" style="border-radius: 10px; border: none; box-shadow: 0 2px 8px rgba(0,0,0,0.06);">
+                    <div class="card-body text-center" style="padding: 0.65rem;">
+                        <div style="width: 44px; height: 44px; border-radius: 50%; background: linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%); display: flex; align-items: center; justify-content: center; margin: 0 auto 0.4rem; color: white;">
+                            <i class="fas fa-users" style="font-size: 1.15rem;"></i>
                         </div>
-                        <h3 style="font-size: 2rem; font-weight: 700; color: #000; margin-bottom: 0.25rem;">{{ $totalParticipants }}</h3>
-                        <p style="color: #AAA5A6; margin-bottom: 0;">Total Peserta</p>
+                        <h3 style="font-size: 1.4rem; font-weight: 700; color: #000; margin-bottom: 0.1rem; line-height: 1;">{{ $totalParticipants }}</h3>
+                        <p style="color: #AAA5A6; margin-bottom: 0; font-size: 0.8rem;">Total Peserta</p>
                     </div>
                 </div>
             </div>
 
             <!-- Present -->
-            <div class="col-md-3 mb-3">
-                <div class="card h-100" style="border-radius: 16px; border: none; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
-                    <div class="card-body text-center">
-                        <div style="width: 60px; height: 60px; border-radius: 50%; background: linear-gradient(135deg, #198754 0%, #20c997 100%); display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem; color: white;">
-                            <i class="fas fa-user-check" style="font-size: 1.5rem;"></i>
+            <div class="col-md-3 col-6 mb-2">
+                <div class="card h-100" style="border-radius: 10px; border: none; box-shadow: 0 2px 8px rgba(0,0,0,0.06);">
+                    <div class="card-body text-center" style="padding: 0.65rem;">
+                        <div style="width: 44px; height: 44px; border-radius: 50%; background: linear-gradient(135deg, #198754 0%, #20c997 100%); display: flex; align-items: center; justify-content: center; margin: 0 auto 0.4rem; color: white;">
+                            <i class="fas fa-user-check" style="font-size: 1.15rem;"></i>
                         </div>
-                        <h3 style="font-size: 2rem; font-weight: 700; color: #198754; margin-bottom: 0.25rem;">{{ $presentCount }}</h3>
-                        <p style="color: #AAA5A6; margin-bottom: 0;">Hadir</p>
+                        <h3 style="font-size: 1.4rem; font-weight: 700; color: #198754; margin-bottom: 0.1rem; line-height: 1;">{{ $presentCount }}</h3>
+                        <p style="color: #AAA5A6; margin-bottom: 0; font-size: 0.8rem;">Hadir</p>
                     </div>
                 </div>
             </div>
 
             <!-- Late -->
-            <div class="col-md-3 mb-3">
-                <div class="card h-100" style="border-radius: 16px; border: none; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
-                    <div class="card-body text-center">
-                        <div style="width: 60px; height: 60px; border-radius: 50%; background: linear-gradient(135deg, #ffc107 0%, #ff8c00 100%); display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem; color: white;">
-                            <i class="fas fa-clock" style="font-size: 1.5rem;"></i>
+            <div class="col-md-3 col-6 mb-2">
+                <div class="card h-100" style="border-radius: 10px; border: none; box-shadow: 0 2px 8px rgba(0,0,0,0.06);">
+                    <div class="card-body text-center" style="padding: 0.65rem;">
+                        <div style="width: 44px; height: 44px; border-radius: 50%; background: linear-gradient(135deg, #ffc107 0%, #ff8c00 100%); display: flex; align-items: center; justify-content: center; margin: 0 auto 0.4rem; color: white;">
+                            <i class="fas fa-clock" style="font-size: 1.15rem;"></i>
                         </div>
-                        <h3 style="font-size: 2rem; font-weight: 700; color: #ffc107; margin-bottom: 0.25rem;">{{ $lateCount }}</h3>
-                        <p style="color: #AAA5A6; margin-bottom: 0;">Terlambat</p>
+                        <h3 style="font-size: 1.4rem; font-weight: 700; color: #ffc107; margin-bottom: 0.1rem; line-height: 1;">{{ $lateCount }}</h3>
+                        <p style="color: #AAA5A6; margin-bottom: 0; font-size: 0.8rem;">Terlambat</p>
                     </div>
                 </div>
             </div>
 
             <!-- Absent -->
-            <div class="col-md-3 mb-3">
-                <div class="card h-100" style="border-radius: 16px; border: none; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
-                    <div class="card-body text-center">
-                        <div style="width: 60px; height: 60px; border-radius: 50%; background: linear-gradient(135deg, #dc3545 0%, #c82333 100%); display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem; color: white;">
-                            <i class="fas fa-user-times" style="font-size: 1.5rem;"></i>
+            <div class="col-md-3 col-6 mb-2">
+                <div class="card h-100" style="border-radius: 10px; border: none; box-shadow: 0 2px 8px rgba(0,0,0,0.06);">
+                    <div class="card-body text-center" style="padding: 0.65rem;">
+                        <div style="width: 44px; height: 44px; border-radius: 50%; background: linear-gradient(135deg, #dc3545 0%, #c82333 100%); display: flex; align-items: center; justify-content: center; margin: 0 auto 0.4rem; color: white;">
+                            <i class="fas fa-user-times" style="font-size: 1.15rem;"></i>
                         </div>
-                        <h3 style="font-size: 2rem; font-weight: 700; color: #dc3545; margin-bottom: 0.25rem;">{{ $absentCount }}</h3>
-                        <p style="color: #AAA5A6; margin-bottom: 0;">Absen</p>
+                        <h3 style="font-size: 1.4rem; font-weight: 700; color: #dc3545; margin-bottom: 0.1rem; line-height: 1;">{{ $absentCount }}</h3>
+                        <p style="color: #AAA5A6; margin-bottom: 0; font-size: 0.8rem;">Absen</p>
                     </div>
                 </div>
             </div>
         </div>
 
         <!-- Attendance Table -->
-        <div class="card" style="border-radius: 16px; border: none; box-shadow: 0 10px 30px rgba(0,0,0,0.1); overflow: hidden; width: 100%;">
-            <div class="card-body" style="padding: 0;">
-                <div class="table-responsive" style="overflow-x: auto; overflow-y: visible; width: 100%; -webkit-overflow-scrolling: touch;">
-                    <table class="table table-hover" style="margin-bottom: 0; width: 100%; min-width: 900px; table-layout: auto;">
+        <div class="card attendance-card" style="border-radius: 10px; border: none; box-shadow: 0 2px 8px rgba(0,0,0,0.06);">
+            <div class="card-body p-0">
+                <div class="attendance-table-wrapper">
+                    <table class="table table-hover attendance-table mb-0" style="min-width: 700px;">
                         <thead style="background: linear-gradient(135deg, #EE2E24 0%, #F60000 100%); color: white;">
                             <tr>
-                                <th style="padding: 1.25rem; border: none;">Peserta</th>
-                                <th style="padding: 1.25rem; border: none; text-align: center;">Status Hari Ini</th>
-                                <th style="padding: 1.25rem; border: none; text-align: center;">Waktu Check-in</th>
-                                <th style="padding: 1.25rem; border: none; text-align: center;">Riwayat 7 Hari</th>
-                                <th style="padding: 1.25rem; border: none; text-align: center;">Aksi</th>
+                                <th style="border: none;">Peserta</th>
+                                <th style="border: none; text-align: center;">Status</th>
+                                <th style="border: none; text-align: center;">Waktu</th>
+                                <th style="border: none; text-align: center;">Riwayat 7 Hari</th>
+                                <th style="border: none; text-align: center;">Aksi</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -170,51 +217,51 @@
                                 @endphp
                                 <tr>
                                     <!-- Participant Info -->
-                                    <td style="padding: 1.25rem;">
-                                        <div class="d-flex align-items-center gap-3">
-                                            <div style="width: 48px; height: 48px; border-radius: 50%; background: linear-gradient(135deg, #EE2E24 0%, #F60000 100%); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 1.25rem;">
+                                    <td>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <div class="participant-avatar-sm" style="border-radius: 50%; background: linear-gradient(135deg, #EE2E24 0%, #F60000 100%); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; flex-shrink: 0;">
                                                 {{ strtoupper(substr($participant['user']->name ?? 'U', 0, 1)) }}
                                             </div>
-                                            <div>
-                                                <div style="font-weight: 600; color: #000; margin-bottom: 0.25rem;">{{ $participant['user']->name ?? '-' }}</div>
-                                                <div style="font-size: 0.875rem; color: #AAA5A6;">{{ $participant['user']->nim ?? '-' }}</div>
+                                            <div style="min-width: 0;">
+                                                <div style="font-weight: 600; color: #000; margin-bottom: 0.15rem; font-size: 0.9rem;">{{ $participant['user']->name ?? '-' }}</div>
+                                                <div style="font-size: 0.75rem; color: #AAA5A6;">{{ $participant['user']->nim ?? '-' }}</div>
                                             </div>
                                         </div>
                                     </td>
 
                                     <!-- Status Today -->
-                                    <td style="padding: 1.25rem; text-align: center;">
+                                    <td style="text-align: center;">
                                         @if($todayAttendance)
                                             @if($todayAttendance->status === 'Hadir')
-                                                <span class="badge" style="background: #198754; color: white; padding: 0.5rem 1rem; border-radius: 8px; font-weight: 600;">
+                                                <span class="badge status-badge" style="background: #198754; color: white;">
                                                     <i class="fas fa-check-circle me-1"></i>Hadir
                                                 </span>
                                             @elseif($todayAttendance->status === 'Terlambat')
-                                                <span class="badge" style="background: #ffc107; color: white; padding: 0.5rem 1rem; border-radius: 8px; font-weight: 600;">
+                                                <span class="badge status-badge" style="background: #ffc107; color: white;">
                                                     <i class="fas fa-clock me-1"></i>Terlambat
                                                 </span>
                                             @else
-                                                <span class="badge" style="background: #dc3545; color: white; padding: 0.5rem 1rem; border-radius: 8px; font-weight: 600;">
+                                                <span class="badge status-badge" style="background: #dc3545; color: white;">
                                                     <i class="fas fa-times-circle me-1"></i>Absen
                                                 </span>
                                             @endif
                                         @else
-                                            <span class="badge" style="background: #AAA5A6; color: white; padding: 0.5rem 1rem; border-radius: 8px; font-weight: 600;">
-                                                <i class="fas fa-minus-circle me-1"></i>Belum Absen
+                                            <span class="badge status-badge" style="background: #AAA5A6; color: white;">
+                                                <i class="fas fa-minus-circle me-1"></i>Belum
                                             </span>
                                         @endif
                                     </td>
 
                                     <!-- Check-in Time -->
-                                    <td style="padding: 1.25rem; text-align: center;">
-                                        <span style="font-weight: 600; color: #000;">
+                                    <td style="text-align: center;">
+                                        <span style="font-weight: 600; color: #000; font-size: 0.9rem;">
                                             {{ $todayAttendance ? \Carbon\Carbon::parse($todayAttendance->check_in_time)->format('H:i') : '-' }}
                                         </span>
                                     </td>
 
                                     <!-- 7-Day History -->
-                                    <td style="padding: 1.25rem;">
-                                        <div class="d-flex justify-content-center gap-1">
+                                    <td style="text-align: center;">
+                                        <div class="d-flex justify-content-center gap-1" style="flex-wrap: nowrap;">
                                             @foreach($participant['workingDays'] as $day)
                                                 @php
                                                     $dayAttendance = $participant['last7Days']->where('date', $day)->first();
@@ -240,22 +287,22 @@
                                                         $tooltip .= ' - Tidak ada data';
                                                     }
                                                 @endphp
-                                                <div title="{{ $tooltip }}" style="width: 32px; height: 32px; background: {{ $bgColor }}; border-radius: 6px; display: flex; align-items: center; justify-content: center; color: white; cursor: pointer;" data-bs-toggle="tooltip">
-                                                    <i class="fas fa-{{ $icon }}" style="font-size: 0.75rem;"></i>
+                                                <div title="{{ $tooltip }}" class="history-box" style="background: {{ $bgColor }};" data-bs-toggle="tooltip">
+                                                    <i class="fas fa-{{ $icon }}"></i>
                                                 </div>
                                             @endforeach
                                         </div>
                                     </td>
 
                                     <!-- Actions -->
-                                    <td style="padding: 1.25rem; text-align: center;">
+                                    <td style="text-align: center;">
                                         @if($todayAttendance && $todayAttendance->photo_path)
-                                            <button onclick="showPhoto('{{ $participant['user']->name }}', '{{ asset('storage/' . $todayAttendance->photo_path) }}', '{{ $todayAttendance->status }}', '{{ \Carbon\Carbon::parse($todayAttendance->check_in_time)->format('H:i') }}', '{{ $todayAttendance->keterangan ?? '' }}')" class="btn btn-sm" style="background: linear-gradient(135deg, #EE2E24 0%, #F60000 100%); color: white; border-radius: 8px; padding: 0.5rem 1rem; font-weight: 600;">
-                                                <i class="fas fa-image me-1"></i>Lihat Foto
+                                            <button onclick="showPhoto('{{ $participant['user']->name }}', '{{ asset('storage/' . $todayAttendance->photo_path) }}', '{{ $todayAttendance->status }}', '{{ \Carbon\Carbon::parse($todayAttendance->check_in_time)->format('H:i') }}', '{{ $todayAttendance->keterangan ?? '' }}')" class="btn btn-sm" style="background: linear-gradient(135deg, #EE2E24 0%, #F60000 100%); color: white; border-radius: 6px; padding: 0.35rem 0.75rem; font-weight: 600; font-size: 0.8rem; white-space: nowrap;">
+                                                <i class="fas fa-image me-1"></i>Foto
                                             </button>
                                         @else
-                                            <button class="btn btn-sm btn-secondary" disabled style="border-radius: 8px; padding: 0.5rem 1rem;">
-                                                <i class="fas fa-image me-1"></i>Tidak Ada Foto
+                                            <button class="btn btn-sm btn-secondary" disabled style="border-radius: 6px; padding: 0.35rem 0.75rem; font-size: 0.8rem; white-space: nowrap;">
+                                                <i class="fas fa-image me-1"></i>-
                                             </button>
                                         @endif
                                     </td>
@@ -308,6 +355,7 @@
         </div>
     </div>
 </div>
+@endsection
 
 @section('scripts')
 <script>
