@@ -110,14 +110,14 @@ class User extends Authenticatable
     // Cek apakah role wajib 2FA
     public function requiresTwoFactor()
     {
-        return $this->role !== 'admin'; // Mentor & Peserta wajib
+        // Semua role (termasuk admin) wajib 2FA
+        return true;
     }
 
     // Cek apakah 2FA sudah aktif dan diverifikasi
     public function hasTwoFactorEnabled()
     {
-        return $this->requiresTwoFactor() 
-            && !empty($this->two_factor_secret) 
+        return !empty($this->two_factor_secret) 
             && !is_null($this->two_factor_verified_at);
     }
 
