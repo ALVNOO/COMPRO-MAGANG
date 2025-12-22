@@ -435,6 +435,35 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 });
+
+// Tour Guide for Logbook
+const logbookTourSteps = [
+    {
+        element: '.container > .row:first-child',
+        title: 'Halaman Logbook',
+        content: 'Ini adalah halaman Logbook dimana Anda mencatat aktivitas harian selama magang.'
+    },
+    {
+        element: '.btn-primary',
+        title: 'Tambah Logbook',
+        content: 'Klik tombol ini untuk menambahkan catatan logbook baru. Isi tanggal, waktu, dan aktivitas yang Anda lakukan.'
+    },
+    {
+        element: '.table',
+        title: 'Daftar Logbook',
+        content: 'Tabel ini menampilkan semua catatan logbook Anda. Anda dapat mengedit atau menghapus catatan yang sudah dibuat.'
+    },
+    {
+        element: '.btn-warning',
+        title: 'Edit Logbook',
+        content: 'Gunakan tombol edit untuk mengubah catatan logbook yang sudah dibuat.'
+    }
+];
+
+initTourGuide(logbookTourSteps);
 </script>
 @endpush
+
+@include('partials.tour-guide')
+
 @endsection

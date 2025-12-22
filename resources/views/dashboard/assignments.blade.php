@@ -191,4 +191,37 @@
 </div>
 @endif
 @endforeach
+
+@include('partials.tour-guide')
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const assignmentsTourSteps = [
+        {
+            element: '.container-fluid > .row:first-child',
+            title: 'Halaman Tugas',
+            content: 'Ini adalah halaman Tugas dimana Anda dapat melihat semua tugas yang diberikan oleh mentor, status pengerjaan, dan nilai yang diperoleh.'
+        },
+        {
+            element: '.card:first-of-type',
+            title: 'Daftar Tugas',
+            content: 'Setiap kartu menampilkan satu tugas dengan informasi deskripsi, tenggat waktu, dan status pengerjaan.'
+        },
+        {
+            element: '.btn-success',
+            title: 'Kumpulkan Tugas',
+            content: 'Klik tombol ini untuk mengumpulkan file tugas Anda. Pastikan file dalam format PDF, DOC, atau DOCX dengan ukuran maksimal 2MB.'
+        },
+        {
+            element: '.badge',
+            title: 'Status Tugas',
+            content: 'Badge menunjukkan status tugas: Pending (belum dikumpulkan), Submitted (sudah dikumpulkan), atau Graded (sudah dinilai).'
+        }
+    ];
+
+    initTourGuide(assignmentsTourSteps);
+});
+</script>
+@endpush
 @endsection 

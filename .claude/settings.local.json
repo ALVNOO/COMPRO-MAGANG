@@ -3,7 +3,9 @@
     "allow": [
       "Bash(npm install:*)",
       "Bash(npm run build:*)",
-      "Bash(cat:*)"
+      "Bash(cat:*)",
+      "Bash(php artisan make:migration:*)",
+      "Bash(php artisan migrate:*)"
     ]
   }
 }

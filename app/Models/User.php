@@ -32,6 +32,7 @@ class User extends Authenticatable
         'ktm',
         'role',
         'divisi_id',
+        'tour_completed',
     ];
 
     /**
@@ -54,6 +55,7 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'tour_completed' => 'boolean',
         ];
     }
 
