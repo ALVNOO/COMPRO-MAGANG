@@ -5,9 +5,12 @@
 @section('styles')
 <style>
 :root {
-    --primary: #6366F1;
-    --primary-dark: #4F46E5;
-    --secondary: #8B5CF6;
+    --telkom-red: #EE2E24;
+    --telkom-red-dark: #C41E3A;
+    --telkom-red-pure: #F60000;
+    --primary: #EE2E24;
+    --primary-dark: #C41E3A;
+    --secondary: #F60000;
     --success: #10B981;
     --warning: #F59E0B;
     --danger: #EF4444;
@@ -17,6 +20,7 @@
     --border: #E5E7EB;
     --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
     --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    --shadow-red: 0 4px 12px rgba(238, 46, 36, 0.3);
 }
 
 body {
@@ -245,7 +249,7 @@ body {
 .form-control:focus, .form-select:focus {
     outline: none;
     border-color: var(--primary);
-    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+    box-shadow: 0 0 0 3px rgba(238, 46, 36, 0.1);
 }
 
 /* Participant Selection */
@@ -380,7 +384,7 @@ body {
 }
 
 .badge-primary {
-    background: #EEF2FF;
+    background: #FFF5F5;
     color: var(--primary);
 }
 
@@ -442,7 +446,7 @@ body {
 
 .btn-outline:hover {
     border-color: var(--primary);
-    background: #EEF2FF;
+    background: #FFF5F5;
 }
 
 .btn-sm {
