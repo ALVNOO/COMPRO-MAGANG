@@ -120,31 +120,9 @@
     </div>
 </div>
 
-@include('partials.tour-guide')
-
 @push('scripts')
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const certificatesTourSteps = [
-        {
-            element: '.container > .row:first-child',
-            title: 'Halaman Sertifikat',
-            content: 'Ini adalah halaman Sertifikat dimana Anda dapat mengunduh sertifikat magang setelah menyelesaikan program.'
-        },
-        {
-            element: '.card:nth-child(1)',
-            title: 'Sertifikat Tersedia',
-            content: 'Kartu ini menampilkan sertifikat yang tersedia untuk diunduh. Klik tombol download untuk mengunduh sertifikat Anda.'
-        },
-        {
-            element: '.card:nth-child(2)',
-            title: 'Informasi Sertifikat',
-            content: 'Di bagian ini Anda dapat melihat syarat mendapatkan sertifikat dan manfaat yang Anda peroleh dari sertifikat magang.'
-        }
-    ];
-
-    initTourGuide(certificatesTourSteps);
-});
+// Scripts for certificates page
 </script>
 @endpush
 @endsection 

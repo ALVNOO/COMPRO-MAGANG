@@ -683,8 +683,6 @@
     </div>
 </div>
 
-@include('partials.tour-guide')
-
 @push('scripts')
 <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js'></script>
 <script>
@@ -770,72 +768,6 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     calendar.render();
-
-    // Tour Guide Steps
-    const dashboardTourSteps = [
-        {
-            element: '.container-fluid > div:first-child',
-            title: 'Selamat Datang!',
-            content: 'Selamat datang di Dashboard Peserta Magang PT Telkom Indonesia. Mari kami tunjukkan fitur-fitur utama yang tersedia untuk Anda.'
-        },
-        {
-            element: '.row.mb-4',
-            title: 'Statistik Magang',
-            content: 'Di sini Anda dapat melihat ringkasan tugas yang selesai, tugas yang perlu revisi, dan sisa hari magang Anda.'
-        },
-        {
-            element: '.col-md-4.mb-3:nth-child(1) .card',
-            title: 'Tugas Selesai',
-            content: 'Kartu ini menampilkan jumlah tugas yang telah Anda selesaikan dan dinilai oleh mentor beserta persentase dari total tugas.'
-        },
-        {
-            element: '.col-md-4.mb-3:nth-child(2) .card',
-            title: 'Tugas Perlu Revisi',
-            content: 'Jumlah tugas yang memerlukan revisi akan ditampilkan di sini. Pastikan untuk mengecek feedback dari mentor Anda.'
-        },
-        {
-            element: '.col-md-4.mb-3:nth-child(3) .card',
-            title: 'Hari Magang Tersisa',
-            content: 'Kartu ini menunjukkan sisa hari magang Anda beserta tanggal mulai dan berakhir periode magang.'
-        },
-        {
-            element: '.col-lg-8 .card',
-            title: 'Kalender Magang',
-            content: 'Kalender interaktif menampilkan periode magang dan deadline tugas Anda. Klik pada event untuk melihat detail lebih lanjut.'
-        },
-        {
-            element: '.col-lg-4 .card',
-            title: 'Tugas Terbaru',
-            content: 'Daftar tugas terbaru dari mentor Anda dengan status masing-masing. Klik "Lihat Semua" untuk mengakses halaman lengkap tugas.'
-        },
-        {
-            element: 'nav.sidebar',
-            title: 'Menu Navigasi',
-            content: 'Gunakan menu sidebar untuk mengakses berbagai fitur seperti Absensi, Tugas, Logbook, Sertifikat, dan Profile Anda. Mari kita kenali masing-masing menu.'
-        },
-        {
-            element: 'a.nav-link[href*="attendance.index"]',
-            title: 'Menu Absensi',
-            content: 'Menu Absensi digunakan untuk melakukan check-in dan check-out harian. Anda dapat melihat riwayat kehadiran, status absensi, dan melakukan absensi dengan foto selfie untuk validasi.'
-        },
-        {
-            element: 'a.nav-link[href*="dashboard.assignments"]',
-            title: 'Menu Tugas',
-            content: 'Di menu Tugas, Anda dapat melihat semua penugasan dari mentor, mengumpulkan hasil pekerjaan, melihat feedback dan nilai, serta melakukan revisi jika diperlukan.'
-        },
-        {
-            element: 'a.nav-link[href*="logbook.index"]',
-            title: 'Menu Logbook',
-            content: 'Menu Logbook adalah tempat Anda mencatat aktivitas harian selama magang. Anda dapat menambah, mengedit, dan menghapus catatan kegiatan Anda setiap hari.'
-        },
-        {
-            element: 'a.nav-link[href*="dashboard.certificates"]',
-            title: 'Menu Sertifikat',
-            content: 'Setelah menyelesaikan program magang, sertifikat Anda akan tersedia di menu ini. Anda dapat mengunduh sertifikat dalam format PDF sebagai bukti penyelesaian magang.'
-        }
-    ];
-
-    initTourGuide(dashboardTourSteps);
 });
 </script>
 @endpush

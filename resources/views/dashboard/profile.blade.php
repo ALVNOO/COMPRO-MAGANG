@@ -562,36 +562,9 @@
     </div>
 </div>
 
-@include('partials.tour-guide')
-
 @push('scripts')
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const profileTourSteps = [
-        {
-            element: '.profile-hero',
-            title: 'Informasi Profile',
-            content: 'Ini adalah halaman profile Anda yang menampilkan informasi pribadi, status magang, dan pengaturan akun.'
-        },
-        {
-            element: '.info-card:nth-child(1)',
-            title: 'Data Pribadi',
-            content: 'Bagian ini menampilkan data pribadi Anda seperti nama, NIM, universitas, jurusan, dan nomor telepon.'
-        },
-        {
-            element: '.info-card:nth-child(2)',
-            title: 'Informasi Magang',
-            content: 'Di sini Anda dapat melihat informasi detail tentang magang Anda termasuk divisi, mentor, dan periode magang.'
-        },
-        {
-            element: '.info-card:nth-child(3)',
-            title: 'Pengaturan Akun',
-            content: 'Gunakan bagian ini untuk mengubah password akun Anda demi keamanan.'
-        }
-    ];
-
-    initTourGuide(profileTourSteps);
-});
+// Scripts for profile page
 </script>
 @endpush
 @endsection
