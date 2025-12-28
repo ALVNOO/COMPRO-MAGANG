@@ -437,7 +437,36 @@
         submitBtn.disabled = true;
         photoInput.value = '';
     });
+
+    // Tour Guide for Attendance
+    const attendanceTourSteps = [
+        {
+            element: '.container > .row:first-child',
+            title: 'Halaman Absensi',
+            content: 'Ini adalah halaman Absensi dimana Anda dapat melakukan check-in harian, mengajukan izin/sakit, dan melihat riwayat kehadiran Anda.'
+        },
+        {
+            element: '.card:nth-child(1)',
+            title: 'Check-in Harian',
+            content: 'Gunakan tombol ini untuk melakukan check-in harian. Anda akan diminta mengambil foto sebagai bukti kehadiran.'
+        },
+        {
+            element: '.card:nth-child(2)',
+            title: 'Ajukan Izin/Sakit',
+            content: 'Jika Anda tidak bisa hadir, gunakan fitur ini untuk mengajukan izin atau sakit dengan menyertakan keterangan.'
+        },
+        {
+            element: '.table',
+            title: 'Riwayat Absensi',
+            content: 'Tabel ini menampilkan riwayat absensi Anda termasuk tanggal, status (Hadir/Izin/Sakit), dan keterangan.'
+        }
+    ];
+
+    initTourGuide(attendanceTourSteps);
 </script>
 @endpush
+
+@include('partials.tour-guide')
+
 @endsection
 

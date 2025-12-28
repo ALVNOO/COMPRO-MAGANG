@@ -6,6 +6,129 @@
 
         <title>Laravel</title>
 
+        <!-- SKELETON LOADING - Inline CSS to prevent FOUC -->
+        <style>
+            /* Applied IMMEDIATELY - No FOUC possible */
+            body.page-loading > *:not(#skeleton-loader) {
+                display: none !important;
+            }
+
+            body.page-ready #skeleton-loader {
+                display: none !important;
+            }
+
+            /* Skeleton Loader Styles */
+            #skeleton-loader {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100vw;
+                height: 100vh;
+                background: #FDFDFC;
+                padding: 1.5rem;
+                overflow: hidden;
+                z-index: 9999;
+            }
+
+            .skeleton-container {
+                max-width: 56rem;
+                margin: 0 auto;
+            }
+
+            .skeleton-header {
+                display: flex;
+                justify-content: flex-end;
+                margin-bottom: 1.5rem;
+                gap: 1rem;
+            }
+
+            .skeleton-btn {
+                width: 80px;
+                height: 32px;
+                background: #e5e5e5;
+                border-radius: 0.125rem;
+            }
+
+            .skeleton-title {
+                width: 300px;
+                height: 32px;
+                background: #e5e5e5;
+                border-radius: 0.25rem;
+                margin-bottom: 1.5rem;
+            }
+
+            .skeleton-card {
+                background: #f5f5f5;
+                border-radius: 0.5rem;
+                padding: 1rem;
+                margin-bottom: 0.75rem;
+            }
+
+            .skeleton-card-header {
+                width: 200px;
+                height: 24px;
+                background: #e5e5e5;
+                border-radius: 0.25rem;
+                margin-bottom: 0.75rem;
+            }
+
+            .skeleton-line {
+                height: 16px;
+                background: #e5e5e5;
+                border-radius: 0.25rem;
+                margin-bottom: 0.5rem;
+            }
+
+            .skeleton-line.short {
+                width: 60%;
+            }
+
+            .skeleton-line.medium {
+                width: 80%;
+            }
+
+            .skeleton-line.long {
+                width: 100%;
+            }
+
+            /* Shimmer Animation */
+            @keyframes shimmer {
+                0% {
+                    background-position: -468px 0;
+                }
+                100% {
+                    background-position: 468px 0;
+                }
+            }
+
+            .skeleton-btn,
+            .skeleton-title,
+            .skeleton-card-header,
+            .skeleton-line {
+                animation: shimmer 1.5s infinite linear;
+                background: linear-gradient(to right, #e5e5e5 4%, #f0f0f0 25%, #e5e5e5 36%);
+                background-size: 1000px 100%;
+            }
+
+            @media (prefers-color-scheme: dark) {
+                #skeleton-loader {
+                    background: #0a0a0a;
+                }
+
+                .skeleton-card {
+                    background: #1a1a1a;
+                }
+
+                .skeleton-btn,
+                .skeleton-title,
+                .skeleton-card-header,
+                .skeleton-line {
+                    background: linear-gradient(to right, #2a2a2a 4%, #333333 25%, #2a2a2a 36%);
+                    background-size: 1000px 100%;
+                }
+            }
+        </style>
+
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600" rel="stylesheet" />
@@ -19,7 +142,47 @@
             </style>
         @endif
     </head>
-    <body class="bg-[#FDFDFC] dark:bg-[#0a0a0a] text-[#1b1b18] flex p-6 lg:p-8 items-center lg:justify-center min-h-screen flex-col">
+    <body class="page-loading bg-[#FDFDFC] dark:bg-[#0a0a0a] text-[#1b1b18] flex p-6 lg:p-8 items-center lg:justify-center min-h-screen flex-col">
+        <!-- Skeleton Loader -->
+        <div id="skeleton-loader">
+            <div class="skeleton-container">
+                <!-- Skeleton Header -->
+                <div class="skeleton-header">
+                    <div class="skeleton-btn"></div>
+                    <div class="skeleton-btn"></div>
+                </div>
+
+                <!-- Skeleton Title -->
+                <div class="skeleton-title"></div>
+
+                <!-- Skeleton Cards -->
+                <div class="skeleton-card">
+                    <div class="skeleton-card-header"></div>
+                    <div class="skeleton-line long"></div>
+                    <div class="skeleton-line medium"></div>
+                    <div class="skeleton-line short"></div>
+                </div>
+
+                <div class="skeleton-card">
+                    <div class="skeleton-card-header"></div>
+                    <div class="skeleton-line long"></div>
+                    <div class="skeleton-line medium"></div>
+                </div>
+
+                <div class="skeleton-card">
+                    <div class="skeleton-card-header"></div>
+                    <div class="skeleton-line long"></div>
+                    <div class="skeleton-line short"></div>
+                </div>
+
+                <div class="skeleton-card">
+                    <div class="skeleton-card-header"></div>
+                    <div class="skeleton-line medium"></div>
+                    <div class="skeleton-line long"></div>
+                </div>
+            </div>
+        </div>
+
         <header class="w-full lg:max-w-4xl max-w-[335px] text-sm mb-6 not-has-[nav]:hidden">
             @if (Route::has('login'))
                 <nav class="flex items-center justify-end gap-4">
@@ -103,5 +266,24 @@
                 @endforeach
             </div>
         </div>
+
+        <!-- Hide skeleton loader after page fully loads -->
+        <script>
+            // Show content after DOM is ready
+            window.addEventListener('DOMContentLoaded', function() {
+                setTimeout(function() {
+                    document.body.classList.add('page-ready');
+                    document.body.classList.remove('page-loading');
+                }, 150);
+            });
+
+            // Fallback: show after 3 seconds max
+            setTimeout(function() {
+                if (!document.body.classList.contains('page-ready')) {
+                    document.body.classList.add('page-ready');
+                    document.body.classList.remove('page-loading');
+                }
+            }, 3000);
+        </script>
     </body>
 </html>

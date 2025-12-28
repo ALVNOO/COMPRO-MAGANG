@@ -616,4 +616,16 @@ class DashboardController extends Controller
 
         return redirect()->route('dashboard')->with('success', 'Pengajuan magang Anda telah dikirim! Silakan tunggu konfirmasi dari pembimbing. Anda dapat melihat status pengajuan di menu Status Pengajuan.');
     }
+
+    /**
+     * Mark tour as completed for the user.
+     */
+    public function completeTour()
+    {
+        $user = Auth::user();
+        $user->tour_completed = true;
+        $user->save();
+
+        return response()->json(['success' => true]);
+    }
 }

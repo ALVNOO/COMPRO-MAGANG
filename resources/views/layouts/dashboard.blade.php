@@ -9,21 +9,33 @@
     @vite(['resources/css/peserta-dashboard.css', 'resources/js/peserta-dashboard.js'])
 
     <style>
+        /* Thunderbird Color Scheme Variables */
+        :root {
+            --thunderbird-red: #EE2E24;
+            --thunderbird-red-dark: #C41E3A;
+            --thunderbird-red-light: #FF6B6B;
+            --text-primary: #212529;
+            --text-secondary: #6c757d;
+            --background-white: #ffffff;
+            --background-light: #f8f9fa;
+        }
+
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-        
+
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #f7f8fb;
+            background: var(--background-light);
+            color: var(--text-primary);
             overflow-x: hidden;
         }
         
         .sidebar {
             min-height: 100vh;
-            background: linear-gradient(135deg, #EE2E24 0%, #F60000 100%);
+            background: linear-gradient(135deg, var(--thunderbird-red) 0%, var(--thunderbird-red-dark) 100%);
             border-right: 1px solid rgba(255, 255, 255, 0.1);
             position: fixed;
             top: 0;
@@ -35,11 +47,11 @@
             display: flex;
             flex-direction: column;
         }
-        
+
         .sidebar .brand {
             padding: 1.5rem 1rem;
             font-weight: 700;
-            color: #ffffff;
+            color: var(--background-white);
             font-size: 1.25rem;
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
             display: flex;
@@ -95,7 +107,7 @@
         .main {
             margin-left: 260px;
             min-height: 100vh;
-            background: #f7f8fb;
+            background: var(--background-light);
             padding: 2rem;
             transition: margin-left 0.3s ease;
             overflow-x: hidden;
@@ -142,11 +154,22 @@
         }
         
         .card {
-            border: none;
+            border: 1px solid #e9ecef;
             border-radius: 1rem;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
             transition: transform 0.3s ease, box-shadow 0.3s ease;
-            background: #ffffff;
+            background: var(--background-white);
+        }
+
+        .card:hover {
+            box-shadow: 0 4px 15px rgba(238, 46, 36, 0.08);
+        }
+
+        .card-header {
+            background-color: var(--background-white);
+            border-bottom: 2px solid #e9ecef;
+            color: var(--text-primary);
+            font-weight: 600;
         }
         
         .card:hover {
@@ -314,13 +337,13 @@
                 @endif
                 
                 @if($isAccepted)
-                <a class="nav-link {{ request()->routeIs('dashboard.assignments') ? 'active' : '' }}" href="{{ route('dashboard.assignments') }}">
-                    <i class="fas fa-tasks"></i>
-                    <span>Tugas</span>
-                </a>
                 <a class="nav-link {{ request()->routeIs('attendance.index') ? 'active' : '' }}" href="{{ route('attendance.index') }}">
                     <i class="fas fa-calendar-check"></i>
                     <span>Absensi</span>
+                </a>
+                <a class="nav-link {{ request()->routeIs('dashboard.assignments') ? 'active' : '' }}" href="{{ route('dashboard.assignments') }}">
+                    <i class="fas fa-tasks"></i>
+                    <span>Tugas</span>
                 </a>
                 <a class="nav-link {{ request()->routeIs('logbook.index') ? 'active' : '' }}" href="{{ route('logbook.index') }}">
                     <i class="fas fa-book"></i>

@@ -68,24 +68,19 @@ class AuthController extends Controller
 
                 $user = Auth::user();
                 
-                // Admin: langsung ke dashboard (skip 2FA)
-                if ($user->role === 'admin') {
-                    return redirect()->intended('/admin/dashboard');
-                }
-                
-                // Pembimbing & Peserta: Cek 2FA
+                // Semua role: cek 2FA
                 // Jika belum setup, paksa ke setup
-                if (!$user->hasTwoFactorEnabled()) {
+                if ($user->requiresTwoFactor() && !$user->hasTwoFactorEnabled()) {
                     return redirect()->route('2fa.setup')
                         ->with('info', 'Anda wajib mengaktifkan 2FA untuk pertama kali login');
                 }
                 
                 // Jika sudah setup tapi belum verified di session
-                if (!session('2fa_verified')) {
+                if ($user->requiresTwoFactor() && !session('2fa_verified')) {
                     return redirect()->route('2fa.verify');
                 }
 
-                // Sudah verified, ke dashboard masing-masing
+                // Sudah verified atau tidak membutuhkan 2FA, ke dashboard masing-masing
                 return $this->redirectToDashboard($user);
             }
         }
@@ -176,12 +171,6 @@ class AuthController extends Controller
     public function setup2fa()
     {
         $user = Auth::user();
-        
-        // Redirect admin
-        if ($user->role === 'admin') {
-            return redirect($this->getDashboardUrl($user))
-                ->with('error', '2FA tidak tersedia untuk Admin');
-        }
 
         // Generate secret jika belum ada
         if (empty($user->two_factor_secret)) {
@@ -205,11 +194,6 @@ class AuthController extends Controller
     public function enable2fa(Request $request)
     {
         $user = Auth::user();
-        
-        // Validasi role
-        if ($user->role === 'admin') {
-            return back()->withErrors(['error' => 'Akses ditolak']);
-        }
 
         $request->validate([
             'code' => 'required|numeric|digits:6'
@@ -231,8 +215,8 @@ class AuthController extends Controller
     {
         $user = Auth::user();
         
-        // Admin diarahkan ke dashboard
-        if ($user->role === 'admin' || !$user->requiresTwoFactor()) {
+        // Jika role tidak wajib 2FA, langsung ke dashboard
+        if (!$user->requiresTwoFactor()) {
             return redirect($this->getDashboardUrl($user));
         }
 
@@ -245,10 +229,6 @@ class AuthController extends Controller
     public function verify2fa(Request $request)
     {
         $user = Auth::user();
-        
-        if ($user->role === 'admin') {
-            return redirect($this->getDashboardUrl($user));
-        }
 
         $request->validate([
             'code' => 'required|numeric|digits:6'

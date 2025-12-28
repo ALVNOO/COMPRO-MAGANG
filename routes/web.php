@@ -59,7 +59,10 @@ Route::middleware('auth')->group(function () {
 
     // Profile routes
     Route::get('/dashboard/profile', [DashboardController::class, 'profile'])->name('dashboard.profile');
-    
+
+    // Tour guide route
+    Route::post('/dashboard/tour/complete', [DashboardController::class, 'completeTour'])->name('dashboard.tour.complete');
+
     // Attendance routes (Peserta)
     Route::get('/attendance', [AttendanceController::class, 'index'])->name('attendance.index');
     Route::post('/attendance/check-in', [AttendanceController::class, 'checkIn'])->name('attendance.check-in');
