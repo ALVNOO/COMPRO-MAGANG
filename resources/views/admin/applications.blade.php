@@ -1,252 +1,1185 @@
-@extends('layouts.admin-dashboard')
+{{--
+    ADMIN APPLICATIONS PAGE
+    Manage internship applications with modern UI
+    Using unified layout with glassmorphism design
+--}}
 
-@section('admin-content')
-<div class="space-y-8">
-    <div class="mb-6">
-        <h2 class="text-2xl font-bold mb-1 text-[#000000] border-b-4 border-[#B91C1C] inline-block pb-1 pr-6">Daftar Pengajuan Magang</h2>
-        <p class="text-sm text-[#000000]">Kelola pengajuan magang dari peserta</p>
-    </div>
-    
-    <div class="bg-white border border-[#e3e3e0] rounded-lg shadow-2xl relative z-10 transform transition-all duration-300 hover:shadow-3xl">
-        <div class="border-b border-[#e3e3e0] px-6 py-4 flex items-center gap-2 relative">
-            <div class="absolute left-6 right-6 -bottom-1 h-1 bg-gradient-to-r from-[#B91C1C] via-[#B91C1C] to-[#B91C1C] rounded opacity-60"></div>
-            <i class="fas fa-file-alt text-[#B91C1C]"></i>
-            <h5 class="text-lg font-bold mb-0 text-[#B91C1C]">Data Pengajuan Magang</h5>
+@extends('layouts.dashboard-unified')
+
+@section('title', 'Pengajuan Magang')
+
+@php
+    $role = 'admin';
+    $pageTitle = 'Pengajuan Magang';
+    $pageSubtitle = 'Kelola pengajuan magang dari peserta';
+
+    // Count stats
+    $totalCount = $applications->count();
+    $pendingCount = $applications->where('status', 'pending')->count();
+    $acceptedCount = $applications->where('status', 'accepted')->count();
+    $rejectedCount = $applications->where('status', 'rejected')->count();
+@endphp
+
+@push('styles')
+<style>
+/* ============================================
+   APPLICATIONS PAGE STYLES
+   ============================================ */
+
+/* Hero Section */
+.admin-hero {
+    background: linear-gradient(135deg, #EE2E24 0%, #C41E1A 50%, #9B1B1B 100%);
+    border-radius: 24px;
+    padding: 2rem 2.5rem;
+    margin-bottom: 2rem;
+    position: relative;
+    overflow: hidden;
+    color: white;
+}
+
+.admin-hero::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -20%;
+    width: 60%;
+    height: 200%;
+    background: radial-gradient(ellipse, rgba(255,255,255,0.15) 0%, transparent 70%);
+    pointer-events: none;
+}
+
+.hero-content {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 2rem;
+}
+
+.hero-text h1 {
+    font-size: 1.75rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.hero-text p {
+    font-size: 1rem;
+    opacity: 0.9;
+    max-width: 500px;
+    margin: 0;
+}
+
+.hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.25rem;
+    background: rgba(255,255,255,0.2);
+    backdrop-filter: blur(10px);
+    border-radius: 12px;
+    border: 1px solid rgba(255,255,255,0.3);
+}
+
+.hero-badge-icon {
+    width: 40px;
+    height: 40px;
+    background: rgba(255,255,255,0.25);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+}
+
+.hero-badge-text h4 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin: 0;
+    line-height: 1.2;
+}
+
+.hero-badge-text p {
+    font-size: 0.75rem;
+    margin: 0;
+    opacity: 0.85;
+}
+
+/* Stats Grid */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+@media (max-width: 1200px) {
+    .stats-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 640px) {
+    .stats-grid { grid-template-columns: 1fr; }
+}
+
+/* Filter Bar */
+.filter-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    padding: 1.25rem;
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(20px);
+    border-radius: 16px;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    margin-bottom: 1.5rem;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.05);
+}
+
+.filter-input {
+    flex: 1;
+    min-width: 200px;
+    padding: 0.75rem 1rem;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    font-size: 0.9rem;
+    transition: all 0.2s;
+}
+
+.filter-input:focus {
+    outline: none;
+    border-color: #EE2E24;
+    box-shadow: 0 0 0 3px rgba(238, 46, 36, 0.1);
+}
+
+.filter-select {
+    padding: 0.75rem 1rem;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    font-size: 0.9rem;
+    min-width: 150px;
+    background: white;
+    cursor: pointer;
+}
+
+.filter-select:focus {
+    outline: none;
+    border-color: #EE2E24;
+}
+
+.filter-btn {
+    padding: 0.75rem 1.5rem;
+    background: linear-gradient(135deg, #EE2E24, #C41E1A);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.2s;
+}
+
+.filter-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(238, 46, 36, 0.3);
+}
+
+/* Table Card */
+.table-card {
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(20px);
+    border-radius: 20px;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.05);
+    overflow: hidden;
+}
+
+.table-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid var(--color-gray-100, #f3f4f6);
+}
+
+.table-title {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #1f2937;
+}
+
+.table-title-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1rem;
+    background: linear-gradient(135deg, #3B82F6, #60A5FA);
+}
+
+.table-count {
+    font-size: 0.85rem;
+    color: #6b7280;
+    font-weight: 400;
+}
+
+.admin-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.admin-table th {
+    background: #f9fafb;
+    padding: 0.875rem 1rem;
+    text-align: left;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.admin-table td {
+    padding: 1rem;
+    border-bottom: 1px solid #f3f4f6;
+    font-size: 0.875rem;
+    color: #374151;
+}
+
+.admin-table tbody tr:hover {
+    background: #f9fafb;
+}
+
+.admin-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+/* Status Badge */
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.35rem 0.75rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    border-radius: 20px;
+}
+
+.status-badge.pending {
+    background: rgba(245, 158, 11, 0.1);
+    color: #F59E0B;
+}
+
+.status-badge.accepted {
+    background: rgba(16, 185, 129, 0.1);
+    color: #10B981;
+}
+
+.status-badge.rejected {
+    background: rgba(239, 68, 68, 0.1);
+    color: #EF4444;
+}
+
+.status-badge.finished {
+    background: rgba(59, 130, 246, 0.1);
+    color: #3B82F6;
+}
+
+/* Action Buttons */
+.action-btn {
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    transition: all 0.2s;
+    border: none;
+}
+
+.action-btn.review {
+    background: linear-gradient(135deg, #3B82F6, #60A5FA);
+    color: white;
+}
+
+.action-btn.review:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+.action-btn.approve {
+    background: linear-gradient(135deg, #10B981, #34D399);
+    color: white;
+}
+
+.action-btn.approve:hover {
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+.action-btn.reject {
+    background: linear-gradient(135deg, #EF4444, #F87171);
+    color: white;
+}
+
+.action-btn.reject:hover {
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+}
+
+/* Empty State */
+.empty-state {
+    text-align: center;
+    padding: 3rem 2rem;
+}
+
+.empty-icon {
+    width: 80px;
+    height: 80px;
+    background: #f3f4f6;
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1.5rem;
+    color: #9ca3af;
+    font-size: 2rem;
+}
+
+.empty-text {
+    font-size: 1rem;
+    color: #6b7280;
+    margin: 0;
+}
+
+/* Modal Overlay */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+}
+
+.modal-overlay.show {
+    opacity: 1;
+    visibility: visible;
+}
+
+.modal-content {
+    background: white;
+    border-radius: 24px;
+    width: 100%;
+    max-width: 700px;
+    max-height: 90vh;
+    overflow-y: auto;
+    transform: scale(0.9) translateY(20px);
+    transition: transform 0.3s ease;
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.3);
+}
+
+.modal-overlay.show .modal-content {
+    transform: scale(1) translateY(0);
+}
+
+.modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.5rem;
+    border-bottom: 1px solid #f3f4f6;
+    position: sticky;
+    top: 0;
+    background: white;
+    z-index: 10;
+}
+
+.modal-header h3 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #1f2937;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.modal-close {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    border: none;
+    background: #f3f4f6;
+    color: #6b7280;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.modal-close:hover {
+    background: #e5e7eb;
+    color: #374151;
+}
+
+.modal-body {
+    padding: 1.5rem;
+}
+
+.modal-footer {
+    display: flex;
+    gap: 1rem;
+    padding: 1.5rem;
+    border-top: 1px solid #f3f4f6;
+    background: #f9fafb;
+    border-radius: 0 0 24px 24px;
+    justify-content: flex-end;
+}
+
+/* Applicant Info Card */
+.applicant-info {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.applicant-photo {
+    width: 100px;
+    height: 100px;
+    border-radius: 16px;
+    background: linear-gradient(135deg, #f3f4f6, #e5e7eb);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.applicant-photo img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.applicant-photo .placeholder-icon {
+    font-size: 2.5rem;
+    color: #9ca3af;
+}
+
+.applicant-details h4 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #1f2937;
+    margin: 0 0 0.5rem 0;
+}
+
+.applicant-details .meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-top: 0.75rem;
+}
+
+.applicant-details .meta-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.85rem;
+    color: #6b7280;
+}
+
+.applicant-details .meta-item i {
+    color: #EE2E24;
+}
+
+/* Info Grid */
+.info-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+@media (max-width: 640px) {
+    .info-grid { grid-template-columns: 1fr; }
+    .applicant-info { grid-template-columns: 1fr; text-align: center; }
+    .applicant-photo { margin: 0 auto; }
+}
+
+.info-item {
+    padding: 1rem;
+    background: #f9fafb;
+    border-radius: 12px;
+}
+
+.info-item label {
+    display: block;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #9ca3af;
+    text-transform: uppercase;
+    margin-bottom: 0.25rem;
+}
+
+.info-item span {
+    font-size: 0.9rem;
+    color: #374151;
+    font-weight: 500;
+}
+
+/* Documents Section */
+.documents-section h5 {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #374151;
+    margin: 0 0 1rem 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.documents-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+}
+
+.doc-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: #374151;
+    text-decoration: none;
+    transition: all 0.2s;
+}
+
+.doc-btn:hover {
+    border-color: #EE2E24;
+    color: #EE2E24;
+    background: #fef2f2;
+}
+
+.doc-btn i {
+    color: #EE2E24;
+}
+
+/* Period Info */
+.period-info {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    background: linear-gradient(135deg, #f0fdf4, #dcfce7);
+    border-radius: 12px;
+    margin-bottom: 1.5rem;
+}
+
+.period-info i {
+    font-size: 1.5rem;
+    color: #10B981;
+}
+
+.period-info .period-text {
+    flex: 1;
+}
+
+.period-info .period-dates {
+    font-weight: 600;
+    color: #1f2937;
+}
+
+.period-info .period-duration {
+    font-size: 0.85rem;
+    color: #6b7280;
+}
+
+/* Approve Form */
+.approve-form {
+    padding: 1.5rem;
+    background: #f0fdf4;
+    border-radius: 12px;
+    margin-bottom: 1rem;
+}
+
+.approve-form h5 {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #10B981;
+    margin: 0 0 1rem 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.form-group {
+    margin-bottom: 1rem;
+}
+
+.form-group label {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: #374151;
+    margin-bottom: 0.5rem;
+}
+
+.form-group select {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 1px solid #d1d5db;
+    border-radius: 10px;
+    font-size: 0.9rem;
+    background: white;
+}
+
+.form-group select:focus {
+    outline: none;
+    border-color: #10B981;
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+}
+
+/* Reject Form */
+.reject-form {
+    padding: 1.5rem;
+    background: #fef2f2;
+    border-radius: 12px;
+    margin-bottom: 1rem;
+}
+
+.reject-form h5 {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #EF4444;
+    margin: 0 0 1rem 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.reject-form textarea {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 1px solid #fecaca;
+    border-radius: 10px;
+    font-size: 0.9rem;
+    resize: vertical;
+    min-height: 100px;
+}
+
+.reject-form textarea:focus {
+    outline: none;
+    border-color: #EF4444;
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+}
+
+/* Modal Buttons */
+.btn-cancel {
+    padding: 0.75rem 1.5rem;
+    background: white;
+    border: 1px solid #d1d5db;
+    border-radius: 10px;
+    font-weight: 500;
+    color: #374151;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-cancel:hover {
+    background: #f3f4f6;
+}
+
+.btn-approve {
+    padding: 0.75rem 1.5rem;
+    background: linear-gradient(135deg, #10B981, #059669);
+    border: none;
+    border-radius: 10px;
+    font-weight: 600;
+    color: white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.2s;
+}
+
+.btn-approve:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+.btn-reject {
+    padding: 0.75rem 1.5rem;
+    background: linear-gradient(135deg, #EF4444, #DC2626);
+    border: none;
+    border-radius: 10px;
+    font-weight: 600;
+    color: white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.2s;
+}
+
+.btn-reject:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+}
+
+/* Responsive Hero */
+@media (max-width: 768px) {
+    .hero-content {
+        flex-direction: column;
+        text-align: center;
+    }
+    .hero-text h1 {
+        justify-content: center;
+        font-size: 1.5rem;
+    }
+}
+
+/* Responsive Table */
+@media (max-width: 768px) {
+    .admin-table {
+        display: block;
+        overflow-x: auto;
+    }
+}
+</style>
+@endpush
+
+@section('content')
+{{-- Hero Section --}}
+<div class="admin-hero">
+    <div class="hero-content">
+        <div class="hero-text">
+            <h1>
+                <i class="fas fa-inbox"></i>
+                Pengajuan Magang
+            </h1>
+            <p>Review dan kelola pengajuan magang dari peserta</p>
         </div>
-        <div class="overflow-x-auto">
-            @if($applications->isEmpty())
-                <div class="px-6 py-8 text-center text-[#706f6c]">Belum ada pengajuan magang.</div>
-            @else
-            <table class="min-w-full text-sm text-left">
-                <thead class="bg-[#FFF2F2] border-b border-[#e3e3e0]">
-                    <tr>
-                        <th class="px-4 py-2 font-bold text-[#B91C1C]">No</th>
-                        <th class="px-4 py-2 font-bold text-[#B91C1C]">Nama Lengkap</th>
-                        <th class="px-4 py-2 font-bold text-[#B91C1C]">NIM</th>
-                        <th class="px-4 py-2 font-bold text-[#B91C1C]">Asal Kampus</th>
-                        <th class="px-4 py-2 font-bold text-[#B91C1C]">Jurusan</th>
-                        <th class="px-4 py-2 font-bold text-[#B91C1C]">No HP Aktif</th>
-                        <th class="px-4 py-2 font-bold text-[#B91C1C]">NIK</th>
-                        <th class="px-4 py-2 font-bold text-[#B91C1C]">Bidang Peminatan</th>
-                        <th class="px-4 py-2 font-bold text-[#B91C1C]">Tanggal Mulai</th>
-                        <th class="px-4 py-2 font-bold text-[#B91C1C]">Tanggal Selesai</th>
-                        <th class="px-4 py-2 font-bold text-[#B91C1C]">Dokumen</th>
-                        <th class="px-4 py-2 font-bold text-[#B91C1C]">Aksi</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach($applications as $index => $app)
-                    <tr class="even:bg-[#FDFDFC] border-b border-[#e3e3e0] hover:bg-[#FFF2F2] transition-colors">
-                        <td class="px-4 py-2">{{ $loop->iteration }}</td>
-                        <td class="px-4 py-2 font-medium">{{ $app->user->name ?? '-' }}</td>
-                        <td class="px-4 py-2">{{ $app->user->nim ?? '-' }}</td>
-                        <td class="px-4 py-2">{{ $app->user->university ?? '-' }}</td>
-                        <td class="px-4 py-2">{{ $app->user->major ?? '-' }}</td>
-                        <td class="px-4 py-2">{{ $app->user->phone ?? '-' }}</td>
-                        <td class="px-4 py-2">{{ $app->user->ktp_number ?? '-' }}</td>
-                        <td class="px-4 py-2">{{ $app->fieldOfInterest->name ?? '-' }}</td>
-                        <td class="px-4 py-2">{{ $app->start_date ? \Carbon\Carbon::parse($app->start_date)->format('d M Y') : '-' }}</td>
-                        <td class="px-4 py-2">{{ $app->end_date ? \Carbon\Carbon::parse($app->end_date)->format('d M Y') : '-' }}</td>
-                        <td class="px-4 py-2">
-                            <div class="d-flex flex-column gap-1">
-                                @if($app->ktm_path)
-                                    <a href="{{ asset('storage/' . $app->ktm_path) }}" target="_blank" class="inline-block px-2 py-1 rounded-sm border border-[#B91C1C] text-[#B91C1C] font-medium hover:bg-[#B91C1C] hover:text-white transition text-xs">
-                                        <i class="fas fa-file-pdf me-1"></i>KTM
-                                    </a>
-                                @endif
-                                @if($app->good_behavior_path)
-                                    <a href="{{ asset('storage/' . $app->good_behavior_path) }}" target="_blank" class="inline-block px-2 py-1 rounded-sm border border-[#B91C1C] text-[#B91C1C] font-medium hover:bg-[#B91C1C] hover:text-white transition text-xs">
-                                        <i class="fas fa-file-pdf me-1"></i>SBB
-                                    </a>
-                                @endif
-                                @if($app->surat_permohonan_path)
-                                    <a href="{{ asset('storage/' . $app->surat_permohonan_path) }}" target="_blank" class="inline-block px-2 py-1 rounded-sm border border-[#B91C1C] text-[#B91C1C] font-medium hover:bg-[#B91C1C] hover:text-white transition text-xs">
-                                        <i class="fas fa-file-pdf me-1"></i>PG
-                                    </a>
-                                @endif
-                                @if($app->cv_path)
-                                    <a href="{{ asset('storage/' . $app->cv_path) }}" target="_blank" class="inline-block px-2 py-1 rounded-sm border border-[#B91C1C] text-[#B91C1C] font-medium hover:bg-[#B91C1C] hover:text-white transition text-xs">
-                                        <i class="fas fa-file-pdf me-1"></i>CV
-                                    </a>
-                                @endif
-                                @if(!$app->ktm_path && !$app->good_behavior_path && !$app->surat_permohonan_path && !$app->cv_path)
-                                    <span class="text-[#706f6c]">-</span>
-                                @endif
-                            </div>
-                        </td>
-                        <td class="px-4 py-2">
-                            @if($app->status === 'rejected')
-                                <div class="text-danger">
-                                    <i class="fas fa-times-circle me-1"></i>
-                                    <small><strong>Ditolak:</strong> {{ $app->notes ?? 'Tidak ada alasan' }}</small>
-                                </div>
-                            @elseif($app->status === 'pending')
-                                <!-- Button Aksi Awal -->
-                                <div id="actionButtons{{ $app->id }}" class="flex gap-2">
-                                    <button type="button" class="px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700 transition approve-btn" title="Diterima" data-app-id="{{ $app->id }}">
-                                        <i class="fas fa-check"></i>
-                                    </button>
-                                    <button type="button" class="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 transition reject-btn" title="Ditolak" data-app-id="{{ $app->id }}">
-                                        <i class="fas fa-times"></i>
-                                    </button>
-                                </div>
-                                <!-- Form Approve dengan Pilihan Divisi dan Mentor (Hidden Awal) -->
-                                <div id="approveForm{{ $app->id }}" class="hidden">
-                                    <form method="POST" action="{{ route('admin.applications.approve', $app->id) }}" class="space-y-2">
-                                        @csrf
-                                        <div>
-                                            <label for="divisi_id-{{ $app->id }}" class="block text-xs font-medium text-gray-700 mb-1">Pilih Divisi <span class="text-red-500">*</span></label>
-                                            <select name="divisi_id" id="divisi_id-{{ $app->id }}" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-green-500 division-select" data-app-id="{{ $app->id }}" required>
-                                                <option value="">-- Pilih Divisi --</option>
-                                                @foreach($divisions as $div)
-                                                    <option value="{{ $div->id }}">{{ $div->division_name }}</option>
-                                                @endforeach
-                                            </select>
-                                        </div>
-                                        <div id="mentor-select-{{ $app->id }}" class="hidden">
-                                            <label for="division_mentor_id-{{ $app->id }}" class="block text-xs font-medium text-gray-700 mb-1">Pilih Mentor <span class="text-gray-400">(Opsional)</span></label>
-                                            <select name="division_mentor_id" id="division_mentor_id-{{ $app->id }}" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-green-500">
-                                                <option value="">-- Pilih Mentor --</option>
-                                            </select>
-                                        </div>
-                                        <div class="flex gap-2">
-                                            <button type="submit" class="px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700 transition text-sm font-medium">
-                                                Terima
-                                            </button>
-                                            <button type="button" class="px-3 py-1.5 bg-black text-white rounded hover:bg-gray-800 transition text-sm font-medium border-2 border-gray-800 shadow-sm cancel-approve-btn" data-app-id="{{ $app->id }}">
-                                                Batal
-                                            </button>
-                                        </div>
-                                    </form>
-                                </div>
-                                <!-- Form Alasan Penolakan (Hidden Awal) -->
-                                <div id="rejectForm{{ $app->id }}" class="hidden">
-                                    <form method="POST" action="{{ route('admin.applications.reject', $app->id) }}" class="space-y-2">
-                                        @csrf
-                                        <div>
-                                            <label for="notes-{{ $app->id }}" class="block text-xs font-medium text-gray-700 mb-1">Alasan Penolakan (Opsional)</label>
-                                            <textarea class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-red-500" id="notes-{{ $app->id }}" name="notes" rows="2"></textarea>
-                                        </div>
-                                        <div class="flex gap-2">
-                                            <button type="submit" class="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 transition text-sm font-medium">
-                                                Tolak
-                                            </button>
-                                            <button type="button" class="px-3 py-1.5 bg-black text-white rounded hover:bg-gray-800 transition text-sm font-medium border-2 border-gray-800 shadow-sm cancel-reject-btn" data-app-id="{{ $app->id }}">
-                                                Batal
-                                            </button>
-                                        </div>
-                                    </form>
-                                </div>
+        @if($pendingCount > 0)
+        <div class="hero-badge">
+            <div class="hero-badge-icon">
+                <i class="fas fa-clock"></i>
+            </div>
+            <div class="hero-badge-text">
+                <h4>{{ $pendingCount }}</h4>
+                <p>Menunggu Review</p>
+            </div>
+        </div>
+        @endif
+    </div>
+</div>
+
+{{-- Stats Grid --}}
+<div class="stats-grid">
+    @include('components.dashboard.stat-card', [
+        'value' => $totalCount,
+        'label' => 'Total Pengajuan',
+        'icon' => 'fa-file-alt',
+        'color' => 'primary',
+        'link' => '#'
+    ])
+
+    @include('components.dashboard.stat-card', [
+        'value' => $pendingCount,
+        'label' => 'Menunggu Review',
+        'icon' => 'fa-clock',
+        'color' => 'warning',
+        'link' => '#'
+    ])
+
+    @include('components.dashboard.stat-card', [
+        'value' => $acceptedCount,
+        'label' => 'Diterima',
+        'icon' => 'fa-check-circle',
+        'color' => 'success',
+        'link' => '#'
+    ])
+
+    @include('components.dashboard.stat-card', [
+        'value' => $rejectedCount,
+        'label' => 'Ditolak',
+        'icon' => 'fa-times-circle',
+        'color' => 'danger',
+        'link' => '#'
+    ])
+</div>
+
+{{-- Filter Bar --}}
+<div class="filter-bar" x-data="{ search: '', status: '' }">
+    <input type="text"
+           x-model="search"
+           placeholder="Cari nama, NIM, atau institusi..."
+           class="filter-input"
+           @input="filterTable()">
+    <select x-model="status" class="filter-select" @change="filterTable()">
+        <option value="">Semua Status</option>
+        <option value="pending">Pending</option>
+        <option value="accepted">Diterima</option>
+        <option value="rejected">Ditolak</option>
+        <option value="finished">Selesai</option>
+    </select>
+    <button type="button" class="filter-btn" @click="filterTable()">
+        <i class="fas fa-search"></i> Cari
+    </button>
+</div>
+
+{{-- Applications Table --}}
+<div class="table-card">
+    <div class="table-header">
+        <div class="table-title">
+            <div class="table-title-icon">
+                <i class="fas fa-list"></i>
+            </div>
+            <span>Daftar Pengajuan <span class="table-count">({{ $totalCount }} data)</span></span>
+        </div>
+    </div>
+
+    @if($applications->isEmpty())
+        <div class="empty-state">
+            <div class="empty-icon">
+                <i class="fas fa-inbox"></i>
+            </div>
+            <p class="empty-text">Belum ada pengajuan magang</p>
+        </div>
+    @else
+        <table class="admin-table" id="applicationsTable">
+            <thead>
+                <tr>
+                    <th>No</th>
+                    <th>Nama Lengkap</th>
+                    <th>Institusi</th>
+                    <th>Bidang Peminatan</th>
+                    <th>Tanggal</th>
+                    <th>Status</th>
+                    <th>Aksi</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach($applications as $index => $app)
+                <tr data-name="{{ strtolower($app->user->name ?? '') }}"
+                    data-nim="{{ strtolower($app->user->nim ?? '') }}"
+                    data-institution="{{ strtolower($app->user->university ?? '') }}"
+                    data-status="{{ $app->status }}">
+                    <td>{{ $loop->iteration }}</td>
+                    <td>
+                        <strong>{{ $app->user->name ?? '-' }}</strong>
+                        <div style="font-size: 0.75rem; color: #6b7280;">{{ $app->user->nim ?? '-' }}</div>
+                    </td>
+                    <td>{{ Str::limit($app->user->university ?? '-', 25) }}</td>
+                    <td>{{ $app->fieldOfInterest->name ?? '-' }}</td>
+                    <td>{{ $app->created_at->format('d M Y') }}</td>
+                    <td>
+                        <span class="status-badge {{ $app->status }}">
+                            @if($app->status === 'pending')
+                                <i class="fas fa-clock"></i> Pending
                             @elseif($app->status === 'accepted')
-                                <span class="badge bg-success">
-                                    <i class="fas fa-check-circle me-1"></i>Diterima
-                                </span>
+                                <i class="fas fa-check"></i> Diterima
+                            @elseif($app->status === 'rejected')
+                                <i class="fas fa-times"></i> Ditolak
                             @elseif($app->status === 'finished')
-                                <span class="badge bg-primary">
-                                    <i class="fas fa-check-double me-1"></i>Selesai
-                                </span>
+                                <i class="fas fa-check-double"></i> Selesai
                             @else
-                                <span class="text-[#706f6c]">-</span>
+                                {{ ucfirst($app->status) }}
                             @endif
-                        </td>
-                    </tr>
-                    @endforeach
-                </tbody>
-            </table>
-            @endif
+                        </span>
+                    </td>
+                    <td>
+                        <button type="button"
+                                class="action-btn review"
+                                onclick="openDetailModal({{ $app->id }})"
+                                title="Lihat Detail">
+                            <i class="fas fa-eye"></i> Review
+                        </button>
+                    </td>
+                </tr>
+                @endforeach
+            </tbody>
+        </table>
+    @endif
+</div>
+
+{{-- Detail Modal --}}
+<div class="modal-overlay" id="detailModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3><i class="fas fa-user"></i> <span id="modalTitle">Detail Pengajuan</span></h3>
+            <button type="button" class="modal-close" onclick="closeDetailModal()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="modal-body" id="modalBody">
+            {{-- Content will be loaded dynamically --}}
         </div>
     </div>
 </div>
 
+{{-- Hidden data for JavaScript --}}
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const divisions = @json($divisions->map(function($div) {
-        return [
-            'id' => $div->id,
-            'mentors' => $div->mentors->map(function($mentor) {
-                return ['id' => $mentor->id, 'name' => $mentor->mentor_name];
-            })
-        ];
-    }));
+const applicationsData = @json($applications->map(function($app) {
+    return [
+        'id' => $app->id,
+        'status' => $app->status,
+        'notes' => $app->notes,
+        'user' => [
+            'name' => $app->user->name ?? '-',
+            'nim' => $app->user->nim ?? '-',
+            'university' => $app->user->university ?? '-',
+            'major' => $app->user->major ?? '-',
+            'phone' => $app->user->phone ?? '-',
+            'ktp_number' => $app->user->ktp_number ?? '-',
+            'profile_picture' => $app->user->profile_picture ? asset('storage/' . $app->user->profile_picture) : null,
+        ],
+        'field' => $app->fieldOfInterest->name ?? '-',
+        'start_date' => $app->start_date ? \Carbon\Carbon::parse($app->start_date)->format('d M Y') : '-',
+        'end_date' => $app->end_date ? \Carbon\Carbon::parse($app->end_date)->format('d M Y') : '-',
+        'duration' => $app->start_date && $app->end_date ? \Carbon\Carbon::parse($app->start_date)->diffInMonths(\Carbon\Carbon::parse($app->end_date)) : 0,
+        'documents' => [
+            'ktm' => $app->ktm_path ? asset('storage/' . $app->ktm_path) : null,
+            'cv' => $app->cv_path ? asset('storage/' . $app->cv_path) : null,
+            'surat' => $app->surat_permohonan_path ? asset('storage/' . $app->surat_permohonan_path) : null,
+            'skck' => $app->good_behavior_path ? asset('storage/' . $app->good_behavior_path) : null,
+        ],
+        'approve_url' => route('admin.applications.approve', $app->id),
+        'reject_url' => route('admin.applications.reject', $app->id),
+    ];
+})->keyBy('id'));
 
-    // Event listener untuk tombol Terima
-    document.querySelectorAll('.approve-btn').forEach(function(button) {
-        button.addEventListener('click', function() {
-            const appId = this.getAttribute('data-app-id');
-            document.getElementById('actionButtons' + appId).classList.add('hidden');
-            document.getElementById('approveForm' + appId).classList.remove('hidden');
-        });
-    });
+const divisions = @json($divisions->map(function($div) {
+    return [
+        'id' => $div->id,
+        'name' => $div->division_name,
+        'mentors' => $div->mentors->map(function($mentor) {
+            return ['id' => $mentor->id, 'name' => $mentor->mentor_name];
+        })
+    ];
+}));
 
-    // Event listener untuk tombol Batal (Approve)
-    document.querySelectorAll('.cancel-approve-btn').forEach(function(button) {
-        button.addEventListener('click', function() {
-            const appId = this.getAttribute('data-app-id');
-            document.getElementById('actionButtons' + appId).classList.remove('hidden');
-            document.getElementById('approveForm' + appId).classList.add('hidden');
-            // Reset form
-            const divisiSelect = document.getElementById('divisi_id-' + appId);
-            const mentorSelect = document.getElementById('division_mentor_id-' + appId);
-            const mentorDiv = document.getElementById('mentor-select-' + appId);
-            if (divisiSelect) divisiSelect.value = '';
-            if (mentorSelect) mentorSelect.innerHTML = '<option value="">-- Pilih Mentor --</option>';
-            if (mentorDiv) mentorDiv.classList.add('hidden');
-        });
-    });
-
-    // Event listener untuk perubahan divisi
-    document.querySelectorAll('.division-select').forEach(function(select) {
-        select.addEventListener('change', function() {
-            const appId = this.getAttribute('data-app-id');
-            const divisionId = this.value;
-            const mentorSelect = document.getElementById('division_mentor_id-' + appId);
-            const mentorDiv = document.getElementById('mentor-select-' + appId);
-            
-            if (mentorSelect && mentorDiv) {
-                mentorSelect.innerHTML = '<option value="">-- Pilih Mentor --</option>';
-                
-                if (divisionId) {
-                    const division = divisions.find(d => d.id == divisionId);
-                    if (division && division.mentors && division.mentors.length > 0) {
-                        division.mentors.forEach(function(mentor) {
-                            const option = document.createElement('option');
-                            option.value = mentor.id;
-                            option.textContent = mentor.name;
-                            mentorSelect.appendChild(option);
-                        });
-                        mentorDiv.classList.remove('hidden');
-                    } else {
-                        mentorDiv.classList.add('hidden');
-                    }
-                } else {
-                    mentorDiv.classList.add('hidden');
-                }
-            }
-        });
-    });
-    
-    // Event listener untuk tombol Ditolak
-    document.querySelectorAll('.reject-btn').forEach(function(button) {
-        button.addEventListener('click', function() {
-            const appId = this.getAttribute('data-app-id');
-            document.getElementById('actionButtons' + appId).classList.add('hidden');
-            document.getElementById('rejectForm' + appId).classList.remove('hidden');
-        });
-    });
-    
-    // Event listener untuk tombol Batal (Reject)
-    document.querySelectorAll('.cancel-reject-btn').forEach(function(button) {
-        button.addEventListener('click', function() {
-            const appId = this.getAttribute('data-app-id');
-            document.getElementById('actionButtons' + appId).classList.remove('hidden');
-            document.getElementById('rejectForm' + appId).classList.add('hidden');
-            // Clear textarea
-            const textarea = document.getElementById('notes-' + appId);
-            if (textarea) {
-                textarea.value = '';
-            }
-        });
-    });
-});
+const csrfToken = '{{ csrf_token() }}';
 </script>
 @endsection
+
+@push('scripts')
+<script>
+// Filter functionality
+function filterTable() {
+    const searchInput = document.querySelector('.filter-input');
+    const statusSelect = document.querySelector('.filter-select');
+    const rows = document.querySelectorAll('#applicationsTable tbody tr');
+
+    const search = searchInput.value.toLowerCase();
+    const status = statusSelect.value;
+
+    rows.forEach(row => {
+        const name = row.dataset.name || '';
+        const nim = row.dataset.nim || '';
+        const institution = row.dataset.institution || '';
+        const rowStatus = row.dataset.status || '';
+
+        const matchesSearch = name.includes(search) || nim.includes(search) || institution.includes(search);
+        const matchesStatus = !status || rowStatus === status;
+
+        row.style.display = matchesSearch && matchesStatus ? '' : 'none';
+    });
+}
+
+// Modal functionality
+function openDetailModal(appId) {
+    const app = applicationsData[appId];
+    if (!app) return;
+
+    const modal = document.getElementById('detailModal');
+    const modalBody = document.getElementById('modalBody');
+    const modalTitle = document.getElementById('modalTitle');
+
+    modalTitle.textContent = 'Detail Pengajuan - ' + app.user.name;
+
+    let html = `
+        <div class="applicant-info">
+            <div class="applicant-photo">
+                ${app.user.profile_picture
+                    ? `<img src="${app.user.profile_picture}" alt="Foto Profil">`
+                    : `<i class="fas fa-user placeholder-icon"></i>`}
+            </div>
+            <div class="applicant-details">
+                <h4>${app.user.name}</h4>
+                <span class="status-badge ${app.status}">
+                    ${app.status === 'pending' ? '<i class="fas fa-clock"></i> Pending' :
+                      app.status === 'accepted' ? '<i class="fas fa-check"></i> Diterima' :
+                      app.status === 'rejected' ? '<i class="fas fa-times"></i> Ditolak' :
+                      app.status === 'finished' ? '<i class="fas fa-check-double"></i> Selesai' : app.status}
+                </span>
+                <div class="meta">
+                    <div class="meta-item"><i class="fas fa-id-card"></i> ${app.user.nim}</div>
+                    <div class="meta-item"><i class="fas fa-university"></i> ${app.user.university}</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="info-grid">
+            <div class="info-item">
+                <label>Jurusan</label>
+                <span>${app.user.major}</span>
+            </div>
+            <div class="info-item">
+                <label>No. HP</label>
+                <span>${app.user.phone}</span>
+            </div>
+            <div class="info-item">
+                <label>NIK</label>
+                <span>${app.user.ktp_number}</span>
+            </div>
+            <div class="info-item">
+                <label>Bidang Peminatan</label>
+                <span>${app.field}</span>
+            </div>
+        </div>
+
+        <div class="period-info">
+            <i class="fas fa-calendar-alt"></i>
+            <div class="period-text">
+                <div class="period-dates">${app.start_date} &rarr; ${app.end_date}</div>
+                <div class="period-duration">Durasi: ${app.duration} bulan</div>
+            </div>
+        </div>
+
+        <div class="documents-section">
+            <h5><i class="fas fa-folder-open"></i> Dokumen</h5>
+            <div class="documents-grid">
+                ${app.documents.ktm ? `<a href="${app.documents.ktm}" target="_blank" class="doc-btn"><i class="fas fa-file-pdf"></i> KTM</a>` : ''}
+                ${app.documents.cv ? `<a href="${app.documents.cv}" target="_blank" class="doc-btn"><i class="fas fa-file-pdf"></i> CV</a>` : ''}
+                ${app.documents.surat ? `<a href="${app.documents.surat}" target="_blank" class="doc-btn"><i class="fas fa-file-pdf"></i> Surat Permohonan</a>` : ''}
+                ${app.documents.skck ? `<a href="${app.documents.skck}" target="_blank" class="doc-btn"><i class="fas fa-file-pdf"></i> SKCK/SBB</a>` : ''}
+                ${!app.documents.ktm && !app.documents.cv && !app.documents.surat && !app.documents.skck ? '<span style="color: #9ca3af;">Tidak ada dokumen</span>' : ''}
+            </div>
+        </div>
+    `;
+
+    // Show action forms only for pending applications
+    if (app.status === 'pending') {
+        html += `
+            <div class="approve-form" id="approveForm${appId}">
+                <h5><i class="fas fa-check-circle"></i> Terima Pengajuan</h5>
+                <form action="${app.approve_url}" method="POST">
+                    <input type="hidden" name="_token" value="${csrfToken}">
+                    <div class="form-group">
+                        <label>Pilih Divisi <span style="color: #EF4444;">*</span></label>
+                        <select name="divisi_id" required onchange="updateMentors(this, ${appId})">
+                            <option value="">-- Pilih Divisi --</option>
+                            ${divisions.map(d => `<option value="${d.id}">${d.name}</option>`).join('')}
+                        </select>
+                    </div>
+                    <div class="form-group" id="mentorGroup${appId}" style="display: none;">
+                        <label>Pilih Mentor <span style="color: #9ca3af;">(Opsional)</span></label>
+                        <select name="division_mentor_id" id="mentorSelect${appId}">
+                            <option value="">-- Pilih Mentor --</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn-approve">
+                        <i class="fas fa-check"></i> Terima Pengajuan
+                    </button>
+                </form>
+            </div>
+
+            <div class="reject-form">
+                <h5><i class="fas fa-times-circle"></i> Tolak Pengajuan</h5>
+                <form action="${app.reject_url}" method="POST">
+                    <input type="hidden" name="_token" value="${csrfToken}">
+                    <div class="form-group">
+                        <label>Alasan Penolakan <span style="color: #9ca3af;">(Opsional)</span></label>
+                        <textarea name="notes" placeholder="Masukkan alasan penolakan..."></textarea>
+                    </div>
+                    <button type="submit" class="btn-reject">
+                        <i class="fas fa-times"></i> Tolak Pengajuan
+                    </button>
+                </form>
+            </div>
+        `;
+    } else if (app.status === 'rejected' && app.notes) {
+        html += `
+            <div class="reject-form">
+                <h5><i class="fas fa-info-circle"></i> Alasan Penolakan</h5>
+                <p style="color: #374151; margin: 0;">${app.notes}</p>
+            </div>
+        `;
+    }
+
+    modalBody.innerHTML = html;
+    modal.classList.add('show');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeDetailModal() {
+    const modal = document.getElementById('detailModal');
+    modal.classList.remove('show');
+    document.body.style.overflow = '';
+}
+
+function updateMentors(select, appId) {
+    const divisionId = select.value;
+    const mentorGroup = document.getElementById('mentorGroup' + appId);
+    const mentorSelect = document.getElementById('mentorSelect' + appId);
+
+    if (!divisionId) {
+        mentorGroup.style.display = 'none';
+        mentorSelect.innerHTML = '<option value="">-- Pilih Mentor --</option>';
+        return;
+    }
+
+    const division = divisions.find(d => d.id == divisionId);
+    if (division && division.mentors && division.mentors.length > 0) {
+        mentorSelect.innerHTML = '<option value="">-- Pilih Mentor --</option>' +
+            division.mentors.map(m => `<option value="${m.id}">${m.name}</option>`).join('');
+        mentorGroup.style.display = 'block';
+    } else {
+        mentorGroup.style.display = 'none';
+        mentorSelect.innerHTML = '<option value="">-- Pilih Mentor --</option>';
+    }
+}
+
+// Close modal on escape key
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        closeDetailModal();
+    }
+});
+
+// Close modal on overlay click
+document.getElementById('detailModal').addEventListener('click', function(e) {
+    if (e.target === this) {
+        closeDetailModal();
+    }
+});
+</script>
+@endpush
