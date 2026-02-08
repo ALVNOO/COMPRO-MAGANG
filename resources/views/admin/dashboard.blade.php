@@ -1,134 +1,799 @@
-@extends('layouts.admin-dashboard')
+{{--
+    ADMIN DASHBOARD
+    Main dashboard for administrators
+    Using unified layout with glassmorphism design
+--}}
 
-@section('admin-content')
-<div x-data="{ showEditModal: false, showRuleContent: false }" @keydown.escape.window="showEditModal = false" class="space-y-8 relative">
-    <!-- Decorative SVG Pattern BG -->
-    <svg class="absolute right-0 top-0 opacity-10 w-80 h-80 z-0 pointer-events-none" viewBox="0 0 320 320" fill="none"><ellipse cx="160" cy="160" rx="160" ry="160" fill="url(#paint-red)"/><defs><radialGradient id="paint-red" cx="0" cy="0" r="1" gradientTransform="translate(160 160) scale(180 160)" gradientUnits="userSpaceOnUse"><stop stop-color="#B91C1C"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient></defs></svg>
-    <div class="mb-6 relative z-10 mt-8">
-        <h2 class="text-2xl font-bold mb-1 text-[#000000] border-b-4 border-[#ee2e24] inline-block pb-1 pr-6">Welcome, Admin!</h2>
-        <p class="text-sm text-[#000000]">{{ \Carbon\Carbon::now()->translatedFormat('l, d F Y') }}</p>
-    </div>
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12 relative z-10">
-        <div class="bg-white border border-[#e3e3e0] rounded-lg p-6 flex flex-col items-start shadow-2xl relative transform transition-all duration-300 hover:scale-105 hover:shadow-3xl hover:-translate-y-1">
-            <span class="w-12 h-12 bg-[#ee2e24] text-white flex items-center justify-center rounded-full mb-2 shadow-lg animate-pulse"><i class="fas fa-users text-2xl"></i></span>
-            <div class="flex items-center gap-2 text-[#ee2e24] text-lg font-bold mb-2">Total Peserta Magang</div>
-            <div class="text-4xl font-bold">{{ $totalParticipants }}</div>
+@extends('layouts.dashboard-unified')
+
+@section('title', 'Dashboard Admin')
+
+@php
+    $role = 'admin';
+    $pageTitle = 'Dashboard Admin';
+    $pageSubtitle = 'Kelola aplikasi magang Telkom Indonesia';
+@endphp
+
+@push('styles')
+<style>
+/* ============================================
+   ADMIN DASHBOARD STYLES
+   ============================================ */
+
+/* Hero Section - Telkom Red Theme */
+.admin-hero {
+    background: linear-gradient(135deg, #EE2E24 0%, #C41E1A 50%, #9B1B1B 100%);
+    border-radius: 24px;
+    padding: 2rem 2.5rem;
+    margin-bottom: 2rem;
+    position: relative;
+    overflow: hidden;
+    color: white;
+}
+
+.admin-hero::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -20%;
+    width: 60%;
+    height: 200%;
+    background: radial-gradient(ellipse, rgba(255,255,255,0.15) 0%, transparent 70%);
+    pointer-events: none;
+}
+
+.hero-content {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 2rem;
+}
+
+.hero-text h1 {
+    font-size: 1.75rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.hero-text p {
+    font-size: 1rem;
+    opacity: 0.9;
+    max-width: 500px;
+}
+
+.hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.25rem;
+    background: rgba(255,255,255,0.2);
+    backdrop-filter: blur(10px);
+    border-radius: 12px;
+    border: 1px solid rgba(255,255,255,0.3);
+}
+
+.hero-badge-icon {
+    width: 40px;
+    height: 40px;
+    background: rgba(255,255,255,0.25);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+}
+
+.hero-badge-text h4 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin: 0;
+    line-height: 1.2;
+}
+
+.hero-badge-text p {
+    font-size: 0.75rem;
+    margin: 0;
+    opacity: 0.85;
+}
+
+/* Stats Grid */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+@media (max-width: 1200px) {
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 640px) {
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Charts Section */
+.charts-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+@media (max-width: 1024px) {
+    .charts-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.chart-card {
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(20px);
+    border-radius: 20px;
+    padding: 1.5rem;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.05);
+}
+
+.chart-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.25rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--color-gray-100);
+}
+
+.chart-title {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--color-gray-800);
+}
+
+.chart-title-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1rem;
+}
+
+.chart-title-icon.purple { background: linear-gradient(135deg, #8B5CF6, #A78BFA); }
+.chart-title-icon.blue { background: linear-gradient(135deg, #3B82F6, #60A5FA); }
+.chart-title-icon.green { background: linear-gradient(135deg, #10B981, #34D399); }
+.chart-title-icon.red { background: linear-gradient(135deg, #EE2E24, #FF6B6B); }
+
+.chart-container {
+    position: relative;
+    height: 280px;
+}
+
+/* Quick Actions */
+.quick-actions-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+@media (max-width: 1024px) {
+    .quick-actions-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 640px) {
+    .quick-actions-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.quick-action-card {
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(20px);
+    border-radius: 16px;
+    padding: 1.25rem;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    transition: all 0.3s ease;
+}
+
+.quick-action-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+}
+
+.quick-action-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    color: white;
+    position: relative;
+}
+
+.quick-action-icon .badge-count {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    width: 20px;
+    height: 20px;
+    background: #EF4444;
+    color: white;
+    font-size: 0.7rem;
+    font-weight: 600;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid white;
+}
+
+.quick-action-text h4 {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--color-gray-800);
+    margin: 0 0 0.25rem 0;
+}
+
+.quick-action-text p {
+    font-size: 0.8rem;
+    color: var(--color-gray-500);
+    margin: 0;
+}
+
+/* Activity & Recent Table */
+.content-grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1.5fr;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+@media (max-width: 1024px) {
+    .content-grid-2 {
+        grid-template-columns: 1fr;
+    }
+}
+
+.activity-card {
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(20px);
+    border-radius: 20px;
+    padding: 1.5rem;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.05);
+}
+
+.activity-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.activity-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    background: var(--color-gray-50);
+    border-radius: 12px;
+    transition: all 0.2s;
+}
+
+.activity-item:hover {
+    background: white;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.activity-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.9rem;
+    flex-shrink: 0;
+}
+
+.activity-icon.new { background: rgba(16, 185, 129, 0.1); color: #10B981; }
+.activity-icon.pending { background: rgba(245, 158, 11, 0.1); color: #F59E0B; }
+.activity-icon.approved { background: rgba(59, 130, 246, 0.1); color: #3B82F6; }
+.activity-icon.rejected { background: rgba(239, 68, 68, 0.1); color: #EF4444; }
+
+.activity-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.activity-text {
+    font-size: 0.85rem;
+    color: var(--color-gray-700);
+    margin: 0 0 0.25rem 0;
+    line-height: 1.4;
+}
+
+.activity-time {
+    font-size: 0.75rem;
+    color: var(--color-gray-500);
+}
+
+/* Recent Table */
+.table-card {
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(20px);
+    border-radius: 20px;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.05);
+    overflow: hidden;
+}
+
+.table-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid var(--color-gray-100);
+}
+
+.table-title {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--color-gray-800);
+}
+
+.view-all-link {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--color-primary);
+    text-decoration: none;
+    transition: all 0.2s;
+}
+
+.view-all-link:hover {
+    gap: 0.75rem;
+}
+
+.admin-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.admin-table th {
+    background: var(--color-gray-50);
+    padding: 0.875rem 1rem;
+    text-align: left;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--color-gray-600);
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.admin-table td {
+    padding: 1rem;
+    border-bottom: 1px solid var(--color-gray-100);
+    font-size: 0.875rem;
+    color: var(--color-gray-700);
+}
+
+.admin-table tbody tr:hover {
+    background: var(--color-gray-50);
+}
+
+.admin-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.35rem 0.75rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    border-radius: 20px;
+}
+
+.status-badge.pending {
+    background: rgba(245, 158, 11, 0.1);
+    color: #F59E0B;
+}
+
+.status-badge.accepted {
+    background: rgba(16, 185, 129, 0.1);
+    color: #10B981;
+}
+
+.status-badge.rejected {
+    background: rgba(239, 68, 68, 0.1);
+    color: #EF4444;
+}
+
+/* Division Chart */
+.division-chart-card {
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(20px);
+    border-radius: 20px;
+    padding: 1.5rem;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.05);
+    margin-bottom: 2rem;
+}
+
+/* Empty State */
+.empty-state {
+    text-align: center;
+    padding: 2rem;
+}
+
+.empty-icon {
+    width: 64px;
+    height: 64px;
+    background: var(--color-gray-100);
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1rem;
+    color: var(--color-gray-400);
+    font-size: 1.5rem;
+}
+
+.empty-text {
+    font-size: 0.9rem;
+    color: var(--color-gray-500);
+    margin: 0;
+}
+
+/* Responsive Hero */
+@media (max-width: 900px) {
+    .hero-content {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .hero-text {
+        order: 1;
+    }
+
+    .hero-text h1 {
+        justify-content: center;
+    }
+
+    .hero-badge {
+        order: 2;
+    }
+}
+</style>
+@endpush
+
+@section('content')
+{{-- Hero Section --}}
+<div class="admin-hero">
+    <div class="hero-content">
+        <div class="hero-text">
+            <h1>
+                <i class="fas fa-shield-halved"></i>
+                Panel Administrator
+            </h1>
+            <p>
+                Kelola seluruh aktivitas magang, pantau pengajuan, dan awasi perkembangan peserta di Telkom Indonesia.
+            </p>
         </div>
-        <div class="bg-white border border-[#e3e3e0] rounded-lg p-6 flex flex-col items-start shadow-2xl relative transform transition-all duration-300 hover:scale-105 hover:shadow-3xl hover:-translate-y-1">
-            <span class="w-12 h-12 bg-white border-2 border-[#ee2e24] text-[#ee2e24] flex items-center justify-center rounded-full mb-2 shadow-lg animate-pulse"><i class="fas fa-envelope-open-text text-2xl"></i></span>
-            <div class="flex items-center gap-2 text-[#B91C1C] text-lg font-bold mb-2">Total Pengajuan Magang</div>
-            <div class="text-4xl font-bold">{{ $totalApplications }}</div>
-        </div>
-        <div class="bg-white border border-[#e3e3e0] rounded-lg p-6 flex flex-col items-start shadow-2xl relative transform transition-all duration-300 hover:scale-105 hover:shadow-3xl hover:-translate-y-1">
-            <span class="w-12 h-12 bg-white border-2 border-[#ee2e24] text-[#ee2e24] flex items-center justify-center rounded-full mb-2 shadow-lg animate-pulse"><i class="fas fa-check-circle text-2xl"></i></span>
-            <div class="flex items-center gap-2 text-[#ee2e24] text-lg font-bold mb-2">Total Peserta Selesai</div>
-            <div class="text-4xl font-bold">{{ $totalFinishedParticipants }}</div>
-        </div>
-    </div>
-    <!-- Tabel Pengajuan Terbaru -->
-    <div class="bg-white border border-[#e3e3e0] rounded-lg shadow-2xl relative z-10 mb-12 transform transition-all duration-300 hover:shadow-3xl">
-        <div class="border-b border-[#e3e3e0] px-6 py-4 flex items-center gap-2 relative">
-            <div class="absolute left-6 right-6 -bottom-1 h-1 bg-gradient-to-r from-[#ee2e24] via-[#ee2e24] to-[#ee2e24] rounded opacity-60"></div>
-            <i class="fas fa-clock text-[#ee2e24]"></i>
-            <h5 class="text-lg font-bold mb-0 text-[#ee2e24]">Pengajuan Magang Terbaru</h5>
-        </div>
-        <div class="overflow-x-auto">
-            <table class="min-w-full text-sm text-left">
-                <thead class="bg-[#FFF2F2] border-b border-[#e3e3e0]">
-                    <tr>
-                        <th class="px-4 py-2 font-bold text-[#ee2e24]">#</th>
-                        <th class="px-4 py-2 font-bold text-[#ee2e24]">Nama Peserta</th>
-                        <th class="px-4 py-2 font-bold text-[#ee2e24]">Divisi</th>
-                        <th class="px-4 py-2 font-bold text-[#ee2e24]">Status</th>
-                        <th class="px-4 py-2 font-bold text-[#ee2e24]">Tanggal Pengajuan</th>
-                        <th class="px-4 py-2 font-bold text-[#ee2e24]">Start Date</th>
-                        <th class="px-4 py-2 font-bold text-[#ee2e24]">End Date</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @forelse($recentApplications as $i => $app)
-                    <tr class="even:bg-[#FDFDFC] border-b border-[#e3e3e0]">
-                        <td class="px-4 py-2">{{ $i+1 }}</td>
-                        <td class="px-4 py-2">{{ $app->user->name ?? '-' }}</td>
-                        <td class="px-4 py-2">{{ $app->divisi->name ?? '-' }}</td>
-                        <td class="px-4 py-2">
-                            <span class="inline-block px-3 py-1 rounded-full text-xs font-bold
-                                @if($app->status=='finished') bg-[#ee2e24] text-white
-                                @elseif($app->status=='accepted') bg-[#DCFCE7] text-[#15803D]
-                                @elseif($app->status=='rejected') bg-[#FEE2E2] text-[#DC2626]
-                                @else bg-[#E5E7EB] text-[#6B7280]
-                                @endif
-                            ">
-                              {{ ucfirst($app->status) }}
-                            </span>
-                        </td>
-                        <td class="px-4 py-2">{{ $app->created_at->format('d-m-Y') }}</td>
-                        <td class="px-4 py-2">{{ $app->start_date ? \Carbon\Carbon::parse($app->start_date)->format('d-m-Y') : '-' }}</td>
-                        <td class="px-4 py-2">{{ $app->end_date ? \Carbon\Carbon::parse($app->end_date)->format('d-m-Y') : '-' }}</td>
-                    </tr>
-                    @empty
-                    <tr><td colspan="7" class="text-center py-4 text-[#706f6c]">Belum ada pengajuan.</td></tr>
-                    @endforelse
-                </tbody>
-            </table>
-        </div>
-    </div>
-    <!-- Peraturan -->
-    <div class="bg-white border border-[#e3e3e0] rounded-lg shadow-2xl relative z-10 mb-12 transform transition-all duration-300 hover:shadow-3xl">
-        <div class="border-b border-[#e3e3e0] px-6 py-4 flex items-center justify-between relative">
-            <span class="flex items-center gap-2 text-lg font-bold text-[#ee2e24]"><i class="fas fa-gavel"></i> Peraturan Saat Ini</span>
-            <div class="absolute left-6 right-6 -bottom-1 h-1 bg-gradient-to-r from-[#ee2e24] via-[#ee2e24] to-[#ee2e24] rounded opacity-60"></div>
-            <div class="flex items-center gap-2">
-                <!-- Dropdown Toggle Button (Buka/Tutup Peraturan) -->
-                <button type="button" class="px-4 py-2 border border-[#e3e3e0] rounded-sm bg-white text-[#ee2e24] font-bold hover:bg-[#FFF2F2] transition text-sm flex items-center gap-2" @click="showRuleContent = !showRuleContent">
-                    <i class="fas" :class="showRuleContent ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
-                    <span x-text="showRuleContent ? 'Tutup' : 'Buka'"></span>
-                </button>
-                <!-- Edit Button -->
-                <button type="button" class="px-4 py-2 border border-[#e3e3e0] rounded-sm bg-[#ee2e24] text-white font-bold hover:bg-[#991B1B] transition text-sm" @click="showEditModal = true">
-                    <i class="fas fa-pen mr-1"></i> Edit Peraturan
-                </button>
+        @if(isset($todayRegistrations) && $todayRegistrations > 0)
+        <div class="hero-badge">
+            <div class="hero-badge-icon">
+                <i class="fas fa-user-plus"></i>
+            </div>
+            <div class="hero-badge-text">
+                <h4>{{ $todayRegistrations }}</h4>
+                <p>Pendaftar Hari Ini</p>
             </div>
         </div>
-        <div class="px-6 py-5" x-show="showRuleContent" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 max-h-0" x-transition:enter-end="opacity-100 max-h-screen" x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100 max-h-screen" x-transition:leave-end="opacity-0 max-h-0">
-            @if($rule && $rule->content)
-                <div class="whitespace-pre-line">{!! nl2br(e($rule->content)) !!}</div>
-            @else
-                <span class="text-[#706f6c]">Belum ada peraturan yang ditetapkan.</span>
+        @endif
+    </div>
+</div>
+
+{{-- Stats Grid --}}
+<div class="stats-grid">
+    @include('components.dashboard.stat-card', [
+        'value' => $totalApplications ?? 0,
+        'label' => 'Total Pengajuan',
+        'icon' => 'fa-file-alt',
+        'color' => 'purple',
+        'link' => route('admin.applications')
+    ])
+
+    @include('components.dashboard.stat-card', [
+        'value' => $pendingCount ?? 0,
+        'label' => 'Menunggu Review',
+        'icon' => 'fa-clock',
+        'color' => 'warning',
+        'link' => route('admin.applications')
+    ])
+
+    @include('components.dashboard.stat-card', [
+        'value' => $totalParticipants ?? 0,
+        'label' => 'Peserta Aktif',
+        'icon' => 'fa-users',
+        'color' => 'success',
+        'link' => route('admin.participants')
+    ])
+
+    @include('components.dashboard.stat-card', [
+        'value' => $totalMentors ?? 0,
+        'label' => 'Total Mentor',
+        'icon' => 'fa-user-tie',
+        'color' => 'info',
+        'link' => route('admin.mentors')
+    ])
+</div>
+
+{{-- Quick Actions --}}
+<div class="quick-actions-grid">
+    <a href="{{ route('admin.applications') }}" class="quick-action-card">
+        <div class="quick-action-icon" style="background: linear-gradient(135deg, #F59E0B, #FBBF24);">
+            <i class="fas fa-inbox"></i>
+            @if(isset($pendingCount) && $pendingCount > 0)
+                <span class="badge-count">{{ $pendingCount > 9 ? '9+' : $pendingCount }}</span>
             @endif
         </div>
-    </div>
-    
-    <!-- Modal Native Tailwind+Alpine -->
-    <div x-show="showEditModal" class="fixed inset-0 z-50 flex items-center justify-center" style="display: none;" aria-modal="true" role="dialog" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100" x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95">
-        <!-- Backdrop -->
-        <div class="absolute inset-0 bg-black opacity-30" @click="showEditModal = false"></div>
-        <!-- Modal Box -->
-        <div class="relative w-full max-w-lg bg-[#FDFDFC] border border-[#e3e3e0] rounded-lg shadow-lg mx-4">
-            <div class="flex items-center justify-between px-6 py-4 border-b border-[#e3e3e0]">
-                <h5 class="text-lg font-bold text-[#ee2e24] flex items-center gap-2"><i class="fas fa-gavel"></i>Edit Peraturan</h5>
-                <button class="text-[#1b1b18] px-2 py-1 hover:bg-[#dbdbd7] rounded transition" @click="showEditModal = false" aria-label="Tutup">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                </button>
+        <div class="quick-action-text">
+            <h4>Pengajuan Magang</h4>
+            <p>Review pendaftaran baru</p>
+        </div>
+    </a>
+
+    <a href="{{ route('admin.participants') }}" class="quick-action-card">
+        <div class="quick-action-icon" style="background: linear-gradient(135deg, #10B981, #34D399);">
+            <i class="fas fa-users"></i>
+        </div>
+        <div class="quick-action-text">
+            <h4>Daftar Peserta</h4>
+            <p>Kelola peserta magang</p>
+        </div>
+    </a>
+
+    <a href="{{ route('admin.mentors') }}" class="quick-action-card">
+        <div class="quick-action-icon" style="background: linear-gradient(135deg, #3B82F6, #60A5FA);">
+            <i class="fas fa-user-tie"></i>
+        </div>
+        <div class="quick-action-text">
+            <h4>Monitoring Mentor</h4>
+            <p>Pantau pembimbing</p>
+        </div>
+    </a>
+
+    <a href="{{ route('admin.reports') }}" class="quick-action-card">
+        <div class="quick-action-icon" style="background: linear-gradient(135deg, #8B5CF6, #A78BFA);">
+            <i class="fas fa-chart-line"></i>
+        </div>
+        <div class="quick-action-text">
+            <h4>Laporan</h4>
+            <p>Lihat statistik lengkap</p>
+        </div>
+    </a>
+</div>
+
+{{-- Recent Applications Table (Full Width) --}}
+<div class="table-card" style="margin-bottom: 2rem;">
+    <div class="table-header">
+        <div class="table-title">
+            <div class="chart-title-icon purple">
+                <i class="fas fa-list"></i>
             </div>
-            <form method="POST" action="{{ route('admin.rules.update') }}">
-                @csrf
-                <div class="p-6">
-                    <div class="mb-4">
-                        <label for="content" class="block text-sm font-bold text-[#ee2e24] mb-2">Isi Peraturan</label>
-                        <textarea name="content" id="content" class="block w-full border border-[#e3e3e0] rounded-sm text-base px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#ee2e24] focus:border-[#ee2e24] transition" rows="8" required>{{ old('content', $rule ? $rule->content : '') }}</textarea>
-                        @error('content')
-                            <div class="text-red-600 text-sm mt-1">{{ $message }}</div>
-                        @enderror
-                    </div>
+            <span>Pengajuan Terbaru</span>
+        </div>
+        <a href="{{ route('admin.applications') }}" class="view-all-link">
+            Lihat Semua <i class="fas fa-arrow-right"></i>
+        </a>
+    </div>
+    <table class="admin-table">
+        <thead>
+            <tr>
+                <th>Nama</th>
+                <th>Institusi</th>
+                <th>Divisi</th>
+                <th>Status</th>
+                <th>Tanggal</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if(isset($recentApplications) && $recentApplications->count() > 0)
+                @foreach($recentApplications->take(5) as $app)
+                    <tr>
+                        <td>
+                            <strong>{{ Str::limit($app->user->name ?? 'N/A', 20) }}</strong>
+                        </td>
+                        <td>{{ Str::limit($app->user->institution ?? '-', 25) }}</td>
+                        <td>{{ Str::limit($app->division->name ?? '-', 20) }}</td>
+                        <td>
+                            <span class="status-badge {{ $app->status }}">
+                                @if($app->status === 'pending')
+                                    <i class="fas fa-clock"></i> Pending
+                                @elseif($app->status === 'accepted')
+                                    <i class="fas fa-check"></i> Diterima
+                                @elseif($app->status === 'rejected')
+                                    <i class="fas fa-times"></i> Ditolak
+                                @else
+                                    {{ ucfirst($app->status) }}
+                                @endif
+                            </span>
+                        </td>
+                        <td>{{ $app->created_at->format('d M Y') }}</td>
+                    </tr>
+                @endforeach
+            @else
+                <tr>
+                    <td colspan="5">
+                        <div class="empty-state">
+                            <p class="empty-text">Belum ada pengajuan</p>
+                        </div>
+                    </td>
+                </tr>
+            @endif
+        </tbody>
+    </table>
+</div>
+
+{{-- Charts Section --}}
+<div class="charts-grid">
+    {{-- Status Distribution Chart --}}
+    <div class="chart-card">
+        <div class="chart-header">
+            <div class="chart-title">
+                <div class="chart-title-icon purple">
+                    <i class="fas fa-chart-pie"></i>
                 </div>
-                <div class="flex justify-end gap-3 px-6 pb-6">
-                    <button type="button" class="px-4 py-2 rounded-sm border border-[#e3e3e0] bg-white text-[#ee2e24] font-bold hover:bg-[#FFF2F2] transition" @click="showEditModal = false">Batal</button>
-                    <button type="submit" class="px-4 py-2 rounded-sm bg-[#ee2e24] text-white font-bold border border-transparent hover:bg-[#991B1B] transition">Simpan</button>
-                </div>
-            </form>
+                <span>Distribusi Status</span>
+            </div>
+        </div>
+        <div class="chart-container">
+            <canvas id="statusChart"></canvas>
         </div>
     </div>
-    <!-- End Modal -->
+
+    {{-- Applications Over Time --}}
+    <div class="chart-card">
+        <div class="chart-header">
+            <div class="chart-title">
+                <div class="chart-title-icon blue">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <span>Trend Pengajuan</span>
+            </div>
+        </div>
+        <div class="chart-container">
+            <canvas id="trendChart"></canvas>
+        </div>
+    </div>
 </div>
-@endsection 
+@endsection
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Status Distribution Chart
+    const statusCtx = document.getElementById('statusChart');
+    if (statusCtx) {
+        const statusData = @json($statusDistribution ?? ['pending' => 0, 'accepted' => 0, 'rejected' => 0]);
+        new Chart(statusCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Pending', 'Diterima', 'Ditolak'],
+                datasets: [{
+                    data: [statusData.pending || 0, statusData.accepted || 0, statusData.rejected || 0],
+                    backgroundColor: [
+                        'rgba(245, 158, 11, 0.8)',
+                        'rgba(16, 185, 129, 0.8)',
+                        'rgba(239, 68, 68, 0.8)'
+                    ],
+                    hoverBackgroundColor: [
+                        '#F59E0B',
+                        '#10B981',
+                        '#EF4444'
+                    ],
+                    borderWidth: 0,
+                    hoverOffset: 8
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '65%',
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            padding: 20,
+                            usePointStyle: true,
+                            pointStyle: 'circle',
+                            font: { size: 12, weight: '500' }
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    // Trend Chart
+    const trendCtx = document.getElementById('trendChart');
+    if (trendCtx) {
+        const trendData = @json($applicationsOverTime ?? []);
+        const labels = trendData.map(d => d.month || d.label || '');
+        const values = trendData.map(d => d.count || d.value || 0);
+
+        new Chart(trendCtx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Pengajuan',
+                    data: values,
+                    borderColor: '#3B82F6',
+                    backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                    tension: 0.4,
+                    fill: true,
+                    borderWidth: 3,
+                    pointBackgroundColor: '#3B82F6',
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 2,
+                    pointRadius: 4,
+                    pointHoverRadius: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: { color: 'rgba(0,0,0,0.04)' },
+                        ticks: { font: { size: 11 } }
+                    },
+                    x: {
+                        grid: { display: false },
+                        ticks: { font: { size: 11 } }
+                    }
+                }
+            }
+        });
+    }
+
+});
+</script>
+@endpush
