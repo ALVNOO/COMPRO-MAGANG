@@ -946,8 +946,8 @@
 </div>
 
 {{-- Hidden data for JavaScript --}}
-<script>
-const applicationsData = @json($applications->map(function($app) {
+@php
+$applicationsJson = $applications->map(function($app) {
     return [
         'id' => $app->id,
         'status' => $app->status,
@@ -974,9 +974,9 @@ const applicationsData = @json($applications->map(function($app) {
         'approve_url' => route('admin.applications.approve', $app->id),
         'reject_url' => route('admin.applications.reject', $app->id),
     ];
-})->keyBy('id'));
+})->keyBy('id');
 
-const divisions = @json($divisions->map(function($div) {
+$divisionsJson = $divisions->map(function($div) {
     return [
         'id' => $div->id,
         'name' => $div->division_name,
@@ -984,8 +984,12 @@ const divisions = @json($divisions->map(function($div) {
             return ['id' => $mentor->id, 'name' => $mentor->mentor_name];
         })
     ];
-}));
+});
+@endphp
 
+<script>
+const applicationsData = @json($applicationsJson);
+const divisions = @json($divisionsJson);
 const csrfToken = '{{ csrf_token() }}';
 </script>
 @endsection
