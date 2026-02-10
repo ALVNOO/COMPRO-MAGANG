@@ -309,7 +309,7 @@
 .field-card-stats {
     padding: 0 1.5rem;
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(2, 1fr);
     gap: 0.75rem;
     margin-bottom: 1rem;
 }
@@ -629,10 +629,6 @@
                 <div class="field-stat">
                     <div class="field-stat-value">{{ $field->position_count }}</div>
                     <div class="field-stat-label">Posisi</div>
-                </div>
-                <div class="field-stat">
-                    <div class="field-stat-value">{{ $field->duration_months }}</div>
-                    <div class="field-stat-label">Bulan</div>
                 </div>
             </div>
 

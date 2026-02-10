@@ -353,11 +353,12 @@
 .mentee-badge {
     display: inline-flex;
     align-items: center;
-    gap: 0.375rem;
-    padding: 0.375rem 0.75rem;
+    gap: 0.35rem;
+    padding: 0.35rem 0.65rem;
     border-radius: 8px;
-    font-size: 0.8rem;
+    font-size: 0.75rem;
     font-weight: 600;
+    white-space: nowrap;
 }
 
 .mentee-badge.has-mentees {
@@ -819,7 +820,7 @@
                         <th style="width: 60px;">No</th>
                         <th>Pembimbing</th>
                         <th>Email</th>
-                        <th style="width: 120px;">Peserta</th>
+                        <th style="width: 130px;">Peserta</th>
                         <th style="width: 200px;">Aksi</th>
                     </tr>
                 </thead>

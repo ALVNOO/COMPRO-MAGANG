@@ -857,7 +857,7 @@
         </div>
         <div class="stat-card">
             <div class="stat-icon incomplete">
-                <i class="fas fa-file-exclamation"></i>
+                <i class="fas fa-file-circle-exclamation"></i>
             </div>
             <div class="stat-content">
                 <h3>{{ $incompleteDocuments }}</h3>

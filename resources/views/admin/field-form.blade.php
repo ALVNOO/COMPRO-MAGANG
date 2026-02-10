@@ -503,23 +503,15 @@
                 </div>
             </div>
 
-            {{-- Row 2: Color & Sort Order --}}
-            <div class="form-grid">
-                <div class="form-group">
-                    <label for="color">Warna</label>
-                    <div class="color-input-wrapper">
-                        <input type="color" class="form-color" id="color" name="color"
-                               value="{{ old('color', $field->color ?? '#EE2E24') }}">
-                        <div class="color-preview" id="color-preview-text">
-                            {{ old('color', $field->color ?? '#EE2E24') }}
-                        </div>
+            {{-- Row 2: Color --}}
+            <div class="form-group" style="margin-bottom: 1.5rem;">
+                <label for="color">Warna</label>
+                <div class="color-input-wrapper">
+                    <input type="color" class="form-color" id="color" name="color"
+                           value="{{ old('color', $field->color ?? '#EE2E24') }}">
+                    <div class="color-preview" id="color-preview-text">
+                        {{ old('color', $field->color ?? '#EE2E24') }}
                     </div>
-                </div>
-                <div class="form-group">
-                    <label for="sort_order">Urutan Tampil <span class="required">*</span></label>
-                    <input type="number" class="form-input" id="sort_order" name="sort_order"
-                           value="{{ old('sort_order', $field->sort_order ?? 0) }}"
-                           min="0" required>
                 </div>
             </div>
 
@@ -531,8 +523,8 @@
                           required>{{ old('description', $field->description ?? '') }}</textarea>
             </div>
 
-            {{-- Row 4: Division, Position, Duration --}}
-            <div class="form-grid-3">
+            {{-- Row 4: Division & Position --}}
+            <div class="form-grid">
                 <div class="form-group">
                     <label for="division_count">Jumlah Divisi <span class="required">*</span></label>
                     <input type="number" class="form-input" id="division_count" name="division_count"
@@ -544,12 +536,6 @@
                     <input type="number" class="form-input" id="position_count" name="position_count"
                            value="{{ old('position_count', $field->position_count ?? 0) }}"
                            min="0" required>
-                </div>
-                <div class="form-group">
-                    <label for="duration_months">Durasi (Bulan) <span class="required">*</span></label>
-                    <input type="number" class="form-input" id="duration_months" name="duration_months"
-                           value="{{ old('duration_months', $field->duration_months ?? 6) }}"
-                           min="1" required>
                 </div>
             </div>
 
