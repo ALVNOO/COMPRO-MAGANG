@@ -72,9 +72,34 @@ class DashboardController extends Controller
         if (!$application || !in_array($application->status, ['accepted', 'finished'])) {
             return redirect()->route('dashboard.status');
         }
-        
+
+        // Hitung progress magang dan hari tersisa
+        $progressMagang = 0;
+        $hariTersisa = 0;
+
+        if ($application && $application->start_date && $application->end_date) {
+            $startDate = \Carbon\Carbon::parse($application->start_date);
+            $endDate = \Carbon\Carbon::parse($application->end_date);
+            $today = now();
+
+            $totalDays = $startDate->diffInDays($endDate);
+            $daysPassed = $startDate->diffInDays($today);
+
+            if ($totalDays > 0) {
+                $progressMagang = min(100, max(0, round(($daysPassed / $totalDays) * 100)));
+            }
+
+            $hariTersisa = max(0, (int) $today->diffInDays($endDate, false));
+
+            // Jika sudah selesai
+            if ($today->isAfter($endDate)) {
+                $progressMagang = 100;
+                $hariTersisa = 0;
+            }
+        }
+
         // Hanya tampilkan dashboard jika status accepted atau finished
-        return view('dashboard.index', compact('user', 'application'));
+        return view('dashboard.index', compact('user', 'application', 'progressMagang', 'hariTersisa'));
     }
 
     /**
@@ -390,18 +415,28 @@ class DashboardController extends Controller
     public function updateProfile(Request $request)
     {
         $user = Auth::user();
-        
-        $request->validate([
-            'name' => 'nullable|string|max:255',
-            'nim' => 'nullable|string|max:50',
-            'university' => 'nullable|string|max:255',
-            'major' => 'nullable|string|max:255',
-            'phone' => 'nullable|string|max:20',
-            'ktp_number' => 'nullable|regex:/^[0-9]{16}$/',
-        ], [
-            'ktp_number.regex' => 'NIK (No.KTP) harus terdiri dari 16 digit angka.',
-        ]);
-        
+
+        try {
+            $request->validate([
+                'name' => 'nullable|string|max:255',
+                'nim' => 'nullable|string|max:50',
+                'university' => 'nullable|string|max:255',
+                'major' => 'nullable|string|max:255',
+                'phone' => 'nullable|string|max:20',
+                'ktp_number' => 'nullable|regex:/^[0-9]{0,16}$/',
+            ], [
+                'ktp_number.regex' => 'NIK (No.KTP) harus terdiri dari maksimal 16 digit angka.',
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => $e->validator->errors()->first()
+                ], 422);
+            }
+            throw $e;
+        }
+
         $user->update([
             'name' => $request->name ?? $user->name,
             'nim' => $request->nim ?? $user->nim,
@@ -410,7 +445,14 @@ class DashboardController extends Controller
             'phone' => $request->phone ?? $user->phone,
             'ktp_number' => $request->ktp_number ?? $user->ktp_number,
         ]);
-        
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Data diri berhasil disimpan!'
+            ]);
+        }
+
         return back()->with('success', 'Data diri berhasil diperbarui!');
     }
 
@@ -529,7 +571,7 @@ class DashboardController extends Controller
             ->where('status', 'pending')
             ->latest()
             ->first();
-        
+
         // Jika belum ada application, buat baru
         if (!$application) {
             $application = InternshipApplication::create([
@@ -537,22 +579,84 @@ class DashboardController extends Controller
                 'status' => 'pending',
             ]);
         }
-        
-        $request->validate([
-            'start_date' => 'required|date|after_or_equal:today',
-            'end_date' => 'required|date|after:start_date',
-        ], [
-            'start_date.required' => 'Tanggal mulai magang wajib diisi.',
-            'start_date.after_or_equal' => 'Tanggal mulai magang tidak boleh di masa lalu.',
-            'end_date.required' => 'Tanggal selesai magang wajib diisi.',
-            'end_date.after' => 'Tanggal selesai magang harus setelah tanggal mulai.',
-        ]);
-        
+
+        try {
+            $request->validate([
+                'start_date' => 'required|date|after_or_equal:today',
+                'end_date' => 'required|date|after:start_date',
+            ], [
+                'start_date.required' => 'Tanggal mulai magang wajib diisi.',
+                'start_date.after_or_equal' => 'Tanggal mulai magang tidak boleh di masa lalu.',
+                'end_date.required' => 'Tanggal selesai magang wajib diisi.',
+                'end_date.after' => 'Tanggal selesai magang harus setelah tanggal mulai.',
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => $e->validator->errors()->first()
+                ], 422);
+            }
+            throw $e;
+        }
+
         $application->start_date = $request->start_date;
         $application->end_date = $request->end_date;
         $application->save();
-        
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Jadwal magang berhasil disimpan!'
+            ]);
+        }
+
         return back()->with('success', 'Waktu magang berhasil disimpan!');
+    }
+
+    /**
+     * Update field of interest selection.
+     */
+    public function updateFieldOfInterest(Request $request)
+    {
+        $user = Auth::user();
+        $application = $user->internshipApplications()
+            ->where('status', 'pending')
+            ->latest()
+            ->first();
+
+        if (!$application) {
+            $application = InternshipApplication::create([
+                'user_id' => $user->id,
+                'status' => 'pending',
+            ]);
+        }
+
+        try {
+            $request->validate([
+                'field_of_interest_id' => 'required|exists:field_of_interests,id',
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => $e->validator->errors()->first()
+                ], 422);
+            }
+            throw $e;
+        }
+
+        $application->field_of_interest_id = $request->field_of_interest_id;
+        $application->save();
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Bidang minat berhasil disimpan!'
+            ]);
+        }
+
+        return back()->with('success', 'Bidang minat berhasil disimpan!');
     }
 
     /**
@@ -627,5 +731,75 @@ class DashboardController extends Controller
         $user->save();
 
         return response()->json(['success' => true]);
+    }
+
+    /**
+     * Upload profile picture (optional).
+     */
+    public function uploadProfilePicture(Request $request)
+    {
+        $user = Auth::user();
+
+        try {
+            $request->validate([
+                'profile_picture' => 'required|image|mimes:jpg,jpeg,png|max:2048',
+            ], [
+                'profile_picture.required' => 'File foto profil harus dipilih.',
+                'profile_picture.image' => 'File harus berupa gambar.',
+                'profile_picture.mimes' => 'Format file harus JPG, JPEG, atau PNG.',
+                'profile_picture.max' => 'Ukuran file maksimal 2MB.',
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => $e->validator->errors()->first()
+                ], 422);
+            }
+            throw $e;
+        }
+
+        // Hapus foto profil lama jika ada
+        if ($user->profile_picture) {
+            Storage::disk('public')->delete($user->profile_picture);
+        }
+
+        // Simpan foto profil baru
+        $path = $request->file('profile_picture')->store('profile-pictures', 'public');
+        $user->profile_picture = $path;
+        $user->save();
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Foto profil berhasil diunggah!',
+                'path' => asset('storage/' . $path)
+            ]);
+        }
+
+        return back()->with('success', 'Foto profil berhasil diunggah!');
+    }
+
+    /**
+     * Remove profile picture.
+     */
+    public function removeProfilePicture(Request $request)
+    {
+        $user = Auth::user();
+
+        if ($user->profile_picture) {
+            Storage::disk('public')->delete($user->profile_picture);
+            $user->profile_picture = null;
+            $user->save();
+        }
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Foto profil berhasil dihapus!'
+            ]);
+        }
+
+        return back()->with('success', 'Foto profil berhasil dihapus!');
     }
 }

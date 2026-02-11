@@ -1,550 +1,178 @@
 @extends('layouts.app')
 
-@section('title', 'Login - PT Telkom Indonesia')
-
-@push('styles')
-<style>
-:root {
-    --telkom-red: #EE2E24;
-    --telkom-red-bright: #EE2B24;
-    --telkom-red-pure: #F60000;
-    --telkom-black: #000000;
-    --telkom-gray: #AAA5A6;
-    --gradient-primary: linear-gradient(135deg, #EE2E24 0%, #F60000 100%);
-    --gradient-secondary: linear-gradient(135deg, #000000 0%, #AAA5A6 100%);
-}
-
-.auth-container {
-    min-height: 100vh;
-    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 2rem 0;
-}
-
-.auth-card {
-    background: white;
-    border-radius: 20px;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
-    overflow: hidden;
-    max-width: 900px;
-    width: 100%;
-    margin: 0 1rem;
-}
-
-.auth-left {
-    background: var(--gradient-primary);
-    color: white;
-    padding: 3rem;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    text-align: center;
-    position: relative;
-    overflow: hidden;
-}
-
-.auth-left::before {
-    content: '';
-    position: absolute;
-    top: -50%;
-    right: -50%;
-    width: 200%;
-    height: 200%;
-    background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
-    animation: float 6s ease-in-out infinite;
-}
-
-@keyframes float {
-    0%, 100% { transform: translateY(0px) rotate(0deg); }
-    50% { transform: translateY(-20px) rotate(5deg); }
-}
-
-.auth-right {
-    padding: 3rem;
-}
-
-.geometric-shapes-container {
-    width: 180px;
-    height: 180px;
-    position: relative;
-    margin: 0 auto 2rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 2;
-}
-
-.shape {
-    position: absolute;
-    background: rgba(255, 255, 255, 0.15);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-}
-
-.shape-1 {
-    width: 20px;
-    height: 20px;
-    border-radius: 50%;
-    top: 20px;
-    left: 50%;
-    transform: translateX(-50%);
-    animation: floatUpDown 4s ease-in-out infinite;
-}
-
-.shape-2 {
-    width: 15px;
-    height: 15px;
-    border-radius: 3px;
-    top: 50%;
-    right: 20px;
-    transform: translateY(-50%);
-    animation: floatLeftRight 3s ease-in-out infinite;
-}
-
-.shape-3 {
-    width: 25px;
-    height: 25px;
-    border-radius: 50%;
-    bottom: 20px;
-    left: 20px;
-    animation: floatDiagonal 5s ease-in-out infinite;
-}
-
-.shape-4 {
-    width: 18px;
-    height: 18px;
-    border-radius: 3px;
-    bottom: 20px;
-    right: 20px;
-    animation: floatRotate 6s ease-in-out infinite;
-}
-
-.shape-5 {
-    width: 12px;
-    height: 12px;
-    border-radius: 50%;
-    top: 30%;
-    left: 20px;
-    animation: floatPulse 4.5s ease-in-out infinite;
-}
-
-.shape-6 {
-    width: 16px;
-    height: 16px;
-    border-radius: 3px;
-    top: 30%;
-    right: 20px;
-    animation: floatWave 3.5s ease-in-out infinite;
-}
-
-.center-circle {
-    width: 60px;
-    height: 60px;
-    background: rgba(255, 255, 255, 0.25);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    backdrop-filter: blur(15px);
-    border: 2px solid rgba(255, 255, 255, 0.4);
-    color: white;
-    font-size: 24px;
-    animation: centerPulse 2s ease-in-out infinite;
-    box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
-}
-
-@keyframes floatUpDown {
-    0%, 100% { transform: translateX(-50%) translateY(0px); }
-    50% { transform: translateX(-50%) translateY(-15px); }
-}
-
-@keyframes floatLeftRight {
-    0%, 100% { transform: translateY(-50%) translateX(0px); }
-    50% { transform: translateY(-50%) translateX(-10px); }
-}
-
-@keyframes floatDiagonal {
-    0%, 100% { transform: translate(0px, 0px) rotate(0deg); }
-    50% { transform: translate(10px, -10px) rotate(180deg); }
-}
-
-@keyframes floatRotate {
-    0%, 100% { transform: rotate(0deg) scale(1); }
-    50% { transform: rotate(180deg) scale(1.2); }
-}
-
-@keyframes floatPulse {
-    0%, 100% { transform: scale(1); opacity: 0.7; }
-    50% { transform: scale(1.5); opacity: 1; }
-}
-
-@keyframes floatWave {
-    0%, 100% { transform: translateY(0px) rotate(0deg); }
-    25% { transform: translateY(-8px) rotate(90deg); }
-    75% { transform: translateY(8px) rotate(270deg); }
-}
-
-@keyframes centerPulse {
-    0%, 100% { transform: scale(1); box-shadow: 0 0 20px rgba(255, 255, 255, 0.3); }
-    50% { transform: scale(1.1); box-shadow: 0 0 30px rgba(255, 255, 255, 0.5); }
-}
-
-.auth-title {
-    font-size: 2.5rem;
-    font-weight: 700;
-    margin-bottom: 1rem;
-    position: relative;
-    z-index: 2;
-}
-
-.auth-subtitle {
-    font-size: 1.1rem;
-    opacity: 0.9;
-    margin-bottom: 2rem;
-    position: relative;
-    z-index: 2;
-}
-
-.form-floating {
-    margin-bottom: 1.5rem;
-}
-
-.form-floating > .form-control {
-    border: 2px solid #e9ecef;
-    border-radius: 12px;
-    padding: 1rem 0.75rem;
-    font-size: 1rem;
-    transition: all 0.3s ease;
-}
-
-.form-floating > .form-control:focus {
-    border-color: var(--telkom-red);
-    box-shadow: 0 0 0 0.2rem rgba(238, 46, 36, 0.25);
-}
-
-.form-floating > label {
-    color: #6c757d;
-    font-weight: 500;
-}
-
-.btn-login {
-    background: var(--gradient-primary);
-    border: none;
-    border-radius: 12px;
-    padding: 1rem 2rem;
-    font-size: 1.1rem;
-    font-weight: 600;
-    color: white;
-    transition: all 0.3s ease;
-    width: 100%;
-    position: relative;
-    overflow: hidden;
-}
-
-.btn-login::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-    transition: left 0.5s;
-}
-
-.btn-login:hover::before {
-    left: 100%;
-}
-
-.btn-login:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 10px 25px rgba(238, 46, 36, 0.3);
-}
-
-.btn-login:active {
-    transform: translateY(0);
-}
-
-.feature-list {
-    list-style: none;
-    padding: 0;
-    margin: 2rem 0;
-}
-
-.feature-list li {
-    padding: 0.5rem 0;
-    display: flex;
-    align-items: center;
-    position: relative;
-    z-index: 2;
-}
-
-.feature-list li i {
-    margin-right: 1rem;
-    font-size: 1.2rem;
-    color: rgba(255, 255, 255, 0.9);
-}
-
-.link-primary {
-    color: var(--telkom-red) !important;
-    text-decoration: none;
-    font-weight: 600;
-    transition: all 0.3s ease;
-}
-
-.link-primary:hover {
-    color: var(--telkom-red-pure) !important;
-    text-decoration: underline;
-}
-
-.floating-elements {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    overflow: hidden;
-    z-index: 1;
-}
-
-.floating-circle {
-    position: absolute;
-    border-radius: 50%;
-    background: rgba(255, 255, 255, 0.1);
-    animation: float 8s ease-in-out infinite;
-}
-
-.floating-circle:nth-child(1) {
-    width: 80px;
-    height: 80px;
-    top: 20%;
-    left: 10%;
-    animation-delay: 0s;
-}
-
-.floating-circle:nth-child(2) {
-    width: 120px;
-    height: 120px;
-    top: 60%;
-    right: 15%;
-    animation-delay: 2s;
-}
-
-.floating-circle:nth-child(3) {
-    width: 60px;
-    height: 60px;
-    top: 40%;
-    left: 20%;
-    animation-delay: 4s;
-}
-
-@media (max-width: 768px) {
-    .auth-container {
-        padding: 1rem 0;
-    }
-    
-    .auth-card {
-        margin: 0 0.5rem;
-    }
-    
-    .auth-left {
-        padding: 2rem;
-    }
-    
-    .auth-right {
-        padding: 2rem;
-    }
-    
-    .auth-title {
-        font-size: 2rem;
-    }
-    
-    .logo-container {
-        width: 100px;
-        height: 100px;
-    }
-    
-    .logo-img {
-        width: 60px;
-        height: 60px;
-    }
-}
-</style>
-@endpush
+@section('title', 'Masuk - Sistem Magang PT Telkom Indonesia')
 
 @section('content')
-<div class="auth-container">
-    <div class="auth-card">
-        <div class="row g-0">
-            <!-- Left Side - Branding -->
-            <div class="col-lg-5 auth-left">
-                <div class="floating-elements">
-                    <div class="floating-circle"></div>
-                    <div class="floating-circle"></div>
-                    <div class="floating-circle"></div>
-                </div>
-                
-                <div class="geometric-shapes-container">
-                    <div class="shape shape-1"></div>
-                    <div class="shape shape-2"></div>
-                    <div class="shape shape-3"></div>
-                    <div class="shape shape-4"></div>
-                    <div class="shape shape-5"></div>
-                    <div class="shape shape-6"></div>
-                    <div class="center-circle">
-                        <i class="fas fa-sign-in-alt"></i>
+<div class="auth-page">
+    <div class="auth-wrapper">
+        <!-- Left Panel - Illustration -->
+        <div class="auth-panel-left">
+            <div class="auth-panel-content">
+                <div class="auth-illustration">
+                    <div class="illustration-circle">
+                        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/>
+                            <polyline points="10 17 15 12 10 7"/>
+                            <line x1="15" y1="12" x2="3" y2="12"/>
+                        </svg>
+                    </div>
+                    <div class="floating-shapes">
+                        <div class="shape shape-1"></div>
+                        <div class="shape shape-2"></div>
+                        <div class="shape shape-3"></div>
                     </div>
                 </div>
-                
-                <h1 class="auth-title">Selamat Datang</h1>
-                <p class="auth-subtitle">Masuk ke akun Anda untuk mengakses program magang PT Telkom Indonesia</p>
-                
-                <ul class="feature-list">
-                    <li>
-                        <i class="fas fa-graduation-cap"></i>
-                        <span>Program Magang Berkualitas</span>
-                    </li>
-                    <li>
-                        <i class="fas fa-users"></i>
-                        <span>Mentoring Profesional</span>
-                    </li>
-                    <li>
-                        <i class="fas fa-certificate"></i>
-                        <span>Sertifikat Resmi</span>
-                    </li>
-                    <li>
-                        <i class="fas fa-network-wired"></i>
-                        <span>Jaringan Luas</span>
-                    </li>
-                </ul>
-            </div>
-            
-            <!-- Right Side - Login Form -->
-            <div class="col-lg-7 auth-right">
-                <div class="text-center mb-4">
-                    <h2 class="fw-bold mb-2" style="color: var(--telkom-red);">Login</h2>
-                    <p class="text-muted">Masuk ke akun Anda</p>
-                </div>
-
-                @if($errors->any())
-                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                        <i class="fas fa-exclamation-triangle me-2"></i>
-                        <strong>Login Gagal!</strong> Periksa kembali username/email dan password Anda.
-                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                <h2 class="auth-panel-title">Selamat Datang Kembali</h2>
+                <p class="auth-panel-subtitle">Masuk untuk melanjutkan perjalanan magang Anda di PT Telkom Indonesia</p>
+                <div class="auth-features">
+                    <div class="auth-feature">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                            <polyline points="22 4 12 14.01 9 11.01"/>
+                        </svg>
+                        <span>Tracking Pengajuan Real-time</span>
                     </div>
-                @endif
-
-                <!-- Form dengan autocomplete="off" dan data-lpignore -->
-                <form method="POST" action="{{ route('login') }}" autocomplete="off" data-lpignore="true">
-                    @csrf
-
-                    <!-- Hidden input untuk mengelabui browser -->
-                    <input type="text" style="display:none;">
-                    <input type="password" style="display:none;">
-
-                    <div class="form-floating">
-                        <input type="text" 
-                               class="form-control @error('username') is-invalid @enderror" 
-                               id="username" 
-                               name="username" 
-                               value="{{ old('username') }}" 
-                               placeholder="Username atau Email"
-                               required 
-                               autofocus
-                               autocomplete="off"
-                               data-lpignore="true">
-                        <label for="username">
-                            <i class="fas fa-user me-2"></i>Username atau Email
-                        </label>
-                        @error('username')
-                            <div class="invalid-feedback">
-                                {{ $message }}
-                            </div>
-                        @enderror
+                    <div class="auth-feature">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                            <polyline points="22 4 12 14.01 9 11.01"/>
+                        </svg>
+                        <span>Komunikasi dengan Mentor</span>
                     </div>
-
-                    <div class="form-floating">
-                        <input type="password" 
-                               class="form-control @error('password') is-invalid @enderror" 
-                               id="password" 
-                               name="password" 
-                               placeholder="Password"
-                               required
-                               autocomplete="new-password"
-                               data-lpignore="true">
-                        <label for="password">
-                            <i class="fas fa-lock me-2"></i>Password
-                        </label>
-                        @error('password')
-                            <div class="invalid-feedback">
-                                {{ $message }}
-                            </div>
-                        @enderror
-                    </div>
-
-                    <div class="d-grid mb-4">
-                        <button type="submit" class="btn btn-login">
-                            <i class="fas fa-sign-in-alt me-2"></i>Masuk
-                        </button>
-                    </div>
-                </form>
-
-                <div class="text-center">
-                    <p class="mb-0">Belum punya akun? 
-                        <a href="{{ route('register') }}" class="link-primary">Daftar di sini</a>
-                    </p>
-                    
-                    <div class="mt-4">
-                        <div class="position-relative">
-                            <hr>
-                            <span class="position-absolute top-50 start-50 translate-middle bg-white px-3 text-muted">atau</span>
-                        </div>
-                        
-                        <div class="mt-4">
-                            <button type="button" class="btn btn-outline-danger btn-lg w-100" onclick="loginWithGoogle()">
-                                <i class="fab fa-google me-2"></i>Login dengan Google
-                            </button>
-                            <p class="text-muted mt-2 mb-0" style="font-size: 0.875rem;">
-                                Email dan password akan terisi otomatis
-                            </p>
-                        </div>
+                    <div class="auth-feature">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                            <polyline points="22 4 12 14.01 9 11.01"/>
+                        </svg>
+                        <span>Kelola Dokumen & Tugas</span>
                     </div>
                 </div>
             </div>
         </div>
+
+        <!-- Right Panel - Form -->
+        <div class="auth-panel-right">
+            <div class="auth-form-wrapper">
+                <!-- Logo -->
+                <a href="{{ route('home') }}" class="auth-logo">
+                    <img src="{{ asset('image/telkom-logo.png') }}" alt="Telkom" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                    <div class="auth-logo-fallback" style="display: none;">TELKOM</div>
+                </a>
+
+                <!-- Header -->
+                <div class="auth-header">
+                    <h1 class="auth-title">Masuk</h1>
+                    <p class="auth-subtitle">Masukkan kredensial Anda untuk mengakses akun</p>
+                </div>
+
+                <!-- Error Alert -->
+                @if($errors->any())
+                <div class="auth-alert auth-alert-error">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"/>
+                        <line x1="12" y1="8" x2="12" y2="12"/>
+                        <line x1="12" y1="16" x2="12.01" y2="16"/>
+                    </svg>
+                    <span>Username/email atau password salah. Silakan coba lagi.</span>
+                </div>
+                @endif
+
+                <!-- Login Form -->
+                <form method="POST" action="{{ route('login') }}" class="auth-form" autocomplete="off">
+                    @csrf
+
+                    <div class="form-group">
+                        <label for="username" class="form-label">Username atau Email</label>
+                        <div class="input-wrapper">
+                            <svg class="input-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                                <circle cx="12" cy="7" r="4"/>
+                            </svg>
+                            <input type="text"
+                                   id="username"
+                                   name="username"
+                                   class="form-input @error('username') input-error @enderror"
+                                   value="{{ old('username') }}"
+                                   placeholder="Masukkan username atau email"
+                                   required
+                                   autofocus>
+                        </div>
+                        @error('username')
+                        <span class="form-error">{{ $message }}</span>
+                        @enderror
+                    </div>
+
+                    <div class="form-group">
+                        <label for="password" class="form-label">Password</label>
+                        <div class="input-wrapper">
+                            <svg class="input-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                                <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                            </svg>
+                            <input type="password"
+                                   id="password"
+                                   name="password"
+                                   class="form-input @error('password') input-error @enderror"
+                                   placeholder="Masukkan password"
+                                   required>
+                            <button type="button" class="password-toggle" onclick="togglePassword()">
+                                <svg class="eye-open" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                                    <circle cx="12" cy="12" r="3"/>
+                                </svg>
+                                <svg class="eye-closed" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: none;">
+                                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
+                                    <line x1="1" y1="1" x2="23" y2="23"/>
+                                </svg>
+                            </button>
+                        </div>
+                        @error('password')
+                        <span class="form-error">{{ $message }}</span>
+                        @enderror
+                    </div>
+
+                    <button type="submit" class="btn-auth-primary">
+                        <span>Masuk</span>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M5 12h14M12 5l7 7-7 7"/>
+                        </svg>
+                    </button>
+                </form>
+
+                <!-- Footer -->
+                <div class="auth-footer">
+                    <p>Belum punya akun? <a href="{{ route('register') }}" class="auth-link">Daftar sekarang</a></p>
+                </div>
+
+                <!-- Back to Home -->
+                <a href="{{ route('home') }}" class="back-to-home">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M19 12H5M12 19l-7-7 7-7"/>
+                    </svg>
+                    Kembali ke Beranda
+                </a>
+            </div>
+        </div>
     </div>
 </div>
+@endsection
 
+@push('scripts')
 <script>
-// Mencegah auto-fill saat halaman dimuat
-document.addEventListener('DOMContentLoaded', function() {
-    const usernameField = document.getElementById('username');
-    const passwordField = document.getElementById('password');
-    
-    // Kosongkan field setelah halaman load
-    setTimeout(function() {
-        usernameField.value = '';
-        passwordField.value = '';
-        
-        // Pastikan browser tidak menyimpan nilai
-        usernameField.setAttribute('autocomplete', 'off');
-        passwordField.setAttribute('autocomplete', 'new-password');
-    }, 50);
-});
+function togglePassword() {
+    const passwordInput = document.getElementById('password');
+    const eyeOpen = document.querySelector('.eye-open');
+    const eyeClosed = document.querySelector('.eye-closed');
 
-function loginWithGoogle() {
-    // Simulasi login dengan Google
-    const button = event.target;
-    const originalText = button.innerHTML;
-    button.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Memproses...';
-    button.disabled = true;
-    
-    setTimeout(() => {
-        button.innerHTML = originalText;
-        button.disabled = false;
-        alert('Fitur login dengan Google akan segera tersedia!\n\nUntuk saat ini, silakan gunakan form login biasa.');
-    }, 2000);
+    if (passwordInput.type === 'password') {
+        passwordInput.type = 'text';
+        eyeOpen.style.display = 'none';
+        eyeClosed.style.display = 'block';
+    } else {
+        passwordInput.type = 'password';
+        eyeOpen.style.display = 'block';
+        eyeClosed.style.display = 'none';
+    }
 }
 </script>
-@endsection
+@endpush

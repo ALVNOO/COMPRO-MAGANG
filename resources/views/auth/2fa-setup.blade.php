@@ -1,264 +1,440 @@
 @extends('layouts.app')
 
+@section('title', 'Setup 2FA - Sistem Magang PT Telkom Indonesia')
+
 @section('content')
-<div class="container-fluid py-4" style="max-width: 1200px;">
-    <div class="row justify-content-center">
-        <div class="col-lg-8 col-xl-7">
-            
-            <!-- Card dengan border putih dan animasi -->
-            <div class="shadow-lg rounded-4 hover-lift animate-fade-in" style="background: white; overflow: hidden; border: 1px solid rgba(255,255,255,0.3);">
-                
-                <!-- Header -->
-                <div class="text-white text-center py-5 animate-gradient" 
-                     style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-bottom: 1px solid rgba(255,255,255,0.3);">
-                    <div class="d-flex align-items-center justify-content-center mb-3">
-                        <i class="bi bi-shield-lock-fill fs-1 me-4"></i>
-                        <h3 class="mb-0 fw-bold display-6" style="color: white;">Secure Your Account</h3>
+<div class="auth-page">
+    <div class="auth-wrapper">
+        <!-- Left Panel - Illustration -->
+        <div class="auth-panel-left">
+            <div class="auth-panel-content">
+                <div class="auth-illustration">
+                    <div class="illustration-circle">
+                        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                            <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                            <circle cx="12" cy="16" r="1"/>
+                        </svg>
                     </div>
-                    <p class="mb-0 opacity-75 fs-5" style="color: rgba(255,255,255,0.8);">Setup Two-Factor Authentication</p>
+                    <div class="floating-shapes">
+                        <div class="shape shape-1"></div>
+                        <div class="shape shape-2"></div>
+                        <div class="shape shape-3"></div>
+                    </div>
+                </div>
+                <h2 class="auth-panel-title">Amankan Akun Anda</h2>
+                <p class="auth-panel-subtitle">Aktifkan Two-Factor Authentication untuk perlindungan ekstra pada akun Anda</p>
+                <div class="auth-features">
+                    <div class="auth-feature">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                            <polyline points="22 4 12 14.01 9 11.01"/>
+                        </svg>
+                        <span>Scan QR atau Input Manual</span>
+                    </div>
+                    <div class="auth-feature">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                            <polyline points="22 4 12 14.01 9 11.01"/>
+                        </svg>
+                        <span>Kompatibel dengan Semua Authenticator</span>
+                    </div>
+                    <div class="auth-feature">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                            <polyline points="22 4 12 14.01 9 11.01"/>
+                        </svg>
+                        <span>Proses Cepat & Mudah</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Panel - Form -->
+        <div class="auth-panel-right auth-panel-right-scroll">
+            <div class="auth-form-wrapper auth-form-wrapper-wide">
+                <!-- Logo -->
+                <a href="{{ route('home') }}" class="auth-logo">
+                    <img src="{{ asset('image/telkom-logo.png') }}" alt="Telkom" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                    <div class="auth-logo-fallback" style="display: none;">TELKOM</div>
+                </a>
+
+                <!-- Header -->
+                <div class="auth-header">
+                    <h1 class="auth-title">Setup Two-Factor Authentication</h1>
+                    <p class="auth-subtitle">Ikuti langkah-langkah berikut untuk mengaktifkan 2FA</p>
                 </div>
 
-                <div class="p-6">
-                    
-                    <!-- Status Messages -->
-                    @if(session('info'))
-                        <div class="alert alert-info alert-dismissible fade show mb-4 border-0 shadow-sm animate-slide-down" style="border-left: 4px solid #0dcaf0;">
-                            <i class="bi bi-info-circle-fill me-2"></i>
-                            {{ session('info') }}
-                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                        </div>
-                    @endif
+                <!-- Status Messages -->
+                @if(session('info'))
+                <div class="auth-alert auth-alert-info">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"/>
+                        <line x1="12" y1="16" x2="12" y2="12"/>
+                        <line x1="12" y1="8" x2="12.01" y2="8"/>
+                    </svg>
+                    <span>{{ session('info') }}</span>
+                </div>
+                @endif
 
-                    @if(session('success'))
-                        <div class="alert alert-success alert-dismissible fade show mb-4 border-0 shadow-sm animate-slide-down" style="border-left: 4px solid #198754;">
-                            <i class="bi bi-check-circle-fill me-2"></i>
-                            {{ session('success') }}
-                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                        </div>
-                    @endif
+                @if($errors->any())
+                <div class="auth-alert auth-alert-error">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"/>
+                        <line x1="12" y1="8" x2="12" y2="12"/>
+                        <line x1="12" y1="16" x2="12.01" y2="16"/>
+                    </svg>
+                    <span>Kode verifikasi tidak valid. Silakan coba lagi.</span>
+                </div>
+                @endif
 
-                    @if($errors->any())
-                        <div class="alert alert-danger alert-dismissible fade show mb-4 border-0 shadow-sm animate-slide-down" style="border-left: 4px solid #dc3545;">
-                            <i class="bi bi-exclamation-triangle-fill me-2"></i>
-                            <strong>Oops!</strong> Please fix the following:
-                            <ul class="mb-0 mt-3">
-                                @foreach($errors->all() as $error)
-                                    <li class="mb-1">{{ $error }}</li>
-                                @endforeach
-                            </ul>
-                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                <!-- Step 1: QR Code -->
+                <div class="setup-step">
+                    <div class="setup-step-header">
+                        <div class="setup-step-number">1</div>
+                        <div class="setup-step-title">
+                            <strong>Scan QR Code</strong>
+                            <span>Buka aplikasi authenticator dan scan QR code berikut</span>
                         </div>
-                    @endif
-
-                    <!-- Instruction -->
-                    <div class="text-center mb-5 animate-fade-in-up">
-                        <div class="mb-4">
-                            <i class="bi bi-qr-code fs-1 text-primary p-3 bg-light rounded-circle"></i>
-                        </div>
-                        <h5 class="fw-bold text-dark mb-3">Scan QR Code dengan Authenticator App</h5>
-                        <p class="text-muted fs-6">
-                            Gunakan <strong>Google Authenticator</strong>, <strong>Authy</strong>, atau <strong>1Password</strong>
-                        </p>
                     </div>
-
-                    <!-- QR Code - Subtle animation -->
-                    <div class="text-center mb-5 animate-fade-in-up">
-                        <div class="p-5 bg-light rounded-4 d-inline-block qr-wrapper">
-                            {!! QrCode::size(320)->margin(0)->generate($qrCodeUrl) !!}
+                    <div class="setup-step-content">
+                        <div class="qr-code-wrapper">
+                            {!! QrCode::size(180)->margin(0)->generate($qrCodeUrl) !!}
                         </div>
-                        
-                        <!-- Secret Key Section -->
-                        <div class="mt-5">
-                            <div class="d-flex justify-content-center align-items-center gap-3 flex-wrap">
-                                <span class="badge bg-dark px-4 py-3 fs-6">
-                                    <i class="bi bi-key me-2"></i>
-                                    Secret Key:
-                                </span>
-                                <code class="user-select-all bg-dark text-light p-3 rounded fs-6" id="secretKey" style="max-width: 350px; overflow-x: auto;">
-                                    {{ auth()->user()->two_factor_secret }}
-                                </code>
-                                <button class="btn btn-lg btn-outline-primary px-4 btn-ripple" onclick="copySecret()" title="Copy to clipboard">
-                                    <i class="bi bi-clipboard fs-5"></i> Copy
-                                </button>
+                        <div class="qr-apps">
+                            <span class="qr-apps-label">Aplikasi yang didukung:</span>
+                            <div class="qr-apps-list">
+                                <span class="qr-app-badge">Google Authenticator</span>
+                                <span class="qr-app-badge">Authy</span>
+                                <span class="qr-app-badge">1Password</span>
                             </div>
-                            <small class="text-muted d-block mt-3 fs-6">
-                                <i class="bi bi-info-circle"></i> 
-                                Klik tombol copy jika scan QR gagal
-                            </small>
                         </div>
                     </div>
+                </div>
 
-                    <!-- Verification Form -->
-                    <div class="bg-light p-5 rounded-4 animate-fade-in-up" style="border: none;">
-                        <form method="POST" action="{{ route('2fa.enable') }}" id="verifyForm">
+                <!-- Step 2: Manual Entry -->
+                <div class="setup-step">
+                    <div class="setup-step-header">
+                        <div class="setup-step-number">2</div>
+                        <div class="setup-step-title">
+                            <strong>Atau Input Manual</strong>
+                            <span>Jika scan QR gagal, masukkan kode ini secara manual</span>
+                        </div>
+                    </div>
+                    <div class="setup-step-content">
+                        <div class="secret-key-wrapper">
+                            <code class="secret-key" id="secretKey">{{ auth()->user()->two_factor_secret }}</code>
+                            <button type="button" class="btn-copy" onclick="copySecret()" id="copyBtn" title="Copy to clipboard">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                                </svg>
+                                <span>Copy</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 3: Verify -->
+                <div class="setup-step">
+                    <div class="setup-step-header">
+                        <div class="setup-step-number">3</div>
+                        <div class="setup-step-title">
+                            <strong>Verifikasi Kode</strong>
+                            <span>Masukkan kode 6 digit dari aplikasi authenticator</span>
+                        </div>
+                    </div>
+                    <div class="setup-step-content">
+                        <form method="POST" action="{{ route('2fa.enable') }}" class="auth-form" id="verifyForm">
                             @csrf
-                            
-                            <div class="mb-4 text-center">
-                                <label for="code" class="form-label fw-bold fs-5 mb-3">
-                                    <i class="bi bi-keyboard"></i> 
-                                    Masukkan 6-Digit Code
-                                </label>
-                                
-                                <div class="code-inputs d-flex justify-content-center">
-                                    <input type="text" name="code" id="code" 
-                                           class="form-control text-center fw-bold py-4 input-animated" 
-                                           placeholder="000000" 
-                                           maxlength="6" 
-                                           required 
-                                           autofocus
-                                           style="letter-spacing: 12px; font-size: 36px; width: 320px; height: 80px;">
-                                </div>
-                                
-                                <!-- Timer dengan progress bar -->
-                                <div class="mt-4">
-                                    <div class="progress" style="height: 4px; max-width: 200px; margin: 0 auto;">
-                                        <div class="progress-bar bg-danger" id="timerProgress" style="width: 100%;"></div>
-                                    </div>
+
+                            <div class="form-group">
+                                <div class="input-wrapper input-wrapper-code">
+                                    <svg class="input-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                                        <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                                    </svg>
+                                    <input type="text"
+                                           id="code"
+                                           name="code"
+                                           class="form-input form-input-code"
+                                           placeholder="000000"
+                                           maxlength="6"
+                                           inputmode="numeric"
+                                           autocomplete="one-time-code"
+                                           required>
                                 </div>
                             </div>
 
-                            <!-- Button dengan ripple effect -->
-                            <div class="d-grid">
-                                <button type="submit" class="btn btn-success btn-lg fw-bold py-3 fs-5 btn-ripple">
-                                    <i class="bi bi-shield-check me-2"></i> 
-                                    AKTIFKAN 2FA SEKARANG
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-
-                    <!-- Logout Option -->
-                    <div class="text-center mt-4 animate-fade-in-up">
-                        <form action="{{ route('logout') }}" method="POST" class="d-inline">
-                            @csrf
-                            <button type="submit" class="btn btn-link text-danger text-decoration-none fs-6 btn-ripple">
-                                <i class="bi bi-box-arrow-right me-2"></i> 
-                                Logout & Setup Nanti
+                            <button type="submit" class="btn-auth-success" id="submitBtn">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                                    <polyline points="9 12 12 15 16 10"/>
+                                </svg>
+                                <span>Aktifkan 2FA</span>
                             </button>
                         </form>
                     </div>
-
                 </div>
-                
-                <!-- Footer dengan border putih -->
-                <div class="text-center py-3" style="border-top: 1px solid rgba(255,255,255,0.3); background: white;">
-                    <small class="text-muted">
-                        <i class="bi bi-shield-check"></i> 
-                        Keamanan akun Anda adalah prioritas kami
-                    </small>
+
+                <!-- Skip Option -->
+                <div class="auth-footer">
+                    <form action="{{ route('logout') }}" method="POST" class="d-inline">
+                        @csrf
+                        <button type="submit" class="btn-skip">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M19 12H5M12 19l-7-7 7-7"/>
+                            </svg>
+                            Lewati untuk saat ini
+                        </button>
+                    </form>
                 </div>
             </div>
         </div>
     </div>
 </div>
+@endsection
 
 @push('styles')
 <style>
-    /* Animasi fade-in untuk elemen */
-    .animate-fade-in {
-        animation: fadeIn 0.8s ease-out;
-    }
-    
-    .animate-fade-in-up {
-        animation: fadeInUp 0.8s ease-out;
-    }
-    
-    .animate-slide-down {
-        animation: slideDown 0.5s ease-out;
-    }
-    
-    @keyframes fadeIn {
-        from { opacity: 0; }
-        to { opacity: 1; }
-    }
-    
-    @keyframes fadeInUp {
-        from { opacity: 0; transform: translateY(20px); }
-        to { opacity: 1; transform: translateY(0); }
-    }
-    
-    @keyframes slideDown {
-        from { opacity: 0; transform: translateY(-10px); }
-        to { opacity: 1; transform: translateY(0); }
-    }
-    
-    /* Gradient animation untuk header */
-    .animate-gradient {
-        background-size: 200% 200%;
-        animation: gradientShift 8s ease infinite;
-    }
-    
-    @keyframes gradientShift {
-        0% { background-position: 0% 50%; }
-        50% { background-position: 100% 50%; }
-        100% { background-position: 0% 50%; }
-    }
-    
-    /* Hover effect card */
-    .hover-lift {
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
-    }
-    .hover-lift:hover {
-        transform: translateY(-8px);
-        box-shadow: 0 20px 40px rgba(0,0,0,0.15) !important;
-    }
-
-    /* QR Code hover - Subtle zoom */
-    .qr-wrapper {
-        transition: transform 0.5s ease, box-shadow 0.5s ease;
-    }
-    .qr-wrapper:hover {
-        transform: scale(1.03);
-        box-shadow: 0 8px 25px rgba(0,0,0,0.1);
-    }
-
-    /* Input focus animation */
-    .input-animated {
-        transition: all 0.3s ease;
-    }
-    .input-animated:focus {
-        box-shadow: 0 0 0 0.25rem rgba(102, 126, 234, 0.25);
-        border-color: #667eea;
-        transform: scale(1.02);
-    }
-
-    /* Ripple effect untuk button */
-    .btn-ripple {
-        position: relative;
+    /* Setup Steps */
+    .setup-step {
+        background: #fff;
+        border: 1px solid #e9ecef;
+        border-radius: 12px;
+        margin-bottom: 16px;
         overflow: hidden;
-        transition: all 0.3s ease;
-    }
-    .btn-ripple::before {
-        content: '';
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        width: 0;
-        height: 0;
-        border-radius: 50%;
-        background: rgba(255, 255, 255, 0.3);
-        transform: translate(-50%, -50%);
-        transition: width 0.6s, height 0.6s;
-    }
-    .btn-ripple:active::before {
-        width: 300px;
-        height: 300px;
-    }
-    
-    /* Progress bar animation */
-    .progress {
-        animation: progressShrink 30s linear infinite;
-    }
-    
-    @keyframes progressShrink {
-        from { width: 100%; }
-        to { width: 0%; }
     }
 
-    /* Large screen optimizations */
-    @media (min-width: 1200px) {
-        .p-6 {
-            padding: 4rem !important;
+    .setup-step-header {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        padding: 16px;
+        background: linear-gradient(135deg, #f8f9fa 0%, #fff 100%);
+        border-bottom: 1px solid #e9ecef;
+    }
+
+    .setup-step-number {
+        width: 28px;
+        height: 28px;
+        background: linear-gradient(135deg, #EE2E24 0%, #C41E3A 100%);
+        color: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 14px;
+        font-weight: 700;
+        flex-shrink: 0;
+    }
+
+    .setup-step-title {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+    }
+
+    .setup-step-title strong {
+        font-size: 14px;
+        color: #1a1a1a;
+    }
+
+    .setup-step-title span {
+        font-size: 12px;
+        color: #6c757d;
+    }
+
+    .setup-step-content {
+        padding: 16px;
+    }
+
+    /* QR Code */
+    .qr-code-wrapper {
+        display: flex;
+        justify-content: center;
+        padding: 20px;
+        background: #f8f9fa;
+        border-radius: 8px;
+        margin-bottom: 12px;
+    }
+
+    .qr-apps {
+        text-align: center;
+    }
+
+    .qr-apps-label {
+        font-size: 12px;
+        color: #6c757d;
+        display: block;
+        margin-bottom: 8px;
+    }
+
+    .qr-apps-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        justify-content: center;
+    }
+
+    .qr-app-badge {
+        font-size: 11px;
+        padding: 4px 10px;
+        background: #e9ecef;
+        border-radius: 20px;
+        color: #495057;
+    }
+
+    /* Secret Key */
+    .secret-key-wrapper {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        background: #f8f9fa;
+        padding: 8px;
+        border-radius: 8px;
+        border: 1px solid #e9ecef;
+    }
+
+    .secret-key {
+        flex: 1;
+        font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+        font-size: 13px;
+        color: #1a1a1a;
+        background: transparent;
+        padding: 8px 12px;
+        word-break: break-all;
+    }
+
+    .btn-copy {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 14px;
+        background: white;
+        border: 1px solid #dee2e6;
+        border-radius: 6px;
+        color: #495057;
+        font-size: 12px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        flex-shrink: 0;
+    }
+
+    .btn-copy:hover {
+        background: #f8f9fa;
+        border-color: #ced4da;
+    }
+
+    .btn-copy.copied {
+        background: #198754;
+        border-color: #198754;
+        color: white;
+    }
+
+    /* Code Input */
+    .input-wrapper-code {
+        position: relative;
+    }
+
+    .form-input-code {
+        font-size: 24px !important;
+        font-weight: 700 !important;
+        letter-spacing: 8px !important;
+        text-align: center !important;
+        padding: 14px 14px 14px 48px !important;
+        font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace !important;
+    }
+
+    .form-input-code::placeholder {
+        letter-spacing: 8px;
+        color: #ced4da;
+    }
+
+    /* Success Button */
+    .btn-auth-success {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        padding: 14px 24px;
+        background: linear-gradient(135deg, #198754 0%, #157347 100%);
+        border: none;
+        border-radius: 12px;
+        color: white;
+        font-size: 15px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        margin-top: 12px;
+    }
+
+    .btn-auth-success:hover {
+        background: linear-gradient(135deg, #157347 0%, #146c43 100%);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(25, 135, 84, 0.25);
+    }
+
+    .btn-auth-success:active {
+        transform: translateY(0);
+    }
+
+    .btn-auth-success.loading {
+        pointer-events: none;
+        opacity: 0.8;
+    }
+
+    /* Skip Button */
+    .btn-skip {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 0;
+        background: transparent;
+        border: none;
+        color: #6c757d;
+        font-size: 13px;
+        cursor: pointer;
+        transition: color 0.2s ease;
+    }
+
+    .btn-skip:hover {
+        color: #495057;
+    }
+
+    /* Mobile */
+    @media (max-width: 576px) {
+        .setup-step-header {
+            padding: 12px;
+        }
+
+        .setup-step-content {
+            padding: 12px;
+        }
+
+        .qr-code-wrapper {
+            padding: 16px;
+        }
+
+        .secret-key-wrapper {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .secret-key {
+            text-align: center;
+            font-size: 11px;
+        }
+
+        .btn-copy {
+            justify-content: center;
+        }
+
+        .form-input-code {
+            font-size: 20px !important;
+            letter-spacing: 6px !important;
         }
     }
 </style>
@@ -266,84 +442,76 @@
 
 @push('scripts')
 <script>
-// Animasi fade-in berurutan
 document.addEventListener('DOMContentLoaded', function() {
-    const elements = document.querySelectorAll('.animate-fade-in-up');
-    elements.forEach((el, index) => {
-        el.style.animationDelay = `${index * 0.15}s`;
-    });
-    
-    // Auto-focus ke input
     const codeInput = document.getElementById('code');
+    const submitBtn = document.getElementById('submitBtn');
+    const form = document.getElementById('verifyForm');
+
     if (codeInput) {
-        setTimeout(() => codeInput.focus(), 500);
-        
-        // Input animation
+        // Only allow numbers
         codeInput.addEventListener('input', function() {
             this.value = this.value.replace(/[^0-9]/g, '');
+
+            // Auto submit when 6 digits
             if (this.value.length === 6) {
-                document.getElementById('verifyForm').submit();
+                submitBtn.classList.add('loading');
+                submitBtn.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg><span>Mengaktifkan...</span>';
+
+                setTimeout(() => {
+                    form.submit();
+                }, 300);
             }
         });
-    }
-    
-    // Copy secret key animation
-    window.copySecret = function() {
-        const secret = document.getElementById('secretKey').textContent;
-        navigator.clipboard.writeText(secret).then(() => {
-            // Create toast with slide animation
-            const toast = document.createElement('div');
-            toast.className = 'alert alert-success position-fixed top-0 start-50 translate-middle-x mt-3 animate-slide-down';
-            toast.style.zIndex = '9999';
-            toast.style.minWidth = '300px';
-            toast.style.textAlign = 'center';
-            toast.innerHTML = '<i class="bi bi-check-circle-fill me-2"></i> Secret key copied!';
-            document.body.appendChild(toast);
-            
-            setTimeout(() => {
-                toast.style.opacity = '0';
-                toast.style.transform = 'translateY(-20px)';
-                setTimeout(() => toast.remove(), 300);
-            }, 2000);
-        }).catch(() => {
-            // Fallback untuk browser lama
-            window.getSelection().selectAllChildren(document.getElementById('secretKey'));
-            document.execCommand('copy');
+
+        // Handle paste
+        codeInput.addEventListener('paste', function(e) {
+            e.preventDefault();
+            const pastedText = (e.clipboardData || window.clipboardData).getData('text');
+            const numericOnly = pastedText.replace(/[^0-9]/g, '').substring(0, 6);
+            this.value = numericOnly;
+
+            if (numericOnly.length === 6) {
+                submitBtn.classList.add('loading');
+                submitBtn.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg><span>Mengaktifkan...</span>';
+
+                setTimeout(() => {
+                    form.submit();
+                }, 300);
+            }
         });
-    }
-    
-    // Timer dengan progress bar
-    const timerElement = document.getElementById('timer');
-    const progressBar = document.getElementById('timerProgress');
-    if (timerElement && progressBar) {
-        let timeLeft = 30;
-        setInterval(() => {
-            timeLeft--;
-            timerElement.textContent = `${timeLeft} detik`;
-            
-            // Update progress bar
-            const percentage = (timeLeft / 30) * 100;
-            progressBar.style.width = `${percentage}%`;
-            
-            // Warna berubah
-            if (timeLeft <= 10) {
-                timerElement.classList.add('text-danger');
-                progressBar.classList.remove('bg-warning');
-                progressBar.classList.add('bg-danger');
-            } else {
-                timerElement.classList.remove('text-danger');
-                progressBar.classList.remove('bg-danger');
-                progressBar.classList.add('bg-warning');
-            }
-            
-            if (timeLeft <= 0) {
-                timeLeft = 30;
-                progressBar.style.width = '100%';
-            }
-        }, 1000);
     }
 });
+
+// Copy secret key
+function copySecret() {
+    const secret = document.getElementById('secretKey').textContent.trim();
+    const copyBtn = document.getElementById('copyBtn');
+
+    navigator.clipboard.writeText(secret).then(() => {
+        copyBtn.classList.add('copied');
+        copyBtn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg><span>Copied!</span>';
+
+        setTimeout(() => {
+            copyBtn.classList.remove('copied');
+            copyBtn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg><span>Copy</span>';
+        }, 2000);
+    }).catch(() => {
+        // Fallback
+        const textArea = document.createElement('textarea');
+        textArea.value = secret;
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+
+        copyBtn.classList.add('copied');
+        copyBtn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg><span>Copied!</span>';
+
+        setTimeout(() => {
+            copyBtn.classList.remove('copied');
+            copyBtn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg><span>Copy</span>';
+        }, 2000);
+    });
+}
 </script>
 @endpush
-
-@endsection

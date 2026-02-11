@@ -10,6 +10,17 @@ use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\LogbookController;
 
+// New Admin Controllers (refactored)
+use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
+use App\Http\Controllers\Admin\ApplicationController as AdminApplicationController;
+use App\Http\Controllers\Admin\ParticipantController as AdminParticipantController;
+use App\Http\Controllers\Admin\DivisionController as AdminDivisionController;
+use App\Http\Controllers\Admin\MentorController as AdminMentorController;
+use App\Http\Controllers\Admin\ReportController as AdminReportController;
+use App\Http\Controllers\Admin\FieldOfInterestController as AdminFieldOfInterestController;
+use App\Http\Controllers\Admin\RuleController as AdminRuleController;
+use App\Http\Controllers\Admin\LegacyDivisionController as AdminLegacyDivisionController;
+
 // Public routes
 Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/about', [HomeController::class, 'about'])->name('about');
@@ -43,7 +54,10 @@ Route::middleware('auth')->group(function () {
     Route::post('/dashboard/pre-acceptance/profile', [DashboardController::class, 'updateProfile'])->name('dashboard.pre-acceptance.profile');
     Route::post('/dashboard/pre-acceptance/documents', [DashboardController::class, 'uploadDocuments'])->name('dashboard.pre-acceptance.documents');
     Route::post('/dashboard/pre-acceptance/dates', [DashboardController::class, 'updateDates'])->name('dashboard.pre-acceptance.dates');
+    Route::post('/dashboard/pre-acceptance/field', [DashboardController::class, 'updateFieldOfInterest'])->name('dashboard.pre-acceptance.field');
     Route::post('/dashboard/pre-acceptance/complete', [DashboardController::class, 'completeApplication'])->name('dashboard.pre-acceptance.complete');
+    Route::post('/dashboard/pre-acceptance/profile-picture', [DashboardController::class, 'uploadProfilePicture'])->name('dashboard.pre-acceptance.profile-picture');
+    Route::delete('/dashboard/pre-acceptance/profile-picture', [DashboardController::class, 'removeProfilePicture'])->name('dashboard.pre-acceptance.profile-picture.remove');
     Route::get('/dashboard/status', [DashboardController::class, 'status'])->name('dashboard.status');
     Route::post('/dashboard/status/acknowledge', [DashboardController::class, 'acknowledgePersyaratanTambahan'])->name('dashboard.status.acknowledge');
     Route::post('/dashboard/status/upload-additional', [DashboardController::class, 'submitAdditionalDocuments'])->name('dashboard.status.upload-additional');
@@ -123,66 +137,86 @@ Route::middleware(['auth'])->prefix('mentor')->group(function () {
 });
 
 Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () {
-    Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('dashboard');
+    // ==========================================
+    // NEW REFACTORED CONTROLLERS
+    // ==========================================
+
+    // Dashboard
+    Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
+
+    // Attendance & Logbook (using existing controllers)
     Route::get('/attendance', [AttendanceController::class, 'adminIndex'])->name('attendance');
     Route::get('/logbook', [LogbookController::class, 'adminIndex'])->name('logbook');
     Route::get('/logbook/mentors', [LogbookController::class, 'getMentorsByDivision'])->name('logbook.mentors');
-    Route::get('/applications', [AdminController::class, 'applications'])->name('applications');
-    Route::post('/applications/{id}/approve', [AdminController::class, 'approveApplication'])->name('applications.approve');
-    Route::post('/applications/{id}/reject', [AdminController::class, 'rejectApplication'])->name('applications.reject');
-    Route::get('/participants', [AdminController::class, 'participants'])->name('participants');
-    Route::post('/participants/{applicationId}/upload-acceptance-letter', [AdminController::class, 'uploadAcceptanceLetter'])->name('participants.upload-acceptance-letter');
-    Route::get('/participants/{applicationId}/download-assessment-report', [AdminController::class, 'downloadAssessmentReport'])->name('participants.download-assessment-report');
-    Route::post('/participants/{applicationId}/upload-completion-letter', [AdminController::class, 'uploadCompletionLetter'])->name('participants.upload-completion-letter');
-    Route::post('/participants/{userId}/upload-certificate', [AdminController::class, 'uploadCertificate'])->name('participants.upload-certificate');
-    Route::get('/divisions', [AdminController::class, 'divisions'])->name('divisions');
-    Route::get('/mentors', [AdminController::class, 'mentors'])->name('mentors');
-    Route::get('/mentor/{id}', [AdminController::class, 'mentorDetail'])->name('mentor.detail');
 
-    // Direktorat CRUD
-    Route::post('/direktorat', [AdminController::class, 'storeDirektorat'])->name('direktorat.store');
-    Route::put('/direktorat/{id}', [AdminController::class, 'updateDirektorat'])->name('direktorat.update');
-    Route::delete('/direktorat/{id}', [AdminController::class, 'deleteDirektorat'])->name('direktorat.delete');
-    // Subdirektorat CRUD
-    Route::post('/subdirektorat', [AdminController::class, 'storeSubdirektorat'])->name('subdirektorat.store');
-    Route::put('/subdirektorat/{id}', [AdminController::class, 'updateSubdirektorat'])->name('subdirektorat.update');
-    Route::delete('/subdirektorat/{id}', [AdminController::class, 'deleteSubdirektorat'])->name('subdirektorat.delete');
-    // Divisi CRUD
-    Route::post('/divisi', [AdminController::class, 'storeDivisi'])->name('divisi.store');
-    Route::put('/divisi/{id}', [AdminController::class, 'updateDivisi'])->name('divisi.update');
-    Route::delete('/divisi/{id}', [AdminController::class, 'deleteDivisi'])->name('divisi.delete');
-    
-    // Mentor management
-    Route::post('/mentor/{id}/reset-password', [AdminController::class, 'resetMentorPassword'])->name('mentor.reset-password');
-    
-    // Rules management
-    Route::get('/rules', [AdminController::class, 'editRules'])->name('rules.edit');
-    Route::post('/rules', [AdminController::class, 'updateRules'])->name('rules.update');
-    
-    // Field of Interest management
-    Route::get('/fields', [AdminController::class, 'fields'])->name('fields');
-    Route::get('/fields/create', [AdminController::class, 'createField'])->name('fields.create');
-    Route::post('/fields', [AdminController::class, 'storeField'])->name('fields.store');
-    Route::get('/fields/{field}/edit', [AdminController::class, 'editField'])->name('fields.edit');
-    Route::put('/fields/{field}', [AdminController::class, 'updateField'])->name('fields.update');
-    Route::patch('/fields/{field}/toggle', [AdminController::class, 'toggleFieldStatus'])->name('fields.toggle');
-    Route::delete('/fields/{field}', [AdminController::class, 'deleteField'])->name('fields.delete');
-    
-    // Report peserta magang
-    Route::get('/reports', [AdminController::class, 'report'])->name('reports');
-    Route::get('/reports/data', [AdminController::class, 'getReportData'])->name('reports.data');
-    Route::get('/reports/years', [AdminController::class, 'getReportYears'])->name('reports.years');
-    Route::get('/reports/periods', [AdminController::class, 'getReportPeriods'])->name('reports.periods');
-    Route::get('/reports/export/pdf', [AdminController::class, 'exportReportPdf'])->name('reports.export.pdf');
-    Route::get('/reports/export/excel', [AdminController::class, 'exportReportExcel'])->name('reports.export.excel');
-    Route::get('/reports/classifications', [AdminController::class, 'getReportClassifications'])->name('reports.classifications');
+    // Applications
+    Route::get('/applications', [AdminApplicationController::class, 'index'])->name('applications');
+    Route::post('/applications/{id}/approve', [AdminApplicationController::class, 'approve'])->name('applications.approve');
+    Route::post('/applications/{id}/reject', [AdminApplicationController::class, 'reject'])->name('applications.reject');
+    Route::post('/applications/{id}/send-acceptance-letter', [AdminApplicationController::class, 'sendAcceptanceLetter'])->name('applications.send-acceptance-letter');
 
-   // Divisions (Menu BARU) - SATU FILE BLADE
-Route::get('/divisions', [AdminController::class, 'indexDivisions'])->name('divisions.index');
-Route::get('/divisions/create', [AdminController::class, 'createDivision'])->name('divisions.create');
-Route::post('/divisions', [AdminController::class, 'storeDivision'])->name('divisions.store');
-Route::get('/divisions/{id}/edit', [AdminController::class, 'editDivision'])->name('divisions.edit');
-Route::put('/divisions/{id}', [AdminController::class, 'updateDivision'])->name('divisions.update');
-Route::patch('/divisions/{id}/toggle', [AdminController::class, 'toggleDivision'])->name('divisions.toggle');
-Route::delete('/divisions/{id}', [AdminController::class, 'destroyDivision'])->name('divisions.destroy');
+    // Participants
+    Route::get('/participants', [AdminParticipantController::class, 'index'])->name('participants');
+    Route::post('/participants/{applicationId}/upload-acceptance-letter', [AdminParticipantController::class, 'uploadAcceptanceLetter'])->name('participants.upload-acceptance-letter');
+    Route::get('/participants/{applicationId}/download-assessment-report', [AdminParticipantController::class, 'downloadAssessmentReport'])->name('participants.download-assessment-report');
+    Route::post('/participants/{applicationId}/upload-completion-letter', [AdminParticipantController::class, 'uploadCompletionLetter'])->name('participants.upload-completion-letter');
+    Route::post('/participants/{userId}/upload-certificate', [AdminParticipantController::class, 'uploadCertificate'])->name('participants.upload-certificate');
+
+    // Mentors
+    Route::get('/mentors', [AdminMentorController::class, 'index'])->name('mentors');
+    Route::get('/mentor/{id}', [AdminMentorController::class, 'show'])->name('mentor.detail');
+    Route::post('/mentor/{id}/reset-password', [AdminMentorController::class, 'resetPassword'])->name('mentor.reset-password');
+
+    // Rules
+    Route::get('/rules', [AdminRuleController::class, 'edit'])->name('rules.edit');
+    Route::post('/rules', [AdminRuleController::class, 'update'])->name('rules.update');
+
+    // Fields of Interest
+    Route::get('/fields', [AdminFieldOfInterestController::class, 'index'])->name('fields');
+    Route::get('/fields/create', [AdminFieldOfInterestController::class, 'create'])->name('fields.create');
+    Route::post('/fields', [AdminFieldOfInterestController::class, 'store'])->name('fields.store');
+    Route::get('/fields/{field}/edit', [AdminFieldOfInterestController::class, 'edit'])->name('fields.edit');
+    Route::put('/fields/{field}', [AdminFieldOfInterestController::class, 'update'])->name('fields.update');
+    Route::patch('/fields/{field}/toggle', [AdminFieldOfInterestController::class, 'toggle'])->name('fields.toggle');
+    Route::delete('/fields/{field}', [AdminFieldOfInterestController::class, 'destroy'])->name('fields.delete');
+
+    // Reports
+    Route::get('/reports', [AdminReportController::class, 'index'])->name('reports');
+    Route::get('/reports/data', [AdminReportController::class, 'getData'])->name('reports.data');
+    Route::get('/reports/years', [AdminReportController::class, 'getYears'])->name('reports.years');
+    Route::get('/reports/periods', [AdminReportController::class, 'getPeriods'])->name('reports.periods');
+    Route::get('/reports/export/pdf', [AdminReportController::class, 'exportPdf'])->name('reports.export.pdf');
+    Route::get('/reports/export/excel', [AdminReportController::class, 'exportExcel'])->name('reports.export.excel');
+    Route::get('/reports/summary', [AdminReportController::class, 'getSummary'])->name('reports.summary');
+
+    // Divisions (NEW structure using DivisiAdmin/Division)
+    Route::get('/divisions', [AdminDivisionController::class, 'index'])->name('divisions.index');
+    Route::get('/divisions-list', [AdminDivisionController::class, 'index'])->name('divisions'); // Backward compatibility alias
+    Route::get('/divisions/create', [AdminDivisionController::class, 'create'])->name('divisions.create');
+    Route::post('/divisions', [AdminDivisionController::class, 'store'])->name('divisions.store');
+    Route::get('/divisions/{id}/edit', [AdminDivisionController::class, 'edit'])->name('divisions.edit');
+    Route::put('/divisions/{id}', [AdminDivisionController::class, 'update'])->name('divisions.update');
+    Route::patch('/divisions/{id}/toggle', [AdminDivisionController::class, 'toggle'])->name('divisions.toggle');
+    Route::delete('/divisions/{id}', [AdminDivisionController::class, 'destroy'])->name('divisions.destroy');
+
+    // ==========================================
+    // LEGACY ROUTES (Old Direktorat/SubDirektorat/Divisi structure)
+    // These will be deprecated after full migration
+    // ==========================================
+    Route::get('/legacy-divisions', [AdminLegacyDivisionController::class, 'index'])->name('legacy-divisions.index');
+
+    // Direktorat CRUD (Legacy)
+    Route::post('/direktorat', [AdminLegacyDivisionController::class, 'storeDirektorat'])->name('direktorat.store');
+    Route::put('/direktorat/{id}', [AdminLegacyDivisionController::class, 'updateDirektorat'])->name('direktorat.update');
+    Route::delete('/direktorat/{id}', [AdminLegacyDivisionController::class, 'deleteDirektorat'])->name('direktorat.delete');
+
+    // Subdirektorat CRUD (Legacy)
+    Route::post('/subdirektorat', [AdminLegacyDivisionController::class, 'storeSubdirektorat'])->name('subdirektorat.store');
+    Route::put('/subdirektorat/{id}', [AdminLegacyDivisionController::class, 'updateSubdirektorat'])->name('subdirektorat.update');
+    Route::delete('/subdirektorat/{id}', [AdminLegacyDivisionController::class, 'deleteSubdirektorat'])->name('subdirektorat.delete');
+
+    // Divisi CRUD (Legacy)
+    Route::post('/divisi', [AdminLegacyDivisionController::class, 'storeDivisi'])->name('divisi.store');
+    Route::put('/divisi/{id}', [AdminLegacyDivisionController::class, 'updateDivisi'])->name('divisi.update');
+    Route::delete('/divisi/{id}', [AdminLegacyDivisionController::class, 'deleteDivisi'])->name('divisi.delete');
 });

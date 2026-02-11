@@ -104,28 +104,29 @@ class AuthController extends Controller
     public function register(Request $request)
     {
         $request->validate([
-            'name' => 'required|string|max:255',
-            'password' => 'required|min:8|confirmed',
             'email' => 'required|email|unique:users,email',
-            'ktp_number' => 'nullable|regex:/^[0-9]{16}$/',
+            'password' => 'required|min:8|confirmed',
         ], [
-            'name.required' => 'Nama lengkap wajib diisi.',
-            'ktp_number.regex' => 'NIK (No.KTP) harus terdiri dari 16 digit angka.',
+            'email.required' => 'Email wajib diisi.',
+            'email.email' => 'Format email tidak valid.',
+            'email.unique' => 'Email sudah terdaftar.',
+            'password.required' => 'Password wajib diisi.',
             'password.min' => 'Password minimal 8 karakter.',
             'password.confirmed' => 'Konfirmasi password tidak sesuai.'
         ]);
 
-        // Create user
+        // Create user with minimal data (email + password only)
+        // Other data will be filled in pre-acceptance page
         $user = User::create([
             'username' => $request->email,
-            'name' => $request->name ?? null,
+            'name' => null,
             'email' => $request->email,
             'password' => Hash::make($request->password),
-            'nim' => $request->nim ?? null,
-            'university' => $request->university ?? null,
-            'major' => $request->major ?? null,
-            'phone' => $request->phone ?? null,
-            'ktp_number' => $request->ktp_number ?? null,
+            'nim' => null,
+            'university' => null,
+            'major' => null,
+            'phone' => null,
+            'ktp_number' => null,
             'ktm' => null,
             'role' => 'peserta',
         ]);
@@ -134,13 +135,14 @@ class AuthController extends Controller
         $user->generateTwoFactorSecret();
 
         // Create internship application (divisi_id akan di-assign oleh admin setelah diterima)
+        // start_date dan end_date di-set null agar user mengisi sendiri di pre-acceptance
         InternshipApplication::create([
             'user_id' => $user->id,
             'divisi_id' => null,
             'status' => 'pending',
             'cover_letter_path' => null,
-            'start_date' => now()->addDays(7),
-            'end_date' => now()->addMonths(6),
+            'start_date' => null,
+            'end_date' => null,
         ]);
 
         // Auto login
@@ -252,6 +254,14 @@ class AuthController extends Controller
             'pembimbing' => '/mentor/dashboard',
             default => '/dashboard',
         };
+    }
+
+    /**
+     * Redirect to appropriate dashboard based on role
+     */
+    private function redirectToDashboard($user)
+    {
+        return redirect($this->getDashboardUrl($user));
     }
 
     /**

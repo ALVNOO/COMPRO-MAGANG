@@ -56,8 +56,8 @@
 
     /* Compact participant info */
     .participant-avatar-sm {
-        width: 38px;
-        height: 38px;
+        width:38px;
+        height:38px;
         font-size: 1rem;
     }
 
@@ -108,26 +108,28 @@
         </div>
     @else
         <!-- Date Filter Section -->
-        <div class="card attendance-card" style="border-radius: 10px; border: none; box-shadow: 0 2px 8px rgba(0,0,0,0.06);">
-            <div class="card-body" style="padding: 0.875rem;">
-                <form method="GET" action="{{ route('mentor.absensi') }}" id="attendanceFilterForm" class="row attendance-row align-items-end g-2">
-                    <div class="col-md-4">
-                        <label class="form-label mb-1" style="font-weight: 600; color: #000; font-size: 0.85rem;">
-                            <i class="fas fa-calendar me-1 text-danger"></i>Filter Tanggal
-                        </label>
-                        <input type="date" name="date" id="filterDate" class="form-control form-control-sm" value="{{ $filterDate ?? today()->toDateString() }}" max="{{ today()->toDateString() }}" style="border-radius: 6px; border: 1.5px solid #EE2E24; font-size: 0.875rem;">
-                    </div>
-                    <div class="col-md-2">
-                        <button type="submit" id="applyFilterBtn" class="btn btn-sm w-100" style="background: linear-gradient(135deg, #EE2E24 0%, #F60000 100%); color: white; border-radius: 6px; font-weight: 600; padding: 0.45rem; font-size: 0.85rem;">
-                            <i class="fas fa-filter me-1"></i>Terapkan
-                        </button>
+        <div class="card attendance-card" style="border-radius: 10px; border: none; box-shadow: 0 2px 8px rgba(0,0,0,0.06); margin-bottom: 1.5rem;">
+            <div class="card-body" style="padding: 1rem;">
+                <form method="GET" action="{{ route('mentor.absensi') }}" id="attendanceFilterForm">
+                    <div class="row g-3 align-items-end">
+                        <div class="col-md-4 col-sm-6">
+                            <label class="form-label mb-2" style="font-weight: 600; color: #000; font-size: 0.875rem;">
+                                <i class="fas fa-calendar me-1 text-danger"></i>Filter Tanggal
+                            </label>
+                            <input type="date" name="date" id="filterDate" class="form-control" value="{{ $filterDate ?? today()->toDateString() }}" max="{{ today()->toDateString() }}" style="border-radius: 8px; border: 1.5px solid #EE2E24; font-size: 0.9rem; padding: 0.5rem 0.75rem;">
+                        </div>
+                        <div class="col-md-2 col-sm-6">
+                            <button type="submit" id="applyFilterBtn" class="btn w-100" style="background: linear-gradient(135deg, #EE2E24 0%, #F60000 100%); color: white; border-radius: 8px; font-weight: 600; padding: 0.5rem 0.75rem; font-size: 0.9rem;">
+                                <i class="fas fa-filter me-1"></i>Terapkan
+                            </button>
+                        </div>
                     </div>
                 </form>
             </div>
         </div>
 
         <!-- Summary Cards -->
-        <div class="row attendance-row mb-3">
+        <div class="row g-3 mb-4">
             @php
                 $totalParticipants = $participants->count();
                 $presentCount = 0;

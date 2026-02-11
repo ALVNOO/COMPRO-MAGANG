@@ -1,815 +1,1081 @@
-@extends('layouts.mentor-dashboard')
+{{--
+    MENTOR DASHBOARD
+    Main dashboard for field mentors - Redesigned with Unified Layout System
 
-@section('title', 'Dashboard Pembimbing Lapangan - PT Telkom Indonesia')
+    Required variables:
+    - $tugasBaruDiupload: New assignments uploaded
+    - $activeParticipants: Active participants count
+    - $totalAssignments: Total assignments
+    - $completedAssignments: Completed assignments
+    - $assignmentsToGrade: Assignments pending grading
+    - $averageGrade: Average grade
+    - $completionRate: Completion rate percentage
+    - $attendanceStats: Array with 'present', 'late', 'absent' keys
+    - $recentSubmissions: Recent submissions collection
+    - $participantCompletionData: Data for bar chart
+    - $completionDistributionData: Data for doughnut chart
+--}}
+
+@extends('layouts.dashboard-unified')
+
+@section('title', 'Dashboard Pembimbing Lapangan')
+@section('page-title', 'Dashboard Pembimbing')
+@section('breadcrumb', 'Dashboard')
+
+@php
+    $role = 'mentor';
+@endphp
 
 @push('styles')
 <style>
-    :root {
-        --telkom-red: #EE2E24;
-        --telkom-red-bright: #EE2B24;
-        --telkom-red-pure: #F60000;
-        --telkom-black: #000000;
-        --telkom-gray: #AAA5A6;
-        --gradient-primary: linear-gradient(135deg, #EE2E24 0%, #F60000 100%);
-        --gradient-secondary: linear-gradient(135deg, #000000 0%, #AAA5A6 100%);
-        --gradient-accent: linear-gradient(135deg, #EE2B24 0%, #EE2E24 100%);
-        --gradient-card: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
-        --shadow-soft: 0 10px 30px rgba(0,0,0,0.1);
-        --shadow-hover: 0 20px 40px rgba(0,0,0,0.15);
-        --border-radius: 16px;
-        --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    }
+/* ============================================
+   MENTOR DASHBOARD STYLES
+   ============================================ */
 
-    /* Welcome Section */
-    .welcome-section {
-        background: var(--gradient-primary);
-        border-radius: var(--border-radius);
-        padding: 2rem;
-        margin-bottom: 2rem;
-        color: white;
-        position: relative;
-        overflow: hidden;
-        box-shadow: var(--shadow-soft);
-    }
+/* Hero Section */
+.mentor-hero {
+    background: linear-gradient(135deg, #10B981 0%, #059669 50%, #047857 100%);
+    border-radius: 24px;
+    padding: 2.5rem;
+    color: white;
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 2rem;
+}
 
-    .welcome-section::before {
-        content: '';
-        position: absolute;
-        top: -50%;
-        right: -50%;
-        width: 200%;
-        height: 200%;
-        background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
-        animation: float 6s ease-in-out infinite;
-    }
+.mentor-hero::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -50%;
+    width: 100%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 60%);
+    animation: heroGlow 15s ease-in-out infinite;
+}
 
-    @keyframes float {
-        0%, 100% { transform: translateY(0px) rotate(0deg); }
-        50% { transform: translateY(-20px) rotate(180deg); }
-    }
+.mentor-hero::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 100%;
+    background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    pointer-events: none;
+    opacity: 0.4;
+}
 
-    .welcome-content {
-        position: relative;
-        z-index: 2;
-    }
+@keyframes heroGlow {
+    0%, 100% { transform: scale(1) rotate(0deg); }
+    50% { transform: scale(1.1) rotate(10deg); }
+}
 
-    .welcome-title {
-        font-size: 2rem;
-        font-weight: 700;
-        margin-bottom: 0.5rem;
-    }
+.hero-content {
+    position: relative;
+    z-index: 2;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 2rem;
+    align-items: center;
+}
 
-    .welcome-subtitle {
-        font-size: 1.1rem;
-        opacity: 0.9;
-        margin-bottom: 0;
-    }
+.hero-text h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+}
 
-    .divisi-info {
-        background: rgba(255,255,255,0.1);
-        border-radius: 12px;
-        padding: 1rem;
-        margin-top: 1rem;
-        backdrop-filter: blur(10px);
-    }
+.hero-text p {
+    font-size: 1.1rem;
+    opacity: 0.9;
+    margin-bottom: 1rem;
+}
 
-    /* Stats Cards */
+.hero-date {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 0.95rem;
+    opacity: 0.85;
+}
+
+.hero-date i {
+    font-size: 1.1rem;
+}
+
+.hero-illustration {
+    width: 150px;
+    height: 150px;
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 4rem;
+    backdrop-filter: blur(10px);
+    animation: float 6s ease-in-out infinite;
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0) rotate(0deg); }
+    50% { transform: translateY(-10px) rotate(3deg); }
+}
+
+/* Alert Banner */
+.alert-banner {
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.1) 0%, rgba(251, 191, 36, 0.1) 100%);
+    border: 1px solid rgba(245, 158, 11, 0.3);
+    border-left: 4px solid #F59E0B;
+    border-radius: 12px;
+    padding: 1rem 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    animation: slideDown 0.5s ease-out;
+}
+
+@keyframes slideDown {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.alert-icon {
+    width: 40px;
+    height: 40px;
+    background: linear-gradient(135deg, #F59E0B, #D97706);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.1rem;
+}
+
+.alert-content {
+    flex: 1;
+}
+
+.alert-content h4 {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #92400E;
+    margin: 0 0 0.25rem 0;
+}
+
+.alert-content p {
+    font-size: 0.85rem;
+    color: #A16207;
+    margin: 0;
+}
+
+.alert-action {
+    padding: 0.5rem 1rem;
+    background: #F59E0B;
+    color: white;
+    text-decoration: none;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    transition: all 0.2s;
+}
+
+.alert-action:hover {
+    background: #D97706;
+    transform: translateY(-2px);
+}
+
+/* Stats Grid */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.25rem;
+    margin-bottom: 2rem;
+}
+
+@media (max-width: 1200px) {
     .stats-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-        gap: 1.5rem;
-        margin-bottom: 2rem;
+        grid-template-columns: repeat(2, 1fr);
     }
+}
 
-    .stat-card {
-        background: var(--gradient-card);
-        border-radius: var(--border-radius);
-        padding: 2rem;
-        box-shadow: var(--shadow-soft);
-        transition: var(--transition);
-        position: relative;
-        overflow: hidden;
-        border: 1px solid rgba(0,0,0,0.05);
+@media (max-width: 576px) {
+    .stats-grid {
+        grid-template-columns: 1fr;
     }
+}
 
-    .stat-card::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: 4px;
-        background: var(--gradient-primary);
-    }
+.stat-card {
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    border-radius: 16px;
+    padding: 1.5rem;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
 
-    .stat-card:hover {
-        transform: translateY(-8px);
-        box-shadow: var(--shadow-hover);
-    }
+.stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    border-radius: 16px 16px 0 0;
+}
 
-    .stat-icon {
-        width: 60px;
-        height: 60px;
-        border-radius: 12px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1.5rem;
-        margin-bottom: 1rem;
-        transition: var(--transition);
-    }
+.stat-card.green::before { background: linear-gradient(90deg, #10B981, #34D399); }
+.stat-card.blue::before { background: linear-gradient(90deg, #3B82F6, #60A5FA); }
+.stat-card.amber::before { background: linear-gradient(90deg, #F59E0B, #FBBF24); }
+.stat-card.purple::before { background: linear-gradient(90deg, #8B5CF6, #A78BFA); }
+.stat-card.cyan::before { background: linear-gradient(90deg, #06B6D4, #22D3EE); }
+.stat-card.red::before { background: linear-gradient(90deg, #EF4444, #F87171); }
 
-    .stat-icon.pending {
-        background: linear-gradient(135deg, #ffc107 0%, #ff8c00 100%);
-        color: white;
-    }
+.stat-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+}
 
-    .stat-icon.active {
-        background: linear-gradient(135deg, #198754 0%, #20c997 100%);
-        color: white;
-    }
+.stat-card.has-pending {
+    animation: attentionPulse 2s ease-in-out infinite;
+}
 
-    .stat-icon.tasks {
-        background: linear-gradient(135deg, #fd7e14 0%, #ff6b35 100%);
-        color: white;
-    }
+@keyframes attentionPulse {
+    0%, 100% { box-shadow: 0 4px 12px rgba(245, 158, 11, 0.2); }
+    50% { box-shadow: 0 4px 20px rgba(245, 158, 11, 0.4); }
+}
 
-    .stat-number {
-        font-size: 2.5rem;
-        font-weight: 800;
-        background: var(--gradient-primary);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
-        margin-bottom: 0.5rem;
-        line-height: 1;
-    }
+.stat-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.75rem;
+}
 
-    .stat-label {
-        font-size: 0.9rem;
-        color: var(--telkom-gray);
-        font-weight: 500;
-        margin-bottom: 0.5rem;
-    }
+.stat-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+}
 
-    .stat-description {
-        font-size: 0.8rem;
-        color: var(--telkom-gray);
-        opacity: 0.8;
-    }
+.stat-icon.green { background: rgba(16, 185, 129, 0.15); color: #059669; }
+.stat-icon.blue { background: rgba(59, 130, 246, 0.15); color: #2563EB; }
+.stat-icon.amber { background: rgba(245, 158, 11, 0.15); color: #D97706; }
+.stat-icon.purple { background: rgba(139, 92, 246, 0.15); color: #7C3AED; }
+.stat-icon.cyan { background: rgba(6, 182, 212, 0.15); color: #0891B2; }
+.stat-icon.red { background: rgba(239, 68, 68, 0.15); color: #DC2626; }
 
-    /* Action Cards */
-    .actions-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-        gap: 1.5rem;
-        margin-bottom: 2rem;
-    }
+.stat-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    background: var(--color-gray-100);
+    color: var(--color-gray-600);
+}
 
-    .action-card {
-        background: var(--gradient-card);
-        border-radius: var(--border-radius);
-        padding: 2rem;
-        box-shadow: var(--shadow-soft);
-        transition: var(--transition);
-        border: 1px solid rgba(0,0,0,0.05);
-        position: relative;
-        overflow: hidden;
-    }
+.stat-value {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--color-gray-900);
+    line-height: 1.2;
+}
 
-    .action-card::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: 4px;
-        background: var(--gradient-accent);
-    }
+.stat-desc {
+    font-size: 0.85rem;
+    color: var(--color-gray-500);
+    margin-top: 0.25rem;
+}
 
-    .action-card:hover {
-        transform: translateY(-5px);
-        box-shadow: var(--shadow-hover);
-    }
+/* Quick Actions */
+.quick-actions {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
 
-    .action-header {
-        display: flex;
-        align-items: center;
-        margin-bottom: 1rem;
-    }
-
-    .action-icon {
-        width: 50px;
-        height: 50px;
-        border-radius: 12px;
-        background: var(--gradient-primary);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: white;
-        font-size: 1.2rem;
-        margin-right: 1rem;
-    }
-
-    .action-title {
-        font-size: 1.2rem;
-        font-weight: 600;
-        color: var(--telkom-black);
-        margin-bottom: 0.25rem;
-    }
-
-    .action-subtitle {
-        font-size: 0.85rem;
-        color: var(--telkom-gray);
-    }
-
-    .action-description {
-        color: var(--telkom-gray);
-        margin-bottom: 1.5rem;
-        line-height: 1.6;
-    }
-
-    .action-button {
-        background: var(--gradient-primary);
-        border: none;
-        color: white;
-        padding: 0.75rem 1.5rem;
-        border-radius: 12px;
-        font-weight: 600;
-        text-decoration: none;
-        display: inline-flex;
-        align-items: center;
-        gap: 0.5rem;
-        transition: var(--transition);
-        box-shadow: 0 4px 15px rgba(238, 46, 36, 0.2);
-    }
-
-    .action-button:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 25px rgba(238, 46, 36, 0.4);
-        color: white;
-        filter: brightness(1.1);
-    }
-
-    /* Notification Cards */
-    .notification-card {
-        background: var(--gradient-card);
-        border-radius: var(--border-radius);
-        padding: 1.5rem;
-        margin-bottom: 1rem;
-        box-shadow: var(--shadow-soft);
-        border-left: 4px solid;
-        transition: var(--transition);
-    }
-
-    .notification-card:hover {
-        transform: translateX(5px);
-        box-shadow: var(--shadow-hover);
-    }
-
-    .notification-card.info {
-        border-left-color: #0dcaf0;
-        background: linear-gradient(135deg, rgba(13, 202, 240, 0.05) 0%, rgba(13, 202, 240, 0.02) 100%);
-    }
-
-    .notification-card.warning {
-        border-left-color: #ffc107;
-        background: linear-gradient(135deg, rgba(255, 193, 7, 0.05) 0%, rgba(255, 193, 7, 0.02) 100%);
-    }
-
-    .notification-header {
-        display: flex;
-        align-items: center;
-        margin-bottom: 0.5rem;
-    }
-
-    .notification-icon {
-        width: 35px;
-        height: 35px;
-        border-radius: 8px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin-right: 0.75rem;
-        font-size: 1rem;
-    }
-
-    .notification-icon.info {
-        background: rgba(13, 202, 240, 0.1);
-        color: #0dcaf0;
-    }
-
-    .notification-icon.warning {
-        background: rgba(255, 193, 7, 0.1);
-        color: #ffc107;
-    }
-
-    .notification-title {
-        font-weight: 600;
-        color: var(--telkom-black);
-        margin-bottom: 0;
-    }
-
-    .notification-text {
-        color: var(--telkom-gray);
-        margin-bottom: 0.75rem;
-    }
-
-    .notification-link {
-        color: var(--telkom-red);
-        text-decoration: none;
-        font-weight: 500;
-        font-size: 0.9rem;
-        transition: var(--transition);
-    }
-
-    .notification-link:hover {
-        color: var(--telkom-red-pure);
-        text-decoration: underline;
-    }
-
-    /* Quick Actions */
+@media (max-width: 768px) {
     .quick-actions {
-        background: var(--gradient-card);
-        border-radius: var(--border-radius);
-        padding: 2rem;
-        box-shadow: var(--shadow-soft);
-        margin-bottom: 2rem;
+        grid-template-columns: 1fr;
+    }
+}
+
+.quick-action-btn {
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    border-radius: 16px;
+    padding: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    text-decoration: none;
+    color: var(--color-gray-900);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.quick-action-btn:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
+    background: white;
+}
+
+.quick-action-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    flex-shrink: 0;
+}
+
+.quick-action-icon.green { background: linear-gradient(135deg, #10B981, #059669); color: white; }
+.quick-action-icon.blue { background: linear-gradient(135deg, #3B82F6, #2563EB); color: white; }
+.quick-action-icon.purple { background: linear-gradient(135deg, #8B5CF6, #7C3AED); color: white; }
+.quick-action-icon.amber { background: linear-gradient(135deg, #F59E0B, #D97706); color: white; }
+
+.quick-action-content h4 {
+    font-size: 0.95rem;
+    font-weight: 600;
+    margin: 0 0 0.25rem 0;
+}
+
+.quick-action-content p {
+    font-size: 0.8rem;
+    color: var(--color-gray-500);
+    margin: 0;
+}
+
+/* Charts Section */
+.charts-section {
+    display: grid;
+    grid-template-columns: 1.5fr 1fr;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+@media (max-width: 1024px) {
+    .charts-section {
+        grid-template-columns: 1fr;
+    }
+}
+
+.chart-card {
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    border-radius: 20px;
+    padding: 1.5rem;
+    transition: all 0.3s;
+}
+
+.chart-card:hover {
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.08);
+}
+
+.chart-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--color-gray-100);
+}
+
+.chart-icon {
+    width: 44px;
+    height: 44px;
+    background: linear-gradient(135deg, #10B981, #059669);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.1rem;
+}
+
+.chart-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--color-gray-900);
+    margin: 0;
+}
+
+.chart-body {
+    position: relative;
+    min-height: 280px;
+}
+
+.chart-loading {
+    position: absolute;
+    inset: 0;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.9);
+    z-index: 10;
+}
+
+.chart-loading.active {
+    display: flex;
+}
+
+.chart-loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid var(--color-gray-200);
+    border-top-color: #10B981;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Activity Section */
+.activity-section {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+@media (max-width: 1024px) {
+    .activity-section {
+        grid-template-columns: 1fr;
+    }
+}
+
+.activity-card {
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    border-radius: 20px;
+    padding: 1.5rem;
+}
+
+.activity-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--color-gray-100);
+}
+
+.activity-header-left {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.activity-header-icon {
+    width: 44px;
+    height: 44px;
+    background: linear-gradient(135deg, #10B981, #059669);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.1rem;
+}
+
+.activity-header-title h4 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--color-gray-900);
+    margin: 0 0 0.15rem 0;
+}
+
+.activity-header-title p {
+    font-size: 0.8rem;
+    color: var(--color-gray-500);
+    margin: 0;
+}
+
+.live-indicator {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.35rem 0.75rem;
+    background: rgba(16, 185, 129, 0.1);
+    border-radius: 20px;
+}
+
+.live-dot {
+    width: 8px;
+    height: 8px;
+    background: #10B981;
+    border-radius: 50%;
+    animation: livePulse 2s ease-in-out infinite;
+}
+
+@keyframes livePulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(1.2); }
+}
+
+.live-text {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #059669;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.activity-body {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.activity-body::-webkit-scrollbar {
+    width: 4px;
+}
+
+.activity-body::-webkit-scrollbar-thumb {
+    background: var(--color-gray-300);
+    border-radius: 4px;
+}
+
+.activity-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 1rem;
+    border-radius: 12px;
+    margin-bottom: 0.5rem;
+    transition: all 0.2s;
+}
+
+.activity-item:hover {
+    background: var(--color-gray-50);
+}
+
+.activity-item.new {
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.08), rgba(16, 185, 129, 0.02));
+    border-left: 3px solid #10B981;
+}
+
+.activity-avatar {
+    width: 40px;
+    height: 40px;
+    background: var(--color-gray-100);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-gray-500);
+    font-size: 1rem;
+    flex-shrink: 0;
+}
+
+.activity-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.activity-name {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--color-gray-900);
+    margin: 0 0 0.25rem 0;
+}
+
+.activity-desc {
+    font-size: 0.85rem;
+    color: var(--color-gray-600);
+    margin: 0 0 0.25rem 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.activity-time {
+    font-size: 0.75rem;
+    color: var(--color-gray-400);
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+.activity-time i {
+    font-size: 0.7rem;
+}
+
+.activity-badge {
+    padding: 0.25rem 0.6rem;
+    font-size: 0.7rem;
+    font-weight: 600;
+    border-radius: 6px;
+    white-space: nowrap;
+}
+
+.activity-badge.graded {
+    background: rgba(16, 185, 129, 0.1);
+    color: #059669;
+}
+
+.activity-badge.pending {
+    background: rgba(245, 158, 11, 0.1);
+    color: #D97706;
+}
+
+.activity-empty {
+    text-align: center;
+    padding: 2rem;
+}
+
+.activity-empty-icon {
+    width: 60px;
+    height: 60px;
+    margin: 0 auto 1rem;
+    background: var(--color-gray-100);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-gray-400);
+    font-size: 1.5rem;
+}
+
+.activity-empty p {
+    color: var(--color-gray-500);
+    font-size: 0.9rem;
+    margin: 0;
+}
+
+/* Attendance Card */
+.attendance-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+}
+
+.attendance-item {
+    text-align: center;
+    padding: 1rem;
+    border-radius: 12px;
+    background: var(--color-gray-50);
+}
+
+.attendance-item.present { background: rgba(16, 185, 129, 0.1); }
+.attendance-item.late { background: rgba(245, 158, 11, 0.1); }
+.attendance-item.absent { background: rgba(239, 68, 68, 0.1); }
+
+.attendance-value {
+    font-size: 1.75rem;
+    font-weight: 700;
+    margin-bottom: 0.25rem;
+}
+
+.attendance-item.present .attendance-value { color: #059669; }
+.attendance-item.late .attendance-value { color: #D97706; }
+.attendance-item.absent .attendance-value { color: #DC2626; }
+
+.attendance-label {
+    font-size: 0.8rem;
+    color: var(--color-gray-600);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .mentor-hero {
+        padding: 1.5rem;
     }
 
-    .quick-actions-title {
-        font-size: 1.3rem;
-        font-weight: 600;
-        color: var(--telkom-black);
-        margin-bottom: 1.5rem;
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
+    .hero-content {
+        grid-template-columns: 1fr;
+        text-align: center;
     }
 
-    .quick-actions-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 1rem;
-    }
-
-    .quick-action-btn {
-        background: white;
-        border: 2px solid rgba(238, 46, 36, 0.1);
-        color: var(--telkom-red);
-        padding: 1rem;
-        border-radius: 12px;
-        text-decoration: none;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 0.5rem;
-        transition: var(--transition);
-        font-weight: 500;
-    }
-
-    .quick-action-btn:hover {
-        background: var(--gradient-primary);
-        color: white;
-        border-color: var(--telkom-red);
-        transform: translateY(-3px);
-        box-shadow: 0 8px 25px rgba(238, 46, 36, 0.3);
-    }
-
-    .quick-action-icon {
+    .hero-text h1 {
         font-size: 1.5rem;
     }
 
-    /* Responsive */
-    @media (max-width: 768px) {
-        .welcome-section {
-            padding: 1.5rem;
-        }
-
-        .welcome-title {
-            font-size: 1.5rem;
-        }
-
-        .stats-grid {
-            grid-template-columns: 1fr;
-            gap: 1rem;
-        }
-
-        .actions-grid {
-            grid-template-columns: 1fr;
-            gap: 1rem;
-        }
-
-        .stat-card,
-        .action-card {
-            padding: 1.5rem;
-        }
-
-        .stat-number {
-            font-size: 2rem;
-        }
+    .hero-illustration {
+        display: none;
     }
 
-    /* Animations */
-    @keyframes slideInUp {
-        from {
-            opacity: 0;
-            transform: translateY(30px);
-        }
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
     }
 
-    @keyframes fadeInLeft {
-        from {
-            opacity: 0;
-            transform: translateX(-30px);
-        }
-        to {
-            opacity: 1;
-            transform: translateX(0);
-        }
+    .charts-section,
+    .activity-section {
+        grid-template-columns: 1fr;
     }
-
-    .animate-slide-up {
-        animation: slideInUp 0.6s ease-out;
-    }
-
-    .animate-fade-left {
-        animation: fadeInLeft 0.6s ease-out;
-    }
-
-    .animate-delay-1 { animation-delay: 0.1s; }
-    .animate-delay-2 { animation-delay: 0.2s; }
-    .animate-delay-3 { animation-delay: 0.3s; }
-    .animate-delay-4 { animation-delay: 0.4s; }
+}
 </style>
 @endpush
 
 @section('content')
-<div class="animate-fade-left">
-    <!-- Welcome Section -->
-    <div class="welcome-section animate-slide-up">
-        <div class="welcome-content">
-            <h1 class="welcome-title">Selamat Datang, {{ Auth::user()->divisi && Auth::user()->divisi->vp ? Auth::user()->divisi->vp : Auth::user()->name }}!</h1>
-            <p class="welcome-subtitle">Dashboard Pembimbing Lapangan PT Telkom Indonesia</p>
-            
-            @if(Auth::user()->divisi)
-            <div class="divisi-info">
-                <div class="row">
-                    <div class="col-md-6">
-                        <strong>Divisi:</strong> {{ Auth::user()->divisi->name }}
-                    </div>
-                    <div class="col-md-6">
-                        <strong>NIPPOS:</strong> {{ Auth::user()->divisi->nippos }}
-                    </div>
-                </div>
-            </div>
-            @endif
-        </div>
-    </div>
-
-    <!-- Notifications -->
-    @if($tugasBaruDiupload > 0)
-        <div class="notification-card warning animate-slide-up animate-delay-2">
-            <div class="notification-header">
-                <div class="notification-icon warning">
-                    <i class="fas fa-tasks"></i>
-                </div>
-                <h5 class="notification-title">Tugas Baru Dikirim</h5>
-            </div>
-            <p class="notification-text">
-                <strong>{{ $tugasBaruDiupload }} tugas baru</strong> telah di-upload peserta dan menunggu penilaian.
-            </p>
-            <a href="{{ route('mentor.penugasan') }}" class="notification-link">
-                <i class="fas fa-arrow-right me-1"></i>Lihat Tugas
-            </a>
-        </div>
-    @endif
-
-    <!-- Charts Section -->
-    <div class="row mb-4 animate-slide-up animate-delay-2">
-        <div class="col-lg-8 mb-3">
-            <div class="stat-card" style="padding: 2rem;">
-                <h5 class="mb-3" style="font-weight: 600; color: var(--telkom-black);">
-                    <i class="fas fa-chart-bar me-2" style="color: var(--telkom-red);"></i>
-                    Persentase Penyelesaian Tugas per Peserta
-                </h5>
-                <canvas id="participantCompletionChart" style="max-height: 300px;"></canvas>
+{{-- Hero Section --}}
+<div class="mentor-hero" data-aos="fade-down">
+    <div class="hero-content">
+        <div class="hero-text">
+            <h1>Selamat Datang, {{ Auth::user()->name }}!</h1>
+            <p>Panel Pembimbing Lapangan - PT Telkom Indonesia</p>
+            <div class="hero-date">
+                <i class="fas fa-calendar-alt"></i>
+                <span>{{ \Carbon\Carbon::now()->locale('id')->isoFormat('dddd, D MMMM YYYY') }}</span>
             </div>
         </div>
-
-        <div class="col-lg-4 mb-3">
-            <div class="stat-card" style="padding: 2rem;">
-                <h5 class="mb-3" style="font-weight: 600; color: var(--telkom-black);">
-                    <i class="fas fa-chart-pie me-2" style="color: var(--telkom-red);"></i>
-                    Distribusi Penyelesaian Tugas
-                </h5>
-                <canvas id="completionDistributionChart" style="max-height: 300px;"></canvas>
-            </div>
-        </div>
-    </div>
-
-    <!-- Statistics Cards - Enhanced 8-Card Grid -->
-    <div class="stats-grid">
-        <!-- Card 1: Active Participants -->
-        <div class="stat-card animate-slide-up animate-delay-1">
-            <div class="stat-icon active">
-                <i class="fas fa-users"></i>
-            </div>
-            <div class="stat-number">{{ $activeParticipants }}</div>
-            <div class="stat-label">Peserta Aktif</div>
-            <div class="stat-description">Sedang menjalani program magang</div>
-        </div>
-
-        <!-- Card 2: Total Assignments -->
-        <div class="stat-card animate-slide-up animate-delay-1">
-            <div class="stat-icon tasks">
-                <i class="fas fa-tasks"></i>
-            </div>
-            <div class="stat-number">{{ $totalAssignments }}</div>
-            <div class="stat-label">Total Tugas</div>
-            <div class="stat-description">Tugas yang telah diberikan</div>
-        </div>
-
-        <!-- Card 3: Completed Assignments -->
-        <div class="stat-card animate-slide-up animate-delay-2">
-            <div class="stat-icon" style="background: linear-gradient(135deg, #198754 0%, #20c997 100%); color: white;">
-                <i class="fas fa-check-circle"></i>
-            </div>
-            <div class="stat-number">{{ $completedAssignments }}</div>
-            <div class="stat-label">Tugas Selesai</div>
-            <div class="stat-description">Telah dinilai dan selesai</div>
-        </div>
-
-        <!-- Card 4: Pending Grades -->
-        <div class="stat-card animate-slide-up animate-delay-2">
-            <div class="stat-icon" style="background: linear-gradient(135deg, #fd7e14 0%, #ffc107 100%); color: white;">
-                <i class="fas fa-clock"></i>
-            </div>
-            <div class="stat-number">{{ $assignmentsToGrade }}</div>
-            <div class="stat-label">Perlu Dinilai</div>
-            <div class="stat-description">Menunggu penilaian Anda</div>
-        </div>
-
-        <!-- Card 5: Average Grade -->
-        <div class="stat-card animate-slide-up animate-delay-3">
-            <div class="stat-icon" style="background: linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%); color: white;">
-                <i class="fas fa-star"></i>
-            </div>
-            <div class="stat-number">{{ $averageGrade }}</div>
-            <div class="stat-label">Nilai Rata-Rata</div>
-            <div class="stat-description">Rata-rata nilai tugas</div>
-        </div>
-
-        <!-- Card 6: Completion Rate -->
-        <div class="stat-card animate-slide-up animate-delay-3">
-            <div class="stat-icon" style="background: linear-gradient(135deg, #0dcaf0 0%, #0d6efd 100%); color: white;">
-                <i class="fas fa-chart-line"></i>
-            </div>
-            <div class="stat-number">{{ $completionRate }}%</div>
-            <div class="stat-label">Tingkat Penyelesaian</div>
-            <div class="stat-description">Persentase tugas selesai</div>
-        </div>
-
-        <!-- Card 7: Present Today -->
-        <div class="stat-card animate-slide-up animate-delay-4">
-            <div class="stat-icon" style="background: linear-gradient(135deg, #198754 0%, #20c997 100%); color: white;">
-                <i class="fas fa-user-check"></i>
-            </div>
-            <div class="stat-number">{{ $attendanceStats['present'] }}</div>
-            <div class="stat-label">Hadir Hari Ini</div>
-            <div class="stat-description">Peserta yang sudah absen</div>
-        </div>
-
-        <!-- Card 8: Late/Absent Today -->
-        <div class="stat-card animate-slide-up animate-delay-4">
-            <div class="stat-icon" style="background: linear-gradient(135deg, #ffc107 0%, #ff8c00 100%); color: white;">
-                <i class="fas fa-exclamation-triangle"></i>
-            </div>
-            <div class="stat-number">{{ $attendanceStats['late'] + $attendanceStats['absent'] }}</div>
-            <div class="stat-label">Terlambat/Absen</div>
-            <div class="stat-description">Perlu perhatian hari ini</div>
-        </div>
-    </div>
-
-    <!-- Recent Activity Timeline -->
-    <div class="action-card animate-slide-up animate-delay-3" style="margin-bottom: 2rem;">
-        <div class="action-header">
-            <div class="action-icon">
-                <i class="fas fa-history"></i>
-            </div>
-            <div>
-                <h4 class="action-title">Aktivitas Terbaru</h4>
-                <p class="action-subtitle">7 hari terakhir</p>
-            </div>
-        </div>
-
-        @if($recentSubmissions->isEmpty())
-            <p class="text-muted text-center py-4">
-                <i class="fas fa-info-circle me-2"></i>
-                Belum ada aktivitas dalam 7 hari terakhir
-            </p>
-        @else
-            <div class="timeline-container" style="max-height: 400px; overflow-y: auto;">
-                @foreach($recentSubmissions as $submission)
-                    @php
-                        $latestSubmission = $submission->submissions->first();
-                        $submittedAt = $latestSubmission ? $latestSubmission->submitted_at : null;
-                    @endphp
-                    <div class="timeline-item" style="display: flex; gap: 1rem; padding: 1rem 0; border-bottom: 1px solid rgba(0,0,0,0.05);">
-                        <div class="timeline-icon" style="width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, var(--telkom-red) 0%, var(--telkom-red-pure) 100%); display: flex; align-items: center; justify-content: center; color: white; flex-shrink: 0;">
-                            <i class="fas fa-file-upload"></i>
-                        </div>
-                        <div style="flex: 1;">
-                            <div style="font-weight: 600; color: var(--telkom-black); margin-bottom: 0.25rem;">
-                                {{ $submission->user->name }}
-                            </div>
-                            <div style="color: var(--telkom-gray); font-size: 0.9rem; margin-bottom: 0.25rem;">
-                                Mengumpulkan: {{ $submission->title }}
-                            </div>
-                            <div style="color: var(--telkom-gray); font-size: 0.85rem;">
-                                <i class="fas fa-clock me-1"></i>
-                                {{ $submittedAt ? \Carbon\Carbon::parse($submittedAt)->diffForHumans() : '-' }}
-                            </div>
-                        </div>
-                        @if($submission->grade)
-                        <div style="padding: 0.5rem 1rem; background: linear-gradient(135deg, #198754 0%, #20c997 100%); color: white; border-radius: 12px; font-weight: 600;">
-                            {{ $submission->grade }}
-                        </div>
-                        @else
-                        <div style="padding: 0.5rem 1rem; background: linear-gradient(135deg, #ffc107 0%, #ff8c00 100%); color: white; border-radius: 12px; font-weight: 600; font-size: 0.85rem;">
-                            Belum Dinilai
-                        </div>
-                        @endif
-                    </div>
-                @endforeach
-            </div>
-        @endif
-    </div>
-
-    <!-- Quick Actions -->
-    <div class="quick-actions animate-slide-up animate-delay-4">
-        <h3 class="quick-actions-title">
-            <i class="fas fa-bolt"></i>
-            Akses Cepat
-        </h3>
-        <div class="quick-actions-grid">
-            <a href="{{ route('mentor.penugasan') }}" class="quick-action-btn">
-                <i class="fas fa-tasks quick-action-icon"></i>
-                <span>Penugasan &amp; Penilaian</span>
-            </a>
-            <a href="{{ route('mentor.absensi') }}" class="quick-action-btn">
-                <i class="fas fa-calendar-check quick-action-icon"></i>
-                <span>Absensi</span>
-            </a>
-        </div>
-    </div>
-
-    <!-- Action Cards -->
-    <div class="actions-grid">
-        <div class="action-card animate-slide-up animate-delay-1">
-            <div class="action-header">
-                <div class="action-icon">
-                    <i class="fas fa-tasks"></i>
-                </div>
-                <div>
-                    <h4 class="action-title">Penugasan & Penilaian</h4>
-                    <p class="action-subtitle">Kelola tugas peserta</p>
-                </div>
-            </div>
-            <p class="action-description">
-                Berikan tugas kepada peserta magang dan nilai hasil pekerjaan mereka. 
-                Pantau perkembangan belajar peserta.
-            </p>
-            <a href="{{ route('mentor.penugasan') }}" class="action-button">
-                <i class="fas fa-plus"></i>
-                Berikan Penugasan
-            </a>
+        <div class="hero-illustration">
+            <i class="fas fa-chalkboard-teacher"></i>
         </div>
     </div>
 </div>
 
-<!-- JavaScript for enhanced interactivity -->
+{{-- Alert Notification (if there are assignments to grade) --}}
+@if($assignmentsToGrade > 0)
+<div class="alert-banner" data-aos="fade-up">
+    <div class="alert-icon">
+        <i class="fas fa-clipboard-check"></i>
+    </div>
+    <div class="alert-content">
+        <h4>Ada {{ $assignmentsToGrade }} Tugas Menunggu Penilaian!</h4>
+        <p>Segera berikan penilaian untuk submission tugas dari peserta magang.</p>
+    </div>
+    <a href="{{ route('mentor.penugasan') }}" class="alert-action">
+        <i class="fas fa-arrow-right"></i> Lihat Tugas
+    </a>
+</div>
+@endif
+
+{{-- Stats Grid --}}
+<div class="stats-grid" data-aos="fade-up" data-aos-delay="100">
+    {{-- Active Participants --}}
+    <div class="stat-card green">
+        <div class="stat-header">
+            <div class="stat-icon green">
+                <i class="fas fa-users"></i>
+            </div>
+            <span class="stat-label">Aktif</span>
+        </div>
+        <div class="stat-value" data-count="{{ $activeParticipants }}">{{ $activeParticipants }}</div>
+        <div class="stat-desc">Peserta Aktif</div>
+    </div>
+
+    {{-- Total Assignments --}}
+    <div class="stat-card blue">
+        <div class="stat-header">
+            <div class="stat-icon blue">
+                <i class="fas fa-clipboard-list"></i>
+            </div>
+            <span class="stat-label">Total</span>
+        </div>
+        <div class="stat-value" data-count="{{ $totalAssignments }}">{{ $totalAssignments }}</div>
+        <div class="stat-desc">Total Tugas</div>
+    </div>
+
+    {{-- Completed Assignments --}}
+    <div class="stat-card green">
+        <div class="stat-header">
+            <div class="stat-icon green">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <span class="stat-label">Selesai</span>
+        </div>
+        <div class="stat-value" data-count="{{ $completedAssignments }}">{{ $completedAssignments }}</div>
+        <div class="stat-desc">Tugas Selesai</div>
+    </div>
+
+    {{-- Assignments to Grade --}}
+    <div class="stat-card amber {{ $assignmentsToGrade > 0 ? 'has-pending' : '' }}">
+        <div class="stat-header">
+            <div class="stat-icon amber">
+                <i class="fas fa-hourglass-half"></i>
+            </div>
+            <span class="stat-label">Pending</span>
+        </div>
+        <div class="stat-value" data-count="{{ $assignmentsToGrade }}">{{ $assignmentsToGrade }}</div>
+        <div class="stat-desc">Perlu Dinilai</div>
+    </div>
+
+    {{-- Average Grade --}}
+    <div class="stat-card purple">
+        <div class="stat-header">
+            <div class="stat-icon purple">
+                <i class="fas fa-star"></i>
+            </div>
+            <span class="stat-label">Rata-rata</span>
+        </div>
+        <div class="stat-value">{{ number_format($averageGrade, 1) }}</div>
+        <div class="stat-desc">Nilai Rata-Rata</div>
+    </div>
+
+    {{-- Completion Rate --}}
+    <div class="stat-card cyan">
+        <div class="stat-header">
+            <div class="stat-icon cyan">
+                <i class="fas fa-chart-line"></i>
+            </div>
+            <span class="stat-label">Rate</span>
+        </div>
+        <div class="stat-value">{{ number_format($completionRate, 0) }}%</div>
+        <div class="stat-desc">Tingkat Penyelesaian</div>
+    </div>
+
+    {{-- Present Today --}}
+    <div class="stat-card green">
+        <div class="stat-header">
+            <div class="stat-icon green">
+                <i class="fas fa-user-check"></i>
+            </div>
+            <span class="stat-label">Hari Ini</span>
+        </div>
+        <div class="stat-value" data-count="{{ $attendanceStats['present'] ?? 0 }}">{{ $attendanceStats['present'] ?? 0 }}</div>
+        <div class="stat-desc">Hadir Hari Ini</div>
+    </div>
+
+    {{-- Late/Absent --}}
+    <div class="stat-card amber {{ (($attendanceStats['late'] ?? 0) + ($attendanceStats['absent'] ?? 0)) > 0 ? 'has-pending' : '' }}">
+        <div class="stat-header">
+            <div class="stat-icon amber">
+                <i class="fas fa-exclamation-triangle"></i>
+            </div>
+            <span class="stat-label">Perhatian</span>
+        </div>
+        <div class="stat-value" data-count="{{ ($attendanceStats['late'] ?? 0) + ($attendanceStats['absent'] ?? 0) }}">{{ ($attendanceStats['late'] ?? 0) + ($attendanceStats['absent'] ?? 0) }}</div>
+        <div class="stat-desc">Terlambat/Absen</div>
+    </div>
+</div>
+
+{{-- Quick Actions --}}
+<div class="quick-actions" data-aos="fade-up" data-aos-delay="200">
+    <a href="{{ route('mentor.penugasan') }}" class="quick-action-btn">
+        <div class="quick-action-icon green">
+            <i class="fas fa-tasks"></i>
+        </div>
+        <div class="quick-action-content">
+            <h4>Kelola Penugasan</h4>
+            <p>Buat dan nilai tugas peserta</p>
+        </div>
+    </a>
+
+    <a href="{{ route('mentor.absensi') }}" class="quick-action-btn">
+        <div class="quick-action-icon blue">
+            <i class="fas fa-calendar-check"></i>
+        </div>
+        <div class="quick-action-content">
+            <h4>Monitor Absensi</h4>
+            <p>Pantau kehadiran harian</p>
+        </div>
+    </a>
+
+    <a href="{{ route('mentor.logbook') }}" class="quick-action-btn">
+        <div class="quick-action-icon purple">
+            <i class="fas fa-book-open"></i>
+        </div>
+        <div class="quick-action-content">
+            <h4>Review Logbook</h4>
+            <p>Lihat aktivitas harian peserta</p>
+        </div>
+    </a>
+</div>
+
+{{-- Charts Section --}}
+<div class="charts-section" data-aos="fade-up" data-aos-delay="300">
+    {{-- Participant Completion Bar Chart --}}
+    <div class="chart-card">
+        <div class="chart-header">
+            <div class="chart-icon">
+                <i class="fas fa-chart-bar"></i>
+            </div>
+            <h5 class="chart-title">Persentase Penyelesaian Tugas per Peserta</h5>
+        </div>
+        <div class="chart-body">
+            <div class="chart-loading active">
+                <div class="chart-loading-spinner"></div>
+            </div>
+            <canvas id="participantCompletionChart"></canvas>
+        </div>
+    </div>
+
+    {{-- Completion Distribution Doughnut Chart --}}
+    <div class="chart-card">
+        <div class="chart-header">
+            <div class="chart-icon">
+                <i class="fas fa-chart-pie"></i>
+            </div>
+            <h5 class="chart-title">Distribusi Penyelesaian</h5>
+        </div>
+        <div class="chart-body">
+            <div class="chart-loading active">
+                <div class="chart-loading-spinner"></div>
+            </div>
+            <canvas id="completionDistributionChart"></canvas>
+        </div>
+    </div>
+</div>
+
+{{-- Activity Section --}}
+<div class="activity-section" data-aos="fade-up" data-aos-delay="400">
+    {{-- Recent Submissions --}}
+    <div class="activity-card">
+        <div class="activity-header">
+            <div class="activity-header-left">
+                <div class="activity-header-icon">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <div class="activity-header-title">
+                    <h4>Aktivitas Terbaru</h4>
+                    <p>7 hari terakhir</p>
+                </div>
+            </div>
+            <div class="live-indicator">
+                <span class="live-dot"></span>
+                <span class="live-text">Live</span>
+            </div>
+        </div>
+        <div class="activity-body">
+            @if($recentSubmissions->isEmpty())
+                <div class="activity-empty">
+                    <div class="activity-empty-icon">
+                        <i class="fas fa-inbox"></i>
+                    </div>
+                    <p>Belum ada aktivitas dalam 7 hari terakhir</p>
+                </div>
+            @else
+                @foreach($recentSubmissions as $index => $submission)
+                    @php
+                        $latestSubmission = $submission->submissions->first();
+                        $submittedAt = $latestSubmission ? $latestSubmission->submitted_at : null;
+                        $isNew = $submittedAt && \Carbon\Carbon::parse($submittedAt)->diffInHours(now()) < 6;
+                    @endphp
+                    <div class="activity-item {{ $isNew ? 'new' : '' }}">
+                        <div class="activity-avatar">
+                            <i class="fas fa-upload"></i>
+                        </div>
+                        <div class="activity-content">
+                            <h6 class="activity-name">{{ $submission->user->name }}</h6>
+                            <p class="activity-desc">Mengumpulkan: {{ $submission->title }}</p>
+                            <span class="activity-time">
+                                <i class="fas fa-clock"></i>
+                                {{ $submittedAt ? \Carbon\Carbon::parse($submittedAt)->diffForHumans() : '-' }}
+                            </span>
+                        </div>
+                        @if($submission->grade)
+                            <span class="activity-badge graded">{{ $submission->grade }}</span>
+                        @else
+                            <span class="activity-badge pending">Belum Dinilai</span>
+                        @endif
+                    </div>
+                @endforeach
+            @endif
+        </div>
+    </div>
+
+    {{-- Attendance Summary --}}
+    <div class="activity-card">
+        <div class="activity-header">
+            <div class="activity-header-left">
+                <div class="activity-header-icon" style="background: linear-gradient(135deg, #3B82F6, #2563EB);">
+                    <i class="fas fa-calendar-check"></i>
+                </div>
+                <div class="activity-header-title">
+                    <h4>Ringkasan Kehadiran</h4>
+                    <p>Hari ini</p>
+                </div>
+            </div>
+        </div>
+        <div class="activity-body" style="padding-top: 1rem;">
+            <div class="attendance-grid">
+                <div class="attendance-item present">
+                    <div class="attendance-value">{{ $attendanceStats['present'] ?? 0 }}</div>
+                    <div class="attendance-label">Hadir</div>
+                </div>
+                <div class="attendance-item late">
+                    <div class="attendance-value">{{ $attendanceStats['late'] ?? 0 }}</div>
+                    <div class="attendance-label">Terlambat</div>
+                </div>
+                <div class="attendance-item absent">
+                    <div class="attendance-value">{{ $attendanceStats['absent'] ?? 0 }}</div>
+                    <div class="attendance-label">Tidak Hadir</div>
+                </div>
+            </div>
+
+            <div style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid var(--color-gray-100);">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+                    <span style="font-size: 0.85rem; color: var(--color-gray-600);">Tingkat Kehadiran</span>
+                    @php
+                        $totalToday = ($attendanceStats['present'] ?? 0) + ($attendanceStats['late'] ?? 0) + ($attendanceStats['absent'] ?? 0);
+                        $attendanceRate = $totalToday > 0 ? (($attendanceStats['present'] ?? 0) / $totalToday) * 100 : 0;
+                    @endphp
+                    <span style="font-size: 0.9rem; font-weight: 600; color: #059669;">{{ number_format($attendanceRate, 0) }}%</span>
+                </div>
+                <div style="height: 8px; background: var(--color-gray-100); border-radius: 4px; overflow: hidden;">
+                    <div style="height: 100%; width: {{ $attendanceRate }}%; background: linear-gradient(90deg, #10B981, #059669); border-radius: 4px; transition: width 1s ease-out;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@endsection
+
+@push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Animate numbers on scroll
-    const animateNumbers = () => {
-        const statNumbers = document.querySelectorAll('.stat-number');
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    const target = parseInt(entry.target.textContent);
-                    let current = 0;
-                    const increment = target / 50;
-                    const timer = setInterval(() => {
-                        current += increment;
-                        if (current >= target) {
-                            current = target;
-                            clearInterval(timer);
-                        }
-                        entry.target.textContent = Math.floor(current);
-                    }, 30);
-                    observer.unobserve(entry.target);
-                }
-            });
-        });
-        
-        statNumbers.forEach(number => observer.observe(number));
-    };
+    // Chart.js default styling
+    Chart.defaults.font.family = "'Inter', 'Segoe UI', sans-serif";
+    Chart.defaults.color = '#64748B';
 
-    animateNumbers();
+    // Participant Completion Bar Chart
+    const participantData = @json($participantCompletionData ?? []);
+    const completionCtx = document.getElementById('participantCompletionChart');
 
-    // Add hover effects to cards
-    const cards = document.querySelectorAll('.stat-card, .action-card, .notification-card');
-    cards.forEach(card => {
-        card.addEventListener('mouseenter', function() {
-            this.style.transform = 'translateY(-8px) scale(1.02)';
-        });
-        
-        card.addEventListener('mouseleave', function() {
-            this.style.transform = 'translateY(0) scale(1)';
-        });
-    });
-
-    // Smooth scroll for internal links
-    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-        anchor.addEventListener('click', function (e) {
-            e.preventDefault();
-            const target = document.querySelector(this.getAttribute('href'));
-            if (target) {
-                target.scrollIntoView({
-                    behavior: 'smooth',
-                    block: 'start'
-                });
-            }
-        });
-    });
-
-    // Add loading states to action buttons
-    document.querySelectorAll('.action-button, .quick-action-btn').forEach(button => {
-        button.addEventListener('click', function() {
-            const originalText = this.innerHTML;
-            this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading...';
-            this.style.pointerEvents = 'none';
-
-            // Reset after navigation (this will be overridden by page navigation)
-            setTimeout(() => {
-                this.innerHTML = originalText;
-                this.style.pointerEvents = 'auto';
-            }, 2000);
-        });
-    });
-
-    // ========== Chart.js Implementation ==========
-    if (typeof Chart !== 'undefined') {
-        // Participant Completion Chart (Bar Chart)
-        const participantCompletionCtx = document.getElementById('participantCompletionChart');
-        if (participantCompletionCtx) {
-            const participantData = @json($participantCompletionData);
-            const labels = participantData.map(d => d.name);
-            const percentages = participantData.map(d => d.percentage);
-
-            // Color bars based on completion percentage
-            const backgroundColors = percentages.map(p => {
-                if (p === 100) return '#198754'; // Green for 100%
-                if (p >= 75) return '#0dcaf0';   // Cyan for 75-99%
-                if (p >= 50) return '#ffc107';   // Yellow for 50-74%
-                if (p >= 25) return '#fd7e14';   // Orange for 25-49%
-                return '#dc3545';                 // Red for 0-24%
-            });
-
-            new Chart(participantCompletionCtx, {
+    if (completionCtx && participantData.labels && participantData.labels.length > 0) {
+        setTimeout(() => {
+            new Chart(completionCtx, {
                 type: 'bar',
                 data: {
-                    labels: labels,
+                    labels: participantData.labels,
                     datasets: [{
-                        label: 'Persentase Selesai',
-                        data: percentages,
-                        backgroundColor: backgroundColors,
-                        borderColor: backgroundColors,
-                        borderWidth: 1
+                        label: 'Penyelesaian (%)',
+                        data: participantData.data,
+                        backgroundColor: function(context) {
+                            const chart = context.chart;
+                            const {ctx, chartArea} = chart;
+                            if (!chartArea) return '#10B981';
+                            const gradient = ctx.createLinearGradient(0, chartArea.bottom, 0, chartArea.top);
+                            gradient.addColorStop(0, 'rgba(16, 185, 129, 0.6)');
+                            gradient.addColorStop(1, 'rgba(16, 185, 129, 1)');
+                            return gradient;
+                        },
+                        borderRadius: 8,
+                        borderSkipped: false,
+                        barPercentage: 0.6,
                     }]
                 },
                 options: {
                     responsive: true,
-                    maintainAspectRatio: true,
+                    maintainAspectRatio: false,
                     plugins: {
                         legend: { display: false },
                         tooltip: {
-                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            backgroundColor: '#1F2937',
+                            titleColor: '#F9FAFB',
+                            bodyColor: '#E5E7EB',
                             padding: 12,
                             cornerRadius: 8,
                             callbacks: {
                                 label: function(context) {
-                                    const index = context.dataIndex;
-                                    const participant = participantData[index];
-                                    return [
-                                        `Penyelesaian: ${participant.percentage}%`,
-                                        `Selesai: ${participant.completed} dari ${participant.total} tugas`
-                                    ];
+                                    return context.raw + '% selesai';
                                 }
                             }
                         }
@@ -818,98 +1084,118 @@ document.addEventListener('DOMContentLoaded', function() {
                         y: {
                             beginAtZero: true,
                             max: 100,
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.05)',
+                                drawBorder: false
+                            },
                             ticks: {
                                 callback: function(value) {
                                     return value + '%';
                                 }
-                            },
-                            grid: { color: 'rgba(0, 0, 0, 0.05)' }
+                            }
                         },
                         x: {
-                            ticks: {
-                                maxRotation: 45,
-                                minRotation: 45,
-                                font: { size: 11 }
-                            },
                             grid: { display: false }
                         }
                     }
                 }
             });
-        }
 
-        // Completion Distribution Chart (Pie Chart)
-        const completionDistCtx = document.getElementById('completionDistributionChart');
-        if (completionDistCtx) {
-            const distributionData = @json($completionDistributionData);
-            const completedAllCount = distributionData.completedAll.length;
-            const incompleteCount = distributionData.incomplete.length;
+            completionCtx.closest('.chart-card').querySelector('.chart-loading').classList.remove('active');
+        }, 500);
+    } else if (completionCtx) {
+        completionCtx.closest('.chart-card').querySelector('.chart-loading').classList.remove('active');
+        completionCtx.parentElement.innerHTML = '<div style="text-align:center; padding:2rem; color:#64748B;"><i class="fas fa-chart-bar" style="font-size:2rem; margin-bottom:1rem; display:block; opacity:0.3;"></i>Belum ada data</div>';
+    }
 
-            new Chart(completionDistCtx, {
-                type: 'pie',
+    // Completion Distribution Doughnut Chart
+    const distributionData = @json($completionDistributionData ?? []);
+    const distributionCtx = document.getElementById('completionDistributionChart');
+
+    if (distributionCtx && distributionData.labels && distributionData.labels.length > 0) {
+        setTimeout(() => {
+            new Chart(distributionCtx, {
+                type: 'doughnut',
                 data: {
-                    labels: ['Selesai Semua', 'Belum Selesai'],
+                    labels: distributionData.labels,
                     datasets: [{
-                        data: [completedAllCount, incompleteCount],
+                        data: distributionData.data,
                         backgroundColor: [
-                            '#198754', // Green for completed all
-                            '#ffc107'  // Yellow for incomplete
+                            '#10B981',
+                            '#3B82F6',
+                            '#F59E0B',
+                            '#EF4444'
                         ],
-                        borderWidth: 2,
-                        borderColor: '#fff'
+                        borderWidth: 0,
+                        spacing: 4
                     }]
                 },
                 options: {
                     responsive: true,
-                    maintainAspectRatio: true,
+                    maintainAspectRatio: false,
+                    cutout: '65%',
                     plugins: {
                         legend: {
                             position: 'bottom',
                             labels: {
-                                padding: 15,
+                                padding: 20,
                                 usePointStyle: true,
-                                font: { size: 12 }
+                                pointStyle: 'circle'
                             }
                         },
                         tooltip: {
-                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            backgroundColor: '#1F2937',
+                            titleColor: '#F9FAFB',
+                            bodyColor: '#E5E7EB',
                             padding: 12,
-                            cornerRadius: 8,
-                            callbacks: {
-                                label: function(context) {
-                                    const label = context.label || '';
-                                    const value = context.parsed || 0;
-                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
-                                    const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : 0;
-                                    return `${label}: ${value} peserta (${percentage}%)`;
-                                },
-                                afterLabel: function(context) {
-                                    // Show participant names
-                                    const participants = context.dataIndex === 0
-                                        ? distributionData.completedAll
-                                        : distributionData.incomplete;
-
-                                    if (participants.length === 0) return '';
-
-                                    // Limit to first 5 names to avoid tooltip overflow
-                                    const displayNames = participants.slice(0, 5);
-                                    const moreCount = participants.length - 5;
-
-                                    let result = displayNames.map(name => `• ${name}`);
-                                    if (moreCount > 0) {
-                                        result.push(`... dan ${moreCount} lainnya`);
-                                    }
-                                    return result;
-                                }
-                            }
+                            cornerRadius: 8
                         }
                     }
                 }
             });
-        }
-    } else {
-        console.warn('Chart.js is not loaded. Charts will not be displayed.');
+
+            distributionCtx.closest('.chart-card').querySelector('.chart-loading').classList.remove('active');
+        }, 700);
+    } else if (distributionCtx) {
+        distributionCtx.closest('.chart-card').querySelector('.chart-loading').classList.remove('active');
+        distributionCtx.parentElement.innerHTML = '<div style="text-align:center; padding:2rem; color:#64748B;"><i class="fas fa-chart-pie" style="font-size:2rem; margin-bottom:1rem; display:block; opacity:0.3;"></i>Belum ada data</div>';
     }
+
+    // Animate stat values
+    const statValues = document.querySelectorAll('.stat-value[data-count]');
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                const el = entry.target;
+                const target = parseFloat(el.dataset.count);
+                const isDecimal = target % 1 !== 0;
+
+                let current = 0;
+                const duration = 1500;
+                const startTime = performance.now();
+
+                const animate = (currentTime) => {
+                    const elapsed = currentTime - startTime;
+                    const progress = Math.min(elapsed / duration, 1);
+                    const easeOut = 1 - Math.pow(1 - progress, 3);
+
+                    current = target * easeOut;
+                    el.textContent = isDecimal ? current.toFixed(1) : Math.floor(current);
+
+                    if (progress < 1) {
+                        requestAnimationFrame(animate);
+                    } else {
+                        el.textContent = isDecimal ? target.toFixed(1) : target;
+                    }
+                };
+
+                requestAnimationFrame(animate);
+                observer.unobserve(el);
+            }
+        });
+    }, { threshold: 0.5 });
+
+    statValues.forEach(el => observer.observe(el));
 });
 </script>
-@endsection 
+@endpush

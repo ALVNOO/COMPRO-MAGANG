@@ -5,7 +5,23 @@
       "Bash(npm run build:*)",
       "Bash(cat:*)",
       "Bash(php artisan make:migration:*)",
-      "Bash(php artisan migrate:*)"
+      "Bash(php artisan migrate:*)",
+      "Bash(dir /s /b \"D:\\\\000 dokumen\\\\001 kuliah\\\\002 Matakuliah\\\\semester\\\\computing project\\\\final\\\\COMPRO-MAGANG\")",
+      "Bash(findstr:*)",
+      "Bash(php artisan route:list:*)",
+      "Bash(php artisan:*)",
+      "Bash(php artisan view:clear:*)",
+      "Bash(php -l:*)",
+      "Bash(curl:*)",
+      "Bash(find:*)",
+      "Bash(git checkout:*)",
+      "Bash(python:*)",
+      "Bash(git add:*)",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nfeat: Restore profile picture upload with cropper and submit animation\n\n- Add profile picture section with circular crop preview in Section 1\n- Add Cropper.js modal with rotate, zoom, and reset tools\n- Add animated submit section with dual icons \\(send/checkmark\\)\n- Add particle and ripple effects for 100% progress celebration\n- Add submit confirmation dialog before form submission\n- Include Cropper.js library \\(CSS + JS\\) from CDN\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(grep:*)",
+      "Bash(xargs:*)"
     ]
   }
 }
