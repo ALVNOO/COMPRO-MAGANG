@@ -299,7 +299,7 @@
                                     <!-- Actions -->
                                     <td style="text-align: center;">
                                         @if($todayAttendance && $todayAttendance->photo_path)
-                                            <button onclick="showPhoto('{{ $participant['user']->name }}', '{{ asset('storage/' . $todayAttendance->photo_path) }}', '{{ $todayAttendance->status }}', '{{ \Carbon\Carbon::parse($todayAttendance->check_in_time)->format('H:i') }}', '{{ $todayAttendance->keterangan ?? '' }}')" class="btn btn-sm" style="background: linear-gradient(135deg, #EE2E24 0%, #F60000 100%); color: white; border-radius: 6px; padding: 0.35rem 0.75rem; font-weight: 600; font-size: 0.8rem; white-space: nowrap;">
+                                            <button onclick="showPhoto('{{ $participant['user']->name }}', '{{ asset('storage/' . $todayAttendance->photo_path) }}', '{{ $todayAttendance->status }}', '{{ \Carbon\Carbon::parse($todayAttendance->check_in_time)->format('H:i') }}', '{{ $todayAttendance->absence_reason ?? '' }}')" class="btn btn-sm" style="background: linear-gradient(135deg, #EE2E24 0%, #F60000 100%); color: white; border-radius: 6px; padding: 0.35rem 0.75rem; font-weight: 600; font-size: 0.8rem; white-space: nowrap;">
                                                 <i class="fas fa-image me-1"></i>Foto
                                             </button>
                                         @else

@@ -103,8 +103,8 @@
     <div class="sidebar-profile">
         <a href="{{ $role === 'admin' ? '#' : ($role === 'mentor' ? '#' : route('dashboard.profile')) }}" class="profile-link">
             <div class="profile-avatar">
-                @if($user->avatar)
-                    <img src="{{ asset('storage/' . $user->avatar) }}" alt="{{ $user->name }}">
+                @if($user->profile_picture)
+                    <img src="{{ asset('storage/' . $user->profile_picture) }}" alt="{{ $user->name }}">
                 @else
                     {{ $initials }}
                 @endif

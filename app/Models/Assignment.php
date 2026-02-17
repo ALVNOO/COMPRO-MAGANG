@@ -19,7 +19,10 @@ class Assignment extends Model
         'file_path',
         'submission_file_path',
         'grade',
-        'submitted_at'
+        'submitted_at',
+        'feedback',
+        'is_revision',
+        'online_text',
     ];
 
     protected $casts = [

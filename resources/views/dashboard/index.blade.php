@@ -9,11 +9,7 @@
 @section('title', 'Dashboard Peserta Magang')
 
 @php
-    $user = Auth::user();
-    $application = $user->internshipApplications()
-        ->whereIn('status', ['accepted', 'finished'])
-        ->latest()
-        ->first();
+    // $user and $application are passed from DashboardController::index()
 
     // Calculate stats
     $totalAssignments = $user->assignments->count();
@@ -23,9 +19,9 @@
 
     // Attendance stats
     $attendances = $user->attendances ?? collect();
-    $presentCount = $attendances->where('status', 'present')->count();
-    $lateCount = $attendances->where('status', 'late')->count();
-    $absentCount = $attendances->where('status', 'absent')->count();
+    $presentCount = $attendances->where('status', 'Hadir')->count();
+    $lateCount = $attendances->where('status', 'Terlambat')->count();
+    $absentCount = $attendances->where('status', 'Absen')->count();
     $totalAttendance = $presentCount + $lateCount + $absentCount;
     $attendanceRate = $totalAttendance > 0 ? round((($presentCount + $lateCount) / $totalAttendance) * 100) : 0;
 
@@ -625,7 +621,7 @@
             </h1>
             <p>
                 @if($application)
-                    Selamat menjalani program magang di <strong>{{ $application->division->name ?? 'Telkom Indonesia' }}</strong>.
+                    Selamat menjalani program magang di <strong>{{ $application->divisionAdmin->division_name ?? $application->divisi->name ?? 'Telkom Indonesia' }}</strong>.
                     Tetap semangat dan raih pengalaman terbaikmu!
                 @else
                     Selamat datang di dashboard peserta magang Telkom Indonesia.

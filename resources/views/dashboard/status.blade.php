@@ -17,9 +17,14 @@
     - status-scripts.blade.php         : JavaScript animations
 --}}
 
-@extends('layouts.dashboard')
+@extends('layouts.dashboard-unified')
 
 @section('title', 'Status Pengajuan - PT Telkom Indonesia')
+
+@php
+    $role = 'participant';
+    $pageTitle = 'Status Pengajuan';
+@endphp
 
 @push('styles')
     @include('dashboard.partials.status-styles')
@@ -27,12 +32,6 @@
 
 @section('content')
 <div class="status-page">
-    {{-- Floating Gradient Orbs --}}
-    <div class="orb orb-1"></div>
-    <div class="orb orb-2"></div>
-    <div class="orb orb-3"></div>
-    <div class="orb orb-4"></div>
-
     <div class="content-wrapper">
         @if($application)
             @php

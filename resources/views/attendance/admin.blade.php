@@ -823,7 +823,7 @@
                     </td>
                     <td style="text-align: center;">
                         @if($participant['attendance'] && $participant['attendance']->photo_path)
-                            <button onclick="showPhoto('{{ $participant['user']->name }}', '{{ asset('storage/' . $participant['attendance']->photo_path) }}', '{{ $participant['attendance']->status }}', '{{ $participant['attendance']->check_in_time ? Carbon::parse($participant['attendance']->check_in_time)->format('H:i') : '-' }}', '{{ $participant['attendance']->keterangan ?? '' }}')" class="btn-view-photo">
+                            <button onclick="showPhoto('{{ $participant['user']->name }}', '{{ asset('storage/' . $participant['attendance']->photo_path) }}', '{{ $participant['attendance']->status }}', '{{ $participant['attendance']->check_in_time ? Carbon::parse($participant['attendance']->check_in_time)->format('H:i') : '-' }}', '{{ $participant['attendance']->absence_reason ?? '' }}')" class="btn-view-photo">
                                 <i class="fas fa-image"></i> Lihat Foto
                             </button>
                         @else
