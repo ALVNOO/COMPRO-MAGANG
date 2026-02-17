@@ -17,7 +17,7 @@ class AuthController extends Controller
      */
     public function showLogin()
     {
-        return view('auth.login');
+        return view("auth.login");
     }
 
     /**
@@ -26,34 +26,41 @@ class AuthController extends Controller
     public function login(Request $request)
     {
         $request->validate([
-            'username' => 'required',
-            'password' => 'required',
+            "username" => "required",
+            "password" => "required",
         ]);
 
         // Cek apakah input adalah NIK (6 digit angka) untuk mentor
         $isNIK = preg_match('/^[0-9]{6}$/', $request->username);
-        
+
         if ($isNIK) {
             // Cari user dengan NIK sebagai username atau ktp_number
-            $user = User::where(function($query) use ($request) {
-                $query->where('username', $request->username)
-                      ->orWhere('ktp_number', $request->username);
-            })->where('role', 'pembimbing')->first();
-            
+            $user = User::where(function ($query) use ($request) {
+                $query
+                    ->where("username", $request->username)
+                    ->orWhere("ktp_number", $request->username);
+            })
+                ->where("role", "pembimbing")
+                ->first();
+
             if ($user && Hash::check($request->password, $user->password)) {
                 Auth::login($user);
                 $request->session()->regenerate();
-                
+
                 // Pembimbing: Cek 2FA
                 // Jika belum setup, paksa ke setup
                 if (!$user->hasTwoFactorEnabled()) {
-                    return redirect()->route('2fa.setup')
-                        ->with('info', 'Anda wajib mengaktifkan 2FA untuk pertama kali login');
+                    return redirect()
+                        ->route("2fa.setup")
+                        ->with(
+                            "info",
+                            "Anda wajib mengaktifkan 2FA untuk pertama kali login",
+                        );
                 }
-                
+
                 // Jika sudah setup tapi belum verified di session
-                if (!session('2fa_verified')) {
-                    return redirect()->route('2fa.verify');
+                if (!session("2fa_verified")) {
+                    return redirect()->route("2fa.verify");
                 }
 
                 // Sudah verified, ke dashboard mentor
@@ -61,23 +68,30 @@ class AuthController extends Controller
             }
         } else {
             // Login normal dengan username
-            $credentials = $request->only('username', 'password');
+            $credentials = $request->only("username", "password");
 
             if (Auth::attempt($credentials)) {
                 $request->session()->regenerate();
 
                 $user = Auth::user();
-                
+
                 // Semua role: cek 2FA
                 // Jika belum setup, paksa ke setup
-                if ($user->requiresTwoFactor() && !$user->hasTwoFactorEnabled()) {
-                    return redirect()->route('2fa.setup')
-                        ->with('info', 'Anda wajib mengaktifkan 2FA untuk pertama kali login');
+                if (
+                    $user->requiresTwoFactor() &&
+                    !$user->hasTwoFactorEnabled()
+                ) {
+                    return redirect()
+                        ->route("2fa.setup")
+                        ->with(
+                            "info",
+                            "Anda wajib mengaktifkan 2FA untuk pertama kali login",
+                        );
                 }
-                
+
                 // Jika sudah setup tapi belum verified di session
-                if ($user->requiresTwoFactor() && !session('2fa_verified')) {
-                    return redirect()->route('2fa.verify');
+                if ($user->requiresTwoFactor() && !session("2fa_verified")) {
+                    return redirect()->route("2fa.verify");
                 }
 
                 // Sudah verified atau tidak membutuhkan 2FA, ke dashboard masing-masing
@@ -85,9 +99,11 @@ class AuthController extends Controller
             }
         }
 
-        return back()->withErrors([
-            'username' => 'Username atau password salah.',
-        ])->withInput($request->only('username'));
+        return back()
+            ->withErrors([
+                "username" => "Username atau password salah.",
+            ])
+            ->withInput($request->only("username"));
     }
 
     /**
@@ -95,7 +111,7 @@ class AuthController extends Controller
      */
     public function showRegister()
     {
-        return view('auth.register');
+        return view("auth.register");
     }
 
     /**
@@ -103,32 +119,35 @@ class AuthController extends Controller
      */
     public function register(Request $request)
     {
-        $request->validate([
-            'email' => 'required|email|unique:users,email',
-            'password' => 'required|min:8|confirmed',
-        ], [
-            'email.required' => 'Email wajib diisi.',
-            'email.email' => 'Format email tidak valid.',
-            'email.unique' => 'Email sudah terdaftar.',
-            'password.required' => 'Password wajib diisi.',
-            'password.min' => 'Password minimal 8 karakter.',
-            'password.confirmed' => 'Konfirmasi password tidak sesuai.'
-        ]);
+        $request->validate(
+            [
+                "email" => "required|email|unique:users,email",
+                "password" => "required|min:8|confirmed",
+            ],
+            [
+                "email.required" => "Email wajib diisi.",
+                "email.email" => "Format email tidak valid.",
+                "email.unique" => "Email sudah terdaftar.",
+                "password.required" => "Password wajib diisi.",
+                "password.min" => "Password minimal 8 karakter.",
+                "password.confirmed" => "Konfirmasi password tidak sesuai.",
+            ],
+        );
 
         // Create user with minimal data (email + password only)
         // Other data will be filled in pre-acceptance page
         $user = User::create([
-            'username' => $request->email,
-            'name' => null,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
-            'nim' => null,
-            'university' => null,
-            'major' => null,
-            'phone' => null,
-            'ktp_number' => null,
-            'ktm' => null,
-            'role' => 'peserta',
+            "username" => $request->email,
+            "name" => null,
+            "email" => $request->email,
+            "password" => Hash::make($request->password),
+            "nim" => null,
+            "university" => null,
+            "major" => null,
+            "phone" => null,
+            "ktp_number" => null,
+            "ktm" => null,
+            "role" => "peserta",
         ]);
 
         // Generate 2FA secret Otomatis untuk peserta
@@ -137,20 +156,24 @@ class AuthController extends Controller
         // Create internship application (divisi_id akan di-assign oleh admin setelah diterima)
         // start_date dan end_date di-set null agar user mengisi sendiri di pre-acceptance
         InternshipApplication::create([
-            'user_id' => $user->id,
-            'divisi_id' => null,
-            'status' => 'pending',
-            'cover_letter_path' => null,
-            'start_date' => null,
-            'end_date' => null,
+            "user_id" => $user->id,
+            "divisi_id" => null,
+            "status" => "pending",
+            "cover_letter_path" => null,
+            "start_date" => null,
+            "end_date" => null,
         ]);
 
         // Auto login
         Auth::login($user);
 
         // Redirect ke pre-acceptance untuk melengkapi data
-        return redirect()->route('dashboard.pre-acceptance')
-            ->with('success', 'Registrasi berhasil! Silakan lengkapi data diri dan dokumen Anda.');
+        return redirect()
+            ->route("dashboard.pre-acceptance")
+            ->with(
+                "success",
+                "Registrasi berhasil! Silakan lengkapi data diri dan dokumen Anda.",
+            );
     }
 
     /**
@@ -162,9 +185,9 @@ class AuthController extends Controller
 
         $request->session()->invalidate();
         $request->session()->regenerateToken();
-        session()->forget('2fa_verified'); // Hapus verifikasi 2FA
+        session()->forget("2fa_verified"); // Hapus verifikasi 2FA
 
-        return redirect('/');
+        return redirect("/");
     }
 
     /**
@@ -182,12 +205,12 @@ class AuthController extends Controller
         // Generate QR Code
         $google2fa = new Google2FA();
         $qrCodeUrl = $google2fa->getQRCodeUrl(
-            config('app.name'),
+            config("app.name"),
             $user->email,
-            $user->two_factor_secret
+            $user->two_factor_secret,
         );
 
-        return view('auth.2fa-setup', compact('qrCodeUrl'));
+        return view("auth.2fa-setup", compact("qrCodeUrl"));
     }
 
     /**
@@ -198,16 +221,37 @@ class AuthController extends Controller
         $user = Auth::user();
 
         $request->validate([
-            'code' => 'required|numeric|digits:6'
+            "code" => "required|numeric|digits:6",
         ]);
 
-        if ($user->verifyTwoFactorCode($request->code)) {
+        $result = $user->verifyTwoFactorCode($request->code);
+
+        if (is_array($result) && $result["success"]) {
             $user->markTwoFactorAsVerified();
-            return redirect($this->getDashboardUrl($user))
-                ->with('success', '2FA berhasil diaktifkan! Silakan login kembali.');
+            return redirect($this->getDashboardUrl($user))->with(
+                "success",
+                "2FA berhasil diaktifkan! Silakan login kembali.",
+            );
         }
 
-        return back()->withErrors(['code' => 'Kode tidak valid']);
+        // Handle different error types
+        if (is_array($result)) {
+            $errorMessage = match ($result["error"]) {
+                "expired"
+                    => "Kode verifikasi sudah kedaluwarsa. Kode 2FA hanya berlaku 30 detik.",
+                "rate_limited" => isset($result["message"])
+                    ? $result["message"]
+                    : "Terlalu banyak percobaan gagal.",
+                "invalid"
+                    => "Kode verifikasi tidak valid. Pastikan kode yang dimasukkan benar.",
+                default => "Terjadi kesalahan dalam verifikasi kode.",
+            };
+            return back()
+                ->withErrors(["code" => $errorMessage])
+                ->with("error_type", $result["error"]);
+        }
+
+        return back()->withErrors(["code" => "Kode tidak valid"]);
     }
 
     /**
@@ -216,13 +260,18 @@ class AuthController extends Controller
     public function show2faVerify()
     {
         $user = Auth::user();
-        
+
         // Jika role tidak wajib 2FA, langsung ke dashboard
         if (!$user->requiresTwoFactor()) {
             return redirect($this->getDashboardUrl($user));
         }
 
-        return view('auth.2fa-verify');
+        // Update timestamp when showing verification form
+        $user->updateTwoFactorCodeGenerated();
+
+        return view("auth.2fa-verify", [
+            "timeRemaining" => $user->getTwoFactorTimeRemaining(),
+        ]);
     }
 
     /**
@@ -233,15 +282,57 @@ class AuthController extends Controller
         $user = Auth::user();
 
         $request->validate([
-            'code' => 'required|numeric|digits:6'
+            "code" => "required|numeric|digits:6",
         ]);
 
-        if ($user->verifyTwoFactorCode($request->code)) {
-            session(['2fa_verified' => true]);
+        $result = $user->verifyTwoFactorCode($request->code);
+
+        if (is_array($result) && $result["success"]) {
+            session(["2fa_verified" => true]);
             return redirect()->intended($this->getDashboardUrl($user));
         }
 
-        return back()->withErrors(['code' => 'Kode tidak valid']);
+        // Handle different error types
+        if (is_array($result)) {
+            $errorMessage = match ($result["error"]) {
+                "expired"
+                    => "Kode verifikasi sudah kedaluwarsa. Kode 2FA hanya berlaku 30 detik.",
+                "rate_limited" => isset($result["message"])
+                    ? $result["message"]
+                    : "Terlalu banyak percobaan gagal.",
+                "invalid"
+                    => "Kode verifikasi tidak valid. Pastikan kode yang dimasukkan benar.",
+                default => "Terjadi kesalahan dalam verifikasi kode.",
+            };
+            return back()
+                ->withErrors(["code" => $errorMessage])
+                ->with("error_type", $result["error"]);
+        }
+
+        return back()->withErrors(["code" => "Kode tidak valid"]);
+    }
+
+    /**
+     * Refresh 2FA verification (reset timeout)
+     */
+    public function refresh2fa(Request $request)
+    {
+        $user = Auth::user();
+
+        // Only allow refresh if user requires 2FA
+        if (!$user->requiresTwoFactor()) {
+            return redirect($this->getDashboardUrl($user));
+        }
+
+        // Update timestamp to reset the 30-second window
+        $user->updateTwoFactorCodeGenerated();
+
+        return redirect()
+            ->route("2fa.verify")
+            ->with(
+                "refresh_success",
+                "Timer berhasil direset! Silakan masukkan kode terbaru dari Google Authenticator Anda.",
+            );
     }
 
     /**
@@ -249,10 +340,10 @@ class AuthController extends Controller
      */
     private function getDashboardUrl($user)
     {
-        return match($user->role) {
-            'admin' => '/admin/dashboard',
-            'pembimbing' => '/mentor/dashboard',
-            default => '/dashboard',
+        return match ($user->role) {
+            "admin" => "/admin/dashboard",
+            "pembimbing" => "/mentor/dashboard",
+            default => "/dashboard",
         };
     }
 
@@ -269,7 +360,7 @@ class AuthController extends Controller
      */
     public function showChangePasswordForm()
     {
-        return view('auth.change-password');
+        return view("auth.change-password");
     }
 
     /**
@@ -277,23 +368,28 @@ class AuthController extends Controller
      */
     public function changePassword(Request $request)
     {
-        $request->validate([
-            'current_password' => 'required',
-            'new_password' => 'required|min:6|confirmed|different:current_password',
-        ], [
-            'new_password.different' => 'Password baru tidak boleh sama dengan password lama.'
-        ]);
+        $request->validate(
+            [
+                "current_password" => "required",
+                "new_password" =>
+                    "required|min:6|confirmed|different:current_password",
+            ],
+            [
+                "new_password.different" =>
+                    "Password baru tidak boleh sama dengan password lama.",
+            ],
+        );
 
         $user = User::find(Auth::id());
 
         if (!Hash::check($request->current_password, $user->password)) {
-            return back()->with('error', 'Password lama tidak sesuai.');
+            return back()->with("error", "Password lama tidak sesuai.");
         }
 
         $user->update([
-            'password' => Hash::make($request->new_password),
+            "password" => Hash::make($request->new_password),
         ]);
 
-        return back()->with('success', 'Password berhasil diubah.');
+        return back()->with("success", "Password berhasil diubah.");
     }
 }

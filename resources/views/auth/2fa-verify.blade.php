@@ -94,14 +94,14 @@
                 </div>
                 @endif
 
-                @if($errors->any())
-                <div class="auth-alert auth-alert-error">
+                @if($errors->any() && !str_contains($errors->first(), 'Coba lagi dalam 0 menit'))
+                <div class="auth-alert auth-alert-error" id="errorAlert">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <circle cx="12" cy="12" r="10"/>
                         <line x1="12" y1="8" x2="12" y2="12"/>
                         <line x1="12" y1="16" x2="12.01" y2="16"/>
                     </svg>
-                    <span>Kode verifikasi tidak valid. Silakan coba lagi.</span>
+                    <span>{{ $errors->first() }}</span>
                 </div>
                 @endif
 
@@ -116,6 +116,30 @@
                     <div class="auth-instruction-text">
                         <strong>Buka Authenticator App</strong>
                         <span>Google Authenticator, Authy, atau 1Password</span>
+                    </div>
+                </div>
+
+                <!-- Countdown Timer -->
+                <div class="countdown-container" id="countdownBox">
+                    <div class="countdown-main">
+                        <div class="countdown-icon">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="10"/>
+                                <polyline points="12,6 12,12 16,14"/>
+                            </svg>
+                        </div>
+                        <div class="countdown-content">
+                            <span class="countdown-label">Kode berlaku selama</span>
+                            <span class="countdown-number" id="countdown">30</span>
+                            <span class="countdown-unit">detik</span>
+                        </div>
+                    </div>
+
+                    <div class="countdown-progress">
+                        <div class="countdown-progress-track">
+                            <div class="countdown-progress-bar" id="countdownBar"></div>
+                        </div>
+
                     </div>
                 </div>
 
@@ -141,23 +165,49 @@
                                    required
                                    autofocus>
                         </div>
-                        <span class="form-hint">
+                        <span class="form-hint" id="formHint">
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <circle cx="12" cy="12" r="10"/>
                                 <line x1="12" y1="16" x2="12" y2="12"/>
                                 <line x1="12" y1="8" x2="12.01" y2="8"/>
                             </svg>
-                            Kode akan diverifikasi otomatis setelah 6 digit
+                            <span id="hintText">Kode akan diverifikasi otomatis setelah 6 digit</span>
                         </span>
                     </div>
 
                     <button type="submit" class="btn-auth-primary" id="submitBtn">
-                        <span>Verifikasi & Masuk</span>
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <span id="submitText">Verifikasi & Masuk</span>
+                        <svg id="submitArrow" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M5 12h14M12 5l7 7-7 7"/>
+                        </svg>
+                        <svg id="submitCheck" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: none;">
+                            <polyline points="20 6 9 17 4 12"/>
                         </svg>
                     </button>
                 </form>
+
+                <!-- Refresh Code Button (shown when expired) -->
+                <div id="refresh-container" style="display: none;">
+                    <form id="refresh-form" action="{{ route('2fa.refresh') }}" method="POST">
+                        @csrf
+                        <button type="submit" class="btn-auth-primary btn-auth-refresh" id="refreshBtn">
+                            <svg id="refreshIcon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="23 4 23 10 17 10"/>
+                                <polyline points="1 20 1 14 7 14"/>
+                                <path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"/>
+                            </svg>
+                            <span id="refreshText">Dapatkan Kode Baru</span>
+                        </button>
+                    </form>
+                    <div class="refresh-hint">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"/>
+                            <line x1="12" y1="16" x2="12" y2="12"/>
+                            <line x1="12" y1="8" x2="12.01" y2="8"/>
+                        </svg>
+                        <span>Kode Google Authenticator berubah setiap 30 detik</span>
+                    </div>
+                </div>
 
                 <!-- Cancel Action -->
                 <form id="logout-form" action="{{ route('logout') }}" method="POST">
@@ -271,6 +321,10 @@
         flex-shrink: 0;
     }
 
+    .form-hint.expired {
+        color: #dc3545;
+    }
+
     .auth-instruction-text {
         display: flex;
         flex-direction: column;
@@ -287,23 +341,195 @@
         color: #6c757d;
     }
 
+    /* Countdown Container */
+    .countdown-container {
+        background: linear-gradient(135deg, #fff8f5 0%, #fff 100%);
+        border: 1px solid rgba(238, 46, 36, 0.15);
+        border-radius: 16px;
+        padding: 20px;
+        margin-bottom: 24px;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 2px 8px rgba(238, 46, 36, 0.08);
+    }
+
+    .countdown-container.expired {
+        background: linear-gradient(135deg, #f8f9fa 0%, #fff 100%);
+        border-color: #dee2e6;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    }
+
+    .countdown-main {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        margin-bottom: 16px;
+        padding: 0 8px;
+    }
+
+    .countdown-icon {
+        width: 32px;
+        height: 32px;
+        background: linear-gradient(135deg, #EE2E24 0%, #C41E3A 100%);
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        flex-shrink: 0;
+    }
+
+    .countdown-container.expired .countdown-icon {
+        background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+    }
+
+    .countdown-content {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex: 1;
+        min-width: 0;
+        line-height: 1.2;
+        gap: 12px;
+    }
+
+    .countdown-label {
+        font-size: 14px;
+        font-weight: 500;
+        color: #495057;
+        letter-spacing: 0.025em;
+        margin: 0;
+        white-space: nowrap;
+    }
+
+
+
+
+
+    .countdown-number {
+        font-size: 32px;
+        font-weight: 800;
+        line-height: 1;
+        color: #EE2E24;
+        font-family: 'Inter', 'Segoe UI', sans-serif;
+        text-shadow: 0 2px 4px rgba(238, 46, 36, 0.1);
+        margin: 0;
+        padding: 0;
+    }
+
+    .countdown-container.expired .countdown-number {
+        color: #6c757d;
+        text-shadow: none;
+    }
+
+    .countdown-unit {
+        font-size: 14px;
+        font-weight: 500;
+        color: #6c757d;
+    }
+
+    .countdown-progress {
+        position: relative;
+    }
+
+    .countdown-progress-track {
+        width: 100%;
+        height: 6px;
+        background: rgba(238, 46, 36, 0.1);
+        border-radius: 3px;
+        overflow: hidden;
+        margin-bottom: 8px;
+    }
+
+    .countdown-progress-bar {
+        height: 100%;
+        background: linear-gradient(90deg, #EE2E24 0%, #C41E3A 100%);
+        border-radius: 3px;
+        transition: width 0.3s ease;
+        width: 100%;
+        position: relative;
+    }
+
+    .countdown-progress-bar::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 20%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.3) 100%);
+        border-radius: 3px;
+    }
+
+    .countdown-container.expired .countdown-progress-bar {
+        width: 0;
+        background: #dee2e6;
+    }
+
+    .countdown-container.expired .countdown-progress-bar::after {
+        display: none;
+    }
+
+
+
+    /* Animations */
+    .countdown-number {
+        transition: all 0.3s ease;
+    }
+
+    .countdown-container:not(.expired) .countdown-number {
+        animation: pulse-subtle 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse-subtle {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.02); }
+    }
+
+    /* Warning state when time is low */
+    .countdown-container.warning .countdown-number {
+        color: #dc3545;
+        animation: pulse-warning 1s ease-in-out infinite;
+    }
+
+    .countdown-container.warning .countdown-progress-bar {
+        background: linear-gradient(90deg, #dc3545 0%, #c82333 100%);
+    }
+
+    @keyframes pulse-warning {
+        0%, 100% { transform: scale(1); opacity: 1; }
+        50% { transform: scale(1.05); opacity: 0.8; }
+    }
+
     /* Code Input Styling */
     .input-wrapper-code {
         position: relative;
     }
 
     .form-input-code {
-        font-size: 28px !important;
+        font-size: 32px !important;
         font-weight: 700 !important;
-        letter-spacing: 8px !important;
+        letter-spacing: 12px !important;
         text-align: center !important;
-        padding: 16px 16px 16px 48px !important;
+        padding: 20px 20px 20px 52px !important;
         font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace !important;
+        transition: all 0.3s ease;
+        height: 70px !important;
+        border: 2px solid #e9ecef !important;
+    }
+
+    .form-input-code.expired {
+        background: #f8f9fa;
+        color: #6c757d;
+        border-color: #dee2e6;
     }
 
     .form-input-code::placeholder {
-        letter-spacing: 8px;
+        letter-spacing: 12px;
         color: #ced4da;
+        font-size: 24px;
     }
 
     .form-hint {
@@ -344,14 +570,72 @@
         color: #495057;
     }
 
+    /* Refresh Container */
+    #refresh-container {
+        margin-bottom: 16px;
+    }
+
+    /* Refresh Button */
+    .btn-auth-refresh {
+        background: linear-gradient(135deg, #28a745 0%, #20c997 100%) !important;
+        margin-bottom: 12px;
+    }
+
+    .btn-auth-refresh:hover {
+        background: linear-gradient(135deg, #20c997 0%, #17a2b8 100%) !important;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+    }
+
+    .btn-auth-refresh.loading {
+        pointer-events: none;
+        background: linear-gradient(135deg, #6c757d 0%, #495057 100%) !important;
+    }
+
+    .btn-auth-refresh.loading #refreshIcon {
+        animation: rotate 1s linear infinite;
+    }
+
+    .btn-auth-refresh.loading #refreshText {
+        opacity: 0.7;
+    }
+
+    @keyframes rotate {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+
+    .refresh-hint {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        font-size: 12px;
+        color: #6c757d;
+        text-align: center;
+        padding: 8px;
+        background: #f8f9fa;
+        border-radius: 8px;
+        border: 1px solid #e9ecef;
+    }
+
+    .refresh-hint svg {
+        flex-shrink: 0;
+        color: #28a745;
+    }
+
     /* Loading State */
     .btn-auth-primary.loading {
         pointer-events: none;
-        opacity: 0.8;
+        background: linear-gradient(135deg, #ffa726 0%, #ff9800 100%);
     }
 
-    .btn-auth-primary.loading span {
+    .btn-auth-primary.loading #submitText {
         opacity: 0;
+    }
+
+    .btn-auth-primary.loading #submitArrow {
+        display: none;
     }
 
     .btn-auth-primary.loading::after {
@@ -365,33 +649,145 @@
         animation: spin 0.8s linear infinite;
     }
 
+    .btn-auth-primary.success {
+        background: linear-gradient(135deg, #4caf50 0%, #388e3c 100%);
+        pointer-events: none;
+    }
+
+    .btn-auth-primary.success #submitText {
+        opacity: 1;
+    }
+
+    .btn-auth-primary.success #submitArrow {
+        display: none;
+    }
+
+    .btn-auth-primary.success #submitCheck {
+        display: block;
+    }
+
     @keyframes spin {
         to { transform: rotate(360deg); }
     }
 
+    @keyframes pulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+    }
+
+    .btn-auth-primary.success {
+        animation: pulse 0.3s ease-in-out;
+    }
+
     /* Mobile Responsive */
-    @media (max-width: 991px) {
-        .form-input-code {
-            font-size: 24px !important;
-            letter-spacing: 6px !important;
-        }
+@media (max-width: 991px) {
+    .form-input-code {
+        font-size: 28px !important;
+        letter-spacing: 10px !important;
+        height: 65px !important;
     }
 
-    @media (max-width: 576px) {
-        .auth-user-card {
-            padding: 12px;
-        }
-
-        .auth-instruction-box {
-            padding: 12px;
-        }
-
-        .form-input-code {
-            font-size: 20px !important;
-            letter-spacing: 4px !important;
-            padding: 14px 14px 14px 44px !important;
-        }
+    .form-input-code::placeholder {
+        font-size: 22px;
+        letter-spacing: 10px;
     }
+
+    .countdown-container {
+        padding: 16px;
+    }
+
+    .countdown-number {
+        font-size: 28px;
+    }
+
+    .countdown-icon {
+        width: 28px;
+        height: 28px;
+    }
+
+    .countdown-label {
+        font-size: 13px;
+    }
+
+    .countdown-unit {
+        font-size: 13px;
+    }
+
+    .countdown-main {
+        gap: 10px;
+    }
+
+    .countdown-content {
+        justify-content: flex-start;
+    }
+}
+
+@media (max-width: 576px) {
+    .auth-user-card {
+        padding: 12px;
+    }
+
+    .auth-instruction-box {
+        padding: 12px;
+    }
+
+    .countdown-container {
+        padding: 14px;
+        margin-bottom: 16px;
+    }
+
+    .countdown-number {
+        font-size: 24px;
+    }
+
+    .countdown-icon {
+        width: 24px;
+        height: 24px;
+    }
+
+    .countdown-label {
+        font-size: 12px;
+    }
+
+    .countdown-unit {
+        font-size: 12px;
+    }
+
+    .countdown-main {
+        margin-bottom: 12px;
+        gap: 8px;
+    }
+
+    .countdown-content {
+        justify-content: flex-start;
+    }
+
+    .form-input-code {
+        font-size: 24px !important;
+        letter-spacing: 8px !important;
+        padding: 16px 16px 16px 48px !important;
+        height: 60px !important;
+    }
+
+    .form-input-code::placeholder {
+        font-size: 20px;
+        letter-spacing: 8px;
+    }
+
+    .btn-auth-refresh {
+        font-size: 13px;
+        padding: 12px 20px;
+    }
+
+    .refresh-hint {
+        font-size: 11px;
+        padding: 6px;
+    }
+
+    #refresh-container {
+        margin-bottom: 12px;
+    }
+}
 </style>
 @endpush
 
@@ -400,20 +796,90 @@
 document.addEventListener('DOMContentLoaded', function() {
     const codeInput = document.getElementById('code');
     const submitBtn = document.getElementById('submitBtn');
+    const refreshBtn = document.getElementById('refreshBtn');
     const form = document.getElementById('verifyForm');
+    const countdownElement = document.getElementById('countdown');
+    const countdownBar = document.getElementById('countdownBar');
+    const countdownBox = document.getElementById('countdownBox');
+    const formHint = document.getElementById('formHint');
+    const hintText = document.getElementById('hintText');
+
+    let timeLeft = Math.floor({{ $timeRemaining ?? 30 }});
+    let countdownInterval;
+    let isExpired = false;
+
+    function startCountdown() {
+        // Set initial display
+        countdownElement.textContent = timeLeft;
+
+        countdownInterval = setInterval(() => {
+            timeLeft--;
+
+            // Always show integer values
+            countdownElement.textContent = Math.max(0, timeLeft);
+
+            // Update progress bar
+            const percentage = Math.max(0, (timeLeft / 30) * 100);
+            countdownBar.style.width = percentage + '%';
+
+            // Change color when time is running out
+            if (timeLeft <= 10 && timeLeft > 0) {
+                countdownBox.classList.add('warning');
+                countdownBox.style.borderColor = '#dc3545';
+            } else {
+                countdownBox.classList.remove('warning');
+            }
+
+            if (timeLeft <= 0) {
+                clearInterval(countdownInterval);
+                countdownElement.textContent = '0';
+                handleExpired();
+            }
+        }, 1000);
+    }
+
+    function handleExpired() {
+        isExpired = true;
+
+        // Update UI to show expired state
+        countdownBox.classList.add('expired');
+        codeInput.classList.add('expired');
+        codeInput.disabled = true;
+        codeInput.placeholder = 'EXPIRED';
+        submitBtn.disabled = true;
+        submitBtn.style.opacity = '0.5';
+
+        // Update hint text
+        formHint.classList.add('expired');
+        hintText.innerHTML = 'Kode sudah kedaluwarsa. Klik "Dapatkan Kode Baru" untuk refresh.';
+
+        // Show refresh button
+        document.getElementById('refresh-container').style.display = 'block';
+
+        countdownElement.textContent = '0';
+    }
 
     if (codeInput) {
+        // Start countdown
+        if (timeLeft > 0) {
+            startCountdown();
+        } else {
+            handleExpired();
+        }
+
         // Auto focus
         codeInput.focus();
 
         // Only allow numbers
         codeInput.addEventListener('input', function() {
+            if (isExpired) return;
+
             this.value = this.value.replace(/[^0-9]/g, '');
 
             // Auto submit when 6 digits
             if (this.value.length === 6) {
                 submitBtn.classList.add('loading');
-                submitBtn.innerHTML = '<span>Memverifikasi...</span>';
+                document.getElementById('submitText').textContent = 'Memverifikasi...';
 
                 setTimeout(() => {
                     form.submit();
@@ -423,6 +889,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Handle paste
         codeInput.addEventListener('paste', function(e) {
+            if (isExpired) return;
+
             e.preventDefault();
             const pastedText = (e.clipboardData || window.clipboardData).getData('text');
             const numericOnly = pastedText.replace(/[^0-9]/g, '').substring(0, 6);
@@ -430,7 +898,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
             if (numericOnly.length === 6) {
                 submitBtn.classList.add('loading');
-                submitBtn.innerHTML = '<span>Memverifikasi...</span>';
+                document.getElementById('submitText').textContent = 'Memverifikasi...';
 
                 setTimeout(() => {
                     form.submit();
@@ -440,10 +908,90 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Form submit loading state
-    form.addEventListener('submit', function() {
+    form.addEventListener('submit', function(e) {
+        if (isExpired) {
+            e.preventDefault();
+            return;
+        }
+
         submitBtn.classList.add('loading');
-        submitBtn.innerHTML = '<span>Memverifikasi...</span>';
+        document.getElementById('submitText').textContent = 'Memverifikasi...';
     });
+
+    // Auto-clear irrelevant error messages
+    function clearIrrelevantErrors() {
+        const errorAlert = document.getElementById('errorAlert');
+        if (errorAlert) {
+            const errorText = errorAlert.textContent || '';
+            // Hide rate limit errors with 0 minutes
+            if (errorText.includes('Coba lagi dalam 0 menit')) {
+                errorAlert.style.display = 'none';
+            }
+        }
+    }
+
+    // Clear errors on page load
+    clearIrrelevantErrors();
+
+    // Handle server-side errors and success states
+    @if(session('error_type') == 'expired')
+        // If server says code is expired, immediately show expired state
+        setTimeout(() => {
+            clearInterval(countdownInterval);
+            handleExpired();
+        }, 100);
+    @endif
+
+    @if(session('refresh_success'))
+        // Reset timer and enable form after refresh
+        setTimeout(() => {
+            timeLeft = 30;
+            isExpired = false;
+            countdownBox.classList.remove('expired', 'warning');
+            countdownBox.style.borderColor = 'rgba(238, 46, 36, 0.15)';
+            codeInput.classList.remove('expired');
+            codeInput.disabled = false;
+            codeInput.placeholder = '000000';
+            codeInput.value = '';
+            submitBtn.disabled = false;
+            submitBtn.style.opacity = '1';
+            formHint.classList.remove('expired');
+            hintText.innerHTML = 'Kode akan diverifikasi otomatis setelah 6 digit';
+            document.getElementById('refresh-container').style.display = 'none';
+            codeInput.focus();
+
+            // Clear any existing countdown
+            if (countdownInterval) {
+                clearInterval(countdownInterval);
+            }
+
+            // Start fresh countdown with proper integer display
+            countdownElement.textContent = '30';
+            document.getElementById('countdownBar').style.width = '100%';
+            startCountdown();
+        }, 100);
+    @endif
+
+    // Handle refresh button loading state
+    const refreshForm = document.getElementById('refresh-form');
+    if (refreshForm) {
+        refreshForm.addEventListener('submit', function() {
+            const refreshBtn = document.getElementById('refreshBtn');
+            const refreshText = document.getElementById('refreshText');
+
+            refreshBtn.classList.add('loading');
+            refreshText.textContent = 'Mengatur Ulang...';
+        });
+    }
+
+    @if(session('success') && !session('refresh_success'))
+        // Show success state for regular success
+        setTimeout(() => {
+            submitBtn.classList.remove('loading');
+            submitBtn.classList.add('success');
+            document.getElementById('submitText').textContent = 'Berhasil!';
+        }, 100);
+    @endif
 });
 </script>
 @endpush

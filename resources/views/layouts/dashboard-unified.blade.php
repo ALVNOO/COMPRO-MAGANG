@@ -14,14 +14,166 @@
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
-    <!-- Bootstrap 5 Bundle (includes Popper.js) - required for modals, dropdowns, accordions -->
-    @vite(['resources/js/peserta-dashboard.js'])
+    <!-- Notification Dropdown Script (must be before Alpine.js) -->
+    <script>
+    // Make notificationDropdown available globally for Alpine.js
+    window.notificationDropdown = function() {
+        return {
+            open: false,
+            notifications: [],
+            allNotifications: [],
+            unreadCount: 0,
+            loading: true,
+            loadingAll: false,
+            showAll: false,
+
+            init() {
+                this.loadNotifications();
+                // Refresh notifications every 30 seconds
+                setInterval(() => {
+                    if (!this.open) {
+                        this.loadNotifications();
+                    }
+                }, 30000);
+            },
+
+            toggleDropdown() {
+                this.open = !this.open;
+                if (this.open) {
+                    this.loadNotifications();
+                    this.showAll = false; // Reset expanded state when closing
+                }
+            },
+
+            async loadNotifications() {
+                try {
+                    this.loading = true;
+                    const response = await fetch('{{ route("notifications.recent") }}');
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    const data = await response.json();
+                    this.notifications = data.notifications || [];
+                    this.allNotifications = this.notifications; // Initialize with recent
+                    this.unreadCount = data.unread_count || 0;
+                    this.loading = false;
+                } catch (error) {
+                    console.error('Error loading notifications:', error);
+                    this.loading = false;
+                    this.notifications = [];
+                    this.allNotifications = [];
+                    this.unreadCount = 0;
+                }
+            },
+
+            async toggleShowAll() {
+                if (!this.showAll) {
+                    // Load all notifications
+                    await this.loadAllNotifications();
+                }
+                this.showAll = !this.showAll;
+            },
+
+            async loadAllNotifications() {
+                try {
+                    this.loadingAll = true;
+                    const response = await fetch('/notifications?format=json');
+                    if (response.ok) {
+                        const data = await response.json();
+                        this.allNotifications = data.notifications || this.notifications;
+                    } else {
+                        // Fallback: use recent notifications
+                        this.allNotifications = this.notifications;
+                    }
+                    this.loadingAll = false;
+                } catch (error) {
+                    console.error('Error loading all notifications:', error);
+                    // Fallback: use recent notifications
+                    this.allNotifications = this.notifications;
+                    this.loadingAll = false;
+                }
+            },
+
+            async markAsRead(notificationId, event) {
+                if (event) {
+                    event.preventDefault();
+                    const notification = this.allNotifications.find(n => n.id === notificationId) ||
+                                       this.notifications.find(n => n.id === notificationId);
+                    if (notification && !notification.is_read) {
+                        try {
+                            const response = await fetch(`/notifications/${notificationId}/read`, {
+                                method: 'POST',
+                                headers: {
+                                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                                    'Content-Type': 'application/json',
+                                    'Accept': 'application/json',
+                                },
+                            });
+                            if (response.ok) {
+                                notification.is_read = true;
+                                this.unreadCount = Math.max(0, this.unreadCount - 1);
+                            }
+                        } catch (error) {
+                            console.error('Error marking notification as read:', error);
+                        }
+                    }
+                }
+            },
+
+            async markAllAsRead() {
+                try {
+                    const response = await fetch('{{ route("notifications.mark-all-read") }}', {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json',
+                        },
+                    });
+                    if (response.ok) {
+                        this.allNotifications.forEach(n => {
+                            n.is_read = true;
+                        });
+                        this.notifications.forEach(n => {
+                            n.is_read = true;
+                        });
+                        this.unreadCount = 0;
+                    }
+                } catch (error) {
+                    console.error('Error marking all as read:', error);
+                }
+            },
+
+            getIconClass(icon) {
+                const icons = {
+                    'success': 'fas fa-check-circle',
+                    'info': 'fas fa-info-circle',
+                    'warning': 'fas fa-exclamation-triangle',
+                    'error': 'fas fa-times-circle',
+                };
+                return icons[icon] || 'fas fa-bell';
+            }
+        }
+    }
+    </script>
 
     <!-- Alpine.js -->
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 
     <!-- Chart.js (optional) -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+    <!-- Vite Assets -->
+    @vite(['resources/css/design-system.css', 'resources/css/ux-utilities.css'])
+    
+    {{-- Load role-specific CSS if needed --}}
+    @if(isset($role) && $role === 'mentor')
+        @vite(['resources/css/mentor-dashboard.css', 'resources/js/mentor-dashboard.js'])
+    @elseif(isset($role) && $role === 'admin')
+        @vite(['resources/css/admin-dashboard.css', 'resources/js/admin-dashboard.js'])
+    @elseif(isset($role) && $role === 'participant')
+        @vite(['resources/css/peserta-dashboard.css', 'resources/js/peserta-dashboard.js'])
+    @endif
 
     <style>
         /* ============================================

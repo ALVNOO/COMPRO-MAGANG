@@ -53,53 +53,71 @@
         </div>
 
         {{-- Notifications --}}
-        <div class="header-notifications" x-data="{ open: false }">
-            <button class="notification-btn" @click="open = !open">
+        <div class="header-notifications" x-data="window.notificationDropdown()">
+            <button class="notification-btn" @click="toggleDropdown()">
                 <i class="fas fa-bell"></i>
-                <span class="notification-badge">3</span>
+                <span class="notification-badge" x-show="unreadCount > 0" x-text="unreadCount"></span>
             </button>
 
-            <div class="notification-dropdown" x-show="open" @click.away="open = false"
+            <div class="notification-dropdown" 
+                 :class="{ 'expanded': showAll }"
+                 x-show="open" 
+                 @click.away="open = false"
                  x-transition:enter="transition ease-out duration-200"
                  x-transition:enter-start="opacity-0 transform -translate-y-2"
                  x-transition:enter-end="opacity-100 transform translate-y-0"
                  style="display: none;">
                 <div class="notification-header">
                     <h4>Notifikasi</h4>
-                    <button class="mark-read-btn">Tandai semua dibaca</button>
+                    <button class="mark-read-btn" @click="markAllAsRead()" x-show="unreadCount > 0">Tandai semua dibaca</button>
                 </div>
-                <div class="notification-list">
-                    <a href="#" class="notification-item unread">
-                        <div class="notification-icon success">
-                            <i class="fas fa-check-circle"></i>
+                <div class="notification-list" 
+                     :class="{ 'expanded': showAll }"
+                     x-ref="notificationList"
+                     :style="showAll ? 'max-height: 60vh;' : ''">
+                    <template x-if="loading">
+                        <div style="padding: 2rem; text-align: center; color: var(--color-gray-500);">
+                            <i class="fas fa-spinner fa-spin"></i> Memuat...
                         </div>
-                        <div class="notification-content">
-                            <p class="notification-text">Tugas baru telah diberikan</p>
-                            <span class="notification-time">5 menit yang lalu</span>
+                    </template>
+                    <template x-if="loadingAll">
+                        <div style="padding: 1rem; text-align: center; color: var(--color-gray-500); font-size: 0.85rem;">
+                            <i class="fas fa-spinner fa-spin"></i> Memuat semua notifikasi...
                         </div>
-                    </a>
-                    <a href="#" class="notification-item unread">
-                        <div class="notification-icon info">
-                            <i class="fas fa-info-circle"></i>
+                    </template>
+                    <template x-if="!loading && !loadingAll && allNotifications.length === 0">
+                        <div style="padding: 2rem; text-align: center; color: var(--color-gray-500);">
+                            <i class="fas fa-bell-slash" style="font-size: 2rem; margin-bottom: 0.5rem; opacity: 0.3; display: block;"></i>
+                            <p>Tidak ada notifikasi</p>
                         </div>
-                        <div class="notification-content">
-                            <p class="notification-text">Absensi hari ini belum diisi</p>
-                            <span class="notification-time">1 jam yang lalu</span>
-                        </div>
-                    </a>
-                    <a href="#" class="notification-item">
-                        <div class="notification-icon warning">
-                            <i class="fas fa-exclamation-triangle"></i>
-                        </div>
-                        <div class="notification-content">
-                            <p class="notification-text">Deadline tugas 2 hari lagi</p>
-                            <span class="notification-time">Kemarin</span>
-                        </div>
-                    </a>
+                    </template>
+                    <template x-if="!loading && !loadingAll">
+                        <template x-for="notification in allNotifications" :key="notification.id">
+                            <a :href="notification.link || '#'" 
+                               class="notification-item"
+                               :class="{ 'unread': !notification.is_read }"
+                               @click="markAsRead(notification.id, $event)">
+                                <div class="notification-icon" :class="notification.icon">
+                                    <i :class="getIconClass(notification.icon)"></i>
+                                </div>
+                                <div class="notification-content">
+                                    <p class="notification-text" x-text="notification.message"></p>
+                                    <span class="notification-time" x-text="notification.time_ago"></span>
+                                </div>
+                            </a>
+                        </template>
+                    </template>
                 </div>
-                <a href="#" class="notification-footer">
-                    Lihat semua notifikasi
-                </a>
+                <button class="notification-footer" 
+                        @click="toggleShowAll()"
+                        x-show="!showAll && notifications.length > 0">
+                    <i class="fas fa-chevron-down"></i> Lihat semua notifikasi
+                </button>
+                <button class="notification-footer" 
+                        @click="toggleShowAll()"
+                        x-show="showAll">
+                    <i class="fas fa-chevron-up"></i> Sembunyikan
+                </button>
             </div>
         </div>
 
@@ -312,12 +330,19 @@
     right: 0;
     margin-top: 0.5rem;
     width: 360px;
+    max-width: 90vw;
     background: var(--color-white);
     border-radius: 16px;
     box-shadow: 0 10px 40px rgba(0,0,0,0.15);
     border: 1px solid var(--color-gray-200);
     overflow: hidden;
     z-index: var(--z-dropdown);
+    transition: width 0.3s ease, max-height 0.3s ease;
+}
+
+.notification-dropdown.expanded {
+    width: 500px;
+    max-width: 90vw;
 }
 
 .notification-header {
@@ -347,6 +372,11 @@
 .notification-list {
     max-height: 320px;
     overflow-y: auto;
+    transition: max-height 0.3s ease;
+}
+
+.notification-list.expanded {
+    max-height: 60vh;
 }
 
 .notification-item {
@@ -411,6 +441,7 @@
 
 .notification-footer {
     display: block;
+    width: 100%;
     text-align: center;
     padding: 0.875rem;
     color: var(--color-primary);
@@ -418,11 +449,17 @@
     font-weight: 500;
     text-decoration: none;
     background: var(--color-gray-50);
+    border: none;
+    cursor: pointer;
     transition: background 0.2s;
 }
 
 .notification-footer:hover {
     background: var(--color-gray-100);
+}
+
+.notification-footer i {
+    margin-right: 0.5rem;
 }
 
 /* User Menu */
