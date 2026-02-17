@@ -34,7 +34,7 @@
 
 /* Hero Section */
 .mentor-hero {
-    background: linear-gradient(135deg, #10B981 0%, #059669 50%, #047857 100%);
+    background: linear-gradient(135deg, #EF4444 0%, #DC2626 50%, #B91C1C 100%);
     border-radius: 24px;
     padding: 2.5rem;
     color: white;
@@ -804,54 +804,6 @@
         </div>
         <div class="stat-value" data-count="{{ $assignmentsToGrade }}">{{ $assignmentsToGrade }}</div>
         <div class="stat-desc">Perlu Dinilai</div>
-    </div>
-
-    {{-- Average Grade --}}
-    <div class="stat-card purple">
-        <div class="stat-header">
-            <div class="stat-icon purple">
-                <i class="fas fa-star"></i>
-            </div>
-            <span class="stat-label">Rata-rata</span>
-        </div>
-        <div class="stat-value">{{ number_format($averageGrade, 1) }}</div>
-        <div class="stat-desc">Nilai Rata-Rata</div>
-    </div>
-
-    {{-- Completion Rate --}}
-    <div class="stat-card cyan">
-        <div class="stat-header">
-            <div class="stat-icon cyan">
-                <i class="fas fa-chart-line"></i>
-            </div>
-            <span class="stat-label">Rate</span>
-        </div>
-        <div class="stat-value">{{ number_format($completionRate, 0) }}%</div>
-        <div class="stat-desc">Tingkat Penyelesaian</div>
-    </div>
-
-    {{-- Present Today --}}
-    <div class="stat-card green">
-        <div class="stat-header">
-            <div class="stat-icon green">
-                <i class="fas fa-user-check"></i>
-            </div>
-            <span class="stat-label">Hari Ini</span>
-        </div>
-        <div class="stat-value" data-count="{{ $attendanceStats['present'] ?? 0 }}">{{ $attendanceStats['present'] ?? 0 }}</div>
-        <div class="stat-desc">Hadir Hari Ini</div>
-    </div>
-
-    {{-- Late/Absent --}}
-    <div class="stat-card amber {{ (($attendanceStats['late'] ?? 0) + ($attendanceStats['absent'] ?? 0)) > 0 ? 'has-pending' : '' }}">
-        <div class="stat-header">
-            <div class="stat-icon amber">
-                <i class="fas fa-exclamation-triangle"></i>
-            </div>
-            <span class="stat-label">Perhatian</span>
-        </div>
-        <div class="stat-value" data-count="{{ ($attendanceStats['late'] ?? 0) + ($attendanceStats['absent'] ?? 0) }}">{{ ($attendanceStats['late'] ?? 0) + ($attendanceStats['absent'] ?? 0) }}</div>
-        <div class="stat-desc">Terlambat/Absen</div>
     </div>
 </div>
 

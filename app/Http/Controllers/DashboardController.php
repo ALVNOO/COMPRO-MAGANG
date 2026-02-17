@@ -166,6 +166,10 @@ class DashboardController extends Controller
             abort(403);
         }
 
+        // Hitung jumlah submission sebelum membuat submission baru
+        $submissionCount = $assignment->submissions()->count();
+        $isRevision = $submissionCount > 0;
+
         $data = [
             'submitted_at' => now(),
         ];
@@ -178,7 +182,7 @@ class DashboardController extends Controller
                 'user_id' => Auth::id(),
                 'file_path' => $filePath,
                 'submitted_at' => now(),
-                'keterangan' => 'Kumpul tugas' . ($assignment->submissions()->count() > 0 ? ' (Revisi)' : ''),
+                'keterangan' => 'Kumpul tugas' . ($isRevision ? ' (Revisi)' : ''),
             ]);
         }
         if ($request->filled('online_text')) {
@@ -189,6 +193,37 @@ class DashboardController extends Controller
         if ($assignment->is_revision === 1) {
             $assignment->is_revision = null;
             $assignment->save();
+        }
+
+        // Buat notifikasi untuk mentor bahwa tugas telah dikumpulkan
+        try {
+            // Reload assignment untuk mendapatkan data terbaru termasuk submissions
+            $assignment->refresh();
+            
+            // Cari internship application untuk mendapatkan mentor
+            $application = \App\Models\InternshipApplication::where('user_id', $assignment->user_id)
+                ->where('status', 'accepted')
+                ->with('divisionMentor')
+                ->orderBy('start_date', 'desc')
+                ->first();
+
+            if ($application && $application->divisionMentor) {
+                // Cari user mentor berdasarkan nik_number
+                $mentorUser = \App\Models\User::where('username', $application->divisionMentor->nik_number)
+                    ->where('role', 'pembimbing')
+                    ->first();
+
+                if ($mentorUser) {
+                    $participantName = Auth::user()->name;
+                    \App\Services\NotificationService::assignmentSubmitted(
+                        $mentorUser,
+                        $assignment,
+                        $participantName
+                    );
+                }
+            }
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::warning('Error creating notification for mentor: ' . $e->getMessage());
         }
 
         return back()->with('success', 'Tugas berhasil dikumpulkan!');

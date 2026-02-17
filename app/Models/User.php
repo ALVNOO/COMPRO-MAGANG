@@ -112,6 +112,22 @@ class User extends Authenticatable
         return $this->hasMany(Logbook::class);
     }
 
+    /**
+     * Get the notifications for the user.
+     */
+    public function notifications()
+    {
+        return $this->hasMany(Notification::class)->orderBy('created_at', 'desc');
+    }
+
+    /**
+     * Get unread notifications count.
+     */
+    public function unreadNotificationsCount()
+    {
+        return $this->notifications()->unread()->count();
+    }
+
     // Cek apakah role wajib 2FA
     public function requiresTwoFactor()
     {

@@ -641,7 +641,22 @@ class MentorDashboardController extends Controller
 
             // Buat assignment
             try {
-                \App\Models\Assignment::create($data);
+                $assignment = \App\Models\Assignment::create($data);
+                
+                // Buat notifikasi untuk peserta
+                try {
+                    $user = \App\Models\User::find($userId);
+                    if ($user) {
+                        $notification = \App\Services\NotificationService::assignmentCreated($user, $assignment);
+                        Log::info('Notification created for user ' . $userId . ', notification ID: ' . $notification->id);
+                    } else {
+                        Log::warning('User not found for notification: ' . $userId);
+                    }
+                } catch (\Exception $notifError) {
+                    Log::error('Error creating notification for assignment: ' . $notifError->getMessage());
+                    Log::error('Stack trace: ' . $notifError->getTraceAsString());
+                }
+                
                 $successCount++;
             } catch (\Exception $e) {
                 Log::error('Error creating assignment for user ' . $userId . ': ' . $e->getMessage());
