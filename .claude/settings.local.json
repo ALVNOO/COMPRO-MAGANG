@@ -23,7 +23,8 @@
       "Bash(grep:*)",
       "Bash(xargs:*)",
       "Bash(ls \"D:\\\\000 dokumen\\\\001 kuliah\\\\002 Matakuliah\\\\semester\\\\computing project\\\\final\\\\COMPRO-MAGANG\\\\node_modules\\\\bootstrap\\\\dist\\\\js\"\" 2>/dev/null || echo \"Checking npm packages...\" && cat \"D:000 dokumen001 kuliah002 Matakuliahsemestercomputing projectfinalCOMPRO-MAGANGpackage.json \")",
-      "Bash(sqlite3:*)"
+      "Bash(sqlite3:*)",
+      "Bash(test -f \"d:\\\\000 dokumen\\\\001 kuliah\\\\002 Matakuliah\\\\semester\\\\computing project\\\\final\\\\COMPRO-MAGANG\\\\routes\\\\api.php\")"
     ]
   }
 }

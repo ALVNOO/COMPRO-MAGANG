@@ -29,15 +29,15 @@ Route::get("/program", [HomeController::class, "program"])->name("program");
 
 // Auth routes
 Route::get("/login", [AuthController::class, "showLogin"])->name("login");
-Route::post("/login", [AuthController::class, "login"]);
+Route::post("/login", [AuthController::class, "login"])->middleware("throttle:login");
 Route::get("/register", [AuthController::class, "showRegister"])->name(
     "register",
 );
-Route::post("/register", [AuthController::class, "register"]);
+Route::post("/register", [AuthController::class, "register"])->middleware("throttle:register");
 Route::post("/logout", [AuthController::class, "logout"])->name("logout");
 
-// 2FA routes (require authentication)
-Route::middleware("auth")->group(function () {
+// 2FA routes (require authentication + throttle)
+Route::middleware(["auth", "throttle:2fa"])->group(function () {
     Route::get("/2fa/setup", [AuthController::class, "setup2fa"])->name(
         "2fa.setup",
     );
@@ -66,10 +66,10 @@ Route::get("/internship/apply/{divisi}", [
 Route::post("/internship/apply/{divisi}", [
     InternshipController::class,
     "submitApply",
-])->name("internship.apply.submit");
+])->name("internship.apply.submit")->middleware("throttle:form-submission");
 
-// Protected routes (require authentication)
-Route::middleware("auth")->group(function () {
+// Protected routes (require authentication + global throttle)
+Route::middleware(["auth", "throttle:global"])->group(function () {
     // Dashboard routes
     Route::get("/dashboard", [DashboardController::class, "index"])->name(
         "dashboard",
@@ -178,11 +178,11 @@ Route::middleware("auth")->group(function () {
     Route::post("/attendance/check-in", [
         AttendanceController::class,
         "checkIn",
-    ])->name("attendance.check-in");
+    ])->name("attendance.check-in")->middleware("throttle:form-submission");
     Route::post("/attendance/absent", [
         AttendanceController::class,
         "absent",
-    ])->name("attendance.absent");
+    ])->name("attendance.absent")->middleware("throttle:form-submission");
 
     // Logbook routes (Peserta)
     Route::get("/logbook", [LogbookController::class, "index"])->name(
@@ -190,13 +190,13 @@ Route::middleware("auth")->group(function () {
     );
     Route::post("/logbook", [LogbookController::class, "store"])->name(
         "logbook.store",
-    );
+    )->middleware("throttle:form-submission");
     Route::put("/logbook/{id}", [LogbookController::class, "update"])->name(
         "logbook.update",
-    );
+    )->middleware("throttle:form-submission");
     Route::delete("/logbook/{id}", [LogbookController::class, "destroy"])->name(
         "logbook.destroy",
-    );
+    )->middleware("throttle:form-submission");
 
     // Change password routes
     Route::get("/dashboard/change-password", [
@@ -206,7 +206,7 @@ Route::middleware("auth")->group(function () {
     Route::post("/dashboard/change-password", [
         AuthController::class,
         "changePassword",
-    ])->name("password.update");
+    ])->name("password.update")->middleware("throttle:sensitive");
     Route::post("/dashboard/status/download-acceptance", [
         DashboardController::class,
         "downloadAcceptanceLetterFlag",
@@ -218,7 +218,7 @@ Route::middleware("auth")->group(function () {
 });
 
 // Mentor (Pembimbing) dashboard routes
-Route::middleware(["auth"])
+Route::middleware(["auth", "throttle:global"])
     ->prefix("mentor")
     ->group(function () {
         // Dashboard utama pembimbing
@@ -234,7 +234,7 @@ Route::middleware(["auth"])
         Route::post("/pengajuan/{id}/respon", [
             MentorDashboardController::class,
             "responPengajuan",
-        ])->name("mentor.pengajuan.respon");
+        ])->name("mentor.pengajuan.respon")->middleware("throttle:form-submission");
         // Surat Penerimaan
         Route::get("/pengajuan/{id}/acceptance-letter", [
             MentorDashboardController::class,
@@ -256,7 +256,7 @@ Route::middleware(["auth"])
         Route::post("/penugasan/tambah", [
             MentorDashboardController::class,
             "tambahPenugasan",
-        ])->name("mentor.penugasan.tambah");
+        ])->name("mentor.penugasan.tambah")->middleware("throttle:form-submission");
         Route::get("/penugasan/{assignment}/edit", [
             MentorDashboardController::class,
             "editPenugasan",
@@ -272,11 +272,11 @@ Route::middleware(["auth"])
         Route::post("/penugasan/{assignment}/nilai", [
             MentorDashboardController::class,
             "beriNilaiPenugasan",
-        ])->name("mentor.penugasan.nilai");
+        ])->name("mentor.penugasan.nilai")->middleware("throttle:form-submission");
         Route::post("/penugasan/{assignment}/revisi", [
             MentorDashboardController::class,
             "setRevisiPenugasan",
-        ])->name("mentor.penugasan.revisi");
+        ])->name("mentor.penugasan.revisi")->middleware("throttle:form-submission");
         // Menu sertifikat
         Route::get("/sertifikat", [
             MentorDashboardController::class,
@@ -297,7 +297,7 @@ Route::middleware(["auth"])
         Route::post("/sertifikat/{user}/send", [
             MentorDashboardController::class,
             "sendCertificate",
-        ])->name("mentor.sertifikat.send");
+        ])->name("mentor.sertifikat.send")->middleware("throttle:form-submission");
         // Menu profil
         Route::get("/profil", [
             MentorDashboardController::class,
@@ -332,7 +332,7 @@ Route::middleware(["auth"])
         Route::post("/laporan-penilaian/{applicationId}/upload", [
             MentorDashboardController::class,
             "uploadLaporanPenilaian",
-        ])->name("mentor.laporan-penilaian.upload");
+        ])->name("mentor.laporan-penilaian.upload")->middleware("throttle:form-submission");
         Route::get("/laporan-penilaian/{applicationId}/download", [
             MentorDashboardController::class,
             "downloadLaporanPenilaian",
@@ -343,7 +343,7 @@ Route::middleware(["auth"])
         ])->name("mentor.laporan-penilaian.delete");
     });
 
-Route::middleware(["auth"])
+Route::middleware(["auth", "throttle:global"])
     ->prefix("admin")
     ->name("admin.")
     ->group(function () {
@@ -378,11 +378,11 @@ Route::middleware(["auth"])
         Route::post("/applications/{id}/approve", [
             AdminApplicationController::class,
             "approve",
-        ])->name("applications.approve");
+        ])->name("applications.approve")->middleware("throttle:form-submission");
         Route::post("/applications/{id}/reject", [
             AdminApplicationController::class,
             "reject",
-        ])->name("applications.reject");
+        ])->name("applications.reject")->middleware("throttle:form-submission");
         Route::post("/applications/{id}/send-acceptance-letter", [
             AdminApplicationController::class,
             "sendAcceptanceLetter",
@@ -421,7 +421,7 @@ Route::middleware(["auth"])
         Route::post("/mentor/{id}/reset-password", [
             AdminMentorController::class,
             "resetPassword",
-        ])->name("mentor.reset-password");
+        ])->name("mentor.reset-password")->middleware("throttle:sensitive");
 
         // Rules
         Route::get("/rules", [AdminRuleController::class, "edit"])->name(
