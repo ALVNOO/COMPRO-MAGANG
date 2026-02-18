@@ -53,40 +53,54 @@ class AttendanceController extends Controller
         $request->validate([
             'photo' => 'required|image|mimes:jpeg,jpg,png|max:2048',
         ]);
-        
+
         $user = Auth::user();
         $now = now();
         $today = $now->toDateString();
-        
+
         // Check if already checked in today
         $existingAttendance = Attendance::where('user_id', $user->id)
             ->whereDate('date', $today)
             ->first();
-        
+
         if ($existingAttendance) {
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Anda sudah melakukan absensi hari ini.'
+                ], 422);
+            }
             return redirect()->back()
                 ->with('error', 'Anda sudah melakukan absensi hari ini.');
         }
-        
+
         // Determine status based on check-in time
         $checkInTime = $now->format('H:i:s');
         $status = 'Hadir';
         if ($now->format('H:i') > '08:00') {
             $status = 'Terlambat';
         }
-        
+
         // Upload photo
         $photoPath = $request->file('photo')->store('attendance-photos', 'public');
-        
+
         // Create attendance record
-        Attendance::create([
+        $attendance = Attendance::create([
             'user_id' => $user->id,
             'date' => $today,
             'status' => $status,
             'check_in_time' => $checkInTime,
             'photo_path' => $photoPath,
         ]);
-        
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Check in berhasil! Status: ' . $status,
+                'attendance' => $attendance
+            ]);
+        }
+
         return redirect()->route('attendance.index')
             ->with('success', 'Check in berhasil! Status: ' . $status);
     }
@@ -100,35 +114,49 @@ class AttendanceController extends Controller
             'reason' => 'required|string|max:1000',
             'proof' => 'nullable|file|mimes:pdf,jpeg,jpg,png|max:2048',
         ]);
-        
+
         $user = Auth::user();
         $today = today()->toDateString();
-        
+
         // Check if already checked in today
         $existingAttendance = Attendance::where('user_id', $user->id)
             ->whereDate('date', $today)
             ->first();
-        
+
         if ($existingAttendance) {
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Anda sudah melakukan absensi hari ini.'
+                ], 422);
+            }
             return redirect()->back()
                 ->with('error', 'Anda sudah melakukan absensi hari ini.');
         }
-        
+
         // Upload proof if provided
         $proofPath = null;
         if ($request->hasFile('proof')) {
             $proofPath = $request->file('proof')->store('attendance-proofs', 'public');
         }
-        
+
         // Create attendance record
-        Attendance::create([
+        $attendance = Attendance::create([
             'user_id' => $user->id,
             'date' => $today,
             'status' => 'Absen',
             'absence_reason' => $request->reason,
             'absence_proof_path' => $proofPath,
         ]);
-        
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Absen berhasil dicatat.',
+                'attendance' => $attendance
+            ]);
+        }
+
         return redirect()->route('attendance.index')
             ->with('success', 'Absen berhasil dicatat.');
     }

@@ -270,6 +270,90 @@
     transform: translateY(-2px);
 }
 
+/* Editing Row State */
+.logbook-table tbody tr.editing {
+    background: rgba(238, 46, 36, 0.05);
+}
+
+.logbook-table tbody tr.editing td {
+    padding: 1.25rem 1.5rem;
+}
+
+/* Add New Section */
+.add-new-section {
+    padding: 2rem;
+    border-top: 1px solid rgba(0, 0, 0, 0.06);
+    background: rgba(249, 250, 251, 0.5);
+    transition: all 0.3s ease;
+}
+
+.add-new-section.collapsed {
+    padding: 1rem 2rem;
+    cursor: pointer;
+}
+
+.add-new-section.collapsed:hover {
+    background: rgba(238, 46, 36, 0.03);
+}
+
+.add-new-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    color: #6b7280;
+    font-weight: 600;
+    font-size: 0.95rem;
+}
+
+.add-new-toggle i {
+    color: #10B981;
+    font-size: 1.1rem;
+}
+
+.add-new-form {
+    display: grid;
+    gap: 1rem;
+    animation: slide-down 0.3s ease-out;
+}
+
+@keyframes slide-down {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 200px 1fr;
+    gap: 1rem;
+    align-items: start;
+}
+
+.form-group-inline {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.form-group-inline label {
+    font-weight: 600;
+    color: #374151;
+    font-size: 0.9rem;
+}
+
+.form-actions {
+    display: flex;
+    gap: 0.75rem;
+    justify-content: flex-end;
+    margin-top: 0.5rem;
+}
+
 /* New Entry Row */
 .new-entry-row td {
     background: rgba(238, 46, 36, 0.03);
@@ -449,6 +533,79 @@
     box-shadow: 0 4px 14px rgba(239, 68, 68, 0.3);
 }
 
+/* Alpine.js Modal */
+.fixed {
+    position: fixed;
+}
+
+.inset-0 {
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+}
+
+.z-50 {
+    z-index: 50;
+}
+
+.overflow-y-auto {
+    overflow-y: auto;
+}
+
+.flex {
+    display: flex;
+}
+
+.items-center {
+    align-items: center;
+}
+
+.justify-center {
+    justify-content: center;
+}
+
+.min-h-screen {
+    min-height: 100vh;
+}
+
+.px-4 {
+    padding-left: 1rem;
+    padding-right: 1rem;
+}
+
+/* Animations */
+@keyframes fade-in {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.page-hero {
+    animation: fade-in 0.4s ease-out;
+}
+
+.stat-card {
+    animation: fade-in 0.5s ease-out;
+}
+
+.stat-card:nth-child(2) {
+    animation-delay: 0.1s;
+}
+
+.stat-card:nth-child(3) {
+    animation-delay: 0.2s;
+}
+
+.table-card {
+    animation: fade-in 0.6s ease-out;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
     .page-hero {
@@ -474,6 +631,19 @@
     .logbook-table tbody td {
         padding: 0.75rem 1rem;
         font-size: 0.8rem;
+    }
+
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+
+    .form-actions {
+        flex-direction: column-reverse;
+    }
+
+    .form-actions button {
+        width: 100%;
+        justify-content: center;
     }
 }
 </style>
@@ -549,24 +719,30 @@
             </thead>
             <tbody id="logbookBody">
                 @foreach($logbooks as $logbook)
-                <tr data-id="{{ $logbook->id }}">
+                <tr data-id="{{ $logbook->id }}" class="logbook-row">
                     <td>
-                        <span class="logbook-date">{{ $logbook->date->format('d M Y') }}</span>
+                        <span class="logbook-date view-mode">{{ $logbook->date->format('d M Y') }}</span>
+                        <input type="date" class="form-control edit-mode" style="display: none;" value="{{ $logbook->date->format('Y-m-d') }}">
                     </td>
                     <td>
-                        <div class="logbook-content-cell">{{ $logbook->content }}</div>
+                        <div class="logbook-content-cell view-mode">{{ $logbook->content }}</div>
+                        <textarea class="form-control logbook-textarea edit-mode" style="display: none;" rows="4">{{ $logbook->content }}</textarea>
                     </td>
                     <td style="text-align: center; white-space: nowrap;">
-                        <div style="display: inline-flex; gap: 0.5rem;">
-                            <button type="button" class="btn-action edit btn-edit-logbook"
-                                    data-id="{{ $logbook->id }}"
-                                    data-date="{{ $logbook->date->format('Y-m-d') }}"
-                                    data-content="{{ $logbook->content }}">
+                        <div style="display: inline-flex; gap: 0.5rem;" class="view-mode">
+                            <button type="button" class="btn-action edit btn-edit-logbook">
                                 <i class="fas fa-edit"></i>
                             </button>
-                            <button type="button" class="btn-action delete btn-delete-logbook"
-                                    data-id="{{ $logbook->id }}">
+                            <button type="button" class="btn-action delete btn-delete-logbook">
                                 <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                        <div style="display: none; gap: 0.5rem;" class="edit-mode">
+                            <button type="button" class="btn-save-entry btn-save-edit">
+                                <i class="fas fa-check"></i>
+                            </button>
+                            <button type="button" class="btn-cancel-entry btn-cancel-edit">
+                                <i class="fas fa-times"></i>
                             </button>
                         </div>
                     </td>
@@ -586,84 +762,85 @@
                     </td>
                 </tr>
                 @endif
-
-                @php $emptyRows = max(0, 5 - $logbooks->count()); @endphp
-                @for($i = 0; $i < $emptyRows; $i++)
-                <tr class="new-entry-row" style="display: none;">
-                    <td>
-                        <input type="date" class="form-control input-date" required>
-                    </td>
-                    <td>
-                        <textarea class="form-control logbook-textarea input-content" rows="3" placeholder="Tulis aktivitas Anda hari ini..." required></textarea>
-                    </td>
-                    <td style="text-align: center; white-space: nowrap;">
-                        <div style="display: inline-flex; gap: 0.5rem;">
-                            <button type="button" class="btn-save-entry btn-save-new">
-                                <i class="fas fa-save"></i>
-                            </button>
-                            <button type="button" class="btn-cancel-entry btn-cancel-new">
-                                <i class="fas fa-times"></i>
-                            </button>
-                        </div>
-                    </td>
-                </tr>
-                @endfor
             </tbody>
         </table>
     </div>
-</div>
 
-{{-- Edit Modal --}}
-<div class="modal fade" id="editModal" tabindex="-1">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">
-                    <i class="fas fa-edit" style="color: #F59E0B;"></i>
-                    Edit Logbook
-                </h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+    {{-- Add New Logbook Section --}}
+    <div class="add-new-section" id="addNewSection">
+        <div class="add-new-toggle" id="addNewToggle">
+            <i class="fas fa-plus-circle"></i>
+            <span>Tambah Logbook Baru</span>
+        </div>
+        <div class="add-new-form" id="addNewForm" style="display: none;">
+            <div class="form-row">
+                <div class="form-group-inline">
+                    <label for="newDate">
+                        <i class="fas fa-calendar" style="color: #EE2E24;"></i> Tanggal
+                    </label>
+                    <input type="date" class="form-control" id="newDate" required>
+                </div>
+                <div class="form-group-inline">
+                    <label for="newContent">
+                        <i class="fas fa-file-alt" style="color: #EE2E24;"></i> Isi Logbook
+                    </label>
+                    <textarea class="form-control logbook-textarea" id="newContent" rows="4" placeholder="Tulis aktivitas Anda hari ini..." required></textarea>
+                </div>
             </div>
-            <form id="editForm">
-                <div class="modal-body">
-                    <input type="hidden" id="editId">
-                    <div class="mb-3">
-                        <label for="editDate" class="form-label">Tanggal</label>
-                        <input type="date" class="form-control" id="editDate" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="editContent" class="form-label">Isi Logbook</label>
-                        <textarea class="form-control" id="editContent" rows="6" required placeholder="Tulis aktivitas Anda..."></textarea>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" style="border-radius: 10px;">Batal</button>
-                    <button type="submit" class="btn-modal-save">
-                        <i class="fas fa-save"></i> Simpan Perubahan
-                    </button>
-                </div>
-            </form>
+            <div class="form-actions">
+                <button type="button" class="btn-cancel-entry" id="btnCancelNew">
+                    <i class="fas fa-times"></i> Batal
+                </button>
+                <button type="button" class="btn-modal-save" id="btnSaveNew">
+                    <i class="fas fa-save"></i> Simpan Logbook
+                </button>
+            </div>
         </div>
     </div>
+
+    @if($logbooks->hasPages())
+        <div style="padding: 1.5rem; border-top: 1px solid rgba(0, 0, 0, 0.06);">
+            {{ $logbooks->links() }}
+        </div>
+    @endif
 </div>
 
 {{-- Delete Confirmation Modal --}}
-<div class="modal fade" id="deleteModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">
+<div x-data="{ showDeleteModal: false, deleteId: null }"
+     @delete-logbook.window="showDeleteModal = true; deleteId = $event.detail.id"
+     style="display: none;"
+     x-show="showDeleteModal"
+     x-transition:enter="transition ease-out duration-300"
+     x-transition:enter-start="opacity-0"
+     x-transition:enter-end="opacity-100"
+     x-transition:leave="transition ease-in duration-200"
+     x-transition:leave-start="opacity-100"
+     x-transition:leave-end="opacity-0"
+     class="fixed inset-0 z-50 overflow-y-auto"
+     style="background-color: rgba(0, 0, 0, 0.5);">
+    <div class="flex items-center justify-center min-h-screen px-4">
+        <div @click.away="showDeleteModal = false"
+             x-transition:enter="transition ease-out duration-300"
+             x-transition:enter-start="opacity-0 transform scale-90"
+             x-transition:enter-end="opacity-100 transform scale-100"
+             x-transition:leave="transition ease-in duration-200"
+             x-transition:leave-start="opacity-100 transform scale-100"
+             x-transition:leave-end="opacity-0 transform scale-90"
+             style="background: white; border-radius: 20px; max-width: 500px; width: 100%; box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25);">
+            <div style="padding: 1.25rem 1.5rem; border-bottom: 1px solid rgba(0, 0, 0, 0.06);">
+                <h5 style="font-weight: 600; color: #1f2937; margin: 0;">
                     <i class="fas fa-exclamation-triangle" style="color: #EF4444;"></i>
                     Konfirmasi Hapus
                 </h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-            <div class="modal-body">
-                <p style="color: #374151;">Apakah Anda yakin ingin menghapus logbook ini? Tindakan ini tidak dapat dibatalkan.</p>
+            <div style="padding: 1.5rem;">
+                <p style="color: #374151; margin: 0;">Apakah Anda yakin ingin menghapus logbook ini? Tindakan ini tidak dapat dibatalkan.</p>
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" style="border-radius: 10px;">Batal</button>
-                <button type="button" class="btn-modal-danger" id="confirmDelete">
+            <div style="padding: 1rem 1.5rem; border-top: 1px solid rgba(0, 0, 0, 0.06); display: flex; gap: 0.75rem; justify-content: flex-end;">
+                <button type="button" @click="showDeleteModal = false" style="padding: 0.6rem 1.25rem; background: #6b7280; color: white; border: none; border-radius: 10px; font-weight: 600; cursor: pointer;">
+                    Batal
+                </button>
+                <button type="button" @click="confirmDeleteLogbook(deleteId)" class="btn-modal-danger">
                     <i class="fas fa-trash"></i> Hapus
                 </button>
             </div>
@@ -676,162 +853,65 @@
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    const logbookBody = document.getElementById('logbookBody');
     const btnAddLogbook = document.getElementById('btnAddLogbook');
-    let visibleEmptyRows = 0;
-    const maxEmptyRows = {{ $emptyRows }};
+    const addNewSection = document.getElementById('addNewSection');
+    const addNewToggle = document.getElementById('addNewToggle');
+    const addNewForm = document.getElementById('addNewForm');
+    const newDate = document.getElementById('newDate');
+    const newContent = document.getElementById('newContent');
+    const btnSaveNew = document.getElementById('btnSaveNew');
+    const btnCancelNew = document.getElementById('btnCancelNew');
     let deleteId = null;
+    let currentEditRow = null;
 
-    showNextEmptyRow();
-
-    function showNextEmptyRow() {
-        const emptyRows = document.querySelectorAll('.new-entry-row');
-        let shown = false;
-
-        for (let row of emptyRows) {
-            if (row.style.display === 'none') {
-                row.style.display = '';
-                visibleEmptyRows++;
-                shown = true;
-
-                // Hide empty placeholder if visible
-                const placeholder = document.querySelector('.empty-row-placeholder');
-                if (placeholder) placeholder.style.display = 'none';
-
-                break;
-            }
-        }
-
-        if (!shown) {
-            addNewEmptyRow();
-        }
+    // Toggle add new section
+    function showAddForm() {
+        addNewSection.classList.remove('collapsed');
+        addNewToggle.style.display = 'none';
+        addNewForm.style.display = 'grid';
+        newDate.value = new Date().toISOString().split('T')[0];
+        newContent.value = '';
+        newContent.focus();
     }
 
-    function addNewEmptyRow() {
-        const placeholder = document.querySelector('.empty-row-placeholder');
-        if (placeholder) placeholder.style.display = 'none';
-
-        const newRow = document.createElement('tr');
-        newRow.className = 'new-entry-row';
-        newRow.innerHTML = `
-            <td>
-                <input type="date" class="form-control input-date" required>
-            </td>
-            <td>
-                <textarea class="form-control logbook-textarea input-content" rows="3" placeholder="Tulis aktivitas Anda hari ini..." required></textarea>
-            </td>
-            <td style="text-align: center; white-space: nowrap;">
-                <div style="display: inline-flex; gap: 0.5rem;">
-                    <button type="button" class="btn-save-entry btn-save-new">
-                        <i class="fas fa-save"></i>
-                    </button>
-                    <button type="button" class="btn-cancel-entry btn-cancel-new">
-                        <i class="fas fa-times"></i>
-                    </button>
-                </div>
-            </td>
-        `;
-        logbookBody.appendChild(newRow);
-        visibleEmptyRows++;
+    function hideAddForm() {
+        addNewSection.classList.add('collapsed');
+        addNewToggle.style.display = 'flex';
+        addNewForm.style.display = 'none';
+        newDate.value = '';
+        newContent.value = '';
     }
 
-    btnAddLogbook.addEventListener('click', function() {
-        showNextEmptyRow();
-    });
+    // Initialize
+    addNewSection.classList.add('collapsed');
 
-    logbookBody.addEventListener('click', async function(e) {
-        if (e.target.closest('.btn-save-new')) {
-            const row = e.target.closest('tr');
-            const dateInput = row.querySelector('.input-date');
-            const contentInput = row.querySelector('.input-content');
-            const saveBtn = row.querySelector('.btn-save-new');
+    btnAddLogbook.addEventListener('click', showAddForm);
+    addNewToggle.addEventListener('click', showAddForm);
+    btnCancelNew.addEventListener('click', hideAddForm);
 
-            if (!dateInput.value || !contentInput.value.trim()) {
-                alert('Mohon isi tanggal dan isi logbook.');
-                return;
-            }
-
-            saveBtn.disabled = true;
-            saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-
-            try {
-                const response = await fetch('{{ route("logbook.store") }}', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                        'Accept': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        date: dateInput.value,
-                        content: contentInput.value
-                    })
-                });
-
-                const data = await response.json();
-
-                if (response.ok && data.success) {
-                    window.location.reload();
-                } else {
-                    alert(data.message || 'Terjadi kesalahan saat menyimpan logbook.');
-                    saveBtn.disabled = false;
-                    saveBtn.innerHTML = '<i class="fas fa-save"></i>';
-                }
-            } catch (error) {
-                console.error('Error:', error);
-                alert('Terjadi kesalahan saat menyimpan logbook.');
-                saveBtn.disabled = false;
-                saveBtn.innerHTML = '<i class="fas fa-save"></i>';
-            }
+    // Save new logbook
+    btnSaveNew.addEventListener('click', async function() {
+        if (!newDate.value || !newContent.value.trim()) {
+            alert('Mohon isi tanggal dan isi logbook.');
+            return;
         }
 
-        if (e.target.closest('.btn-cancel-new')) {
-            const row = e.target.closest('tr');
-            row.querySelector('.input-date').value = '';
-            row.querySelector('.input-content').value = '';
-            row.style.display = 'none';
-            visibleEmptyRows--;
-        }
-
-        if (e.target.closest('.btn-edit-logbook')) {
-            const btn = e.target.closest('.btn-edit-logbook');
-            document.getElementById('editId').value = btn.dataset.id;
-            document.getElementById('editDate').value = btn.dataset.date;
-            document.getElementById('editContent').value = btn.dataset.content;
-
-            const editModal = new bootstrap.Modal(document.getElementById('editModal'));
-            editModal.show();
-        }
-
-        if (e.target.closest('.btn-delete-logbook')) {
-            const btn = e.target.closest('.btn-delete-logbook');
-            deleteId = btn.dataset.id;
-
-            const deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
-            deleteModal.show();
-        }
-    });
-
-    document.getElementById('editForm').addEventListener('submit', async function(e) {
-        e.preventDefault();
-
-        const id = document.getElementById('editId').value;
-        const date = document.getElementById('editDate').value;
-        const content = document.getElementById('editContent').value;
-        const submitBtn = this.querySelector('button[type="submit"]');
-
-        submitBtn.disabled = true;
-        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Menyimpan...';
+        const originalHtml = btnSaveNew.innerHTML;
+        btnSaveNew.disabled = true;
+        btnSaveNew.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Menyimpan...';
 
         try {
-            const response = await fetch(`/logbook/${id}`, {
-                method: 'PUT',
+            const response = await fetch('{{ route("logbook.store") }}', {
+                method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'X-CSRF-TOKEN': '{{ csrf_token() }}',
                     'Accept': 'application/json'
                 },
-                body: JSON.stringify({ date, content })
+                body: JSON.stringify({
+                    date: newDate.value,
+                    content: newContent.value
+                })
             });
 
             const data = await response.json();
@@ -839,27 +919,154 @@ document.addEventListener('DOMContentLoaded', function() {
             if (response.ok && data.success) {
                 window.location.reload();
             } else {
-                alert(data.message || 'Terjadi kesalahan saat menyimpan perubahan.');
-                submitBtn.disabled = false;
-                submitBtn.innerHTML = '<i class="fas fa-save"></i> Simpan Perubahan';
+                alert(data.message || 'Terjadi kesalahan saat menyimpan logbook.');
+                btnSaveNew.disabled = false;
+                btnSaveNew.innerHTML = originalHtml;
             }
         } catch (error) {
             console.error('Error:', error);
-            alert('Terjadi kesalahan saat menyimpan perubahan.');
-            submitBtn.disabled = false;
-            submitBtn.innerHTML = '<i class="fas fa-save"></i> Simpan Perubahan';
+            alert('Terjadi kesalahan saat menyimpan logbook.');
+            btnSaveNew.disabled = false;
+            btnSaveNew.innerHTML = originalHtml;
         }
     });
 
-    document.getElementById('confirmDelete').addEventListener('click', async function() {
-        if (!deleteId) return;
+    // Inline editing
+    document.getElementById('logbookBody').addEventListener('click', async function(e) {
+        // Edit button clicked
+        if (e.target.closest('.btn-edit-logbook')) {
+            const row = e.target.closest('tr');
 
-        const deleteBtn = this;
-        deleteBtn.disabled = true;
-        deleteBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Menghapus...';
+            // Cancel any other editing
+            if (currentEditRow && currentEditRow !== row) {
+                cancelEdit(currentEditRow);
+            }
+
+            currentEditRow = row;
+            row.classList.add('editing');
+
+            // Store original values
+            const dateInput = row.querySelector('input[type="date"].edit-mode');
+            const contentInput = row.querySelector('textarea.edit-mode');
+
+            if (dateInput) {
+                dateInput.defaultValue = dateInput.value;
+            }
+            if (contentInput) {
+                contentInput.defaultValue = contentInput.value;
+            }
+
+            // Toggle visibility
+            row.querySelectorAll('.view-mode').forEach(el => el.style.display = 'none');
+            row.querySelectorAll('.edit-mode').forEach(el => el.style.display = el.tagName === 'DIV' ? 'inline-flex' : 'block');
+
+            // Focus on textarea
+            const textarea = row.querySelector('textarea.edit-mode');
+            if (textarea) {
+                textarea.focus();
+                textarea.setSelectionRange(textarea.value.length, textarea.value.length);
+            }
+        }
+
+        // Save edit button clicked
+        if (e.target.closest('.btn-save-edit')) {
+            const row = e.target.closest('tr');
+            const id = row.dataset.id;
+            const dateInput = row.querySelector('input[type="date"].edit-mode');
+            const contentInput = row.querySelector('textarea.edit-mode');
+            const saveBtn = e.target.closest('.btn-save-edit');
+
+            console.log('=== EDIT SAVE CLICKED ===');
+            console.log('Row ID:', id);
+            console.log('Date input found:', !!dateInput, dateInput ? dateInput.value : 'N/A');
+            console.log('Content input found:', !!contentInput, contentInput ? contentInput.value : 'N/A');
+
+            if (!dateInput || !dateInput.value || !contentInput || !contentInput.value.trim()) {
+                console.error('Validation failed: missing date or content');
+                alert('Mohon isi tanggal dan isi logbook.');
+                return;
+            }
+
+            const originalHtml = saveBtn.innerHTML;
+            saveBtn.disabled = true;
+            saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+
+            const payload = {
+                date: dateInput.value,
+                content: contentInput.value
+            };
+
+            console.log('Payload to send:', payload);
+            console.log('URL:', `/logbook/${id}`);
+
+            fetch(`/logbook/${id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify(payload)
+            })
+            .then(response => {
+                console.log('Response status:', response.status);
+                console.log('Response ok:', response.ok);
+                return response.json().then(data => ({ status: response.status, ok: response.ok, data }));
+            })
+            .then(({ status, ok, data }) => {
+                console.log('Response data:', data);
+
+                if (ok && data.success) {
+                    console.log('Success! Reloading page...');
+                    window.location.reload();
+                } else {
+                    console.error('Server returned error:', data);
+                    let errorMsg = data.message || 'Terjadi kesalahan saat menyimpan perubahan.';
+
+                    // Handle validation errors
+                    if (data.errors) {
+                        console.error('Validation errors:', data.errors);
+                        errorMsg = Object.values(data.errors).flat().join('\n');
+                    }
+
+                    alert(errorMsg);
+                    saveBtn.disabled = false;
+                    saveBtn.innerHTML = originalHtml;
+                }
+            })
+            .catch(error => {
+                console.error('=== FETCH ERROR ===');
+                console.error('Error type:', error.name);
+                console.error('Error message:', error.message);
+                console.error('Full error:', error);
+                alert('Terjadi kesalahan saat menyimpan perubahan: ' + error.message);
+                saveBtn.disabled = false;
+                saveBtn.innerHTML = originalHtml;
+            });
+        }
+
+        // Cancel edit button clicked
+        if (e.target.closest('.btn-cancel-edit')) {
+            const row = e.target.closest('tr');
+            cancelEdit(row);
+        }
+
+        // Delete button clicked
+        if (e.target.closest('.btn-delete-logbook')) {
+            const row = e.target.closest('tr');
+            const id = row.dataset.id;
+
+            // Dispatch custom event for Alpine.js modal
+            window.dispatchEvent(new CustomEvent('delete-logbook', { detail: { id: id } }));
+        }
+    });
+
+    // Global function for Alpine.js modal
+    window.confirmDeleteLogbook = async function(id) {
+        if (!id) return;
 
         try {
-            const response = await fetch(`/logbook/${deleteId}`, {
+            const response = await fetch(`/logbook/${id}`, {
                 method: 'DELETE',
                 headers: {
                     'X-CSRF-TOKEN': '{{ csrf_token() }}',
@@ -873,16 +1080,33 @@ document.addEventListener('DOMContentLoaded', function() {
                 window.location.reload();
             } else {
                 alert(data.message || 'Terjadi kesalahan saat menghapus logbook.');
-                deleteBtn.disabled = false;
-                deleteBtn.innerHTML = '<i class="fas fa-trash"></i> Hapus';
             }
         } catch (error) {
             console.error('Error:', error);
             alert('Terjadi kesalahan saat menghapus logbook.');
-            deleteBtn.disabled = false;
-            deleteBtn.innerHTML = '<i class="fas fa-trash"></i> Hapus';
         }
-    });
+    };
+
+    function cancelEdit(row) {
+        if (!row) return;
+
+        row.classList.remove('editing');
+        row.querySelectorAll('.view-mode').forEach(el => el.style.display = '');
+        row.querySelectorAll('.edit-mode').forEach(el => el.style.display = 'none');
+
+        // Reset values
+        const dateInput = row.querySelector('input[type="date"].edit-mode');
+        if (dateInput && dateInput.defaultValue) {
+            dateInput.value = dateInput.defaultValue;
+        }
+
+        const contentInput = row.querySelector('textarea.edit-mode');
+        if (contentInput && contentInput.defaultValue) {
+            contentInput.value = contentInput.defaultValue;
+        }
+
+        currentEditRow = null;
+    }
 });
 </script>
 @endpush

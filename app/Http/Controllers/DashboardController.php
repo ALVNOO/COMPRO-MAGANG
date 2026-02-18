@@ -38,6 +38,7 @@ class DashboardController extends Controller
         $user->load([
             'assignments',
             'certificates',
+            'attendances',
             'internshipApplications.divisi.subDirektorat.direktorat'
         ]);
         
@@ -78,9 +79,10 @@ class DashboardController extends Controller
         $hariTersisa = 0;
 
         if ($application && $application->start_date && $application->end_date) {
-            $startDate = \Carbon\Carbon::parse($application->start_date);
-            $endDate = \Carbon\Carbon::parse($application->end_date);
-            $today = now();
+            // Normalize dates to start of day to avoid time-component errors
+            $startDate = \Carbon\Carbon::parse($application->start_date)->startOfDay();
+            $endDate = \Carbon\Carbon::parse($application->end_date)->startOfDay();
+            $today = now()->startOfDay();
 
             $totalDays = $startDate->diffInDays($endDate);
             $daysPassed = $startDate->diffInDays($today);
@@ -133,7 +135,10 @@ class DashboardController extends Controller
     public function assignments()
     {
         $user = Auth::user();
-        $assignments = $user->assignments()->orderBy('created_at', 'desc')->get();
+        $assignments = $user->assignments()
+            ->with('submissions')
+            ->orderBy('created_at', 'desc')
+            ->get();
         
         // Ambil pengajuan terbaru yang statusnya pending/accepted/finished
         $application = $user->internshipApplications()

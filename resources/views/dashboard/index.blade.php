@@ -25,24 +25,24 @@
     $totalAttendance = $presentCount + $lateCount + $absentCount;
     $attendanceRate = $totalAttendance > 0 ? round((($presentCount + $lateCount) / $totalAttendance) * 100) : 0;
 
-    // Days calculation
-    $daysRemaining = 0;
-    $totalDays = 0;
+    // Use values from controller (already calculated with startOfDay() for accuracy)
+    $daysRemaining = $hariTersisa;
+    $progressPercentage = $progressMagang;
+
+    // Calculate days completed for display
     $daysCompleted = 0;
+    $totalDays = 0;
     if ($application && $application->start_date && $application->end_date) {
-        $startDate = \Carbon\Carbon::parse($application->start_date);
-        $endDate = \Carbon\Carbon::parse($application->end_date);
-        $today = now();
+        $startDate = \Carbon\Carbon::parse($application->start_date)->startOfDay();
+        $endDate = \Carbon\Carbon::parse($application->end_date)->startOfDay();
+        $today = now()->startOfDay();
 
         $totalDays = $startDate->diffInDays($endDate);
         $daysCompleted = $startDate->diffInDays($today);
-        $daysRemaining = max(0, $today->diffInDays($endDate, false));
 
         if ($daysCompleted < 0) $daysCompleted = 0;
         if ($daysCompleted > $totalDays) $daysCompleted = $totalDays;
     }
-
-    $progressPercentage = $totalDays > 0 ? min(100, round(($daysCompleted / $totalDays) * 100)) : 0;
 
     // Get greeting based on time
     $hour = now()->hour;

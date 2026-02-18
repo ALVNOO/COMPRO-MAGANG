@@ -34,6 +34,13 @@
     position: relative;
     overflow: hidden;
     color: white;
+    box-shadow: 0 8px 32px rgba(238, 46, 36, 0.2);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.page-hero:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 40px rgba(238, 46, 36, 0.3);
 }
 
 .page-hero::before {
@@ -45,6 +52,12 @@
     height: 200%;
     background: radial-gradient(ellipse, rgba(255,255,255,0.15) 0%, transparent 70%);
     pointer-events: none;
+    animation: pulse-glow 3s ease-in-out infinite;
+}
+
+@keyframes pulse-glow {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
 }
 
 .hero-content {
@@ -125,12 +138,30 @@
     display: flex;
     align-items: center;
     gap: 1rem;
-    transition: all 0.3s ease;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+    transition: left 0.5s;
+}
+
+.stat-card:hover::before {
+    left: 100%;
 }
 
 .stat-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    transform: translateY(-4px) scale(1.02);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+    border-color: rgba(238, 46, 36, 0.2);
 }
 
 .stat-icon {
@@ -172,6 +203,13 @@
     box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
     margin-bottom: 2rem;
     overflow: hidden;
+    transition: all 0.3s ease;
+    animation: slide-up 0.6s ease-out;
+}
+
+.today-card:hover {
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+    transform: translateY(-2px);
 }
 
 .today-card-header {
@@ -234,12 +272,20 @@
 }
 
 .checkin-photo {
-    width: 180px;
-    height: 180px;
-    border-radius: 16px;
+    width: 200px;
+    height: 200px;
+    border-radius: 20px;
     object-fit: cover;
-    border: 3px solid rgba(0, 0, 0, 0.06);
+    border: 4px solid #10B981;
     margin-top: 1rem;
+    box-shadow: 0 8px 24px rgba(16, 185, 129, 0.3);
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.checkin-photo:hover {
+    transform: scale(1.05) rotate(2deg);
+    box-shadow: 0 12px 32px rgba(16, 185, 129, 0.4);
 }
 
 .action-buttons {
@@ -264,12 +310,36 @@
     cursor: pointer;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     box-shadow: 0 4px 14px rgba(16, 185, 129, 0.3);
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-checkin::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.3);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+}
+
+.btn-checkin:hover::before {
+    width: 300px;
+    height: 300px;
 }
 
 .btn-checkin:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(16, 185, 129, 0.4);
+    transform: translateY(-3px) scale(1.05);
+    box-shadow: 0 10px 25px rgba(16, 185, 129, 0.5);
     color: white;
+}
+
+.btn-checkin:active {
+    transform: translateY(-1px) scale(1.02);
 }
 
 .btn-absent {
@@ -286,12 +356,36 @@
     cursor: pointer;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     box-shadow: 0 4px 14px rgba(239, 68, 68, 0.3);
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-absent::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.3);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+}
+
+.btn-absent:hover::before {
+    width: 300px;
+    height: 300px;
 }
 
 .btn-absent:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(239, 68, 68, 0.4);
+    transform: translateY(-3px) scale(1.05);
+    box-shadow: 0 10px 25px rgba(239, 68, 68, 0.5);
     color: white;
+}
+
+.btn-absent:active {
+    transform: translateY(-1px) scale(1.02);
 }
 
 /* Table Card */
@@ -302,6 +396,12 @@
     border: 1px solid rgba(0, 0, 0, 0.06);
     box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
     overflow: hidden;
+    transition: all 0.3s ease;
+    animation: slide-up 0.8s ease-out;
+}
+
+.table-card:hover {
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
 }
 
 .table-card-header {
@@ -557,6 +657,229 @@
     line-height: 1.5;
 }
 
+/* Attendance Type Selector */
+.attendance-type-selector {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.type-btn {
+    flex: 1;
+    background: white;
+    border: 2px solid #e5e7eb;
+    border-radius: 16px;
+    padding: 1.25rem;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.type-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(16, 185, 129, 0.05));
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.type-btn:hover::before {
+    opacity: 1;
+}
+
+.type-btn i {
+    font-size: 2rem;
+    color: #6b7280;
+    transition: all 0.3s;
+}
+
+.type-btn span {
+    font-weight: 600;
+    font-size: 1rem;
+    color: #374151;
+    transition: color 0.3s;
+}
+
+.type-btn small {
+    font-size: 0.8rem;
+    color: #9ca3af;
+    text-align: center;
+}
+
+.type-btn:hover {
+    border-color: #10B981;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(16, 185, 129, 0.2);
+}
+
+.type-btn:hover i {
+    color: #10B981;
+    transform: scale(1.1);
+}
+
+.type-btn:hover span {
+    color: #10B981;
+}
+
+.type-btn.active {
+    border-color: #10B981;
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(16, 185, 129, 0.05));
+    box-shadow: 0 4px 20px rgba(16, 185, 129, 0.2);
+}
+
+.type-btn.active i {
+    color: #10B981;
+}
+
+.type-btn.active span {
+    color: #10B981;
+}
+
+.type-btn[data-type="absent"]:hover {
+    border-color: #EF4444;
+}
+
+.type-btn[data-type="absent"].active {
+    border-color: #EF4444;
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.1), rgba(239, 68, 68, 0.05));
+    box-shadow: 0 4px 20px rgba(239, 68, 68, 0.2);
+}
+
+.type-btn[data-type="absent"]:hover i,
+.type-btn[data-type="absent"].active i {
+    color: #EF4444;
+}
+
+.type-btn[data-type="absent"]:hover span,
+.type-btn[data-type="absent"].active span {
+    color: #EF4444;
+}
+
+.type-btn[data-type="absent"]:hover {
+    box-shadow: 0 8px 24px rgba(239, 68, 68, 0.2);
+}
+
+/* Attendance Form Section */
+.attendance-form-section {
+    max-width: 600px;
+    margin: 0 auto;
+    animation: fade-in-up 0.4s ease-out;
+}
+
+.form-content {
+    background: rgba(249, 250, 251, 0.5);
+    border-radius: 16px;
+    padding: 1.5rem;
+    border: 1px solid #e5e7eb;
+}
+
+@keyframes fade-in-up {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Animations */
+@keyframes fade-in {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes slide-up {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes bounce-in {
+    0% {
+        opacity: 0;
+        transform: scale(0.3);
+    }
+    50% {
+        transform: scale(1.05);
+    }
+    70% {
+        transform: scale(0.9);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@keyframes pulse-icon {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.1);
+    }
+}
+
+@keyframes rotating-slow {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.animate-fade-in {
+    animation: fade-in 0.6s ease-out;
+}
+
+.animate-slide-up {
+    animation: slide-up 0.8s ease-out 0.2s both;
+}
+
+.animate-bounce-in {
+    animation: bounce-in 0.8s ease-out 0.4s both;
+}
+
+.pulse-icon {
+    display: inline-block;
+    animation: pulse-icon 2s ease-in-out infinite;
+}
+
+.rotating-slow {
+    display: inline-block;
+    animation: rotating-slow 20s linear infinite;
+}
+
+.time-display {
+    font-family: 'Courier New', monospace;
+    letter-spacing: 0.05em;
+}
+
 /* Responsive */
 @media (max-width: 1200px) {
     .stats-grid {
@@ -598,13 +921,17 @@
         font-size: 1.25rem;
     }
 
-    .action-buttons {
+    .attendance-type-selector {
         flex-direction: column;
-        align-items: stretch;
+        gap: 0.75rem;
     }
 
-    .btn-checkin, .btn-absent {
-        justify-content: center;
+    .type-btn {
+        padding: 1rem;
+    }
+
+    .type-btn i {
+        font-size: 1.5rem;
     }
 
     .attendance-table thead th,
@@ -622,18 +949,23 @@
 <div class="page-hero">
     <div class="hero-content">
         <div class="hero-text">
-            <h1>
-                <i class="fas fa-calendar-check"></i>
-                Absensi Magang
+            @php
+                $hour = now()->hour;
+                $greeting = $hour < 11 ? 'Selamat Pagi' : ($hour < 15 ? 'Selamat Siang' : ($hour < 18 ? 'Selamat Sore' : 'Selamat Malam'));
+                $greetingIcon = $hour < 11 ? 'fa-sun' : ($hour < 15 ? 'fa-cloud-sun' : ($hour < 18 ? 'fa-cloud' : 'fa-moon'));
+            @endphp
+            <h1 class="animate-fade-in">
+                <i class="fas fa-calendar-check pulse-icon"></i>
+                {{ $greeting }}, {{ Auth::user()->name }}!
             </h1>
-            <p>Catat kehadiran harian Anda di PT Telkom Indonesia</p>
+            <p class="animate-slide-up">Catat kehadiran harian Anda di PT Telkom Indonesia</p>
         </div>
-        <div class="hero-badge">
+        <div class="hero-badge animate-bounce-in">
             <div class="hero-badge-icon">
-                <i class="fas fa-clock"></i>
+                <i class="fas {{ $greetingIcon }} rotating-slow"></i>
             </div>
             <div class="hero-badge-text">
-                <h4>{{ now()->format('H:i') }}</h4>
+                <h4 class="time-display">{{ now()->format('H:i') }}</h4>
                 <p>{{ now()->locale('id')->isoFormat('dddd, D MMM Y') }}</p>
             </div>
         </div>
@@ -733,14 +1065,101 @@
                     <i class="fas fa-fingerprint"></i>
                 </div>
                 <h4 style="font-size: 1.1rem; font-weight: 600; color: #374151; margin-bottom: 0.5rem;">Belum Absensi</h4>
-                <p style="color: #6b7280; margin-bottom: 1.5rem;">Silakan pilih salah satu opsi untuk mencatat kehadiran Anda hari ini</p>
-                <div class="action-buttons">
-                    <button type="button" class="btn-checkin" data-bs-toggle="modal" data-bs-target="#checkInModal">
-                        <i class="fas fa-camera"></i> Check In
+                <p style="color: #6b7280; margin-bottom: 1.5rem;">Pilih jenis absensi Anda hari ini</p>
+
+                {{-- Attendance Type Selection --}}
+                <div class="attendance-type-selector" style="margin-bottom: 1.5rem;">
+                    <button type="button" class="type-btn active" data-type="checkin" id="selectCheckinBtn">
+                        <i class="fas fa-camera"></i>
+                        <span>Check In</span>
+                        <small>Hadir dengan foto selfie</small>
                     </button>
-                    <button type="button" class="btn-absent" data-bs-toggle="modal" data-bs-target="#absentModal">
-                        <i class="fas fa-file-alt"></i> Izin / Absen
+                    <button type="button" class="type-btn" data-type="absent" id="selectAbsentBtn">
+                        <i class="fas fa-file-alt"></i>
+                        <span>Izin / Absen</span>
+                        <small>Tidak dapat hadir</small>
                     </button>
+                </div>
+
+                {{-- Check In Form --}}
+                <div id="checkinSection" class="attendance-form-section">
+                    <form action="{{ route('attendance.check-in') }}" method="POST" enctype="multipart/form-data" id="checkInForm">
+                        @csrf
+                        <div class="form-content">
+                            <label style="font-weight: 600; color: #374151; margin-bottom: 0.75rem; display: block; text-align: center;">
+                                <i class="fas fa-camera" style="color: #10B981;"></i> Ambil Foto Selfie
+                            </label>
+
+                            <video id="cameraPreview" autoplay playsinline style="display: none;"></video>
+                            <img id="capturedPhoto" alt="Captured Photo">
+                            <input type="file" id="photo" name="photo" accept="image/*" required style="display: none;">
+
+                            <div id="cameraControls" class="camera-controls" style="display: none;">
+                                <button type="button" class="btn-capture" id="captureBtn">
+                                    <i class="fas fa-camera"></i> Ambil Foto
+                                </button>
+                                <button type="button" class="btn-retake" id="stopCameraBtn">
+                                    <i class="fas fa-stop"></i> Batal
+                                </button>
+                            </div>
+
+                            <div id="photoControls" class="camera-controls" style="display: none;">
+                                <button type="button" class="btn-retake" id="retakeBtn">
+                                    <i class="fas fa-redo"></i> Ambil Ulang
+                                </button>
+                            </div>
+
+                            <div id="startCameraSection" style="text-align: center;">
+                                <button type="button" class="btn-open-camera" id="startCameraBtn">
+                                    <i class="fas fa-camera"></i> Buka Kamera
+                                </button>
+                            </div>
+
+                            <div class="info-alert" style="margin-top: 1rem;">
+                                <i class="fas fa-info-circle"></i>
+                                <p>Check in setelah <strong>08:00</strong> akan ditandai sebagai <strong>"Terlambat"</strong>.</p>
+                            </div>
+
+                            <div style="text-align: center; margin-top: 1.5rem;">
+                                <button type="submit" class="btn-checkin" id="submitCheckinBtn" disabled>
+                                    <i class="fas fa-check"></i> Submit Check In
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+                {{-- Absent Form --}}
+                <div id="absentSection" class="attendance-form-section" style="display: none;">
+                    <form action="{{ route('attendance.absent') }}" method="POST" enctype="multipart/form-data">
+                        @csrf
+                        <div class="form-content">
+                            <div class="mb-3">
+                                <label for="reason" style="font-weight: 600; color: #374151; margin-bottom: 0.5rem; display: block;">
+                                    <i class="fas fa-file-alt" style="color: #EF4444;"></i> Alasan Absen <span style="color: #EF4444;">*</span>
+                                </label>
+                                <textarea class="form-control" id="reason" name="reason" rows="4" required
+                                          placeholder="Jelaskan alasan Anda tidak dapat hadir hari ini..."
+                                          style="border-radius: 12px; border: 1px solid #d1d5db; padding: 0.75rem 1rem;"></textarea>
+                            </div>
+                            <div class="mb-3">
+                                <label for="proof" style="font-weight: 600; color: #374151; margin-bottom: 0.5rem; display: block;">
+                                    <i class="fas fa-paperclip"></i> Bukti (Opsional)
+                                </label>
+                                <input type="file" class="form-control" id="proof" name="proof" accept=".pdf,.jpg,.jpeg,.png"
+                                       style="border-radius: 12px; border: 1px solid #d1d5db; padding: 0.5rem 0.75rem;">
+                                <small style="display: block; margin-top: 0.5rem; color: #6b7280; font-size: 0.8rem;">
+                                    Format: PDF, JPG, PNG. Maksimal 2MB
+                                </small>
+                            </div>
+
+                            <div style="text-align: center; margin-top: 1.5rem;">
+                                <button type="submit" class="btn-absent">
+                                    <i class="fas fa-paper-plane"></i> Submit Absen
+                                </button>
+                            </div>
+                        </div>
+                    </form>
                 </div>
             </div>
         @endif
@@ -816,119 +1235,41 @@
     @endif
 </div>
 
-{{-- Check In Modal --}}
-<div class="modal fade" id="checkInModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">
-                    <i class="fas fa-camera" style="color: #10B981;"></i>
-                    Check In
-                </h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <form action="{{ route('attendance.check-in') }}" method="POST" enctype="multipart/form-data" id="checkInForm">
-                @csrf
-                <div class="modal-body">
-                    <div class="mb-3">
-                        <label style="font-weight: 600; color: #374151; margin-bottom: 0.5rem; display: block;">
-                            Ambil Foto Selfie <span style="color: #EF4444;">*</span>
-                        </label>
-
-                        <video id="cameraPreview" autoplay playsinline style="display: none;"></video>
-                        <img id="capturedPhoto" alt="Captured Photo">
-                        <input type="file" id="photo" name="photo" accept="image/*" required style="display: none;">
-
-                        <div id="cameraControls" class="camera-controls" style="display: none;">
-                            <button type="button" class="btn-capture" id="captureBtn">
-                                <i class="fas fa-camera"></i> Ambil Foto
-                            </button>
-                            <button type="button" class="btn-retake" id="stopCameraBtn">
-                                <i class="fas fa-stop"></i> Batal
-                            </button>
-                        </div>
-
-                        <div id="photoControls" class="camera-controls" style="display: none;">
-                            <button type="button" class="btn-retake" id="retakeBtn">
-                                <i class="fas fa-redo"></i> Ambil Ulang
-                            </button>
-                        </div>
-
-                        <div id="startCameraSection" style="text-align: center;">
-                            <button type="button" class="btn-open-camera" id="startCameraBtn">
-                                <i class="fas fa-camera"></i> Buka Kamera
-                            </button>
-                        </div>
-
-                        <small style="display: block; margin-top: 0.75rem; color: #6b7280; font-size: 0.8rem;">
-                            Pastikan wajah Anda terlihat jelas dalam foto
-                        </small>
-                    </div>
-
-                    <div class="info-alert">
-                        <i class="fas fa-info-circle"></i>
-                        <p>Jika check in dilakukan setelah <strong>jam 08:00</strong>, status akan otomatis menjadi <strong>"Terlambat"</strong>.</p>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" id="closeModalBtn" style="border-radius: 10px; padding: 0.5rem 1.25rem;">Batal</button>
-                    <button type="submit" class="btn-checkin" id="submitBtn" disabled style="padding: 0.5rem 1.25rem; font-size: 0.9rem;">
-                        <i class="fas fa-check"></i> Check In
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
-
-{{-- Absent Modal --}}
-<div class="modal fade" id="absentModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">
-                    <i class="fas fa-file-alt" style="color: #EF4444;"></i>
-                    Izin / Absen
-                </h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <form action="{{ route('attendance.absent') }}" method="POST" enctype="multipart/form-data">
-                @csrf
-                <div class="modal-body">
-                    <div class="mb-3">
-                        <label for="reason" style="font-weight: 600; color: #374151; margin-bottom: 0.5rem; display: block;">
-                            Alasan Absen <span style="color: #EF4444;">*</span>
-                        </label>
-                        <textarea class="form-control" id="reason" name="reason" rows="4" required
-                                  placeholder="Jelaskan alasan Anda tidak dapat hadir hari ini..."
-                                  style="border-radius: 12px; border: 1px solid #d1d5db; padding: 0.75rem 1rem;"></textarea>
-                    </div>
-                    <div class="mb-3">
-                        <label for="proof" style="font-weight: 600; color: #374151; margin-bottom: 0.5rem; display: block;">
-                            Bukti (Opsional)
-                        </label>
-                        <input type="file" class="form-control" id="proof" name="proof" accept=".pdf,.jpg,.jpeg,.png"
-                               style="border-radius: 12px; border: 1px solid #d1d5db; padding: 0.5rem 0.75rem;">
-                        <small style="display: block; margin-top: 0.5rem; color: #6b7280; font-size: 0.8rem;">
-                            Format: PDF, JPG, PNG. Maksimal 2MB
-                        </small>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" style="border-radius: 10px; padding: 0.5rem 1.25rem;">Batal</button>
-                    <button type="submit" class="btn-absent" style="padding: 0.5rem 1.25rem; font-size: 0.9rem;">
-                        <i class="fas fa-paper-plane"></i> Submit Absen
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
 
 @endsection
 
 @push('scripts')
 <script>
+    // Type Selection
+    const selectCheckinBtn = document.getElementById('selectCheckinBtn');
+    const selectAbsentBtn = document.getElementById('selectAbsentBtn');
+    const checkinSection = document.getElementById('checkinSection');
+    const absentSection = document.getElementById('absentSection');
+
+    if (selectCheckinBtn && selectAbsentBtn) {
+        selectCheckinBtn.addEventListener('click', function() {
+            selectCheckinBtn.classList.add('active');
+            selectAbsentBtn.classList.remove('active');
+            checkinSection.style.display = 'block';
+            absentSection.style.display = 'none';
+        });
+
+        selectAbsentBtn.addEventListener('click', function() {
+            selectAbsentBtn.classList.add('active');
+            selectCheckinBtn.classList.remove('active');
+            absentSection.style.display = 'block';
+            checkinSection.style.display = 'none';
+
+            // Stop camera if running
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+                stream = null;
+            }
+            resetCameraUI();
+        });
+    }
+
+    // Camera functionality
     let stream = null;
     let canvas = null;
 
@@ -942,98 +1283,87 @@
     const retakeBtn = document.getElementById('retakeBtn');
     const stopCameraBtn = document.getElementById('stopCameraBtn');
     const photoInput = document.getElementById('photo');
-    const submitBtn = document.getElementById('submitBtn');
-    const checkInForm = document.getElementById('checkInForm');
-    const closeModalBtn = document.getElementById('closeModalBtn');
-    const checkInModal = document.getElementById('checkInModal');
+    const submitCheckinBtn = document.getElementById('submitCheckinBtn');
 
-    startCameraBtn.addEventListener('click', async function() {
-        try {
-            stream = await navigator.mediaDevices.getUserMedia({
-                video: {
-                    facingMode: 'user',
-                    width: { ideal: 1280 },
-                    height: { ideal: 720 }
+    function resetCameraUI() {
+        if (cameraPreview) cameraPreview.style.display = 'none';
+        if (cameraControls) cameraControls.style.display = 'none';
+        if (photoControls) photoControls.style.display = 'none';
+        if (capturedPhoto) capturedPhoto.style.display = 'none';
+        if (startCameraSection) startCameraSection.style.display = 'block';
+        if (submitCheckinBtn) submitCheckinBtn.disabled = true;
+        if (photoInput) photoInput.value = '';
+    }
+
+    if (startCameraBtn) {
+        startCameraBtn.addEventListener('click', async function() {
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({
+                    video: {
+                        facingMode: 'user',
+                        width: { ideal: 1280 },
+                        height: { ideal: 720 }
+                    }
+                });
+
+                cameraPreview.srcObject = stream;
+                cameraPreview.style.display = 'block';
+                cameraControls.style.display = 'flex';
+                startCameraSection.style.display = 'none';
+                capturedPhoto.style.display = 'none';
+                photoControls.style.display = 'none';
+            } catch (error) {
+                console.error('Error accessing camera:', error);
+                alert('Tidak dapat mengakses kamera. Pastikan Anda memberikan izin akses kamera dan menggunakan browser yang mendukung.');
+            }
+        });
+    }
+
+    if (captureBtn) {
+        captureBtn.addEventListener('click', function() {
+            canvas = document.createElement('canvas');
+            canvas.width = cameraPreview.videoWidth;
+            canvas.height = cameraPreview.videoHeight;
+
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(cameraPreview, 0, 0);
+
+            canvas.toBlob(function(blob) {
+                const file = new File([blob], 'selfie.jpg', { type: 'image/jpeg' });
+                const dataTransfer = new DataTransfer();
+                dataTransfer.items.add(file);
+                photoInput.files = dataTransfer.files;
+
+                capturedPhoto.src = canvas.toDataURL('image/jpeg');
+                capturedPhoto.style.display = 'block';
+
+                if (stream) {
+                    stream.getTracks().forEach(track => track.stop());
+                    stream = null;
                 }
-            });
 
-            cameraPreview.srcObject = stream;
-            cameraPreview.style.display = 'block';
-            cameraControls.style.display = 'flex';
-            startCameraSection.style.display = 'none';
-            capturedPhoto.style.display = 'none';
-            photoControls.style.display = 'none';
-        } catch (error) {
-            console.error('Error accessing camera:', error);
-            alert('Tidak dapat mengakses kamera. Pastikan Anda memberikan izin akses kamera dan menggunakan browser yang mendukung.');
-        }
-    });
+                cameraPreview.style.display = 'none';
+                cameraControls.style.display = 'none';
+                photoControls.style.display = 'flex';
+                submitCheckinBtn.disabled = false;
+            }, 'image/jpeg', 0.9);
+        });
+    }
 
-    captureBtn.addEventListener('click', function() {
-        canvas = document.createElement('canvas');
-        canvas.width = cameraPreview.videoWidth;
-        canvas.height = cameraPreview.videoHeight;
+    if (retakeBtn) {
+        retakeBtn.addEventListener('click', function() {
+            resetCameraUI();
+        });
+    }
 
-        const ctx = canvas.getContext('2d');
-        ctx.drawImage(cameraPreview, 0, 0);
-
-        canvas.toBlob(function(blob) {
-            const file = new File([blob], 'selfie.jpg', { type: 'image/jpeg' });
-            const dataTransfer = new DataTransfer();
-            dataTransfer.items.add(file);
-            photoInput.files = dataTransfer.files;
-
-            capturedPhoto.src = canvas.toDataURL('image/jpeg');
-            capturedPhoto.style.display = 'block';
-
+    if (stopCameraBtn) {
+        stopCameraBtn.addEventListener('click', function() {
             if (stream) {
                 stream.getTracks().forEach(track => track.stop());
                 stream = null;
             }
-
-            cameraPreview.style.display = 'none';
-            cameraControls.style.display = 'none';
-            photoControls.style.display = 'flex';
-            submitBtn.disabled = false;
-        }, 'image/jpeg', 0.9);
-    });
-
-    retakeBtn.addEventListener('click', function() {
-        capturedPhoto.style.display = 'none';
-        photoControls.style.display = 'none';
-        submitBtn.disabled = true;
-        startCameraSection.style.display = 'block';
-        photoInput.value = '';
-    });
-
-    stopCameraBtn.addEventListener('click', function() {
-        if (stream) {
-            stream.getTracks().forEach(track => track.stop());
-            stream = null;
-        }
-
-        cameraPreview.style.display = 'none';
-        cameraControls.style.display = 'none';
-        startCameraSection.style.display = 'block';
-        capturedPhoto.style.display = 'none';
-        photoControls.style.display = 'none';
-        submitBtn.disabled = true;
-        photoInput.value = '';
-    });
-
-    checkInModal.addEventListener('hidden.bs.modal', function() {
-        if (stream) {
-            stream.getTracks().forEach(track => track.stop());
-            stream = null;
-        }
-
-        cameraPreview.style.display = 'none';
-        cameraControls.style.display = 'none';
-        photoControls.style.display = 'none';
-        capturedPhoto.style.display = 'none';
-        startCameraSection.style.display = 'block';
-        submitBtn.disabled = true;
-        photoInput.value = '';
-    });
+            resetCameraUI();
+        });
+    }
 </script>
 @endpush

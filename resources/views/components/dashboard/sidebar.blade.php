@@ -383,6 +383,12 @@
     font-weight: 600;
 }
 
+/* Keep active link from moving on hover */
+.nav-link.active:hover {
+    transform: translateX(0);
+    background: linear-gradient(135deg, rgba(238, 46, 36, 0.12) 0%, rgba(238, 46, 36, 0.06) 100%);
+}
+
 .nav-link.active::before {
     content: '';
     position: absolute;
@@ -393,6 +399,12 @@
     height: 60%;
     background: var(--color-primary);
     border-radius: 0 4px 4px 0;
+    transition: opacity 0.2s ease;
+}
+
+/* Hide the ::before indicator on hover to avoid visual conflict */
+.nav-link.active:hover::before {
+    opacity: 0;
 }
 
 .nav-icon {

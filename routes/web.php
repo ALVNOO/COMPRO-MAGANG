@@ -66,7 +66,7 @@ Route::get("/internship/apply/{divisi}", [
 Route::post("/internship/apply/{divisi}", [
     InternshipController::class,
     "submitApply",
-])->name("internship.apply");
+])->name("internship.apply.submit");
 
 // Protected routes (require authentication)
 Route::middleware("auth")->group(function () {

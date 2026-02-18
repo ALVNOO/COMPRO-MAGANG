@@ -18,23 +18,23 @@ class LogbookController extends Controller
     public function index()
     {
         $user = Auth::user();
-        
+
         // Get active application
         $application = $user->internshipApplications()
             ->whereIn('status', ['accepted', 'finished'])
             ->latest()
             ->first();
-        
+
         if (!$application) {
             return redirect()->route('dashboard')
                 ->with('error', 'Anda belum memiliki pengajuan magang yang diterima.');
         }
-        
-        // Get existing logbooks ordered by date descending
+
+        // Get existing logbooks ordered by date descending with pagination
         $logbooks = Logbook::where('user_id', $user->id)
             ->orderBy('date', 'desc')
-            ->get();
-        
+            ->paginate(10);
+
         return view('logbook.index', compact('logbooks'));
     }
     
@@ -89,48 +89,82 @@ class LogbookController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $request->validate([
-            'date' => 'required|date',
-            'content' => 'required|string',
-        ]);
-        
-        $user = Auth::user();
-        $logbook = Logbook::where('id', $id)
-            ->where('user_id', $user->id)
-            ->firstOrFail();
-        
-        // Check if another logbook exists for the new date
-        $existingLogbook = Logbook::where('user_id', $user->id)
-            ->whereDate('date', $request->date)
-            ->where('id', '!=', $id)
-            ->first();
-        
-        if ($existingLogbook) {
+        \Log::info('=== LOGBOOK UPDATE REQUEST ===');
+        \Log::info('ID: ' . $id);
+        \Log::info('Request data:', $request->all());
+        \Log::info('User ID: ' . Auth::id());
+        \Log::info('Expects JSON: ' . ($request->expectsJson() ? 'yes' : 'no'));
+
+        try {
+            $request->validate([
+                'date' => 'required|date',
+                'content' => 'required|string',
+            ]);
+
+            \Log::info('Validation passed');
+
+            $user = Auth::user();
+            $logbook = Logbook::where('id', $id)
+                ->where('user_id', $user->id)
+                ->firstOrFail();
+
+            \Log::info('Logbook found:', ['id' => $logbook->id, 'date' => $logbook->date, 'user_id' => $logbook->user_id]);
+
+            // Check if another logbook exists for the new date
+            $existingLogbook = Logbook::where('user_id', $user->id)
+                ->whereDate('date', $request->date)
+                ->where('id', '!=', $id)
+                ->first();
+
+            if ($existingLogbook) {
+                \Log::warning('Duplicate logbook exists for date: ' . $request->date);
+                if ($request->expectsJson()) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Logbook untuk tanggal ini sudah ada.'
+                    ], 422);
+                }
+                return redirect()->back()
+                    ->with('error', 'Logbook untuk tanggal ini sudah ada.');
+            }
+
+            \Log::info('Updating logbook with:', ['date' => $request->date, 'content' => substr($request->content, 0, 50) . '...']);
+
+            $logbook->update([
+                'date' => $request->date,
+                'content' => $request->content,
+            ]);
+
+            \Log::info('Logbook updated successfully');
+
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Logbook berhasil diupdate.',
+                    'logbook' => $logbook
+                ]);
+            }
+
+            return redirect()->route('logbook.index')
+                ->with('success', 'Logbook berhasil diupdate.');
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            \Log::error('Validation failed:', $e->errors());
+            throw $e;
+        } catch (\Exception $e) {
+            \Log::error('Update failed with exception:', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
             if ($request->expectsJson()) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Logbook untuk tanggal ini sudah ada.'
-                ], 422);
+                    'message' => 'Terjadi kesalahan: ' . $e->getMessage()
+                ], 500);
             }
-            return redirect()->back()
-                ->with('error', 'Logbook untuk tanggal ini sudah ada.');
+
+            throw $e;
         }
-        
-        $logbook->update([
-            'date' => $request->date,
-            'content' => $request->content,
-        ]);
-        
-        if ($request->expectsJson()) {
-            return response()->json([
-                'success' => true,
-                'message' => 'Logbook berhasil diupdate.',
-                'logbook' => $logbook
-            ]);
-        }
-        
-        return redirect()->route('logbook.index')
-            ->with('success', 'Logbook berhasil diupdate.');
     }
     
     /**
