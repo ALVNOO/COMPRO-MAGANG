@@ -10,17 +10,9 @@
 
 <div class="hero-section">
     <div class="hero-grid-pattern"></div>
-    <div class="hero-floating-shapes">
-        <div class="floating-shape"></div>
-        <div class="floating-shape"></div>
-        <div class="floating-shape"></div>
-        <div class="floating-shape"></div>
-    </div>
     <div class="hero-content">
         <div class="hero-user">
             <div class="hero-avatar-wrapper">
-                <div class="avatar-ring"></div>
-                <div class="avatar-ring"></div>
                 <div class="hero-avatar">
                     @if($user->profile_picture)
                         <img src="{{ asset('storage/' . $user->profile_picture) }}" alt="{{ $user->name }}">

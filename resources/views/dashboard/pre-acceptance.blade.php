@@ -758,57 +758,57 @@
 </div>
 
 <!-- Cropper Modal -->
-<div class="cropper-modal-overlay" id="cropperModal">
-    <div class="cropper-modal">
-        <div class="cropper-modal-header">
+<div class="crop-dialog-overlay" id="cropperModal">
+    <div class="crop-dialog">
+        <div class="crop-dialog-header">
             <h3>Sesuaikan Foto Profil</h3>
-            <button type="button" class="cropper-close-btn" id="closeCropperModal">
+            <button type="button" class="crop-dialog-close" id="closeCropperModal">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
                 </svg>
             </button>
         </div>
-        <div class="cropper-modal-body">
-            <div class="cropper-container">
+        <div class="crop-dialog-body">
+            <div class="crop-dialog-canvas">
                 <img id="cropperImage" src="" alt="Crop Preview">
             </div>
-            <div class="cropper-preview-section">
+            <div class="crop-dialog-preview">
                 <p class="preview-label">Preview</p>
-                <div class="cropper-preview-circle" id="cropperPreview"></div>
+                <div class="crop-dialog-preview-circle" id="cropperPreview"></div>
             </div>
         </div>
-        <div class="cropper-modal-footer">
-            <div class="cropper-tools">
-                <button type="button" class="cropper-tool-btn" data-action="rotate-left" title="Putar Kiri">
+        <div class="crop-dialog-footer">
+            <div class="crop-dialog-tools">
+                <button type="button" class="crop-tool-btn" data-action="rotate-left" title="Putar Kiri">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M2.5 2v6h6M2.66 15.57a10 10 0 1 0 .57-8.38"/>
                     </svg>
                 </button>
-                <button type="button" class="cropper-tool-btn" data-action="rotate-right" title="Putar Kanan">
+                <button type="button" class="crop-tool-btn" data-action="rotate-right" title="Putar Kanan">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38"/>
                     </svg>
                 </button>
-                <button type="button" class="cropper-tool-btn" data-action="zoom-in" title="Perbesar">
+                <button type="button" class="crop-tool-btn" data-action="zoom-in" title="Perbesar">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
                         <line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/>
                     </svg>
                 </button>
-                <button type="button" class="cropper-tool-btn" data-action="zoom-out" title="Perkecil">
+                <button type="button" class="crop-tool-btn" data-action="zoom-out" title="Perkecil">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
                         <line x1="8" y1="11" x2="14" y2="11"/>
                     </svg>
                 </button>
-                <button type="button" class="cropper-tool-btn" data-action="reset" title="Reset">
+                <button type="button" class="crop-tool-btn" data-action="reset" title="Reset">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
                         <path d="M3 3v5h5"/>
                     </svg>
                 </button>
             </div>
-            <div class="cropper-actions">
+            <div class="crop-dialog-actions">
                 <button type="button" class="btn-cancel-crop" id="cancelCrop">Batal</button>
                 <button type="button" class="btn-apply-crop" id="applyCrop">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -978,7 +978,7 @@ function setupProfilePicture() {
         }
     });
 
-    document.querySelectorAll('.cropper-tool-btn').forEach(btn => {
+    document.querySelectorAll('.crop-tool-btn').forEach(btn => {
         btn.addEventListener('click', function() {
             if (!cropper) return;
             const action = this.dataset.action;
@@ -1017,6 +1017,7 @@ function openCropperModal(file) {
                 cropBoxMovable: true,
                 cropBoxResizable: true,
                 toggleDragModeOnDblclick: false,
+                background: false,
                 preview: '#cropperPreview',
             });
         };
