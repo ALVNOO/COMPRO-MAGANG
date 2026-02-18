@@ -58,8 +58,11 @@ class AuthController extends Controller
                         );
                 }
 
-                // Jika sudah setup tapi belum verified di session
-                if (!session("2fa_verified")) {
+                // Check if device is trusted or need 2FA verification
+                if (
+                    $user->requires2faVerification($request) &&
+                    !session("2fa_verified")
+                ) {
                     return redirect()->route("2fa.verify");
                 }
 
@@ -89,8 +92,11 @@ class AuthController extends Controller
                         );
                 }
 
-                // Jika sudah setup tapi belum verified di session
-                if ($user->requiresTwoFactor() && !session("2fa_verified")) {
+                // Check if device is trusted or need 2FA verification
+                if (
+                    $user->requires2faVerification($request) &&
+                    !session("2fa_verified")
+                ) {
                     return redirect()->route("2fa.verify");
                 }
 
@@ -181,6 +187,13 @@ class AuthController extends Controller
      */
     public function logout(Request $request)
     {
+        $user = Auth::user();
+
+        // Clear trusted device if "logout from all devices" or similar action
+        if ($request->has("clear_trusted_device")) {
+            $user->clearTrustedDevice();
+        }
+
         Auth::logout();
 
         $request->session()->invalidate();
@@ -257,7 +270,7 @@ class AuthController extends Controller
     /**
      * Show 2FA verification form
      */
-    public function show2faVerify()
+    public function show2faVerify(Request $request)
     {
         $user = Auth::user();
 
@@ -266,12 +279,13 @@ class AuthController extends Controller
             return redirect($this->getDashboardUrl($user));
         }
 
-        // Update timestamp when showing verification form
-        $user->updateTwoFactorCodeGenerated();
+        // Check if device is trusted first
+        if (!$user->requires2faVerification($request)) {
+            session(["2fa_verified" => true]);
+            return redirect()->intended($this->getDashboardUrl($user));
+        }
 
-        return view("auth.2fa-verify", [
-            "timeRemaining" => $user->getTwoFactorTimeRemaining(),
-        ]);
+        return view("auth.2fa-verify");
     }
 
     /**
@@ -289,6 +303,13 @@ class AuthController extends Controller
 
         if (is_array($result) && $result["success"]) {
             session(["2fa_verified" => true]);
+
+            // Trust device if "remember device" is checked
+            if ($request->has("remember_device")) {
+                $deviceFingerprint = User::generateDeviceFingerprint($request);
+                $user->trustDevice($deviceFingerprint, 30); // Trust for 30 days
+            }
+
             return redirect()->intended($this->getDashboardUrl($user));
         }
 
@@ -313,26 +334,26 @@ class AuthController extends Controller
     }
 
     /**
-     * Refresh 2FA verification (reset timeout)
+     * Clear trusted device for current user
      */
-    public function refresh2fa(Request $request)
+    public function clearTrustedDevice(Request $request)
     {
         $user = Auth::user();
 
-        // Only allow refresh if user requires 2FA
-        if (!$user->requiresTwoFactor()) {
-            return redirect($this->getDashboardUrl($user));
+        if ($user->trusted_device_token) {
+            $user->clearTrustedDevice();
+
+            return redirect()
+                ->back()
+                ->with(
+                    "success",
+                    "Perangkat terpercaya telah dihapus. Anda akan diminta verifikasi 2FA pada login berikutnya.",
+                );
         }
 
-        // Update timestamp to reset the 30-second window
-        $user->updateTwoFactorCodeGenerated();
-
         return redirect()
-            ->route("2fa.verify")
-            ->with(
-                "refresh_success",
-                "Timer berhasil direset! Silakan masukkan kode terbaru dari Google Authenticator Anda.",
-            );
+            ->back()
+            ->with("info", "Tidak ada perangkat terpercaya yang terdaftar.");
     }
 
     /**

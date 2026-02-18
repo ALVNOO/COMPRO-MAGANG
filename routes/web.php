@@ -50,9 +50,10 @@ Route::middleware(["auth", "throttle:2fa"])->group(function () {
     Route::post("/2fa/verify", [AuthController::class, "verify2fa"])->name(
         "2fa.verify.post",
     );
-    Route::post("/2fa/refresh", [AuthController::class, "refresh2fa"])->name(
-        "2fa.refresh",
-    );
+    Route::post("/2fa/clear-trusted", [
+        AuthController::class,
+        "clearTrustedDevice",
+    ])->name("2fa.clear-trusted");
 });
 
 // Internship routes
@@ -154,16 +155,35 @@ Route::middleware(["auth", "throttle:global"])->group(function () {
         DashboardController::class,
         "profile",
     ])->name("dashboard.profile");
-    
+
     // Notifications
-    Route::prefix("notifications")->name("notifications.")->group(function () {
-        Route::get("/", [NotificationController::class, "index"])->name("index");
-        Route::get("/unread-count", [NotificationController::class, "unreadCount"])->name("unread-count");
-        Route::get("/recent", [NotificationController::class, "recent"])->name("recent");
-        Route::post("/{id}/read", [NotificationController::class, "markAsRead"])->name("read");
-        Route::post("/mark-all-read", [NotificationController::class, "markAllAsRead"])->name("mark-all-read");
-        Route::delete("/{id}", [NotificationController::class, "destroy"])->name("destroy");
-    });
+    Route::prefix("notifications")
+        ->name("notifications.")
+        ->group(function () {
+            Route::get("/", [NotificationController::class, "index"])->name(
+                "index",
+            );
+            Route::get("/unread-count", [
+                NotificationController::class,
+                "unreadCount",
+            ])->name("unread-count");
+            Route::get("/recent", [
+                NotificationController::class,
+                "recent",
+            ])->name("recent");
+            Route::post("/{id}/read", [
+                NotificationController::class,
+                "markAsRead",
+            ])->name("read");
+            Route::post("/mark-all-read", [
+                NotificationController::class,
+                "markAllAsRead",
+            ])->name("mark-all-read");
+            Route::delete("/{id}", [
+                NotificationController::class,
+                "destroy",
+            ])->name("destroy");
+        });
 
     // Tour guide route
     Route::post("/dashboard/tour/complete", [

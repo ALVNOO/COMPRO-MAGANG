@@ -119,29 +119,7 @@
                     </div>
                 </div>
 
-                <!-- Countdown Timer -->
-                <div class="countdown-container" id="countdownBox">
-                    <div class="countdown-main">
-                        <div class="countdown-icon">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <circle cx="12" cy="12" r="10"/>
-                                <polyline points="12,6 12,12 16,14"/>
-                            </svg>
-                        </div>
-                        <div class="countdown-content">
-                            <span class="countdown-label">Kode berlaku selama</span>
-                            <span class="countdown-number" id="countdown">30</span>
-                            <span class="countdown-unit">detik</span>
-                        </div>
-                    </div>
 
-                    <div class="countdown-progress">
-                        <div class="countdown-progress-track">
-                            <div class="countdown-progress-bar" id="countdownBar"></div>
-                        </div>
-
-                    </div>
-                </div>
 
                 <!-- Verify Form -->
                 <form method="POST" action="{{ route('2fa.verify.post') }}" class="auth-form" id="verifyForm">
@@ -171,8 +149,20 @@
                                 <line x1="12" y1="16" x2="12" y2="12"/>
                                 <line x1="12" y1="8" x2="12.01" y2="8"/>
                             </svg>
-                            <span id="hintText">Kode akan diverifikasi otomatis setelah 6 digit</span>
+                            <span id="hintText">Masukkan kode 6 digit dari aplikasi authenticator</span>
                         </span>
+                    </div>
+
+                    <!-- Remember Device Checkbox -->
+                    <div class="form-group remember-device">
+                        <label class="remember-device-label">
+                            <input type="checkbox" name="remember_device" value="1" class="remember-checkbox">
+                            <span class="checkmark"></span>
+                            <span class="remember-text">
+                                <strong>Ingat perangkat ini</strong>
+                                <span class="remember-subtitle">Tidak perlu 2FA selama 30 hari di perangkat ini</span>
+                            </span>
+                        </label>
                     </div>
 
                     <button type="submit" class="btn-auth-primary" id="submitBtn">
@@ -186,28 +176,7 @@
                     </button>
                 </form>
 
-                <!-- Refresh Code Button (shown when expired) -->
-                <div id="refresh-container" style="display: none;">
-                    <form id="refresh-form" action="{{ route('2fa.refresh') }}" method="POST">
-                        @csrf
-                        <button type="submit" class="btn-auth-primary btn-auth-refresh" id="refreshBtn">
-                            <svg id="refreshIcon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <polyline points="23 4 23 10 17 10"/>
-                                <polyline points="1 20 1 14 7 14"/>
-                                <path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"/>
-                            </svg>
-                            <span id="refreshText">Dapatkan Kode Baru</span>
-                        </button>
-                    </form>
-                    <div class="refresh-hint">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <circle cx="12" cy="12" r="10"/>
-                            <line x1="12" y1="16" x2="12" y2="12"/>
-                            <line x1="12" y1="8" x2="12.01" y2="8"/>
-                        </svg>
-                        <span>Kode Google Authenticator berubah setiap 30 detik</span>
-                    </div>
-                </div>
+
 
                 <!-- Cancel Action -->
                 <form id="logout-form" action="{{ route('logout') }}" method="POST">
@@ -222,10 +191,7 @@
                     </button>
                 </form>
 
-                <!-- Help -->
-                <div class="auth-footer">
-                    <p>Tidak bisa akses kode? <a href="mailto:admin@telkom.co.id" class="auth-link">Hubungi Admin</a></p>
-                </div>
+
 
                 <!-- Back to Login -->
                 <a href="{{ route('login') }}" class="back-to-home">
@@ -341,166 +307,84 @@
         color: #6c757d;
     }
 
-    /* Countdown Container */
-    .countdown-container {
-        background: linear-gradient(135deg, #fff8f5 0%, #fff 100%);
-        border: 1px solid rgba(238, 46, 36, 0.15);
-        border-radius: 16px;
-        padding: 20px;
-        margin-bottom: 24px;
-        text-align: center;
-        position: relative;
-        overflow: hidden;
-        box-shadow: 0 2px 8px rgba(238, 46, 36, 0.08);
-    }
-
-    .countdown-container.expired {
-        background: linear-gradient(135deg, #f8f9fa 0%, #fff 100%);
-        border-color: #dee2e6;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-    }
-
-    .countdown-main {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 12px;
-        margin-bottom: 16px;
-        padding: 0 8px;
-    }
-
-    .countdown-icon {
-        width: 32px;
-        height: 32px;
-        background: linear-gradient(135deg, #EE2E24 0%, #C41E3A 100%);
-        border-radius: 8px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: white;
-        flex-shrink: 0;
-    }
-
-    .countdown-container.expired .countdown-icon {
-        background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
-    }
-
-    .countdown-content {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        flex: 1;
-        min-width: 0;
-        line-height: 1.2;
-        gap: 12px;
-    }
-
-    .countdown-label {
-        font-size: 14px;
-        font-weight: 500;
-        color: #495057;
-        letter-spacing: 0.025em;
-        margin: 0;
-        white-space: nowrap;
-    }
 
 
-
-
-
-    .countdown-number {
-        font-size: 32px;
-        font-weight: 800;
-        line-height: 1;
-        color: #EE2E24;
-        font-family: 'Inter', 'Segoe UI', sans-serif;
-        text-shadow: 0 2px 4px rgba(238, 46, 36, 0.1);
-        margin: 0;
+    /* Remember Device Checkbox */
+    .remember-device {
+        margin-bottom: 20px;
         padding: 0;
     }
 
-    .countdown-container.expired .countdown-number {
-        color: #6c757d;
-        text-shadow: none;
-    }
-
-    .countdown-unit {
+    .remember-device-label {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        cursor: pointer;
+        padding: 16px;
+        background: linear-gradient(135deg, #f8f9fa 0%, #fff 100%);
+        border: 1px solid #e9ecef;
+        border-radius: 12px;
+        transition: all 0.3s ease;
+        position: relative;
+        margin: 0;
         font-size: 14px;
-        font-weight: 500;
-        color: #6c757d;
+        line-height: 1.4;
     }
 
-    .countdown-progress {
-        position: relative;
+    .remember-device-label:hover {
+        background: linear-gradient(135deg, #f1f3f5 0%, #fff 100%);
+        border-color: #dee2e6;
     }
 
-    .countdown-progress-track {
-        width: 100%;
-        height: 6px;
-        background: rgba(238, 46, 36, 0.1);
-        border-radius: 3px;
-        overflow: hidden;
-        margin-bottom: 8px;
-    }
-
-    .countdown-progress-bar {
-        height: 100%;
-        background: linear-gradient(90deg, #EE2E24 0%, #C41E3A 100%);
-        border-radius: 3px;
-        transition: width 0.3s ease;
-        width: 100%;
-        position: relative;
-    }
-
-    .countdown-progress-bar::after {
-        content: '';
-        position: absolute;
-        top: 0;
-        right: 0;
-        width: 20%;
-        height: 100%;
-        background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.3) 100%);
-        border-radius: 3px;
-    }
-
-    .countdown-container.expired .countdown-progress-bar {
-        width: 0;
-        background: #dee2e6;
-    }
-
-    .countdown-container.expired .countdown-progress-bar::after {
+    .remember-checkbox {
         display: none;
     }
 
-
-
-    /* Animations */
-    .countdown-number {
+    .checkmark {
+        width: 20px;
+        height: 20px;
+        background: white;
+        border: 2px solid #dee2e6;
+        border-radius: 6px;
+        flex-shrink: 0;
+        position: relative;
         transition: all 0.3s ease;
+        margin-top: 1px;
     }
 
-    .countdown-container:not(.expired) .countdown-number {
-        animation: pulse-subtle 2s ease-in-out infinite;
+    .remember-checkbox:checked + .checkmark {
+        background: linear-gradient(135deg, #EE2E24 0%, #C41E3A 100%);
+        border-color: #EE2E24;
     }
 
-    @keyframes pulse-subtle {
-        0%, 100% { transform: scale(1); }
-        50% { transform: scale(1.02); }
+    .remember-checkbox:checked + .checkmark::after {
+        content: '';
+        position: absolute;
+        left: 6px;
+        top: 2px;
+        width: 6px;
+        height: 10px;
+        border: solid white;
+        border-width: 0 2px 2px 0;
+        transform: rotate(45deg);
     }
 
-    /* Warning state when time is low */
-    .countdown-container.warning .countdown-number {
-        color: #dc3545;
-        animation: pulse-warning 1s ease-in-out infinite;
+    .remember-text {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        flex: 1;
     }
 
-    .countdown-container.warning .countdown-progress-bar {
-        background: linear-gradient(90deg, #dc3545 0%, #c82333 100%);
+    .remember-text strong {
+        color: #1a1a1a;
+        font-weight: 600;
     }
 
-    @keyframes pulse-warning {
-        0%, 100% { transform: scale(1); opacity: 1; }
-        50% { transform: scale(1.05); opacity: 0.8; }
+    .remember-subtitle {
+        color: #6c757d;
+        font-size: 12px;
+        font-weight: 400;
     }
 
     /* Code Input Styling */
@@ -570,59 +454,7 @@
         color: #495057;
     }
 
-    /* Refresh Container */
-    #refresh-container {
-        margin-bottom: 16px;
-    }
 
-    /* Refresh Button */
-    .btn-auth-refresh {
-        background: linear-gradient(135deg, #28a745 0%, #20c997 100%) !important;
-        margin-bottom: 12px;
-    }
-
-    .btn-auth-refresh:hover {
-        background: linear-gradient(135deg, #20c997 0%, #17a2b8 100%) !important;
-        transform: translateY(-1px);
-        box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
-    }
-
-    .btn-auth-refresh.loading {
-        pointer-events: none;
-        background: linear-gradient(135deg, #6c757d 0%, #495057 100%) !important;
-    }
-
-    .btn-auth-refresh.loading #refreshIcon {
-        animation: rotate 1s linear infinite;
-    }
-
-    .btn-auth-refresh.loading #refreshText {
-        opacity: 0.7;
-    }
-
-    @keyframes rotate {
-        from { transform: rotate(0deg); }
-        to { transform: rotate(360deg); }
-    }
-
-    .refresh-hint {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 6px;
-        font-size: 12px;
-        color: #6c757d;
-        text-align: center;
-        padding: 8px;
-        background: #f8f9fa;
-        border-radius: 8px;
-        border: 1px solid #e9ecef;
-    }
-
-    .refresh-hint svg {
-        flex-shrink: 0;
-        color: #28a745;
-    }
 
     /* Loading State */
     .btn-auth-primary.loading {
@@ -691,35 +523,6 @@
         font-size: 22px;
         letter-spacing: 10px;
     }
-
-    .countdown-container {
-        padding: 16px;
-    }
-
-    .countdown-number {
-        font-size: 28px;
-    }
-
-    .countdown-icon {
-        width: 28px;
-        height: 28px;
-    }
-
-    .countdown-label {
-        font-size: 13px;
-    }
-
-    .countdown-unit {
-        font-size: 13px;
-    }
-
-    .countdown-main {
-        gap: 10px;
-    }
-
-    .countdown-content {
-        justify-content: flex-start;
-    }
 }
 
 @media (max-width: 576px) {
@@ -731,35 +534,17 @@
         padding: 12px;
     }
 
-    .countdown-container {
-        padding: 14px;
-        margin-bottom: 16px;
+    .remember-device-label {
+        padding: 12px;
+        gap: 10px;
     }
 
-    .countdown-number {
-        font-size: 24px;
+    .remember-text strong {
+        font-size: 13px;
     }
 
-    .countdown-icon {
-        width: 24px;
-        height: 24px;
-    }
-
-    .countdown-label {
-        font-size: 12px;
-    }
-
-    .countdown-unit {
-        font-size: 12px;
-    }
-
-    .countdown-main {
-        margin-bottom: 12px;
-        gap: 8px;
-    }
-
-    .countdown-content {
-        justify-content: flex-start;
+    .remember-subtitle {
+        font-size: 11px;
     }
 
     .form-input-code {
@@ -773,20 +558,6 @@
         font-size: 20px;
         letter-spacing: 8px;
     }
-
-    .btn-auth-refresh {
-        font-size: 13px;
-        padding: 12px 20px;
-    }
-
-    .refresh-hint {
-        font-size: 11px;
-        padding: 6px;
-    }
-
-    #refresh-container {
-        margin-bottom: 12px;
-    }
 }
 </style>
 @endpush
@@ -796,124 +567,28 @@
 document.addEventListener('DOMContentLoaded', function() {
     const codeInput = document.getElementById('code');
     const submitBtn = document.getElementById('submitBtn');
-    const refreshBtn = document.getElementById('refreshBtn');
     const form = document.getElementById('verifyForm');
-    const countdownElement = document.getElementById('countdown');
-    const countdownBar = document.getElementById('countdownBar');
-    const countdownBox = document.getElementById('countdownBox');
-    const formHint = document.getElementById('formHint');
-    const hintText = document.getElementById('hintText');
-
-    let timeLeft = Math.floor({{ $timeRemaining ?? 30 }});
-    let countdownInterval;
-    let isExpired = false;
-
-    function startCountdown() {
-        // Set initial display
-        countdownElement.textContent = timeLeft;
-
-        countdownInterval = setInterval(() => {
-            timeLeft--;
-
-            // Always show integer values
-            countdownElement.textContent = Math.max(0, timeLeft);
-
-            // Update progress bar
-            const percentage = Math.max(0, (timeLeft / 30) * 100);
-            countdownBar.style.width = percentage + '%';
-
-            // Change color when time is running out
-            if (timeLeft <= 10 && timeLeft > 0) {
-                countdownBox.classList.add('warning');
-                countdownBox.style.borderColor = '#dc3545';
-            } else {
-                countdownBox.classList.remove('warning');
-            }
-
-            if (timeLeft <= 0) {
-                clearInterval(countdownInterval);
-                countdownElement.textContent = '0';
-                handleExpired();
-            }
-        }, 1000);
-    }
-
-    function handleExpired() {
-        isExpired = true;
-
-        // Update UI to show expired state
-        countdownBox.classList.add('expired');
-        codeInput.classList.add('expired');
-        codeInput.disabled = true;
-        codeInput.placeholder = 'EXPIRED';
-        submitBtn.disabled = true;
-        submitBtn.style.opacity = '0.5';
-
-        // Update hint text
-        formHint.classList.add('expired');
-        hintText.innerHTML = 'Kode sudah kedaluwarsa. Klik "Dapatkan Kode Baru" untuk refresh.';
-
-        // Show refresh button
-        document.getElementById('refresh-container').style.display = 'block';
-
-        countdownElement.textContent = '0';
-    }
 
     if (codeInput) {
-        // Start countdown
-        if (timeLeft > 0) {
-            startCountdown();
-        } else {
-            handleExpired();
-        }
-
         // Auto focus
         codeInput.focus();
 
         // Only allow numbers
         codeInput.addEventListener('input', function() {
-            if (isExpired) return;
-
             this.value = this.value.replace(/[^0-9]/g, '');
-
-            // Auto submit when 6 digits
-            if (this.value.length === 6) {
-                submitBtn.classList.add('loading');
-                document.getElementById('submitText').textContent = 'Memverifikasi...';
-
-                setTimeout(() => {
-                    form.submit();
-                }, 300);
-            }
         });
 
         // Handle paste
         codeInput.addEventListener('paste', function(e) {
-            if (isExpired) return;
-
             e.preventDefault();
             const pastedText = (e.clipboardData || window.clipboardData).getData('text');
             const numericOnly = pastedText.replace(/[^0-9]/g, '').substring(0, 6);
             this.value = numericOnly;
-
-            if (numericOnly.length === 6) {
-                submitBtn.classList.add('loading');
-                document.getElementById('submitText').textContent = 'Memverifikasi...';
-
-                setTimeout(() => {
-                    form.submit();
-                }, 300);
-            }
         });
     }
 
     // Form submit loading state
     form.addEventListener('submit', function(e) {
-        if (isExpired) {
-            e.preventDefault();
-            return;
-        }
-
         submitBtn.classList.add('loading');
         document.getElementById('submitText').textContent = 'Memverifikasi...';
     });
@@ -933,59 +608,8 @@ document.addEventListener('DOMContentLoaded', function() {
     // Clear errors on page load
     clearIrrelevantErrors();
 
-    // Handle server-side errors and success states
-    @if(session('error_type') == 'expired')
-        // If server says code is expired, immediately show expired state
-        setTimeout(() => {
-            clearInterval(countdownInterval);
-            handleExpired();
-        }, 100);
-    @endif
-
-    @if(session('refresh_success'))
-        // Reset timer and enable form after refresh
-        setTimeout(() => {
-            timeLeft = 30;
-            isExpired = false;
-            countdownBox.classList.remove('expired', 'warning');
-            countdownBox.style.borderColor = 'rgba(238, 46, 36, 0.15)';
-            codeInput.classList.remove('expired');
-            codeInput.disabled = false;
-            codeInput.placeholder = '000000';
-            codeInput.value = '';
-            submitBtn.disabled = false;
-            submitBtn.style.opacity = '1';
-            formHint.classList.remove('expired');
-            hintText.innerHTML = 'Kode akan diverifikasi otomatis setelah 6 digit';
-            document.getElementById('refresh-container').style.display = 'none';
-            codeInput.focus();
-
-            // Clear any existing countdown
-            if (countdownInterval) {
-                clearInterval(countdownInterval);
-            }
-
-            // Start fresh countdown with proper integer display
-            countdownElement.textContent = '30';
-            document.getElementById('countdownBar').style.width = '100%';
-            startCountdown();
-        }, 100);
-    @endif
-
-    // Handle refresh button loading state
-    const refreshForm = document.getElementById('refresh-form');
-    if (refreshForm) {
-        refreshForm.addEventListener('submit', function() {
-            const refreshBtn = document.getElementById('refreshBtn');
-            const refreshText = document.getElementById('refreshText');
-
-            refreshBtn.classList.add('loading');
-            refreshText.textContent = 'Mengatur Ulang...';
-        });
-    }
-
-    @if(session('success') && !session('refresh_success'))
-        // Show success state for regular success
+    @if(session('success'))
+        // Show success state
         setTimeout(() => {
             submitBtn.classList.remove('loading');
             submitBtn.classList.add('success');

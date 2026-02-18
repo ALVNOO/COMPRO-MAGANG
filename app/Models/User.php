@@ -38,6 +38,9 @@ class User extends Authenticatable
         "two_factor_last_used_at",
         "two_factor_attempts",
         "two_factor_attempts_reset_at",
+        "trusted_device_token",
+        "trusted_device_expires_at",
+        "device_fingerprint",
     ];
 
     /**
@@ -61,6 +64,7 @@ class User extends Authenticatable
             "two_factor_code_generated_at" => "datetime",
             "two_factor_last_used_at" => "datetime",
             "two_factor_attempts_reset_at" => "datetime",
+            "trusted_device_expires_at" => "datetime",
         ];
     }
 
@@ -137,7 +141,7 @@ class User extends Authenticatable
         $this->save();
     }
 
-    // Verify code with timeout and rate limiting
+    // Verify code - simplified without timer
     public function verifyTwoFactorCode($code)
     {
         if (empty($this->two_factor_secret)) {
@@ -160,40 +164,16 @@ class User extends Authenticatable
 
         $google2fa = new Google2FA();
 
-        // Check if this is a fresh session (just refreshed or first time)
-        $isFreshSession = !$this->two_factor_last_used_at;
-
-        if ($isFreshSession) {
-            // For fresh sessions, use simple verification
-            if ($google2fa->verifyKey($this->two_factor_secret, $code, 1)) {
-                $this->updateTwoFactorTimestamp(time());
-                $this->resetTwoFactorAttempts();
-                return ["success" => true];
-            }
-        } else {
-            // For existing sessions, prevent replay attacks
-            $timestamp = $google2fa->verifyKeyNewer(
-                $this->two_factor_secret,
-                $code,
-                $this->getLastTwoFactorTimestamp(),
-                1,
-            );
-
-            if ($timestamp !== false) {
-                $this->updateTwoFactorTimestamp($timestamp);
-                $this->resetTwoFactorAttempts();
-                return ["success" => true];
-            }
+        // Use standard Google Authenticator window (90 seconds)
+        if ($google2fa->verifyKey($this->two_factor_secret, $code, 3)) {
+            $this->two_factor_last_used_at = now();
+            $this->resetTwoFactorAttempts();
+            $this->save();
+            return ["success" => true];
         }
 
-        // Code is invalid or expired
+        // Code is invalid
         $this->incrementTwoFactorAttempts();
-
-        // Check if code exists but expired (using larger window)
-        if ($google2fa->verifyKey($this->two_factor_secret, $code, 4)) {
-            return ["success" => false, "error" => "expired"];
-        }
-
         return ["success" => false, "error" => "invalid"];
     }
 
@@ -201,21 +181,6 @@ class User extends Authenticatable
     public function markTwoFactorAsVerified()
     {
         $this->two_factor_verified_at = now();
-        $this->save();
-    }
-
-    // Get last used timestamp for 2FA
-    private function getLastTwoFactorTimestamp()
-    {
-        return $this->two_factor_last_used_at
-            ? $this->two_factor_last_used_at->timestamp
-            : null;
-    }
-
-    // Update timestamp after successful verification
-    private function updateTwoFactorTimestamp($timestamp)
-    {
-        $this->two_factor_last_used_at = now();
         $this->save();
     }
 
@@ -273,25 +238,87 @@ class User extends Authenticatable
         );
     }
 
-    // Get remaining time for current 2FA code (30 seconds window)
-    public function getTwoFactorTimeRemaining()
+    // ===============================================
+    // TRUSTED DEVICE METHODS
+    // ===============================================
+
+    /**
+     * Check if current device is trusted
+     */
+    public function isTrustedDevice($deviceFingerprint)
     {
-        if (!$this->two_factor_code_generated_at) {
-            return 0;
+        if (!$this->trusted_device_token || !$this->trusted_device_expires_at) {
+            return false;
         }
 
-        $elapsed = now()->diffInSeconds($this->two_factor_code_generated_at);
-        return max(0, 30 - $elapsed);
+        // Check if device fingerprint matches
+        if ($this->device_fingerprint !== $deviceFingerprint) {
+            return false;
+        }
+
+        // Check if trust hasn't expired
+        if (now()->greaterThan($this->trusted_device_expires_at)) {
+            $this->clearTrustedDevice();
+            return false;
+        }
+
+        return true;
     }
 
-    // Update code generation timestamp and reset attempts
-    public function updateTwoFactorCodeGenerated()
+    /**
+     * Trust current device for specified duration
+     */
+    public function trustDevice($deviceFingerprint, $days = 30)
     {
         $this->update([
-            "two_factor_code_generated_at" => now(),
-            "two_factor_last_used_at" => null, // Reset to allow fresh verification
-            "two_factor_attempts" => 0,
-            "two_factor_attempts_reset_at" => null,
+            "trusted_device_token" => \Str::random(60),
+            "trusted_device_expires_at" => now()->addDays($days),
+            "device_fingerprint" => $deviceFingerprint,
         ]);
+    }
+
+    /**
+     * Clear trusted device
+     */
+    public function clearTrustedDevice()
+    {
+        $this->update([
+            "trusted_device_token" => null,
+            "trusted_device_expires_at" => null,
+            "device_fingerprint" => null,
+        ]);
+    }
+
+    /**
+     * Generate device fingerprint from request
+     */
+    public static function generateDeviceFingerprint($request)
+    {
+        $components = [
+            $request->ip(),
+            $request->userAgent(),
+            $request->header("Accept-Language"),
+            $request->header("Accept-Encoding"),
+        ];
+
+        return hash("sha256", implode("|", array_filter($components)));
+    }
+
+    /**
+     * Check if user requires 2FA (considering trusted device)
+     */
+    public function requires2faVerification($request)
+    {
+        if (!$this->requiresTwoFactor()) {
+            return false;
+        }
+
+        // Check if device is trusted
+        $deviceFingerprint = self::generateDeviceFingerprint($request);
+        if ($this->isTrustedDevice($deviceFingerprint)) {
+            return false;
+        }
+
+        return true;
     }
 }
