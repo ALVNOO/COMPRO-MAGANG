@@ -849,7 +849,7 @@
                                     <a href="{{ route('admin.mentor.detail', $mentor->id) }}" class="mentor-name">
                                         {{ $mentorName }}
                                     </a>
-                                    <span class="mentor-username">@{{ $mentor->username }}</span>
+                                    <span class="mentor-username">{{ '@' . $mentor->username }}</span>
                                 </div>
                             </div>
                         </td>
