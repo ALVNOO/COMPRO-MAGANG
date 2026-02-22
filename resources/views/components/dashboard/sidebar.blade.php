@@ -82,7 +82,6 @@
             ['route' => 'mentor.absensi', 'icon' => 'fa-calendar-check', 'label' => 'Absensi', 'routeMatch' => 'mentor.absensi*'],
             ['route' => 'mentor.logbook', 'icon' => 'fa-book-open', 'label' => 'Logbook', 'routeMatch' => 'mentor.logbook*'],
             ['route' => 'mentor.laporan-penilaian', 'icon' => 'fa-chart-bar', 'label' => 'Laporan Penilaian', 'routeMatch' => 'mentor.laporan-penilaian*'],
-            ['route' => 'mentor.sertifikat', 'icon' => 'fa-award', 'label' => 'Sertifikat', 'routeMatch' => 'mentor.sertifikat*'],
         ];
     }
 @endphp

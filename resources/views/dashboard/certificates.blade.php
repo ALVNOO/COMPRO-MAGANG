@@ -533,9 +533,6 @@
             <a href="{{ route('dashboard.assignments') }}" class="btn-empty-primary">
                 <i class="fas fa-tasks"></i> Lihat Tugas
             </a>
-            <a href="{{ route('dashboard.status') }}" class="btn-empty-secondary">
-                <i class="fas fa-clipboard-list"></i> Status Pengajuan
-            </a>
         </div>
     </div>
 </div>

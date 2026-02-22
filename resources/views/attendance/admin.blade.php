@@ -377,6 +377,13 @@
 }
 
 /* 7 Days Status */
+.legend-text {
+    display: block;
+    font-size: 0.7rem;
+    font-weight: 400;
+    color: #6b7280;
+    margin-top: 0.2rem;
+}
 .seven-days {
     display: flex;
     gap: 0.25rem;
@@ -742,7 +749,7 @@
                     <th style="width: 5%;">#</th>
                     <th style="width: 22%;">Peserta</th>
                     <th style="width: 12%; text-align: center;">Status</th>
-                    <th style="width: 28%; text-align: center;">Status 7 Hari Terakhir</th>
+                    <th style="width: 28%; text-align: center;">Status 7 Hari Terakhir <span class="legend-text">(✓ Hadir, L Terlambat, ✗ Tidak Hadir/Absen)</span></th>
                     <th style="width: 13%; text-align: center;">Waktu</th>
                     <th style="width: 20%; text-align: center;">Aksi</th>
                 </tr>
@@ -795,20 +802,21 @@
                             @foreach($workingDays as $workDate)
                                 @php
                                     $checkDate = Carbon::parse($workDate);
-                                    $dayAttendance = $participant['last7Days']->firstWhere('date', is_string($workDate) ? $workDate : $workDate->toDateString());
+                                    $dateStr = is_string($workDate) ? $workDate : $workDate->toDateString();
+                                    $dayAttendance = $participant['last7Days']->first(fn($a) => $a->date->toDateString() === $dateStr);
                                 @endphp
                                 <div class="day-status">
                                     <span class="date">{{ $checkDate->format('d') }}</span>
                                     @if($dayAttendance)
                                         @if($dayAttendance->status == 'Hadir')
-                                            <span class="badge hadir">✓</span>
+                                            <span class="badge hadir" title="Hadir">✓</span>
                                         @elseif($dayAttendance->status == 'Absen')
-                                            <span class="badge absen">✗</span>
+                                            <span class="badge absen" title="Absen">✗</span>
                                         @elseif($dayAttendance->status == 'Terlambat')
-                                            <span class="badge terlambat">L</span>
+                                            <span class="badge terlambat" title="Terlambat">L</span>
                                         @endif
                                     @else
-                                        <span class="badge none">-</span>
+                                        <span class="badge absen" title="Tidak Hadir">✗</span>
                                     @endif
                                 </div>
                             @endforeach

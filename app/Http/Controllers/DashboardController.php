@@ -77,6 +77,7 @@ class DashboardController extends Controller
         // Hitung progress magang dan hari tersisa
         $progressMagang = 0;
         $hariTersisa = 0;
+        $attendanceRate = 0;
 
         if ($application && $application->start_date && $application->end_date) {
             // Normalize dates to start of day to avoid time-component errors
@@ -98,10 +99,29 @@ class DashboardController extends Controller
                 $progressMagang = 100;
                 $hariTersisa = 0;
             }
+
+            // Persentase kehadiran = jumlah hari hadir (Hadir/Terlambat) / lama hari kerja magang
+            $periodEnd = $today->isAfter($endDate) ? $endDate : $today;
+            $totalWorkingDays = 0;
+            $cursor = $startDate->copy();
+            while ($cursor->lte($periodEnd)) {
+                if ($cursor->dayOfWeek !== \Carbon\Carbon::SATURDAY && $cursor->dayOfWeek !== \Carbon\Carbon::SUNDAY) {
+                    $totalWorkingDays++;
+                }
+                $cursor->addDay();
+            }
+            $attendanceCount = $user->attendances()
+                ->whereDate('date', '>=', $startDate)
+                ->whereDate('date', '<=', $periodEnd)
+                ->whereIn('status', ['Hadir', 'Terlambat'])
+                ->count();
+            $attendanceRate = $totalWorkingDays > 0
+                ? min(100, (int) round(($attendanceCount / $totalWorkingDays) * 100))
+                : 0;
         }
 
         // Hanya tampilkan dashboard jika status accepted atau finished
-        return view('dashboard.index', compact('user', 'application', 'progressMagang', 'hariTersisa'));
+        return view('dashboard.index', compact('user', 'application', 'progressMagang', 'hariTersisa', 'attendanceRate'));
     }
 
     /**
