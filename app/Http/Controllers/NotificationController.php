@@ -2,26 +2,68 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Notification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class NotificationController extends Controller
 {
     /**
-     * Display all notifications for the authenticated user.
+     * Get notifications for the authenticated user.
      */
-    public function index()
+    public function index(Request $request)
     {
         $user = Auth::user();
+        $notifications = $user->notifications()
+            ->orderBy('created_at', 'desc')
+            ->paginate(20);
 
-        // Get all notifications with pagination
-        $notifications = $user->notifications()->paginate(20);
+        // Jika request format JSON (untuk AJAX)
+        if ($request->wantsJson() || $request->get('format') === 'json') {
+            return response()->json([
+                'notifications' => $notifications->map(function ($notification) {
+                    return [
+                        'id' => $notification->id,
+                        'type' => $notification->type,
+                        'title' => $notification->title,
+                        'message' => $notification->message,
+                        'icon' => $notification->icon,
+                        'link' => $notification->link,
+                        'is_read' => $notification->is_read,
+                        'time_ago' => $notification->time_ago,
+                    ];
+                }),
+                'unread_count' => $user->unreadNotificationsCount(),
+            ]);
+        }
 
-        return view('notifications.index', compact('notifications'));
+        // Tentukan route dashboard berdasarkan role
+        $dashboardRoute = 'dashboard';
+        if ($user->role === 'pembimbing' || $user->role === 'mentor') {
+            $dashboardRoute = 'mentor.dashboard';
+        } elseif ($user->role === 'admin') {
+            $dashboardRoute = 'admin.dashboard';
+        }
+
+        $breadcrumbs = [
+            ['label' => 'Dashboard', 'url' => route($dashboardRoute)],
+            'Notifikasi'
+        ];
+
+        return view('notifications.index', compact('notifications', 'breadcrumbs'));
     }
 
     /**
-     * Get recent notifications for header dropdown.
+     * Get unread notifications count (for AJAX).
+     */
+    public function unreadCount()
+    {
+        $count = Auth::user()->unreadNotificationsCount();
+        return response()->json(['count' => $count]);
+    }
+
+    /**
+     * Get recent notifications (for dropdown).
      */
     public function recent()
     {
@@ -32,76 +74,54 @@ class NotificationController extends Controller
                 return response()->json([
                     'success' => false,
                     'notifications' => [],
+                    'unread_count' => 0,
                     'message' => 'User not authenticated'
                 ], 401);
             }
 
-            // Get last 10 unread notifications
-            $notifications = $user->unreadNotifications()
-                ->take(10)
-                ->get()
-                ->map(function ($notification) {
+            $notifications = $user->notifications()
+                ->orderBy('created_at', 'desc')
+                ->limit(10)
+                ->get();
+
+            return response()->json([
+                'notifications' => $notifications->map(function ($notification) {
                     return [
                         'id' => $notification->id,
                         'type' => $notification->type,
-                        'data' => $notification->data,
-                        'created_at' => $notification->created_at->diffForHumans(),
-                        'read_at' => $notification->read_at,
+                        'title' => $notification->title,
+                        'message' => $notification->message,
+                        'icon' => $notification->icon,
+                        'link' => $notification->link,
+                        'is_read' => $notification->is_read,
+                        'time_ago' => $notification->time_ago,
                     ];
-                });
-
-            return response()->json([
-                'success' => true,
-                'notifications' => $notifications
+                }),
+                'unread_count' => $user->unreadNotificationsCount(),
             ]);
         } catch (\Exception $e) {
             \Log::error('Notification error: ' . $e->getMessage());
             \Log::error('Stack trace: ' . $e->getTraceAsString());
 
             return response()->json([
-                'success' => true,
                 'notifications' => [],
+                'unread_count' => 0,
                 'message' => 'No notifications available'
-            ], 200); // Return 200 with success to prevent console errors
+            ], 200);
         }
     }
 
     /**
-     * Get unread notifications count.
-     */
-    public function unreadCount()
-    {
-        $user = Auth::user();
-        $count = $user->unreadNotifications()->count();
-
-        return response()->json([
-            'success' => true,
-            'count' => $count
-        ]);
-    }
-
-    /**
-     * Mark a notification as read.
+     * Mark notification as read.
      */
     public function markAsRead($id)
     {
-        $user = Auth::user();
-
-        $notification = $user->notifications()->find($id);
-
-        if (!$notification) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Notifikasi tidak ditemukan.'
-            ], 404);
-        }
+        $notification = Notification::where('user_id', Auth::id())
+            ->findOrFail($id);
 
         $notification->markAsRead();
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Notifikasi berhasil ditandai sebagai dibaca.'
-        ]);
+        return response()->json(['success' => true]);
     }
 
     /**
@@ -109,36 +129,27 @@ class NotificationController extends Controller
      */
     public function markAllAsRead()
     {
-        $user = Auth::user();
-        $user->unreadNotifications->markAsRead();
+        Auth::user()->notifications()
+            ->unread()
+            ->update([
+                'is_read' => true,
+                'read_at' => now(),
+            ]);
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Semua notifikasi berhasil ditandai sebagai dibaca.'
-        ]);
+        return response()->json(['success' => true]);
     }
 
     /**
-     * Delete a notification.
+     * Delete notification.
      */
     public function destroy($id)
     {
-        $user = Auth::user();
-
-        $notification = $user->notifications()->find($id);
-
-        if (!$notification) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Notifikasi tidak ditemukan.'
-            ], 404);
-        }
+        $notification = Notification::where('user_id', Auth::id())
+            ->findOrFail($id);
 
         $notification->delete();
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Notifikasi berhasil dihapus.'
-        ]);
+        return response()->json(['success' => true]);
     }
 }
+
