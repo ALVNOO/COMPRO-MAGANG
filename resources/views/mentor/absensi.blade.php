@@ -1,7 +1,7 @@
 {{--
     MENTOR ATTENDANCE PAGE
     Monitor attendance of internship participants
-    Using unified layout with glassmorphism design
+    Same design as admin attendance, scoped to mentor's participants
 --}}
 
 @extends('layouts.dashboard-unified')
@@ -9,34 +9,27 @@
 @section('title', 'Absensi Peserta Magang')
 
 @php
+    use Carbon\Carbon;
     $role = 'mentor';
     $pageTitle = 'Absensi Peserta';
     $pageSubtitle = 'Pantau kehadiran peserta magang Anda';
 
-    // Calculate stats
-    $totalParticipants = $participants->count();
-    $presentCount = 0;
-    $lateCount = 0;
-    $absentCount = 0;
-
-    foreach($participants as $participant) {
-        $todayAttendance = $participant->attendance_history[0] ?? null;
-        if($todayAttendance) {
-            if($todayAttendance['status'] === 'Hadir') $presentCount++;
-            elseif($todayAttendance['status'] === 'Terlambat') $lateCount++;
-            elseif($todayAttendance['status'] === 'Absen') $absentCount++;
-        }
-    }
+    // Count stats for today
+    $hadirCount = collect($participants)->filter(fn($p) => $p['attendance'] && $p['attendance']->status == 'Hadir')->count();
+    $terlambatCount = collect($participants)->filter(fn($p) => $p['attendance'] && $p['attendance']->status == 'Terlambat')->count();
+    $absenCount = collect($participants)->filter(fn($p) => $p['attendance'] && $p['attendance']->status == 'Absen')->count();
+    $belumAbsen = collect($participants)->filter(fn($p) => !$p['attendance'])->count();
 @endphp
 
 @push('styles')
 <style>
 /* ============================================
    MENTOR ATTENDANCE PAGE STYLES
+   (Matching admin attendance design)
    ============================================ */
 
 /* Hero Section */
-.mentor-hero {
+.admin-hero {
     background: linear-gradient(135deg, #EE2E24 0%, #C41E1A 50%, #9B1B1B 100%);
     border-radius: 24px;
     padding: 2rem 2.5rem;
@@ -46,7 +39,7 @@
     color: white;
 }
 
-.mentor-hero::before {
+.admin-hero::before {
     content: '';
     position: absolute;
     top: -50%;
@@ -61,10 +54,9 @@
     position: relative;
     z-index: 1;
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    flex-wrap: wrap;
-    gap: 1.5rem;
+    justify-content: space-between;
+    gap: 2rem;
 }
 
 .hero-text h1 {
@@ -83,104 +75,39 @@
     margin: 0;
 }
 
-/* Alert Styles */
-.alert-success-custom {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    padding: 1rem 1.5rem;
-    background: rgba(34, 197, 94, 0.1);
-    border: 1px solid rgba(34, 197, 94, 0.2);
-    border-radius: 12px;
-    margin-bottom: 1.5rem;
-    color: #16a34a;
-    font-weight: 500;
-}
-
-.alert-info-custom {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    padding: 1.5rem;
-    background: rgba(59, 130, 246, 0.1);
-    border: 1px solid rgba(59, 130, 246, 0.2);
-    border-radius: 12px;
-    color: #2563eb;
-    font-weight: 500;
-}
-
-/* Filter Card */
-.filter-card {
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(20px);
-    border-radius: 16px;
-    border: 1px solid rgba(0, 0, 0, 0.06);
-    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
-    padding: 1.5rem;
-    margin-bottom: 1.5rem;
-}
-
-.filter-row {
-    display: flex;
-    align-items: flex-end;
-    gap: 1rem;
-    flex-wrap: wrap;
-}
-
-.filter-group {
-    flex: 1;
-    min-width: 200px;
-}
-
-.filter-group label {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    font-size: 0.875rem;
-    font-weight: 600;
-    color: #374151;
-    margin-bottom: 0.5rem;
-}
-
-.filter-group label i {
-    color: #EE2E24;
-}
-
-.filter-input {
-    width: 100%;
-    padding: 0.75rem 1rem;
-    border: 2px solid #e5e7eb;
-    border-radius: 10px;
-    font-size: 0.9rem;
-    transition: all 0.2s ease;
-    background: white;
-}
-
-.filter-input:focus {
-    outline: none;
-    border-color: #EE2E24;
-    box-shadow: 0 0 0 3px rgba(238, 46, 36, 0.1);
-}
-
-.btn-filter {
+.hero-badge {
     display: inline-flex;
     align-items: center;
-    gap: 8px;
-    padding: 0.75rem 1.5rem;
-    background: linear-gradient(135deg, #EE2E24 0%, #C41E1A 100%);
-    border: none;
-    border-radius: 10px;
-    color: white;
-    font-weight: 600;
-    font-size: 0.9rem;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    white-space: nowrap;
+    gap: 0.75rem;
+    padding: 0.75rem 1.25rem;
+    background: rgba(255,255,255,0.2);
+    backdrop-filter: blur(10px);
+    border-radius: 12px;
+    border: 1px solid rgba(255,255,255,0.3);
 }
 
-.btn-filter:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(238, 46, 36, 0.3);
+.hero-badge-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background: rgba(255,255,255,0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+}
+
+.hero-badge-text h4 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin: 0;
+    line-height: 1.2;
+}
+
+.hero-badge-text p {
+    font-size: 0.8rem;
+    opacity: 0.9;
+    margin: 0;
 }
 
 /* Stats Grid */
@@ -188,57 +115,140 @@
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     gap: 1.25rem;
-    margin-bottom: 1.5rem;
+    margin-bottom: 2rem;
 }
 
 .stat-card {
     background: rgba(255, 255, 255, 0.95);
     backdrop-filter: blur(20px);
     border-radius: 16px;
-    padding: 1.5rem;
+    padding: 1.25rem;
     border: 1px solid rgba(0, 0, 0, 0.06);
     box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
-    text-align: center;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
     transition: all 0.3s ease;
 }
 
 .stat-card:hover {
-    transform: translateY(-4px);
+    transform: translateY(-2px);
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
 }
 
 .stat-icon {
-    width: 56px;
-    height: 56px;
-    border-radius: 14px;
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
     display: flex;
     align-items: center;
     justify-content: center;
-    margin: 0 auto 1rem;
-    font-size: 1.5rem;
+    font-size: 1.25rem;
+    flex-shrink: 0;
     color: white;
 }
 
-.stat-icon.purple { background: linear-gradient(135deg, #8B5CF6 0%, #6366F1 100%); }
-.stat-icon.green { background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%); }
-.stat-icon.yellow { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); }
-.stat-icon.red { background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); }
-
-.stat-value {
-    font-size: 2rem;
+.stat-content h3 {
+    font-size: 1.5rem;
     font-weight: 700;
-    margin-bottom: 0.25rem;
+    margin: 0;
+    color: #1f2937;
+    line-height: 1.2;
 }
 
-.stat-value.purple { color: #8B5CF6; }
-.stat-value.green { color: #22c55e; }
-.stat-value.yellow { color: #f59e0b; }
-.stat-value.red { color: #ef4444; }
-
-.stat-label {
-    font-size: 0.875rem;
+.stat-content p {
+    font-size: 0.8rem;
     color: #6b7280;
+    margin: 0;
+}
+
+.stat-card.green .stat-icon { background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%); }
+.stat-card.yellow .stat-icon { background: linear-gradient(135deg, #eab308 0%, #ca8a04 100%); }
+.stat-card.orange .stat-icon { background: linear-gradient(135deg, #f97316 0%, #ea580c 100%); }
+.stat-card.gray .stat-icon { background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%); }
+
+/* Filter Bar */
+.filter-bar {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    border-radius: 16px;
+    padding: 1rem 1.5rem;
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.filter-group label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.filter-date {
+    padding: 0.625rem 1rem;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    font-size: 0.9rem;
+    background: white;
+    min-width: 180px;
+    transition: all 0.2s ease;
+}
+
+.filter-date:focus {
+    outline: none;
+    border-color: #EE2E24;
+    box-shadow: 0 0 0 3px rgba(238, 46, 36, 0.1);
+}
+
+.filter-actions {
+    display: flex;
+    gap: 0.5rem;
+    margin-left: auto;
+}
+
+.filter-btn {
+    padding: 0.625rem 1.25rem;
+    border: none;
+    border-radius: 10px;
+    font-size: 0.9rem;
     font-weight: 500;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.2s ease;
+}
+
+.filter-btn.primary {
+    background: linear-gradient(135deg, #EE2E24 0%, #C41E1A 100%);
+    color: white;
+}
+
+.filter-btn.primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(238, 46, 36, 0.3);
+}
+
+.filter-btn.secondary {
+    background: #f3f4f6;
+    color: #374151;
+    text-decoration: none;
+}
+
+.filter-btn.secondary:hover {
+    background: #e5e7eb;
 }
 
 /* Table Card */
@@ -256,7 +266,7 @@
     border-bottom: 1px solid rgba(0, 0, 0, 0.06);
     display: flex;
     align-items: center;
-    gap: 0.75rem;
+    justify-content: space-between;
     background: linear-gradient(135deg, rgba(238, 46, 36, 0.03) 0%, rgba(255, 255, 255, 0) 100%);
 }
 
@@ -264,246 +274,347 @@
     font-size: 1.1rem;
     font-weight: 600;
     color: #1f2937;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
     margin: 0;
 }
 
-.table-header i {
+.table-header h3 i {
     color: #EE2E24;
-    font-size: 1.1rem;
 }
 
-.attendance-table {
+.table-responsive {
+    overflow-x: auto;
+}
+
+/* Admin Table */
+.admin-table {
     width: 100%;
     border-collapse: collapse;
 }
 
-.attendance-table thead {
-    background: linear-gradient(135deg, #EE2E24 0%, #C41E1A 100%);
+.admin-table thead {
+    background: linear-gradient(135deg, rgba(238, 46, 36, 0.05) 0%, rgba(238, 46, 36, 0.02) 100%);
 }
 
-.attendance-table th {
-    padding: 1rem 1.25rem;
+.admin-table th {
+    padding: 1rem;
     text-align: left;
-    font-size: 0.8rem;
+    font-size: 0.75rem;
     font-weight: 600;
-    color: white;
+    color: #6b7280;
     text-transform: uppercase;
     letter-spacing: 0.05em;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
 }
 
-.attendance-table th:first-child {
-    padding-left: 1.5rem;
-}
-
-.attendance-table th:last-child {
-    padding-right: 1.5rem;
-}
-
-.attendance-table td {
-    padding: 1rem 1.25rem;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-    font-size: 0.9rem;
+.admin-table td {
+    padding: 1rem;
+    font-size: 0.875rem;
     color: #374151;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.04);
     vertical-align: middle;
 }
 
-.attendance-table td:first-child {
-    padding-left: 1.5rem;
+.admin-table tbody tr {
+    transition: all 0.2s ease;
 }
 
-.attendance-table td:last-child {
-    padding-right: 1.5rem;
-}
-
-.attendance-table tbody tr:hover {
+.admin-table tbody tr:hover {
     background: rgba(238, 46, 36, 0.02);
 }
 
-.attendance-table tbody tr:last-child td {
+.admin-table tbody tr:last-child td {
     border-bottom: none;
 }
 
-/* Participant Info */
-.participant-info {
+/* User Info Cell */
+.user-info {
     display: flex;
-    align-items: center;
-    gap: 1rem;
+    flex-direction: column;
+    gap: 0.25rem;
 }
 
-.participant-avatar {
-    width: 44px;
-    height: 44px;
-    border-radius: 12px;
-    background: linear-gradient(135deg, #EE2E24 0%, #C41E1A 100%);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    font-weight: 700;
-    font-size: 1.1rem;
-    flex-shrink: 0;
-}
-
-.participant-details .name {
+.user-info .name {
     font-weight: 600;
     color: #1f2937;
-    margin-bottom: 0.15rem;
 }
 
-.participant-details .nim {
+.user-info .email, .user-info .nim {
     font-size: 0.8rem;
     color: #6b7280;
 }
 
-/* Status Badges */
+/* Status Badge */
 .status-badge {
     display: inline-flex;
     align-items: center;
-    gap: 0.4rem;
-    padding: 0.4rem 0.85rem;
-    border-radius: 8px;
-    font-size: 0.8rem;
+    gap: 0.375rem;
+    padding: 0.375rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
     font-weight: 600;
+    white-space: nowrap;
 }
 
-.status-badge.present {
-    background: rgba(34, 197, 94, 0.15);
+.status-badge.hadir {
+    background: linear-gradient(135deg, rgba(34, 197, 94, 0.15) 0%, rgba(22, 163, 74, 0.15) 100%);
     color: #16a34a;
 }
 
-.status-badge.late {
-    background: rgba(245, 158, 11, 0.15);
-    color: #d97706;
-}
-
-.status-badge.absent {
-    background: rgba(239, 68, 68, 0.15);
+.status-badge.absen {
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.15) 0%, rgba(220, 38, 38, 0.15) 100%);
     color: #dc2626;
 }
 
-.status-badge.not-checked {
-    background: rgba(107, 114, 128, 0.15);
+.status-badge.terlambat {
+    background: linear-gradient(135deg, rgba(234, 179, 8, 0.15) 0%, rgba(202, 138, 4, 0.15) 100%);
+    color: #ca8a04;
+}
+
+.status-badge.none {
+    background: #f3f4f6;
     color: #6b7280;
 }
 
-/* Check-in Time */
-.checkin-time {
-    font-weight: 600;
-    color: #1f2937;
+/* 7 Days Status */
+.legend-text {
+    display: block;
+    font-size: 0.7rem;
+    font-weight: 400;
+    color: #6b7280;
+    margin-top: 0.2rem;
 }
 
-/* History Dots */
-.history-dots {
+.seven-days {
     display: flex;
-    gap: 0.35rem;
+    gap: 0.25rem;
     justify-content: center;
 }
 
-.history-dot {
-    width: 28px;
-    height: 28px;
+.day-status {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 32px;
+}
+
+.day-status .date {
+    font-size: 0.65rem;
+    color: #9ca3af;
+    margin-bottom: 0.25rem;
+}
+
+.day-status .badge {
+    width: 24px;
+    height: 24px;
     border-radius: 6px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 0.65rem;
-    color: white;
-    cursor: pointer;
-    transition: transform 0.2s ease;
+    font-size: 0.7rem;
+    font-weight: 600;
 }
 
-.history-dot:hover {
-    transform: scale(1.1);
-}
-
-.history-dot.present { background: #22c55e; }
-.history-dot.late { background: #f59e0b; }
-.history-dot.absent { background: #ef4444; }
-.history-dot.unknown { background: #9ca3af; }
+.day-status .badge.hadir { background: #22c55e; color: white; }
+.day-status .badge.absen { background: #ef4444; color: white; }
+.day-status .badge.terlambat { background: #eab308; color: white; }
+.day-status .badge.none { background: #e5e7eb; color: #9ca3af; }
 
 /* Action Button */
 .btn-view-photo {
     display: inline-flex;
     align-items: center;
-    gap: 0.4rem;
+    gap: 0.5rem;
     padding: 0.5rem 1rem;
-    background: linear-gradient(135deg, #EE2E24 0%, #C41E1A 100%);
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+    color: white;
     border: none;
     border-radius: 8px;
-    color: white;
     font-size: 0.8rem;
-    font-weight: 600;
+    font-weight: 500;
     cursor: pointer;
     transition: all 0.2s ease;
 }
 
 .btn-view-photo:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(238, 46, 36, 0.3);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
 }
 
-.btn-view-photo:disabled {
-    background: #9ca3af;
-    cursor: not-allowed;
-    transform: none;
-    box-shadow: none;
+.no-photo {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background: #f3f4f6;
+    color: #9ca3af;
+    border-radius: 8px;
+    font-size: 0.8rem;
+}
+
+/* Empty State */
+.empty-state {
+    text-align: center;
+    padding: 4rem 2rem;
+}
+
+.empty-state i {
+    font-size: 4rem;
+    color: #d1d5db;
+    margin-bottom: 1rem;
+}
+
+.empty-state h4 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #374151;
+    margin: 0 0 0.5rem 0;
+}
+
+.empty-state p {
+    color: #6b7280;
+    margin: 0;
 }
 
 /* Modal Styles */
-.modal-content {
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 1rem;
+}
+
+.modal-container {
+    background: white;
     border-radius: 20px;
-    border: none;
+    max-width: 800px;
+    width: 100%;
+    max-height: 90vh;
     overflow: hidden;
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25);
 }
 
 .modal-header-custom {
     background: linear-gradient(135deg, #EE2E24 0%, #C41E1A 100%);
     color: white;
     padding: 1.25rem 1.5rem;
-    border: none;
-}
-
-.modal-header-custom .modal-title {
-    font-weight: 600;
     display: flex;
     align-items: center;
-    gap: 0.75rem;
+    justify-content: space-between;
 }
 
-.modal-header-custom .btn-close {
-    filter: brightness(0) invert(1);
+.modal-header-custom h3 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.modal-close {
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: white;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.modal-close:hover {
+    background: rgba(255, 255, 255, 0.3);
 }
 
 .modal-body-custom {
-    padding: 2rem;
+    padding: 1.5rem;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
 }
 
-.photo-container {
+.modal-photo {
     border-radius: 12px;
     overflow: hidden;
-    margin-bottom: 1rem;
 }
 
-.photo-container img {
+.modal-photo img {
     width: 100%;
     height: auto;
     display: block;
 }
 
+.modal-details {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
 .detail-item {
-    margin-bottom: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
 }
 
 .detail-item label {
-    display: block;
-    font-size: 0.8rem;
-    color: #6b7280;
-    margin-bottom: 0.25rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #9ca3af;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
 }
 
 .detail-item .value {
-    font-weight: 600;
+    font-size: 1rem;
     color: #1f2937;
+    font-weight: 500;
+}
+
+.modal-footer-custom {
+    padding: 1rem 1.5rem;
+    border-top: 1px solid #e5e7eb;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.btn-close-modal {
+    padding: 0.625rem 1.25rem;
+    background: #f3f4f6;
+    color: #374151;
+    border: none;
+    border-radius: 10px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-close-modal:hover {
+    background: #e5e7eb;
+}
+
+/* Alert */
+.alert-info-custom {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1.5rem;
+    background: rgba(59, 130, 246, 0.1);
+    border: 1px solid rgba(59, 130, 246, 0.2);
+    border-radius: 12px;
+    color: #2563eb;
+    font-weight: 500;
 }
 
 /* Responsive */
@@ -511,10 +622,14 @@
     .stats-grid {
         grid-template-columns: repeat(2, 1fr);
     }
+
+    .modal-body-custom {
+        grid-template-columns: 1fr;
+    }
 }
 
 @media (max-width: 768px) {
-    .mentor-hero {
+    .admin-hero {
         padding: 1.5rem;
     }
 
@@ -524,29 +639,25 @@
     }
 
     .stats-grid {
-        grid-template-columns: 1fr 1fr;
-        gap: 1rem;
+        grid-template-columns: 1fr;
     }
 
-    .filter-row {
+    .filter-bar {
         flex-direction: column;
+        align-items: stretch;
     }
 
     .filter-group {
         width: 100%;
     }
 
-    .btn-filter {
+    .filter-date {
         width: 100%;
-        justify-content: center;
     }
 
-    .attendance-table {
-        font-size: 0.85rem;
-    }
-
-    .history-dots {
-        flex-wrap: wrap;
+    .filter-actions {
+        margin-left: 0;
+        margin-top: 0.5rem;
     }
 }
 </style>
@@ -555,227 +666,226 @@
 @section('content')
 
 {{-- Hero Section --}}
-<div class="mentor-hero">
+<div class="admin-hero">
     <div class="hero-content">
         <div class="hero-text">
-            <h1><i class="fas fa-calendar-check"></i> Absensi Peserta Magang</h1>
+            <h1><i class="fas fa-clipboard-check"></i> Absensi Peserta Magang</h1>
             <p>Pantau kehadiran peserta magang Anda secara real-time</p>
+        </div>
+        <div class="hero-badge">
+            <div class="hero-badge-icon">
+                <i class="fas fa-calendar-day"></i>
+            </div>
+            <div class="hero-badge-text">
+                <h4>{{ Carbon::parse($filterDate)->format('d M Y') }}</h4>
+                <p>{{ Carbon::parse($filterDate)->translatedFormat('l') }}</p>
+            </div>
         </div>
     </div>
 </div>
 
-{{-- Success Message --}}
-@if(session('success'))
-    <div class="alert-success-custom">
-        <i class="fas fa-check-circle"></i>
-        {{ session('success') }}
-    </div>
-@endif
-
-@if($participants->isEmpty())
-    <div class="alert-info-custom">
-        <i class="fas fa-info-circle"></i>
-        Belum ada peserta magang yang diterima di divisi Anda.
-    </div>
-@else
-    {{-- Filter Card --}}
-    <div class="filter-card">
-        <div class="filter-row">
-            <div class="filter-group">
-                <label><i class="fas fa-calendar"></i> Filter Tanggal</label>
-                <input type="date" id="filterDate" class="filter-input"
-                       value="{{ $selectedDate ?? today()->toDateString() }}"
-                       max="{{ today()->toDateString() }}">
-            </div>
-            <button onclick="filterByDate()" class="btn-filter">
-                <i class="fas fa-filter"></i> Terapkan Filter
-            </button>
+{{-- Stats Grid --}}
+<div class="stats-grid">
+    <div class="stat-card green">
+        <div class="stat-icon">
+            <i class="fas fa-check-circle"></i>
+        </div>
+        <div class="stat-content">
+            <h3>{{ $hadirCount }}</h3>
+            <p>Hadir</p>
         </div>
     </div>
-
-    {{-- Stats Grid --}}
-    <div class="stats-grid">
-        <div class="stat-card">
-            <div class="stat-icon purple">
-                <i class="fas fa-users"></i>
-            </div>
-            <div class="stat-value purple">{{ $totalParticipants }}</div>
-            <div class="stat-label">Total Peserta</div>
+    <div class="stat-card orange">
+        <div class="stat-icon">
+            <i class="fas fa-clock"></i>
         </div>
-        <div class="stat-card">
-            <div class="stat-icon green">
-                <i class="fas fa-user-check"></i>
-            </div>
-            <div class="stat-value green">{{ $presentCount }}</div>
-            <div class="stat-label">Hadir</div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-icon yellow">
-                <i class="fas fa-clock"></i>
-            </div>
-            <div class="stat-value yellow">{{ $lateCount }}</div>
-            <div class="stat-label">Terlambat</div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-icon red">
-                <i class="fas fa-user-times"></i>
-            </div>
-            <div class="stat-value red">{{ $absentCount }}</div>
-            <div class="stat-label">Absen</div>
+        <div class="stat-content">
+            <h3>{{ $terlambatCount }}</h3>
+            <p>Terlambat</p>
         </div>
     </div>
-
-    {{-- Attendance Table --}}
-    <div class="table-card">
-        <div class="table-header">
-            <i class="fas fa-table"></i>
-            <h3>Data Kehadiran Peserta</h3>
+    <div class="stat-card yellow">
+        <div class="stat-icon">
+            <i class="fas fa-times-circle"></i>
         </div>
-        <div class="table-responsive">
-            <table class="attendance-table">
-                <thead>
-                    <tr>
-                        <th>Peserta</th>
-                        <th style="text-align: center;">Status Hari Ini</th>
-                        <th style="text-align: center;">Waktu Check-in</th>
-                        <th style="text-align: center;">Riwayat 7 Hari</th>
-                        <th style="text-align: center;">Aksi</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach($participants as $participant)
-                        @php
-                            $todayAttendance = $participant->attendance_history[0] ?? null;
-                        @endphp
-                        <tr>
-                            {{-- Participant Info --}}
-                            <td>
-                                <div class="participant-info">
-                                    <div class="participant-avatar">
-                                        {{ strtoupper(substr($participant->user->name ?? 'U', 0, 1)) }}
-                                    </div>
-                                    <div class="participant-details">
-                                        <div class="name">{{ $participant->user->name ?? '-' }}</div>
-                                        <div class="nim">{{ $participant->user->nim ?? '-' }}</div>
-                                    </div>
-                                </div>
-                            </td>
+        <div class="stat-content">
+            <h3>{{ $absenCount }}</h3>
+            <p>Absen</p>
+        </div>
+    </div>
+    <div class="stat-card gray">
+        <div class="stat-icon">
+            <i class="fas fa-question-circle"></i>
+        </div>
+        <div class="stat-content">
+            <h3>{{ $belumAbsen }}</h3>
+            <p>Belum Absen</p>
+        </div>
+    </div>
+</div>
 
-                            {{-- Status Today --}}
-                            <td style="text-align: center;">
-                                @if($todayAttendance)
-                                    @if($todayAttendance['status'] === 'Hadir')
-                                        <span class="status-badge present">
-                                            <i class="fas fa-check-circle"></i> Hadir
-                                        </span>
-                                    @elseif($todayAttendance['status'] === 'Terlambat')
-                                        <span class="status-badge late">
-                                            <i class="fas fa-clock"></i> Terlambat
-                                        </span>
+{{-- Filter Bar --}}
+<form id="mentorAttendanceFilterForm" method="GET" action="{{ route('mentor.absensi') }}" class="filter-bar">
+    <div class="filter-group">
+        <label>Tanggal</label>
+        <input type="date" class="filter-date" name="date" value="{{ $filterDate }}" required>
+    </div>
+    <div class="filter-actions">
+        <button type="submit" class="filter-btn primary">
+            <i class="fas fa-search"></i> Filter
+        </button>
+        <a href="{{ route('mentor.absensi') }}" class="filter-btn secondary">
+            <i class="fas fa-redo"></i> Reset
+        </a>
+    </div>
+</form>
+
+{{-- Attendance Table --}}
+<div class="table-card">
+    <div class="table-header">
+        <h3><i class="fas fa-list"></i> Data Absensi - {{ Carbon::parse($filterDate)->format('d M Y') }}</h3>
+    </div>
+
+    @if(count($participants) > 0)
+    <div class="table-responsive">
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th style="width: 5%;">#</th>
+                    <th style="width: 25%;">Peserta</th>
+                    <th style="width: 12%; text-align: center;">Status</th>
+                    <th style="width: 28%; text-align: center;">Status 7 Hari Terakhir <span class="legend-text">(✓ Hadir, L Terlambat, ✗ Tidak Hadir/Absen)</span></th>
+                    <th style="width: 13%; text-align: center;">Waktu</th>
+                    <th style="width: 17%; text-align: center;">Aksi</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach($participants as $index => $participant)
+                <tr>
+                    <td>{{ $index + 1 }}</td>
+                    <td>
+                        <div class="user-info">
+                            <span class="name">{{ $participant['user']->name }}</span>
+                            <span class="nim">{{ $participant['user']->nim ?? $participant['user']->email }}</span>
+                        </div>
+                    </td>
+                    <td style="text-align: center;">
+                        @if($participant['attendance'])
+                            @if($participant['attendance']->status == 'Hadir')
+                                <span class="status-badge hadir"><i class="fas fa-check"></i> Hadir</span>
+                            @elseif($participant['attendance']->status == 'Absen')
+                                <span class="status-badge absen"><i class="fas fa-times"></i> Absen</span>
+                            @elseif($participant['attendance']->status == 'Terlambat')
+                                <span class="status-badge terlambat"><i class="fas fa-clock"></i> Terlambat</span>
+                            @endif
+                        @else
+                            <span class="status-badge none">-</span>
+                        @endif
+                    </td>
+                    <td>
+                        <div class="seven-days">
+                            @php
+                                $workingDays = $participant['workingDays'] ?? collect();
+                                if ($workingDays->isEmpty()) {
+                                    $workingDays = collect();
+                                    $currentDate = Carbon::parse($filterDate);
+                                    $daysBack = 0;
+                                    while ($workingDays->count() < 7) {
+                                        $checkDate = $currentDate->copy()->subDays($daysBack);
+                                        if ($checkDate->dayOfWeek != Carbon::SATURDAY && $checkDate->dayOfWeek != Carbon::SUNDAY) {
+                                            $workingDays->push($checkDate->toDateString());
+                                        }
+                                        $daysBack++;
+                                        if ($daysBack > 20) break;
+                                    }
+                                    $workingDays = $workingDays->reverse()->values();
+                                }
+                            @endphp
+                            @foreach($workingDays as $workDate)
+                                @php
+                                    $checkDate = Carbon::parse($workDate);
+                                    $dateStr = is_string($workDate) ? $workDate : $workDate->toDateString();
+                                    $dayAttendance = $participant['last7Days']->first(fn($a) => $a->date->toDateString() === $dateStr);
+                                @endphp
+                                <div class="day-status">
+                                    <span class="date">{{ $checkDate->format('d') }}</span>
+                                    @if($dayAttendance)
+                                        @if($dayAttendance->status == 'Hadir')
+                                            <span class="badge hadir" title="Hadir">✓</span>
+                                        @elseif($dayAttendance->status == 'Absen')
+                                            <span class="badge absen" title="Absen">✗</span>
+                                        @elseif($dayAttendance->status == 'Terlambat')
+                                            <span class="badge terlambat" title="Terlambat">L</span>
+                                        @endif
                                     @else
-                                        <span class="status-badge absent">
-                                            <i class="fas fa-times-circle"></i> Absen
-                                        </span>
+                                        <span class="badge absen" title="Tidak Hadir">✗</span>
                                     @endif
-                                @else
-                                    <span class="status-badge not-checked">
-                                        <i class="fas fa-minus-circle"></i> Belum Absen
-                                    </span>
-                                @endif
-                            </td>
-
-                            {{-- Check-in Time --}}
-                            <td style="text-align: center;">
-                                <span class="checkin-time">
-                                    {{ $todayAttendance ? \Carbon\Carbon::parse($todayAttendance['check_in_time'])->format('H:i') : '-' }}
-                                </span>
-                            </td>
-
-                            {{-- 7-Day History --}}
-                            <td>
-                                <div class="history-dots">
-                                    @foreach($participant->attendance_history as $history)
-                                        @php
-                                            $dotClass = 'unknown';
-                                            $icon = 'question';
-                                            $tooltip = $history['date'];
-
-                                            if($history['status'] === 'Hadir') {
-                                                $dotClass = 'present';
-                                                $icon = 'check';
-                                                $tooltip .= ' - Hadir';
-                                            } elseif($history['status'] === 'Terlambat') {
-                                                $dotClass = 'late';
-                                                $icon = 'clock';
-                                                $tooltip .= ' - Terlambat';
-                                            } elseif($history['status'] === 'Absen') {
-                                                $dotClass = 'absent';
-                                                $icon = 'times';
-                                                $tooltip .= ' - Absen';
-                                            }
-                                        @endphp
-                                        <div class="history-dot {{ $dotClass }}" title="{{ $tooltip }}" data-bs-toggle="tooltip">
-                                            <i class="fas fa-{{ $icon }}"></i>
-                                        </div>
-                                    @endforeach
                                 </div>
-                            </td>
-
-                            {{-- Actions --}}
-                            <td style="text-align: center;">
-                                @if($todayAttendance && $todayAttendance['photo_path'])
-                                    <button onclick="showPhoto('{{ $participant->user->name }}', '{{ asset('storage/' . $todayAttendance['photo_path']) }}', '{{ $todayAttendance['status'] }}', '{{ \Carbon\Carbon::parse($todayAttendance['check_in_time'])->format('H:i') }}', '{{ $todayAttendance['keterangan'] ?? '' }}')" class="btn-view-photo">
-                                        <i class="fas fa-image"></i> Lihat Foto
-                                    </button>
-                                @else
-                                    <button class="btn-view-photo" disabled>
-                                        <i class="fas fa-image"></i> Tidak Ada
-                                    </button>
-                                @endif
-                            </td>
-                        </tr>
-                    @endforeach
-                </tbody>
-            </table>
-        </div>
+                            @endforeach
+                        </div>
+                    </td>
+                    <td style="text-align: center;">
+                        @if($participant['attendance'] && $participant['attendance']->check_in_time)
+                            <span style="font-weight: 500;">{{ Carbon::parse($participant['attendance']->check_in_time)->format('H:i:s') }}</span>
+                        @else
+                            <span style="color: #9ca3af;">-</span>
+                        @endif
+                    </td>
+                    <td style="text-align: center;">
+                        @if($participant['attendance'] && $participant['attendance']->photo_path)
+                            <button onclick="showPhoto('{{ $participant['user']->name }}', '{{ asset('storage/' . $participant['attendance']->photo_path) }}', '{{ $participant['attendance']->status }}', '{{ $participant['attendance']->check_in_time ? Carbon::parse($participant['attendance']->check_in_time)->format('H:i') : '-' }}', '{{ $participant['attendance']->absence_reason ?? '' }}')" class="btn-view-photo">
+                                <i class="fas fa-image"></i> Lihat Foto
+                            </button>
+                        @else
+                            <span class="no-photo">
+                                <i class="fas fa-image"></i> Tidak ada foto
+                            </span>
+                        @endif
+                    </td>
+                </tr>
+                @endforeach
+            </tbody>
+        </table>
     </div>
-@endif
+    @else
+    <div class="empty-state">
+        <i class="fas fa-clipboard-list"></i>
+        <h4>Tidak Ada Data</h4>
+        <p>Belum ada peserta magang yang diterima di divisi Anda</p>
+    </div>
+    @endif
+</div>
 
 {{-- Photo Modal --}}
-<div class="modal fade" id="photoModal" tabindex="-1">
-    <div class="modal-dialog modal-lg modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header modal-header-custom">
-                <h5 class="modal-title">
-                    <i class="fas fa-camera"></i>
-                    Foto Absensi - <span id="modalName"></span>
-                </h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+<div id="photoModal" class="modal-overlay" style="display: none;">
+    <div class="modal-container">
+        <div class="modal-header-custom">
+            <h3><i class="fas fa-camera"></i> Foto Absensi - <span id="modalName"></span></h3>
+            <button class="modal-close" onclick="closePhotoModal()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="modal-body-custom">
+            <div class="modal-photo">
+                <img id="modalPhoto" src="" alt="Foto Absensi">
             </div>
-            <div class="modal-body modal-body-custom">
-                <div class="row">
-                    <div class="col-md-7 mb-3">
-                        <div class="photo-container">
-                            <img id="modalPhoto" src="" alt="Foto Absensi">
-                        </div>
-                    </div>
-                    <div class="col-md-5">
-                        <h6 style="font-weight: 600; color: #1f2937; margin-bottom: 1.5rem;">Detail Absensi</h6>
-                        <div class="detail-item">
-                            <label>Status</label>
-                            <div id="modalStatus"></div>
-                        </div>
-                        <div class="detail-item">
-                            <label>Waktu Check-in</label>
-                            <div class="value" id="modalTime"></div>
-                        </div>
-                        <div class="detail-item">
-                            <label>Keterangan</label>
-                            <div class="value" id="modalReason"></div>
-                        </div>
-                    </div>
+            <div class="modal-details">
+                <div class="detail-item">
+                    <label>Status</label>
+                    <div class="value" id="modalStatus"></div>
+                </div>
+                <div class="detail-item">
+                    <label>Waktu Check-in</label>
+                    <div class="value" id="modalTime"></div>
+                </div>
+                <div class="detail-item">
+                    <label>Keterangan</label>
+                    <div class="value" id="modalReason"></div>
                 </div>
             </div>
+        </div>
+        <div class="modal-footer-custom">
+            <button class="btn-close-modal" onclick="closePhotoModal()">Tutup</button>
         </div>
     </div>
 </div>
@@ -784,43 +894,45 @@
 
 @push('scripts')
 <script>
-// Filter by date
-function filterByDate() {
-    const date = document.getElementById('filterDate').value;
-    if(date) {
-        window.location.href = "{{ route('mentor.absensi') }}?date=" + date;
-    }
-}
-
-// Show photo modal
 function showPhoto(name, photo, status, time, reason) {
+    const modal = document.getElementById('photoModal');
     document.getElementById('modalName').textContent = name;
     document.getElementById('modalPhoto').src = photo;
     document.getElementById('modalTime').textContent = time;
     document.getElementById('modalReason').textContent = reason || '-';
 
-    // Set status badge
     let statusBadge = '';
     if(status === 'Hadir') {
-        statusBadge = '<span class="status-badge present"><i class="fas fa-check-circle"></i> Hadir</span>';
+        statusBadge = '<span class="status-badge hadir"><i class="fas fa-check-circle"></i> Hadir</span>';
     } else if(status === 'Terlambat') {
-        statusBadge = '<span class="status-badge late"><i class="fas fa-clock"></i> Terlambat</span>';
+        statusBadge = '<span class="status-badge terlambat"><i class="fas fa-clock"></i> Terlambat</span>';
     } else {
-        statusBadge = '<span class="status-badge absent"><i class="fas fa-times-circle"></i> Absen</span>';
+        statusBadge = '<span class="status-badge absen"><i class="fas fa-times-circle"></i> Absen</span>';
     }
     document.getElementById('modalStatus').innerHTML = statusBadge;
 
-    // Show modal
-    const modal = new bootstrap.Modal(document.getElementById('photoModal'));
-    modal.show();
+    modal.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
 }
 
-// Initialize tooltips
-document.addEventListener('DOMContentLoaded', function() {
-    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-    tooltipTriggerList.map(function (tooltipTriggerEl) {
-        return new bootstrap.Tooltip(tooltipTriggerEl);
-    });
+function closePhotoModal() {
+    const modal = document.getElementById('photoModal');
+    modal.style.display = 'none';
+    document.body.style.overflow = '';
+}
+
+// Close modal on escape key
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        closePhotoModal();
+    }
+});
+
+// Close modal when clicking outside
+document.getElementById('photoModal').addEventListener('click', function(e) {
+    if (e.target === this) {
+        closePhotoModal();
+    }
 });
 </script>
 @endpush

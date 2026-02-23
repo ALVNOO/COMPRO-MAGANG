@@ -573,9 +573,12 @@ document.addEventListener('DOMContentLoaded', function() {
         // Auto focus
         codeInput.focus();
 
-        // Only allow numbers
+        // Only allow numbers + auto-submit on 6 digits
         codeInput.addEventListener('input', function() {
             this.value = this.value.replace(/[^0-9]/g, '');
+            if (this.value.length === 6) {
+                form.requestSubmit();
+            }
         });
 
         // Handle paste
@@ -584,6 +587,9 @@ document.addEventListener('DOMContentLoaded', function() {
             const pastedText = (e.clipboardData || window.clipboardData).getData('text');
             const numericOnly = pastedText.replace(/[^0-9]/g, '').substring(0, 6);
             this.value = numericOnly;
+            if (numericOnly.length === 6) {
+                form.requestSubmit();
+            }
         });
     }
 

@@ -318,6 +318,12 @@
     font-weight: 600;
     font-size: 1rem;
     flex-shrink: 0;
+    overflow: hidden;
+}
+.mentor-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
 }
 
 .mentor-details {
@@ -844,12 +850,18 @@
                         <td>{{ $loop->iteration + ($mentors->currentPage() - 1) * $mentors->perPage() }}</td>
                         <td>
                             <div class="mentor-info">
-                                <div class="mentor-avatar">{{ $initials }}</div>
+                                <div class="mentor-avatar">
+                                    @if($mentor->profile_picture)
+                                        <img src="{{ asset('storage/' . $mentor->profile_picture) }}" alt="{{ $mentorName }}">
+                                    @else
+                                        {{ $initials }}
+                                    @endif
+                                </div>
                                 <div class="mentor-details">
                                     <a href="{{ route('admin.mentor.detail', $mentor->id) }}" class="mentor-name">
                                         {{ $mentorName }}
                                     </a>
-                                    <span class="mentor-username">@{{ $mentor->username }}</span>
+                                    <span class="mentor-username">{{ '@' . $mentor->username }}</span>
                                 </div>
                             </div>
                         </td>

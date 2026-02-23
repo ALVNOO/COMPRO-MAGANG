@@ -19,62 +19,360 @@
    PROFILE PAGE STYLES
    ============================================ */
 
-/* Hero Section */
-.profile-hero {
-    background: linear-gradient(135deg, #EE2E24 0%, #C41E1A 50%, #9B1B1B 100%);
-    border-radius: 24px;
-    padding: 2.5rem 2.5rem;
+/* ---- HERO (ph- prefix to avoid collision) ---- */
+.ph-card {
+    border-radius: 20px;
+    overflow: hidden;
     margin-bottom: 2rem;
+    background: #fff;
+    border: 1px solid rgba(0,0,0,0.08);
+    box-shadow: 0 2px 16px rgba(0,0,0,0.06);
+}
+
+.ph-cover {
+    height: 140px;
+    background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
     position: relative;
     overflow: hidden;
-    color: white;
-    text-align: center;
 }
-
-.profile-hero::before {
+.ph-cover::before {
     content: '';
     position: absolute;
-    top: -50%;
-    right: -20%;
-    width: 60%;
-    height: 200%;
-    background: radial-gradient(ellipse, rgba(255,255,255,0.15) 0%, transparent 70%);
-    pointer-events: none;
+    inset: 0;
+    background:
+        radial-gradient(circle at 20% 50%, rgba(255,255,255,0.06) 0%, transparent 50%),
+        radial-gradient(circle at 80% 30%, rgba(255,255,255,0.04) 0%, transparent 45%);
 }
 
-.profile-hero-content {
+.ph-body {
+    padding: 0 2rem 1.75rem;
     position: relative;
-    z-index: 1;
 }
 
-.profile-avatar {
-    width: 100px;
-    height: 100px;
-    background: rgba(255, 255, 255, 0.2);
-    backdrop-filter: blur(10px);
+/* Avatar */
+.ph-avatar-wrap {
+    position: relative;
+    width: 130px;
+    height: 130px;
+    margin-top: -65px;
+    margin-bottom: 1rem;
+}
+
+.ph-avatar {
+    width: 130px !important;
+    height: 130px !important;
+    background: #f1f5f9 !important;
+    border-radius: 50% !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    border: 5px solid #fff !important;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.14) !important;
+    overflow: hidden !important;
+    margin: 0 !important;
+}
+.ph-avatar img {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+    display: block;
+    border-radius: 50%;
+}
+.ph-avatar i {
+    font-size: 3.5rem !important;
+    color: #cbd5e1 !important;
+}
+
+/* Camera btn */
+.ph-cam-btn {
+    position: absolute;
+    bottom: 4px;
+    right: 4px;
+    width: 38px;
+    height: 38px;
+    background: #1e293b;
+    border: 3px solid #fff;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    margin: 0 auto 1.25rem;
-    border: 4px solid rgba(255, 255, 255, 0.3);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    z-index: 2;
+}
+.ph-cam-btn:hover {
+    transform: scale(1.12);
+    box-shadow: 0 4px 14px rgba(30,41,59,0.45);
+}
+.ph-cam-btn i {
+    font-size: 0.9rem;
+    color: #fff;
 }
 
-.profile-avatar i {
-    font-size: 2.75rem;
-    color: white;
-}
-
-.profile-hero h2 {
-    font-size: 1.75rem;
+/* Info */
+.ph-info h2 {
+    font-size: 1.5rem;
     font-weight: 700;
-    margin-bottom: 0.35rem;
+    color: #111827;
+    margin: 0 0 0.4rem;
+    line-height: 1.25;
 }
 
-.profile-hero .hero-email {
-    font-size: 1rem;
-    opacity: 0.9;
+.ph-meta {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+    flex-wrap: wrap;
+    margin-bottom: 0.75rem;
+}
+.ph-meta span {
+    font-size: 0.875rem;
+    color: #6b7280;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+.ph-meta span i {
+    font-size: 0.8rem;
+    color: #9ca3af;
+    width: 16px;
+    text-align: center;
+}
+
+.ph-tags {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+.ph-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.35rem 0.85rem;
+    background: #f3f4f6;
+    border: 1px solid #e5e7eb;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    color: #374151;
+    font-weight: 500;
+}
+.ph-tag i {
+    font-size: 0.72rem;
+    color: #9ca3af;
+}
+.ph-tag.active {
+    background: #ecfdf5;
+    border-color: #a7f3d0;
+    color: #047857;
+}
+.ph-tag.active i { color: #059669; }
+
+/* Photo upload modal */
+.photo-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    backdrop-filter: blur(4px);
+    z-index: 1050;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+}
+
+.photo-modal-overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+.photo-modal {
+    background: white;
+    border-radius: 20px;
+    max-width: 420px;
+    width: 100%;
+    box-shadow: 0 25px 50px rgba(0,0,0,0.25);
+    transform: scale(0.9) translateY(20px);
+    transition: all 0.3s ease;
+}
+
+.photo-modal-overlay.active .photo-modal {
+    transform: scale(1) translateY(0);
+}
+
+.photo-modal-header {
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid #e5e7eb;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.photo-modal-header h4 {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #1f2937;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.photo-modal-header h4 i { color: #EE2E24; }
+
+.photo-modal-close {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    border: none;
+    background: #f3f4f6;
+    color: #6b7280;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.photo-modal-close:hover { background: #e5e7eb; color: #374151; }
+
+.photo-modal-body {
+    padding: 1.5rem;
+}
+
+.photo-dropzone {
+    border: 2px dashed #d1d5db;
+    border-radius: 16px;
+    padding: 2rem 1rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: #f9fafb;
+}
+
+.photo-dropzone:hover,
+.photo-dropzone.dragover {
+    border-color: #EE2E24;
+    background: rgba(238, 46, 36, 0.03);
+}
+
+.photo-dropzone-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: rgba(238, 46, 36, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1rem;
+    color: #EE2E24;
+    font-size: 1.25rem;
+}
+
+.photo-dropzone p {
+    margin: 0 0 0.25rem;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: #374151;
+}
+
+.photo-dropzone small {
+    color: #9ca3af;
+    font-size: 0.8rem;
+}
+
+.photo-preview-area {
+    display: none;
+    text-align: center;
+}
+
+.photo-preview-area.active {
+    display: block;
+}
+
+.photo-preview-img {
+    width: 140px;
+    height: 140px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid #e5e7eb;
+    margin: 0 auto 1rem;
+    display: block;
+}
+
+.photo-preview-name {
+    font-size: 0.85rem;
+    color: #6b7280;
+    margin-bottom: 1rem;
+}
+
+.photo-modal-actions {
+    display: flex;
+    gap: 0.75rem;
+    margin-top: 1.25rem;
+}
+
+.photo-modal-actions button {
+    flex: 1;
+    padding: 0.7rem 1rem;
+    border-radius: 12px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    border: none;
+}
+
+.btn-photo-cancel {
+    background: #f3f4f6;
+    color: #4b5563;
+}
+
+.btn-photo-cancel:hover { background: #e5e7eb; }
+
+.btn-photo-save {
+    background: linear-gradient(135deg, #EE2E24, #C41E1A);
+    color: white;
+    box-shadow: 0 2px 8px rgba(238, 46, 36, 0.25);
+}
+
+.btn-photo-save:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(238, 46, 36, 0.35);
+}
+
+.btn-photo-save:disabled {
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+.btn-photo-remove {
+    padding: 0.5rem 1rem;
+    border-radius: 10px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    cursor: pointer;
+    background: rgba(239, 68, 68, 0.08);
+    color: #dc2626;
+    border: 1px solid rgba(239, 68, 68, 0.15);
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    margin-top: 0.75rem;
+    width: 100%;
+    justify-content: center;
+}
+
+.btn-photo-remove:hover {
+    background: rgba(239, 68, 68, 0.15);
 }
 
 /* Cards Grid */
@@ -361,21 +659,33 @@
 }
 
 @media (max-width: 768px) {
-    .profile-hero {
-        padding: 2rem 1.5rem;
+    .ph-cover { height: 110px; }
+
+    .ph-body {
+        padding: 0 1.25rem 1.5rem;
+        text-align: center;
     }
 
-    .profile-hero h2 {
-        font-size: 1.35rem;
+    .ph-avatar-wrap {
+        width: 110px;
+        height: 110px;
+        margin: -55px auto 0.75rem;
+    }
+    .ph-avatar {
+        width: 110px !important;
+        height: 110px !important;
+    }
+    .ph-avatar i { font-size: 2.75rem !important; }
+
+    .ph-info h2 { font-size: 1.25rem; }
+
+    .ph-meta {
+        justify-content: center;
+        gap: 0.75rem;
     }
 
-    .profile-avatar {
-        width: 80px;
-        height: 80px;
-    }
-
-    .profile-avatar i {
-        font-size: 2.25rem;
+    .ph-tags {
+        justify-content: center;
     }
 
     .info-item {
@@ -397,17 +707,82 @@
 @section('content')
 
 {{-- Hero Section --}}
-<div class="profile-hero">
-    <div class="profile-hero-content">
-        <div class="profile-avatar">
+<div class="ph-card">
+    <div class="ph-cover"></div>
+    <div class="ph-body">
+        {{-- Avatar --}}
+        <div class="ph-avatar-wrap">
+            <div class="ph-avatar">
+                @if($user->profile_picture)
+                    <img src="{{ asset('storage/' . $user->profile_picture) }}" alt="{{ $user->name }}" id="heroAvatar">
+                @else
+                    <i class="fas fa-user" id="heroAvatarIcon"></i>
+                @endif
+            </div>
+            <div class="ph-cam-btn" id="openPhotoModal" title="Ubah foto profil">
+                <i class="fas fa-camera"></i>
+            </div>
+        </div>
+
+        {{-- Info --}}
+        <div class="ph-info">
+            <h2>{{ $user->name ?? 'User' }}</h2>
+            <div class="ph-meta">
+                <span><i class="fas fa-envelope"></i> {{ $user->email ?? '-' }}</span>
+                @if($user->nim)
+                    <span><i class="fas fa-id-badge"></i> {{ $user->nim }}</span>
+                @endif
+                @if($user->phone)
+                    <span><i class="fas fa-phone"></i> {{ $user->phone }}</span>
+                @endif
+            </div>
+            <div class="ph-tags">
+                @if($user->university)
+                    <span class="ph-tag"><i class="fas fa-university"></i> {{ $user->university }}</span>
+                @endif
+                @if($user->major)
+                    <span class="ph-tag"><i class="fas fa-book"></i> {{ $user->major }}</span>
+                @endif
+                @if($application)
+                    @if($application->status == 'accepted')
+                        <span class="ph-tag active"><i class="fas fa-check-circle"></i> Magang Aktif</span>
+                    @elseif($application->status == 'finished')
+                        <span class="ph-tag active"><i class="fas fa-flag-checkered"></i> Magang Selesai</span>
+                    @elseif($application->status == 'pending')
+                        <span class="ph-tag" style="background:#fffbeb;border-color:#fde68a;color:#92400e;"><i class="fas fa-clock" style="color:#d97706;"></i> Menunggu Review</span>
+                    @endif
+                @endif
+            </div>
+        </div>
+    </div>
+</div>
+
+{{-- Photo Upload Modal --}}
+<div class="photo-modal-overlay" id="photoModalOverlay">
+    <div class="photo-modal">
+        <div class="photo-modal-header">
+            <h4><i class="fas fa-camera"></i> Ubah Foto Profil</h4>
+            <button class="photo-modal-close" id="closePhotoModal"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="photo-modal-body">
+            <div class="photo-dropzone" id="photoDropzone">
+                <div class="photo-dropzone-icon"><i class="fas fa-cloud-upload-alt"></i></div>
+                <p>Klik atau seret foto ke sini</p>
+                <small>JPG, JPEG, PNG — Maks. 2MB</small>
+                <input type="file" id="photoFileInput" accept="image/jpeg,image/jpg,image/png" style="display: none;">
+            </div>
+            <div class="photo-preview-area" id="photoPreviewArea">
+                <img src="" alt="Preview" class="photo-preview-img" id="photoPreviewImg">
+                <div class="photo-preview-name" id="photoPreviewName"></div>
+            </div>
+            <div class="photo-modal-actions">
+                <button class="btn-photo-cancel" id="btnPhotoCancel"><i class="fas fa-times"></i> Batal</button>
+                <button class="btn-photo-save" id="btnPhotoSave" disabled><i class="fas fa-check"></i> Simpan</button>
+            </div>
             @if($user->profile_picture)
-                <img src="{{ asset('storage/' . $user->profile_picture) }}" alt="{{ $user->name }}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
-            @else
-                <i class="fas fa-user"></i>
+            <button class="btn-photo-remove" id="btnPhotoRemove"><i class="fas fa-trash-alt"></i> Hapus Foto Profil</button>
             @endif
         </div>
-        <h2>{{ $user->name ?? 'User' }}</h2>
-        <p class="hero-email">{{ $user->email ?? '' }}</p>
     </div>
 </div>
 
@@ -660,3 +1035,187 @@
 </div>
 
 @endsection
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const overlay = document.getElementById('photoModalOverlay');
+    const openBtn = document.getElementById('openPhotoModal');
+    const closeBtn = document.getElementById('closePhotoModal');
+    const dropzone = document.getElementById('photoDropzone');
+    const fileInput = document.getElementById('photoFileInput');
+    const previewArea = document.getElementById('photoPreviewArea');
+    const previewImg = document.getElementById('photoPreviewImg');
+    const previewName = document.getElementById('photoPreviewName');
+    const btnCancel = document.getElementById('btnPhotoCancel');
+    const btnSave = document.getElementById('btnPhotoSave');
+    const btnRemove = document.getElementById('btnPhotoRemove');
+
+    let selectedFile = null;
+
+    function openModal() {
+        overlay.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeModal() {
+        overlay.classList.remove('active');
+        document.body.style.overflow = '';
+        resetPreview();
+    }
+
+    function resetPreview() {
+        selectedFile = null;
+        dropzone.style.display = '';
+        previewArea.classList.remove('active');
+        btnSave.disabled = true;
+        fileInput.value = '';
+    }
+
+    function showPreview(file) {
+        selectedFile = file;
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            previewImg.src = e.target.result;
+            previewName.textContent = file.name + ' (' + (file.size / 1024).toFixed(0) + ' KB)';
+            dropzone.style.display = 'none';
+            previewArea.classList.add('active');
+            btnSave.disabled = false;
+        };
+        reader.readAsDataURL(file);
+    }
+
+    function validateFile(file) {
+        const allowed = ['image/jpeg', 'image/jpg', 'image/png'];
+        if (!allowed.includes(file.type)) {
+            alert('Format file harus JPG, JPEG, atau PNG.');
+            return false;
+        }
+        if (file.size > 2 * 1024 * 1024) {
+            alert('Ukuran file maksimal 2MB.');
+            return false;
+        }
+        return true;
+    }
+
+    openBtn.addEventListener('click', openModal);
+    closeBtn.addEventListener('click', closeModal);
+    overlay.addEventListener('click', function(e) {
+        if (e.target === overlay) closeModal();
+    });
+
+    dropzone.addEventListener('click', function() { fileInput.click(); });
+
+    fileInput.addEventListener('change', function() {
+        if (this.files[0] && validateFile(this.files[0])) {
+            showPreview(this.files[0]);
+        }
+    });
+
+    dropzone.addEventListener('dragover', function(e) {
+        e.preventDefault();
+        this.classList.add('dragover');
+    });
+    dropzone.addEventListener('dragleave', function() {
+        this.classList.remove('dragover');
+    });
+    dropzone.addEventListener('drop', function(e) {
+        e.preventDefault();
+        this.classList.remove('dragover');
+        if (e.dataTransfer.files[0] && validateFile(e.dataTransfer.files[0])) {
+            showPreview(e.dataTransfer.files[0]);
+        }
+    });
+
+    btnCancel.addEventListener('click', function() {
+        if (selectedFile) {
+            resetPreview();
+        } else {
+            closeModal();
+        }
+    });
+
+    btnSave.addEventListener('click', function() {
+        if (!selectedFile) return;
+        btnSave.disabled = true;
+        btnSave.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Mengunggah...';
+
+        const formData = new FormData();
+        formData.append('profile_picture', selectedFile);
+        formData.append('_token', '{{ csrf_token() }}');
+
+        fetch('{{ route("dashboard.pre-acceptance.profile-picture") }}', {
+            method: 'POST',
+            body: formData,
+            headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' }
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                // Update hero avatar
+                const avatar = document.querySelector('.ph-avatar');
+                const existingImg = avatar.querySelector('img');
+                const existingIcon = avatar.querySelector('i');
+                if (existingIcon) existingIcon.remove();
+                if (existingImg) {
+                    existingImg.src = data.path;
+                } else {
+                    const img = document.createElement('img');
+                    img.src = data.path;
+                    img.alt = 'Profile';
+                    avatar.appendChild(img);
+                }
+                closeModal();
+                location.reload();
+            } else {
+                alert(data.message || 'Gagal mengunggah foto.');
+                btnSave.disabled = false;
+                btnSave.innerHTML = '<i class="fas fa-check"></i> Simpan';
+            }
+        })
+        .catch(() => {
+            alert('Terjadi kesalahan. Coba lagi.');
+            btnSave.disabled = false;
+            btnSave.innerHTML = '<i class="fas fa-check"></i> Simpan';
+        });
+    });
+
+    if (btnRemove) {
+        btnRemove.addEventListener('click', function() {
+            if (!confirm('Hapus foto profil?')) return;
+            btnRemove.disabled = true;
+            btnRemove.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Menghapus...';
+
+            fetch('{{ route("dashboard.pre-acceptance.profile-picture.remove") }}', {
+                method: 'DELETE',
+                headers: {
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json'
+                }
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    closeModal();
+                    location.reload();
+                } else {
+                    alert(data.message || 'Gagal menghapus foto.');
+                    btnRemove.disabled = false;
+                    btnRemove.innerHTML = '<i class="fas fa-trash-alt"></i> Hapus Foto Profil';
+                }
+            })
+            .catch(() => {
+                alert('Terjadi kesalahan.');
+                btnRemove.disabled = false;
+                btnRemove.innerHTML = '<i class="fas fa-trash-alt"></i> Hapus Foto Profil';
+            });
+        });
+    }
+
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && overlay.classList.contains('active')) closeModal();
+    });
+});
+</script>
+@endpush

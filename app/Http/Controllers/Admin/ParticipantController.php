@@ -19,14 +19,17 @@ class ParticipantController extends Controller
     ) {}
 
     /**
-     * Display list of participants.
+     * Display list of participants (only those with accepted or finished applications).
      */
     public function index()
     {
         $participants = User::where('role', 'peserta')
+            ->whereHas('internshipApplications', function ($query) {
+                $query->whereIn('status', ['accepted', 'finished']);
+            })
             ->with([
                 'internshipApplications' => function ($query) {
-                    $query->whereIn('status', ['accepted', 'rejected', 'finished'])
+                    $query->whereIn('status', ['accepted', 'finished'])
                         ->with('divisionAdmin');
                 },
                 'certificates',

@@ -227,50 +227,9 @@ class AttendanceController extends Controller
             ]);
         }
         
-        // Prepare data for the new unified layout
-        $participantsWithHistory = collect();
-        foreach ($participants as $participant) {
-            $attendanceHistory = [];
-            
-            // Get today's attendance first (should be first in history)
-            $todayAttendance = $participant['attendance'];
-            if ($todayAttendance) {
-                $attendanceHistory[] = [
-                    'date' => $todayAttendance->date->toDateString(),
-                    'status' => $todayAttendance->status,
-                    'check_in_time' => $todayAttendance->check_in_time,
-                    'photo_path' => $todayAttendance->photo_path,
-                    'keterangan' => $todayAttendance->absence_reason ?? null,
-                ];
-            }
-            
-            // Get last 7 days attendance (excluding today to avoid duplicate)
-            foreach ($participant['last7Days'] as $dayAttendance) {
-                if ($dayAttendance->date->toDateString() != $filterDate) {
-                    $attendanceHistory[] = [
-                        'date' => $dayAttendance->date->toDateString(),
-                        'status' => $dayAttendance->status,
-                        'check_in_time' => $dayAttendance->check_in_time,
-                        'photo_path' => $dayAttendance->photo_path,
-                        'keterangan' => $dayAttendance->absence_reason ?? null,
-                    ];
-                }
-            }
-            
-            // Sort by date descending (today first)
-            usort($attendanceHistory, function($a, $b) {
-                return strcmp($b['date'], $a['date']);
-            });
-            
-            $participantsWithHistory->push((object)[
-                'user' => $participant['user'],
-                'attendance_history' => $attendanceHistory,
-            ]);
-        }
-        
         return view('mentor.absensi', [
-            'participants' => $participantsWithHistory,
-            'selectedDate' => $filterDate,
+            'participants' => $participants,
+            'filterDate' => $filterDate,
         ]);
     }
     

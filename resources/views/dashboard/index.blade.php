@@ -17,13 +17,13 @@
     $pendingAssignments = $totalAssignments - $completedAssignments;
     $completionRate = $totalAssignments > 0 ? round(($completedAssignments / $totalAssignments) * 100) : 0;
 
-    // Attendance stats
+    // Attendance stats (persentase dari controller: absensi / hari kerja magang)
     $attendances = $user->attendances ?? collect();
     $presentCount = $attendances->where('status', 'Hadir')->count();
     $lateCount = $attendances->where('status', 'Terlambat')->count();
     $absentCount = $attendances->where('status', 'Absen')->count();
     $totalAttendance = $presentCount + $lateCount + $absentCount;
-    $attendanceRate = $totalAttendance > 0 ? round((($presentCount + $lateCount) / $totalAttendance) * 100) : 0;
+    $attendanceRate = $attendanceRate ?? 0;
 
     // Use values from controller (already calculated with startOfDay() for accuracy)
     $daysRemaining = $hariTersisa;

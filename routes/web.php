@@ -297,27 +297,8 @@ Route::middleware(["auth", "throttle:global"])
             MentorDashboardController::class,
             "setRevisiPenugasan",
         ])->name("mentor.penugasan.revisi")->middleware("throttle:form-submission");
-        // Menu sertifikat
-        Route::get("/sertifikat", [
-            MentorDashboardController::class,
-            "sertifikat",
-        ])->name("mentor.sertifikat");
-        Route::post("/sertifikat/{user}/upload", [
-            MentorDashboardController::class,
-            "uploadSertifikat",
-        ])->name("mentor.sertifikat.upload");
-        Route::get("/sertifikat/{user}/form", [
-            MentorDashboardController::class,
-            "showCertificateForm",
-        ])->name("mentor.sertifikat.form");
-        Route::post("/sertifikat/{user}/preview", [
-            MentorDashboardController::class,
-            "previewCertificate",
-        ])->name("mentor.sertifikat.preview");
-        Route::post("/sertifikat/{user}/send", [
-            MentorDashboardController::class,
-            "sendCertificate",
-        ])->name("mentor.sertifikat.send")->middleware("throttle:form-submission");
+        // Redirect lama: sertifikat sekarang dikelola admin
+        Route::get("/sertifikat", fn () => redirect()->route("mentor.dashboard"))->name("mentor.sertifikat");
         // Menu profil
         Route::get("/profil", [
             MentorDashboardController::class,
