@@ -241,6 +241,13 @@
     font-weight: 700;
     font-size: 1rem;
     flex-shrink: 0;
+    overflow: hidden;
+}
+
+.applicant-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
 }
 
 .applicant-details .name {
@@ -631,7 +638,11 @@
                         <td>
                             <div class="applicant-info">
                                 <div class="applicant-avatar">
-                                    {{ strtoupper(substr($app->user->name ?? 'U', 0, 1)) }}
+                                    @if($app->user->profile_picture)
+                                        <img src="{{ asset('storage/' . $app->user->profile_picture) }}" alt="{{ $app->user->name }}">
+                                    @else
+                                        {{ strtoupper(substr($app->user->name ?? 'U', 0, 1)) }}
+                                    @endif
                                 </div>
                                 <div class="applicant-details">
                                     <div class="name">{{ $app->user->name ?? '-' }}</div>

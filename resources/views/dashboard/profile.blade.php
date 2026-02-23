@@ -9,7 +9,11 @@
 @section('title', 'Profile - PT Telkom Indonesia')
 
 @php
-    $role = 'participant';
+    $role = match(auth()->user()->role) {
+        'admin' => 'admin',
+        'pembimbing' => 'mentor',
+        default => 'participant',
+    };
     $pageTitle = 'Profile';
 @endphp
 
@@ -729,28 +733,43 @@
             <h2>{{ $user->name ?? 'User' }}</h2>
             <div class="ph-meta">
                 <span><i class="fas fa-envelope"></i> {{ $user->email ?? '-' }}</span>
-                @if($user->nim)
-                    <span><i class="fas fa-id-badge"></i> {{ $user->nim }}</span>
-                @endif
                 @if($user->phone)
                     <span><i class="fas fa-phone"></i> {{ $user->phone }}</span>
                 @endif
+                @if($role === 'participant' && $user->nim)
+                    <span><i class="fas fa-id-badge"></i> {{ $user->nim }}</span>
+                @endif
+                @if($role === 'mentor' && $user->username)
+                    <span><i class="fas fa-id-badge"></i> NIK: {{ $user->username }}</span>
+                @endif
+                @if($role === 'admin' && $user->username)
+                    <span><i class="fas fa-id-badge"></i> {{ '@' . $user->username }}</span>
+                @endif
             </div>
             <div class="ph-tags">
-                @if($user->university)
-                    <span class="ph-tag"><i class="fas fa-university"></i> {{ $user->university }}</span>
-                @endif
-                @if($user->major)
-                    <span class="ph-tag"><i class="fas fa-book"></i> {{ $user->major }}</span>
-                @endif
-                @if($application)
-                    @if($application->status == 'accepted')
-                        <span class="ph-tag active"><i class="fas fa-check-circle"></i> Magang Aktif</span>
-                    @elseif($application->status == 'finished')
-                        <span class="ph-tag active"><i class="fas fa-flag-checkered"></i> Magang Selesai</span>
-                    @elseif($application->status == 'pending')
-                        <span class="ph-tag" style="background:#fffbeb;border-color:#fde68a;color:#92400e;"><i class="fas fa-clock" style="color:#d97706;"></i> Menunggu Review</span>
+                @if($role === 'participant')
+                    @if($user->university)
+                        <span class="ph-tag"><i class="fas fa-university"></i> {{ $user->university }}</span>
                     @endif
+                    @if($user->major)
+                        <span class="ph-tag"><i class="fas fa-book"></i> {{ $user->major }}</span>
+                    @endif
+                    @if($application)
+                        @if($application->status == 'accepted')
+                            <span class="ph-tag active"><i class="fas fa-check-circle"></i> Magang Aktif</span>
+                        @elseif($application->status == 'finished')
+                            <span class="ph-tag active"><i class="fas fa-flag-checkered"></i> Magang Selesai</span>
+                        @elseif($application->status == 'pending')
+                            <span class="ph-tag" style="background:#fffbeb;border-color:#fde68a;color:#92400e;"><i class="fas fa-clock" style="color:#d97706;"></i> Menunggu Review</span>
+                        @endif
+                    @endif
+                @elseif($role === 'mentor')
+                    @if($divisionMentor && $divisionMentor->division)
+                        <span class="ph-tag"><i class="fas fa-building"></i> {{ $divisionMentor->division->division_name }}</span>
+                    @endif
+                    <span class="ph-tag active"><i class="fas fa-user-tie"></i> Pembimbing</span>
+                @elseif($role === 'admin')
+                    <span class="ph-tag active" style="background:#eff6ff;border-color:#bfdbfe;color:#1d4ed8;"><i class="fas fa-shield-alt" style="color:#2563eb;"></i> Administrator</span>
                 @endif
             </div>
         </div>
@@ -788,115 +807,72 @@
 
 {{-- Info Cards Grid --}}
 <div class="cards-grid">
-    {{-- Biodata Card --}}
+
+    @if($role === 'participant')
+    {{-- ============ PESERTA: Biodata ============ --}}
     <div class="info-card">
         <div class="info-card-header">
-            <div class="header-icon">
-                <i class="fas fa-user"></i>
-            </div>
+            <div class="header-icon"><i class="fas fa-user"></i></div>
             <h5>Biodata Peserta</h5>
         </div>
         <div class="info-card-body">
             <div class="info-item">
-                <div class="info-item-label">
-                    <i class="fas fa-id-card"></i>
-                    <span>Nama</span>
-                </div>
+                <div class="info-item-label"><i class="fas fa-id-card"></i> <span>Nama</span></div>
                 <div class="info-item-value">{{ $user->name ?? '-' }}</div>
             </div>
             <div class="info-item">
-                <div class="info-item-label">
-                    <i class="fas fa-envelope"></i>
-                    <span>Email</span>
-                </div>
+                <div class="info-item-label"><i class="fas fa-envelope"></i> <span>Email</span></div>
                 <div class="info-item-value">{{ $user->email ?? '-' }}</div>
             </div>
             <div class="info-item">
-                <div class="info-item-label">
-                    <i class="fas fa-graduation-cap"></i>
-                    <span>NIM</span>
-                </div>
+                <div class="info-item-label"><i class="fas fa-graduation-cap"></i> <span>NIM</span></div>
                 <div class="info-item-value">{{ $user->nim ?? '-' }}</div>
             </div>
             <div class="info-item">
-                <div class="info-item-label">
-                    <i class="fas fa-phone"></i>
-                    <span>No HP</span>
-                </div>
+                <div class="info-item-label"><i class="fas fa-phone"></i> <span>No HP</span></div>
                 <div class="info-item-value">{{ $user->phone ?? '-' }}</div>
             </div>
             <div class="info-item">
-                <div class="info-item-label">
-                    <i class="fas fa-university"></i>
-                    <span>Universitas</span>
-                </div>
+                <div class="info-item-label"><i class="fas fa-university"></i> <span>Universitas</span></div>
                 <div class="info-item-value">{{ $user->university ?? '-' }}</div>
             </div>
             <div class="info-item">
-                <div class="info-item-label">
-                    <i class="fas fa-book"></i>
-                    <span>Jurusan</span>
-                </div>
+                <div class="info-item-label"><i class="fas fa-book"></i> <span>Jurusan</span></div>
                 <div class="info-item-value">{{ $user->major ?? '-' }}</div>
             </div>
             <div class="info-item">
-                <div class="info-item-label">
-                    <i class="fas fa-id-badge"></i>
-                    <span>NIK (No. KTP)</span>
-                </div>
+                <div class="info-item-label"><i class="fas fa-id-badge"></i> <span>NIK (No. KTP)</span></div>
                 <div class="info-item-value">{{ $user->ktp_number ?? '-' }}</div>
             </div>
         </div>
     </div>
 
-    {{-- Status Magang Card --}}
+    {{-- PESERTA: Status Magang --}}
     @if($application)
     <div class="info-card">
         <div class="info-card-header">
-            <div class="header-icon">
-                <i class="fas fa-clipboard-list"></i>
-            </div>
+            <div class="header-icon"><i class="fas fa-clipboard-list"></i></div>
             <h5>Status Pengajuan Magang</h5>
         </div>
         <div class="info-card-body">
             <div class="info-item">
-                <div class="info-item-label">
-                    <i class="fas fa-building"></i>
-                    <span>Divisi Penempatan</span>
-                </div>
+                <div class="info-item-label"><i class="fas fa-building"></i> <span>Divisi Penempatan</span></div>
                 <div class="info-item-value">
-                    @if($application->status == 'accepted' || $application->status == 'finished')
-                        {{ $application->divisionAdmin->division_name ?? '-' }}
-                    @else
-                        -
-                    @endif
+                    {{ ($application->status == 'accepted' || $application->status == 'finished') ? ($application->divisionAdmin->division_name ?? '-') : '-' }}
                 </div>
             </div>
             <div class="info-item">
-                <div class="info-item-label">
-                    <i class="fas fa-user-tie"></i>
-                    <span>Mentor</span>
-                </div>
+                <div class="info-item-label"><i class="fas fa-user-tie"></i> <span>Mentor</span></div>
                 <div class="info-item-value">
-                    @if($application->status == 'accepted' || $application->status == 'finished')
-                        {{ $application->divisionMentor->mentor_name ?? '-' }}
-                    @else
-                        -
-                    @endif
+                    {{ ($application->status == 'accepted' || $application->status == 'finished') ? ($application->divisionMentor->mentor_name ?? '-') : '-' }}
                 </div>
             </div>
             <div class="info-item">
-                <div class="info-item-label">
-                    <i class="fas fa-tags"></i>
-                    <span>Bidang Peminatan</span>
-                </div>
+                <div class="info-item-label"><i class="fas fa-tags"></i> <span>Bidang Peminatan</span></div>
                 <div class="info-item-value">{{ $application->fieldOfInterest->name ?? '-' }}</div>
             </div>
             <div class="info-item">
-                <div class="info-item-label">
-                    <i class="fas fa-info-circle"></i>
-                    <span>Status</span>
-                </div>
+                <div class="info-item-label"><i class="fas fa-info-circle"></i> <span>Status</span></div>
                 <div class="info-item-value">
                     @if($application->status == 'accepted')
                         <span class="status-badge accepted"><i class="fas fa-check-circle"></i> Diterima</span>
@@ -910,36 +886,20 @@
                 </div>
             </div>
             <div class="info-item">
-                <div class="info-item-label">
-                    <i class="fas fa-calendar"></i>
-                    <span>Tanggal Pengajuan</span>
-                </div>
+                <div class="info-item-label"><i class="fas fa-calendar"></i> <span>Tanggal Pengajuan</span></div>
                 <div class="info-item-value">{{ $application->created_at ? $application->created_at->format('d M Y') : '-' }}</div>
             </div>
             <div class="info-item">
-                <div class="info-item-label">
-                    <i class="fas fa-calendar-check"></i>
-                    <span>Mulai Magang</span>
-                </div>
-                <div class="info-item-value">
-                    {{ $application->start_date ? \Carbon\Carbon::parse($application->start_date)->format('d M Y') : '-' }}
-                </div>
+                <div class="info-item-label"><i class="fas fa-calendar-check"></i> <span>Mulai Magang</span></div>
+                <div class="info-item-value">{{ $application->start_date ? \Carbon\Carbon::parse($application->start_date)->format('d M Y') : '-' }}</div>
             </div>
             <div class="info-item">
-                <div class="info-item-label">
-                    <i class="fas fa-calendar-times"></i>
-                    <span>Selesai Magang</span>
-                </div>
-                <div class="info-item-value">
-                    {{ $application->end_date ? \Carbon\Carbon::parse($application->end_date)->format('d M Y') : '-' }}
-                </div>
+                <div class="info-item-label"><i class="fas fa-calendar-times"></i> <span>Selesai Magang</span></div>
+                <div class="info-item-value">{{ $application->end_date ? \Carbon\Carbon::parse($application->end_date)->format('d M Y') : '-' }}</div>
             </div>
             @if($application->status == 'accepted' || $application->status == 'finished')
             <div class="info-item">
-                <div class="info-item-label">
-                    <i class="fas fa-file-pdf"></i>
-                    <span>Surat Penerimaan</span>
-                </div>
+                <div class="info-item-label"><i class="fas fa-file-pdf"></i> <span>Surat Penerimaan</span></div>
                 <div class="info-item-value">
                     @if($application->acceptance_letter_path && \Illuminate\Support\Facades\Storage::disk('public')->exists($application->acceptance_letter_path))
                         <a href="{{ route('dashboard.acceptance-letter.download') }}" class="btn-download-letter" target="_blank">
@@ -953,17 +913,204 @@
             @endif
             @if($application->notes)
             <div class="info-item">
-                <div class="info-item-label">
-                    <i class="fas fa-sticky-note"></i>
-                    <span>Catatan</span>
-                </div>
+                <div class="info-item-label"><i class="fas fa-sticky-note"></i> <span>Catatan</span></div>
                 <div class="info-item-value">{{ $application->notes }}</div>
             </div>
             @endif
         </div>
     </div>
     @endif
+
+    @elseif($role === 'mentor')
+    {{-- ============ MENTOR: Informasi Pembimbing ============ --}}
+    <div class="info-card">
+        <div class="info-card-header">
+            <div class="header-icon"><i class="fas fa-user-tie"></i></div>
+            <h5>Informasi Pembimbing</h5>
+        </div>
+        <div class="info-card-body">
+            <div class="info-item">
+                <div class="info-item-label"><i class="fas fa-id-card"></i> <span>Nama</span></div>
+                <div class="info-item-value">{{ $user->name ?? '-' }}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-item-label"><i class="fas fa-envelope"></i> <span>Email</span></div>
+                <div class="info-item-value">{{ $user->email ?? '-' }}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-item-label"><i class="fas fa-id-badge"></i> <span>NIK</span></div>
+                <div class="info-item-value">{{ $user->username ?? '-' }}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-item-label"><i class="fas fa-phone"></i> <span>No HP</span></div>
+                <div class="info-item-value">{{ $user->phone ?? '-' }}</div>
+            </div>
+            @if($divisionMentor && $divisionMentor->division)
+            <div class="info-item">
+                <div class="info-item-label"><i class="fas fa-building"></i> <span>Divisi</span></div>
+                <div class="info-item-value">{{ $divisionMentor->division->division_name }}</div>
+            </div>
+            @endif
+            <div class="info-item">
+                <div class="info-item-label"><i class="fas fa-users"></i> <span>Jumlah Peserta Aktif</span></div>
+                <div class="info-item-value">{{ $mentorParticipants->count() }} peserta</div>
+            </div>
+        </div>
+    </div>
+
+    {{-- MENTOR: Daftar Peserta Bimbingan --}}
+    <div class="info-card">
+        <div class="info-card-header">
+            <div class="header-icon"><i class="fas fa-users"></i></div>
+            <h5>Peserta Bimbingan</h5>
+        </div>
+        <div class="info-card-body">
+            @if($mentorParticipants->isNotEmpty())
+                @foreach($mentorParticipants as $participant)
+                <div class="info-item">
+                    <div class="info-item-label"><i class="fas fa-user-graduate"></i> <span>{{ $participant->user->nim ?? '-' }}</span></div>
+                    <div class="info-item-value">{{ $participant->user->name }}</div>
+                </div>
+                @endforeach
+            @else
+                <div style="text-align: center; padding: 1.5rem; color: #9ca3af;">
+                    <i class="fas fa-inbox" style="font-size: 1.5rem; margin-bottom: 0.5rem; display: block;"></i>
+                    Belum ada peserta bimbingan
+                </div>
+            @endif
+        </div>
+    </div>
+
+    @elseif($role === 'admin')
+    {{-- ============ ADMIN: Informasi Admin ============ --}}
+    <div class="info-card">
+        <div class="info-card-header">
+            <div class="header-icon"><i class="fas fa-shield-alt"></i></div>
+            <h5>Informasi Administrator</h5>
+        </div>
+        <div class="info-card-body">
+            <div class="info-item">
+                <div class="info-item-label"><i class="fas fa-id-card"></i> <span>Nama</span></div>
+                <div class="info-item-value">{{ $user->name ?? '-' }}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-item-label"><i class="fas fa-envelope"></i> <span>Email</span></div>
+                <div class="info-item-value">{{ $user->email ?? '-' }}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-item-label"><i class="fas fa-at"></i> <span>Username</span></div>
+                <div class="info-item-value">{{ $user->username ?? '-' }}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-item-label"><i class="fas fa-phone"></i> <span>No HP</span></div>
+                <div class="info-item-value">{{ $user->phone ?? '-' }}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-item-label"><i class="fas fa-user-shield"></i> <span>Role</span></div>
+                <div class="info-item-value">
+                    <span class="status-badge accepted"><i class="fas fa-shield-alt"></i> Administrator</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{-- ADMIN: Ringkasan Sistem --}}
+    @if($adminStats)
+    <div class="info-card">
+        <div class="info-card-header">
+            <div class="header-icon"><i class="fas fa-chart-bar"></i></div>
+            <h5>Ringkasan Sistem</h5>
+        </div>
+        <div class="info-card-body">
+            <div class="info-item">
+                <div class="info-item-label"><i class="fas fa-user-check"></i> <span>Peserta Aktif</span></div>
+                <div class="info-item-value">{{ $adminStats['total_participants'] }} peserta</div>
+            </div>
+            <div class="info-item">
+                <div class="info-item-label"><i class="fas fa-user-tie"></i> <span>Total Pembimbing</span></div>
+                <div class="info-item-value">{{ $adminStats['total_mentors'] }} pembimbing</div>
+            </div>
+            <div class="info-item">
+                <div class="info-item-label"><i class="fas fa-building"></i> <span>Divisi Aktif</span></div>
+                <div class="info-item-value">{{ $adminStats['total_divisions'] }} divisi</div>
+            </div>
+            <div class="info-item">
+                <div class="info-item-label"><i class="fas fa-clock"></i> <span>Pengajuan Pending</span></div>
+                <div class="info-item-value">
+                    @if($adminStats['pending_applications'] > 0)
+                        <span style="color: #d97706; font-weight: 600;">{{ $adminStats['pending_applications'] }} menunggu review</span>
+                    @else
+                        <span style="color: #059669;">Tidak ada</span>
+                    @endif
+                </div>
+            </div>
+        </div>
+    </div>
+    @endif
+
+    @endif
 </div>
+
+{{-- Mentor: Edit Biodata Kontak --}}
+@if($role === 'mentor')
+<div class="info-card" style="margin-bottom: 1.5rem;">
+    <div class="info-card-header">
+        <div class="header-icon" style="background: rgba(37, 99, 235, 0.1); color: #2563EB;">
+            <i class="fas fa-edit"></i>
+        </div>
+        <h5>Edit Biodata Kontak</h5>
+    </div>
+    <div class="info-card-body">
+        @if(session('biodata_success'))
+            <div class="alert-modern success" style="margin-bottom: 1rem;">
+                <i class="fas fa-check-circle"></i>
+                <span>{{ session('biodata_success') }}</span>
+            </div>
+        @endif
+        @if($errors->biodata->any())
+            <div class="alert-modern danger" style="margin-bottom: 1rem;">
+                <i class="fas fa-exclamation-triangle"></i>
+                <div>
+                    <ul>
+                        @foreach($errors->biodata->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            </div>
+        @endif
+        <p style="font-size: 0.85rem; color: #6b7280; margin-bottom: 1rem;">
+            Data kontak ini akan ditampilkan kepada peserta magang yang Anda bimbing.
+        </p>
+        <form method="POST" action="{{ route('dashboard.profile.biodata') }}">
+            @csrf
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;" class="password-fields-grid">
+                <div>
+                    <label for="mentor_phone" class="form-label" style="font-weight: 600; color: #374151; font-size: 0.875rem; display: flex; align-items: center; gap: 0.4rem; margin-bottom: 0.5rem;">
+                        <i class="fas fa-phone" style="color: #EE2E24; font-size: 0.85rem;"></i> No. Telepon
+                    </label>
+                    <input type="text" class="form-control" id="mentor_phone" name="phone"
+                           value="{{ old('phone', $user->phone) }}" placeholder="08xxxxxxxxxx"
+                           style="border: 1px solid #d1d5db; border-radius: 12px; padding: 0.7rem 1rem; font-size: 0.9rem;">
+                </div>
+                <div>
+                    <label for="mentor_email" class="form-label" style="font-weight: 600; color: #374151; font-size: 0.875rem; display: flex; align-items: center; gap: 0.4rem; margin-bottom: 0.5rem;">
+                        <i class="fas fa-envelope" style="color: #EE2E24; font-size: 0.85rem;"></i> Email
+                    </label>
+                    <input type="email" class="form-control" id="mentor_email" name="email"
+                           value="{{ old('email', $user->email) }}" placeholder="email@contoh.com" required
+                           style="border: 1px solid #d1d5db; border-radius: 12px; padding: 0.7rem 1rem; font-size: 0.9rem;">
+                </div>
+            </div>
+            <div style="text-align: right;">
+                <button type="submit" class="btn-save-password">
+                    <i class="fas fa-save"></i> Simpan Biodata
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+@endif
 
 {{-- Password Card --}}
 <div class="password-card">

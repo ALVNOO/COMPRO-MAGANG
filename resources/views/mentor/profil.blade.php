@@ -753,6 +753,88 @@
     </div>
 </div>
 
+{{-- Biodata Edit Section --}}
+<div class="password-card" style="margin-bottom: 2rem;">
+    <div class="password-header" style="background: linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%);">
+        <div class="password-icon" style="background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%); box-shadow: 0 10px 25px rgba(37, 99, 235, 0.3);">
+            <i class="fas fa-address-card"></i>
+        </div>
+        <div class="password-header-text">
+            <h2>Edit Biodata Kontak</h2>
+            <p>Informasi kontak ini akan ditampilkan kepada peserta magang yang Anda bimbing</p>
+        </div>
+    </div>
+    <div class="password-body">
+        @if(session('biodata_success'))
+            <div class="alert-custom alert-success">
+                <i class="fas fa-check-circle"></i>
+                <span>{{ session('biodata_success') }}</span>
+            </div>
+        @endif
+
+        @if($errors->biodata->any())
+            <div class="alert-custom alert-danger">
+                <i class="fas fa-exclamation-triangle"></i>
+                <ul>
+                    @foreach($errors->biodata->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
+
+        <form method="POST" action="{{ route('mentor.profil.biodata') }}">
+            @csrf
+            <div class="form-grid">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">
+                            <span class="label-icon" style="background: linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%);"><i class="fas fa-phone"></i></span>
+                            <span>No. Telepon</span>
+                        </label>
+                        <div class="form-input-wrapper">
+                            <input type="text"
+                                   name="phone"
+                                   class="form-input @if($errors->biodata->has('phone')) is-invalid @endif"
+                                   placeholder="Contoh: 081234567890"
+                                   value="{{ old('phone', $user->phone) }}">
+                            <i class="fas fa-phone input-icon"></i>
+                        </div>
+                        @if($errors->biodata->has('phone'))
+                            <div class="invalid-feedback">{{ $errors->biodata->first('phone') }}</div>
+                        @endif
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">
+                            <span class="label-icon" style="background: linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%);"><i class="fas fa-envelope"></i></span>
+                            <span>Email</span>
+                        </label>
+                        <div class="form-input-wrapper">
+                            <input type="email"
+                                   name="email"
+                                   class="form-input @if($errors->biodata->has('email')) is-invalid @endif"
+                                   placeholder="Contoh: nama@email.com"
+                                   value="{{ old('email', $user->email) }}">
+                            <i class="fas fa-envelope input-icon"></i>
+                        </div>
+                        @if($errors->biodata->has('email'))
+                            <div class="invalid-feedback">{{ $errors->biodata->first('email') }}</div>
+                        @endif
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn-submit" style="background: linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%); box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);">
+                        <i class="fas fa-save"></i>
+                        <span>Simpan Biodata</span>
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
 {{-- Password Section --}}
 <div class="password-card">
     <div class="password-header">

@@ -29,6 +29,34 @@
     $pendingCount = $totalAssignments - $submittedCount;
     $gradedCount = $assignments->whereNotNull('grade')->count();
     $avgGrade = $gradedCount > 0 ? round($assignments->whereNotNull('grade')->avg('grade'), 1) : null;
+
+    // Prepare data for JS popup
+    $assignmentsJson = $sortedAssignments->map(function($a) {
+        $showBelumKumpul = false;
+        if ($a->is_revision === 1) {
+            $lastSubmission = $a->submissions ? $a->submissions->sortByDesc('submitted_at')->first() : null;
+            if (!$lastSubmission || ($a->updated_at && $lastSubmission->submitted_at < $a->updated_at)) {
+                $showBelumKumpul = true;
+            }
+        }
+        $needsSubmit = !$a->submitted_at || $a->is_revision === 1;
+
+        return [
+            'id' => $a->id,
+            'title' => $a->title ?? \Illuminate\Support\Str::limit($a->description, 80),
+            'description' => $a->description,
+            'assignment_type' => $a->assignment_type,
+            'deadline' => $a->deadline ? $a->deadline->format('d M Y') : null,
+            'deadline_passed' => $a->deadline ? $a->deadline->isPast() : false,
+            'file_path' => $a->file_path ? \Illuminate\Support\Facades\Storage::url($a->file_path) : null,
+            'grade' => $a->grade,
+            'feedback' => $a->feedback,
+            'submitted_at' => $a->submitted_at ? $a->submitted_at->format('d M Y H:i') : null,
+            'needs_submit' => $needsSubmit,
+            'is_revision' => $a->is_revision === 1 && $showBelumKumpul,
+            'submit_url' => route('dashboard.assignments.submit', $a->id),
+        ];
+    })->values();
 @endphp
 
 @push('styles')
@@ -36,6 +64,8 @@
 /* ============================================
    ASSIGNMENTS PAGE STYLES
    ============================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
 
 /* Hero Section */
 .page-hero {
@@ -212,15 +242,24 @@
     font-weight: 600;
 }
 
+/* Assignment Table */
 .assignment-table {
     width: 100%;
     border-collapse: separate;
     border-spacing: 0;
+    table-layout: fixed;
+}
+
+.assignment-table thead th,
+.assignment-table tbody td {
+    padding: 0.875rem 1rem;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    vertical-align: middle;
+    text-align: center;
 }
 
 .assignment-table thead th {
     background: #f9fafb;
-    padding: 0.875rem 1.25rem;
     font-size: 0.75rem;
     font-weight: 600;
     text-transform: uppercase;
@@ -231,15 +270,14 @@
 }
 
 .assignment-table tbody td {
-    padding: 1rem 1.25rem;
     font-size: 0.875rem;
     color: #374151;
     border-bottom: 1px solid rgba(0, 0, 0, 0.04);
-    vertical-align: middle;
 }
 
 .assignment-table tbody tr {
     transition: background-color 0.2s;
+    cursor: pointer;
 }
 
 .assignment-table tbody tr:hover {
@@ -250,84 +288,45 @@
     border-bottom: none;
 }
 
-/* Assignment Description Cell */
-.assignment-desc {
-    max-width: 280px;
-}
-
-.assignment-desc strong {
-    display: block;
+/* Title Cell */
+.task-title {
+    font-weight: 600;
     color: #1f2937;
-    font-weight: 600;
-    margin-bottom: 0.25rem;
     line-height: 1.4;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
-.assignment-desc .meta {
-    font-size: 0.75rem;
-    color: #9ca3af;
-}
-
-/* Status Badges */
-.status-badge {
+/* Type Badge */
+.type-badge {
     display: inline-flex;
     align-items: center;
-    gap: 0.35rem;
-    padding: 0.35rem 0.85rem;
-    border-radius: 50px;
-    font-size: 0.78rem;
+    gap: 0.3rem;
+    padding: 0.3rem 0.7rem;
+    border-radius: 8px;
+    font-size: 0.75rem;
     font-weight: 600;
     white-space: nowrap;
 }
 
-.status-badge.submitted {
-    background: rgba(16, 185, 129, 0.15);
-    color: #059669;
+.type-badge.harian {
+    background: rgba(59, 130, 246, 0.1);
+    color: #2563eb;
 }
 
-.status-badge.pending {
-    background: rgba(239, 68, 68, 0.12);
-    color: #dc2626;
+.type-badge.proyek {
+    background: rgba(139, 92, 246, 0.1);
+    color: #7c3aed;
 }
 
-.status-badge.revision {
-    background: rgba(245, 158, 11, 0.15);
-    color: #d97706;
-}
-
-/* Grade Badge */
-.grade-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.35rem;
-    padding: 0.4rem 0.85rem;
-    border-radius: 50px;
-    font-size: 0.8rem;
-    font-weight: 700;
-    background: linear-gradient(135deg, #3b82f6, #2563eb);
-    color: white;
-}
-
-.grade-badge.excellent {
-    background: linear-gradient(135deg, #10B981, #059669);
-}
-
-.grade-badge.good {
-    background: linear-gradient(135deg, #3b82f6, #2563eb);
-}
-
-.grade-badge.average {
-    background: linear-gradient(135deg, #f59e0b, #d97706);
-}
-
-.grade-badge.low {
-    background: linear-gradient(135deg, #ef4444, #dc2626);
-}
-
-/* Deadline styling */
+/* Deadline */
 .deadline-text {
-    font-size: 0.85rem;
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    font-size: 0.8rem;
+    font-weight: 500;
     white-space: nowrap;
+    letter-spacing: 0.02em;
 }
 
 .deadline-text.overdue {
@@ -343,69 +342,329 @@
     color: #374151;
 }
 
-/* Feedback text */
-.feedback-text {
-    font-size: 0.83rem;
-    color: #4b5563;
-    max-width: 200px;
-    line-height: 1.5;
+/* Status Icon */
+.status-icon-wrap {
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
-/* Action Buttons */
-.btn-submit-task {
-    display: inline-flex;
+.status-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
     align-items: center;
-    gap: 0.4rem;
-    padding: 0.45rem 1rem;
-    background: linear-gradient(135deg, #EE2E24, #C41E1A);
-    color: white;
-    border: none;
-    border-radius: 10px;
+    justify-content: center;
     font-size: 0.8rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    box-shadow: 0 2px 8px rgba(238, 46, 36, 0.25);
-    white-space: nowrap;
+    transition: transform 0.2s;
 }
 
-.btn-submit-task:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 14px rgba(238, 46, 36, 0.35);
-    color: white;
+.status-icon:hover {
+    transform: scale(1.15);
 }
 
-.btn-download-file {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.4rem;
-    padding: 0.4rem 0.85rem;
-    background: rgba(59, 130, 246, 0.1);
-    color: #2563eb;
-    border: 1px solid rgba(59, 130, 246, 0.2);
-    border-radius: 8px;
-    font-size: 0.78rem;
-    font-weight: 600;
-    text-decoration: none;
-    transition: all 0.3s ease;
-    white-space: nowrap;
+.status-icon.pending {
+    background: rgba(239, 68, 68, 0.12);
+    color: #dc2626;
 }
 
-.btn-download-file:hover {
-    background: rgba(59, 130, 246, 0.2);
-    color: #1d4ed8;
-    transform: translateY(-1px);
+.status-icon.submitted {
+    background: rgba(16, 185, 129, 0.15);
+    color: #059669;
 }
 
-.completed-badge {
+.status-icon.revision {
+    background: rgba(245, 158, 11, 0.15);
+    color: #d97706;
+}
+
+.status-icon.graded {
+    background: rgba(139, 92, 246, 0.15);
+    color: #7c3aed;
+}
+
+/* Detail Button */
+.btn-detail {
     display: inline-flex;
     align-items: center;
     gap: 0.35rem;
     padding: 0.4rem 0.85rem;
+    background: white;
+    color: #6b7280;
+    border: 1.5px solid #e5e7eb;
+    border-radius: 8px;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 0.78rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+}
+
+.btn-detail:hover {
+    border-color: #EE2E24;
+    color: #EE2E24;
+    background: rgba(238, 46, 36, 0.04);
+}
+
+/* ============================================
+   DETAIL POPUP OVERLAY
+   ============================================ */
+.popup-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+    z-index: 9999;
+    justify-content: center;
+    align-items: center;
+    padding: 1.5rem;
+}
+
+.popup-overlay.active {
+    display: flex;
+}
+
+.popup-card {
+    background: #fff;
+    border-radius: 20px;
+    width: 100%;
+    max-width: 600px;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.3);
+    position: relative;
+    animation: popup-in 0.25s ease-out;
+}
+
+@keyframes popup-in {
+    from { opacity: 0; transform: scale(0.95) translateY(10px); }
+    to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+/* Popup Header */
+.popup-header {
+    padding: 1.5rem 1.75rem 1.25rem;
+    position: relative;
+}
+
+.popup-close {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    border: none;
+    background: #f3f4f6;
+    color: #6b7280;
+    font-size: 0.9rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.popup-close:hover {
+    background: #e5e7eb;
+    color: #1f2937;
+}
+
+.popup-title {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: #1f2937;
+    margin: 0 0 0.5rem 0;
+    padding-right: 2.5rem;
+    line-height: 1.4;
+}
+
+.popup-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.popup-meta-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 0.8rem;
+    color: #6b7280;
+}
+
+.popup-meta-item i {
+    font-size: 0.7rem;
+}
+
+.popup-meta-sep {
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: #d1d5db;
+}
+
+/* Popup Sections */
+.popup-section {
+    padding: 1.25rem 1.75rem;
+    border-top: 1px solid #f1f5f9;
+}
+
+.popup-section-label {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #9ca3af;
+    margin-bottom: 0.65rem;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.popup-section-label i {
+    font-size: 0.75rem;
+    color: #EE2E24;
+}
+
+.popup-desc {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 0.9rem;
+    color: #374151;
+    line-height: 1.7;
+    letter-spacing: 0.01em;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+
+.popup-desc-empty {
+    font-size: 0.85rem;
+    color: #9ca3af;
+    font-style: italic;
+}
+
+/* File Download in popup */
+.popup-file-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.55rem 1rem;
+    background: rgba(59, 130, 246, 0.08);
+    color: #2563eb;
+    border: 1.5px solid rgba(59, 130, 246, 0.2);
+    border-radius: 10px;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.2s;
+}
+
+.popup-file-btn:hover {
+    background: rgba(59, 130, 246, 0.15);
+    color: #1d4ed8;
+    transform: translateY(-1px);
+}
+
+.popup-no-file {
+    font-size: 0.85rem;
+    color: #9ca3af;
+}
+
+/* Grade Section in popup */
+.popup-grade-row {
+    display: flex;
+    gap: 1.5rem;
+    align-items: flex-start;
+}
+
+.popup-grade-item {
+    flex: 1;
+}
+
+.popup-grade-label {
+    font-size: 0.75rem;
+    color: #9ca3af;
+    margin-bottom: 0.35rem;
+}
+
+.popup-grade-value {
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #EE2E24;
+}
+
+.popup-grade-value.none {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 0.85rem;
+    font-weight: 400;
+    color: #9ca3af;
+}
+
+.popup-feedback-text {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 0.875rem;
+    color: #374151;
+    line-height: 1.6;
+}
+
+/* Action Section in popup */
+.popup-action {
+    padding: 1.25rem 1.75rem 1.5rem;
+    border-top: 1px solid #f1f5f9;
+    background: #fafbfc;
+    border-radius: 0 0 20px 20px;
+}
+
+.popup-submit-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.7rem 1.5rem;
+    background: linear-gradient(135deg, #EE2E24, #C41E1A);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+    box-shadow: 0 4px 14px rgba(238, 46, 36, 0.25);
+}
+
+.popup-submit-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(238, 46, 36, 0.35);
+}
+
+.popup-submit-hint {
+    font-size: 0.72rem;
+    color: #9ca3af;
+    margin-top: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+}
+
+.popup-completed-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.6rem 1.25rem;
     background: rgba(16, 185, 129, 0.1);
     color: #059669;
-    border-radius: 8px;
-    font-size: 0.8rem;
+    border-radius: 10px;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 0.85rem;
     font-weight: 600;
 }
 
@@ -466,108 +725,18 @@
     color: white;
 }
 
-/* Modal Styling */
-.modal-content {
-    border: none;
-    border-radius: 20px;
-    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25);
+/* Animations */
+@keyframes fade-in {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
-.modal-header {
-    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
-    padding: 1.25rem 1.5rem;
-}
-
-.modal-title {
-    font-weight: 600;
-    color: #1f2937;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-.modal-body {
-    padding: 1.5rem;
-}
-
-.modal-footer {
-    border-top: 1px solid rgba(0, 0, 0, 0.06);
-    padding: 1rem 1.5rem;
-}
-
-.modal-body .task-description {
-    background: #f9fafb;
-    border-radius: 12px;
-    padding: 1rem 1.25rem;
-    margin-bottom: 1.25rem;
-    border-left: 4px solid #EE2E24;
-}
-
-.modal-body .task-description p {
-    color: #374151;
-    margin: 0;
-    font-size: 0.9rem;
-    line-height: 1.6;
-}
-
-.modal-body label {
-    font-weight: 600;
-    color: #374151;
-    margin-bottom: 0.5rem;
-    display: block;
-    font-size: 0.9rem;
-}
-
-.modal-body .form-control {
-    border-radius: 12px;
-    border: 1px solid #d1d5db;
-    padding: 0.65rem 1rem;
-    transition: border-color 0.3s, box-shadow 0.3s;
-}
-
-.modal-body .form-control:focus {
-    border-color: #EE2E24;
-    box-shadow: 0 0 0 3px rgba(238, 46, 36, 0.1);
-}
-
-.modal-body .form-text {
-    font-size: 0.78rem;
-    color: #9ca3af;
-    margin-top: 0.4rem;
-}
-
-.btn-modal-cancel {
-    padding: 0.5rem 1.25rem;
-    border-radius: 10px;
-    border: 1px solid #d1d5db;
-    background: white;
-    color: #374151;
-    font-weight: 500;
-    transition: all 0.3s;
-}
-
-.btn-modal-cancel:hover {
-    background: #f3f4f6;
-}
-
-.btn-modal-submit {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.4rem;
-    padding: 0.5rem 1.25rem;
-    background: linear-gradient(135deg, #EE2E24, #C41E1A);
-    color: white;
-    border: none;
-    border-radius: 10px;
-    font-weight: 600;
-    transition: all 0.3s;
-}
-
-.btn-modal-submit:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(238, 46, 36, 0.3);
-    color: white;
-}
+.page-hero { animation: fade-in 0.4s ease-out; }
+.stat-card { animation: fade-in 0.5s ease-out; }
+.stat-card:nth-child(2) { animation-delay: 0.1s; }
+.stat-card:nth-child(3) { animation-delay: 0.15s; }
+.stat-card:nth-child(4) { animation-delay: 0.2s; }
+.table-card { animation: fade-in 0.6s ease-out; }
 
 /* Responsive */
 @media (max-width: 1200px) {
@@ -616,9 +785,33 @@
         font-size: 0.78rem;
     }
 
-    .assignment-desc {
-        max-width: 180px;
+    .popup-card {
+        max-width: 100%;
+        border-radius: 16px;
     }
+
+    .popup-header,
+    .popup-section {
+        padding-left: 1.25rem;
+        padding-right: 1.25rem;
+    }
+
+    .popup-action {
+        padding-left: 1.25rem;
+        padding-right: 1.25rem;
+    }
+}
+
+/* Scrollbar for popup */
+.popup-card::-webkit-scrollbar {
+    width: 6px;
+}
+.popup-card::-webkit-scrollbar-track {
+    background: transparent;
+}
+.popup-card::-webkit-scrollbar-thumb {
+    background: #d1d5db;
+    border-radius: 3px;
 }
 </style>
 @endpush
@@ -714,14 +907,12 @@
         <table class="assignment-table">
             <thead>
                 <tr>
-                    <th style="width: 45px;">No</th>
-                    <th>Deskripsi Tugas</th>
-                    <th>Deadline</th>
-                    <th>File Tugas</th>
-                    <th>Status</th>
-                    <th>Nilai</th>
-                    <th>Feedback</th>
-                    <th style="text-align: center;">Aksi</th>
+                    <th style="width: 6%;">No</th>
+                    <th style="width: 34%;">Judul Tugas</th>
+                    <th style="width: 14%;">Jenis</th>
+                    <th style="width: 18%;">Deadline</th>
+                    <th style="width: 10%;">Status</th>
+                    <th style="width: 12%;">Detail</th>
                 </tr>
             </thead>
             <tbody>
@@ -738,16 +929,38 @@
 
                     $isOverdue = $assignment->deadline && \Carbon\Carbon::parse($assignment->deadline)->isPast() && !$assignment->submitted_at;
                     $isUpcoming = $assignment->deadline && \Carbon\Carbon::parse($assignment->deadline)->diffInDays(now()) <= 3 && \Carbon\Carbon::parse($assignment->deadline)->isFuture();
+
+                    // Determine status
+                    $statusClass = 'pending';
+                    $statusIcon = 'fa-clock';
+                    $statusTooltip = 'Belum dikumpulkan';
+                    if ($assignment->grade !== null) {
+                        $statusClass = 'graded';
+                        $statusIcon = 'fa-star';
+                        $statusTooltip = 'Sudah dinilai';
+                    } elseif ($showBelumKumpul) {
+                        $statusClass = 'revision';
+                        $statusIcon = 'fa-redo';
+                        $statusTooltip = 'Perlu revisi';
+                    } elseif ($assignment->submitted_at) {
+                        $statusClass = 'submitted';
+                        $statusIcon = 'fa-check-circle';
+                        $statusTooltip = 'Sudah dikumpulkan';
+                    }
+
+                    $needsSubmit = !$assignment->submitted_at || $assignment->is_revision === 1;
                 @endphp
-                <tr>
+                <tr onclick="openDetailPopup({{ $assignment->id }})">
                     <td style="font-weight: 600; color: #6b7280;">{{ $no++ }}</td>
                     <td>
-                        <div class="assignment-desc">
-                            <strong>{{ Str::limit($assignment->description, 80) }}</strong>
-                            <span class="meta">
-                                <i class="fas fa-calendar-plus"></i> {{ $assignment->created_at->format('d M Y') }}
-                            </span>
-                        </div>
+                        <div class="task-title">{{ $assignment->title ?? Str::limit($assignment->description, 60) }}</div>
+                    </td>
+                    <td>
+                        @if($assignment->assignment_type === 'tugas_harian')
+                            <span class="type-badge harian"><i class="fas fa-calendar-day"></i> Harian</span>
+                        @else
+                            <span class="type-badge proyek"><i class="fas fa-project-diagram"></i> Proyek</span>
+                        @endif
                     </td>
                     <td>
                         @if($assignment->deadline)
@@ -760,63 +973,16 @@
                         @endif
                     </td>
                     <td>
-                        @if($assignment->file_path)
-                            <a href="{{ Storage::url($assignment->file_path) }}" target="_blank" class="btn-download-file">
-                                <i class="fas fa-download"></i> Download
-                            </a>
-                        @else
-                            <span style="color: #9ca3af; font-size: 0.83rem;">Tidak ada file</span>
-                        @endif
+                        <div class="status-icon-wrap">
+                            <span class="status-icon {{ $statusClass }}" title="{{ $statusTooltip }}">
+                                <i class="fas {{ $statusIcon }}"></i>
+                            </span>
+                        </div>
                     </td>
                     <td>
-                        @if(!$assignment->submitted_at)
-                            <span class="status-badge pending">
-                                <i class="fas fa-clock"></i> Belum dikumpulkan
-                            </span>
-                        @elseif($showBelumKumpul)
-                            <span class="status-badge revision">
-                                <i class="fas fa-redo"></i> Perlu Revisi
-                            </span>
-                        @else
-                            <span class="status-badge submitted">
-                                <i class="fas fa-check-circle"></i> Sudah dikumpulkan
-                            </span>
-                        @endif
-                    </td>
-                    <td>
-                        @if($assignment->grade !== null)
-                            @php
-                                $gradeClass = 'good';
-                                if ($assignment->grade >= 9) $gradeClass = 'excellent';
-                                elseif ($assignment->grade >= 7) $gradeClass = 'good';
-                                elseif ($assignment->grade >= 5) $gradeClass = 'average';
-                                else $gradeClass = 'low';
-                            @endphp
-                            <span class="grade-badge {{ $gradeClass }}">
-                                <i class="fas fa-star"></i> {{ $assignment->grade }}/10
-                            </span>
-                        @else
-                            <span style="color: #9ca3af; font-size: 0.83rem;">Belum dinilai</span>
-                        @endif
-                    </td>
-                    <td>
-                        @if($assignment->feedback)
-                            <span class="feedback-text">{{ Str::limit($assignment->feedback, 60) }}</span>
-                        @else
-                            <span style="color: #9ca3af; font-size: 0.83rem;">-</span>
-                        @endif
-                    </td>
-                    <td style="text-align: center;">
-                        @if(!$assignment->submitted_at || $assignment->is_revision === 1)
-                            <button type="button" class="btn-submit-task" data-bs-toggle="modal" data-bs-target="#submitModal{{ $assignment->id }}">
-                                <i class="fas fa-upload"></i>
-                                {{ !$assignment->submitted_at ? 'Kumpulkan' : 'Revisi' }}
-                            </button>
-                        @else
-                            <span class="completed-badge">
-                                <i class="fas fa-check-circle"></i> Selesai
-                            </span>
-                        @endif
+                        <button type="button" class="btn-detail" onclick="event.stopPropagation(); openDetailPopup({{ $assignment->id }})">
+                            <i class="fas fa-eye"></i> Detail
+                        </button>
                     </td>
                 </tr>
                 @endforeach
@@ -845,74 +1011,159 @@
 </div>
 @endif
 
-{{-- Submit Assignment Modals --}}
-@foreach($assignments as $assignment)
-@if(!$assignment->submitted_at || $assignment->is_revision === 1)
-<div class="modal fade" id="submitModal{{ $assignment->id }}" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">
-                    <i class="fas fa-upload" style="color: #EE2E24;"></i>
-                    {{ !$assignment->submitted_at ? 'Kumpulkan Tugas' : 'Kumpulkan Ulang (Revisi)' }}
-                </h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <form action="{{ route('dashboard.assignments.submit', $assignment->id) }}" method="POST" enctype="multipart/form-data">
-                @csrf
-                <div class="modal-body">
-                    <div class="task-description">
-                        <label style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: #6b7280; margin-bottom: 0.5rem;">Deskripsi Tugas</label>
-                        <p>{{ $assignment->description }}</p>
-                    </div>
-
-                    @if($assignment->deadline)
-                    <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1.25rem; padding: 0.75rem 1rem; background: {{ \Carbon\Carbon::parse($assignment->deadline)->isPast() ? 'rgba(239, 68, 68, 0.08)' : 'rgba(59, 130, 246, 0.08)' }}; border-radius: 10px;">
-                        <i class="fas fa-calendar-day" style="color: {{ \Carbon\Carbon::parse($assignment->deadline)->isPast() ? '#dc2626' : '#2563eb' }};"></i>
-                        <span style="font-size: 0.85rem; color: {{ \Carbon\Carbon::parse($assignment->deadline)->isPast() ? '#dc2626' : '#374151' }}; font-weight: 500;">
-                            Deadline: {{ \Carbon\Carbon::parse($assignment->deadline)->locale('id')->isoFormat('D MMMM Y') }}
-                            @if(\Carbon\Carbon::parse($assignment->deadline)->isPast())
-                                <strong>(Sudah lewat)</strong>
-                            @endif
-                        </span>
-                    </div>
-                    @endif
-
-                    @if($assignment->online_text)
-                    <div class="mb-3">
-                        <label for="online_text_{{ $assignment->id }}">Online Text (opsional)</label>
-                        <textarea class="form-control" id="online_text_{{ $assignment->id }}" name="online_text" rows="3" placeholder="Tuliskan jawaban atau catatan tambahan..."></textarea>
-                    </div>
-                    @endif
-
-                    <div class="mb-3">
-                        <label for="submission_file_{{ $assignment->id }}">
-                            Upload File Tugas <span style="color: #EF4444;">*</span>
-                        </label>
-                        <input type="file" class="form-control" id="submission_file_{{ $assignment->id }}" name="submission_file" accept=".pdf,.doc,.docx" required>
-                        <div class="form-text">
-                            <i class="fas fa-info-circle"></i> Format: PDF, DOC, DOCX (Maks. 2MB)
-                        </div>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn-modal-cancel" data-bs-dismiss="modal">Batal</button>
-                    <button type="submit" class="btn-modal-submit">
-                        <i class="fas fa-upload"></i>
-                        {{ !$assignment->submitted_at ? 'Kumpulkan' : 'Kumpulkan Ulang' }}
-                    </button>
-                </div>
-            </form>
+{{-- Detail Popup Overlay --}}
+<div class="popup-overlay" id="detailPopup">
+    <div class="popup-card" id="popupCard">
+        <div class="popup-header">
+            <button type="button" class="popup-close" onclick="closeDetailPopup()">
+                <i class="fas fa-times"></i>
+            </button>
+            <h3 class="popup-title" id="popupTitle"></h3>
+            <div class="popup-meta" id="popupMeta"></div>
         </div>
+
+        <div class="popup-section">
+            <div class="popup-section-label">
+                <i class="fas fa-file-alt"></i> Deskripsi
+            </div>
+            <div id="popupDesc"></div>
+        </div>
+
+        <div class="popup-section">
+            <div class="popup-section-label">
+                <i class="fas fa-paperclip"></i> File Tugas
+            </div>
+            <div id="popupFile"></div>
+        </div>
+
+        <div class="popup-section">
+            <div class="popup-section-label">
+                <i class="fas fa-chart-bar"></i> Penilaian
+            </div>
+            <div id="popupGrade"></div>
+        </div>
+
+        <div class="popup-action" id="popupAction"></div>
     </div>
 </div>
-@endif
-@endforeach
 
 @endsection
 
 @push('scripts')
 <script>
-// Assignments page scripts
+// Assignment data encoded from server
+const assignmentsData = @json($assignmentsJson);
+
+const csrfToken = '{{ csrf_token() }}';
+
+function openDetailPopup(id) {
+    const data = assignmentsData.find(a => a.id === id);
+    if (!data) return;
+
+    // Title
+    document.getElementById('popupTitle').textContent = data.title || 'Tugas';
+
+    // Meta
+    const typeLabel = data.assignment_type === 'tugas_harian' ? 'Harian' : 'Proyek';
+    const typeIcon = data.assignment_type === 'tugas_harian' ? 'fa-calendar-day' : 'fa-project-diagram';
+    let metaHtml = `<span class="popup-meta-item"><i class="fas ${typeIcon}"></i> ${typeLabel}</span>`;
+    if (data.deadline) {
+        metaHtml += `<span class="popup-meta-sep"></span>`;
+        metaHtml += `<span class="popup-meta-item ${data.deadline_passed ? 'style="color:#dc2626;font-weight:600;"' : ''}"><i class="fas fa-calendar"></i> ${data.deadline}</span>`;
+    }
+    if (data.submitted_at) {
+        metaHtml += `<span class="popup-meta-sep"></span>`;
+        metaHtml += `<span class="popup-meta-item" style="color:#059669;"><i class="fas fa-check"></i> Dikumpulkan ${data.submitted_at}</span>`;
+    }
+    document.getElementById('popupMeta').innerHTML = metaHtml;
+
+    // Description
+    const descEl = document.getElementById('popupDesc');
+    if (data.description) {
+        descEl.innerHTML = `<div class="popup-desc">${escapeHtml(data.description)}</div>`;
+    } else {
+        descEl.innerHTML = `<div class="popup-desc-empty">Tidak ada deskripsi</div>`;
+    }
+
+    // File
+    const fileEl = document.getElementById('popupFile');
+    if (data.file_path) {
+        fileEl.innerHTML = `<a href="${data.file_path}" target="_blank" class="popup-file-btn"><i class="fas fa-download"></i> Download File Tugas</a>`;
+    } else {
+        fileEl.innerHTML = `<span class="popup-no-file">Tidak ada file tugas</span>`;
+    }
+
+    // Grade
+    const gradeEl = document.getElementById('popupGrade');
+    if (data.grade !== null) {
+        let feedbackHtml = data.feedback
+            ? `<div class="popup-grade-item"><div class="popup-grade-label">Feedback</div><div class="popup-feedback-text">${escapeHtml(data.feedback)}</div></div>`
+            : `<div class="popup-grade-item"><div class="popup-grade-label">Feedback</div><div class="popup-grade-value none">Tidak ada feedback</div></div>`;
+        gradeEl.innerHTML = `
+            <div class="popup-grade-row">
+                <div class="popup-grade-item">
+                    <div class="popup-grade-label">Nilai</div>
+                    <div class="popup-grade-value">${data.grade}/10</div>
+                </div>
+                ${feedbackHtml}
+            </div>
+        `;
+    } else {
+        gradeEl.innerHTML = `<div class="popup-grade-value none">Belum dinilai</div>`;
+    }
+
+    // Action
+    const actionEl = document.getElementById('popupAction');
+    if (data.needs_submit) {
+        const btnLabel = data.is_revision ? '<i class="fas fa-redo"></i> Revisi Tugas' : '<i class="fas fa-upload"></i> Kumpulkan';
+        actionEl.innerHTML = `
+            <form action="${data.submit_url}" method="POST" enctype="multipart/form-data">
+                <input type="hidden" name="_token" value="${csrfToken}">
+                <label class="popup-submit-btn" style="cursor:pointer;margin:0;">
+                    ${btnLabel}
+                    <input type="file" name="submission_file" accept=".pdf,.doc,.docx" style="display:none;" onchange="this.closest('form').submit();" required>
+                </label>
+            </form>
+            <div class="popup-submit-hint">
+                <i class="fas fa-info-circle"></i> Format: PDF, DOC, DOCX (Maks. 2MB)
+            </div>
+        `;
+    } else {
+        actionEl.innerHTML = `
+            <span class="popup-completed-badge">
+                <i class="fas fa-check-circle"></i> Tugas Sudah Dikumpulkan
+            </span>
+        `;
+    }
+
+    // Show
+    document.getElementById('detailPopup').classList.add('active');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeDetailPopup() {
+    document.getElementById('detailPopup').classList.remove('active');
+    document.body.style.overflow = '';
+}
+
+// Close on overlay click
+document.getElementById('detailPopup').addEventListener('click', function(e) {
+    if (e.target === this) {
+        closeDetailPopup();
+    }
+});
+
+// Close on Escape
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        closeDetailPopup();
+    }
+});
+
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
 </script>
 @endpush

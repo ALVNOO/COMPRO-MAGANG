@@ -107,6 +107,10 @@ Route::middleware(["auth", "throttle:global"])->group(function () {
         DashboardController::class,
         "removeProfilePicture",
     ])->name("dashboard.pre-acceptance.profile-picture.remove");
+    Route::post("/dashboard/enter", [
+        DashboardController::class,
+        "enterDashboard",
+    ])->name("dashboard.enter");
     Route::get("/dashboard/status", [
         DashboardController::class,
         "status",
@@ -155,6 +159,11 @@ Route::middleware(["auth", "throttle:global"])->group(function () {
         DashboardController::class,
         "profile",
     ])->name("dashboard.profile");
+
+    Route::post("/dashboard/profile/biodata", [
+        DashboardController::class,
+        "updateMentorBiodata",
+    ])->name("dashboard.profile.biodata");
 
     // Notifications
     Route::prefix("notifications")
@@ -304,6 +313,10 @@ Route::middleware(["auth", "throttle:global"])
             MentorDashboardController::class,
             "profil",
         ])->name("mentor.profil");
+        Route::post("/profil/biodata", [
+            MentorDashboardController::class,
+            "updateBiodata",
+        ])->name("mentor.profil.biodata");
         // Menu absensi
         Route::get("/absensi", [
             AttendanceController::class,

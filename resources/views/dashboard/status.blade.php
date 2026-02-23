@@ -23,8 +23,8 @@
             $currentStep = 1;
             if($isPending) $currentStep = 2;
             if($isAccepted) $currentStep = 3;
+            if($isRejected) $currentStep = 3;
             if($isFinished) $currentStep = 4;
-            if($isRejected) $currentStep = -1;
 
             // Calculate dates
             $hasStartDate = $application->start_date && $application->end_date;
@@ -62,19 +62,19 @@
             {{-- Progress Steps --}}
             <div class="sp-progress">
                 <div class="sp-prog-step {{ $currentStep >= 1 ? 'done' : '' }}">
-                    <div class="sp-prog-bar"><div class="sp-prog-bar-fill" style="width: {{ $currentStep >= 2 && !$isRejected ? '100' : '0' }}%"></div></div>
+                    <div class="sp-prog-bar"><div class="sp-prog-bar-fill" style="width: {{ $currentStep >= 2 ? '100' : '0' }}%"></div></div>
                     <div class="sp-prog-dot">1</div>
                     <span class="sp-prog-label">Pengajuan</span>
                 </div>
-                <div class="sp-prog-step {{ $currentStep >= 2 && !$isRejected ? 'done' : '' }} {{ $isPending ? 'active' : '' }} {{ $isRejected ? 'fail' : '' }}">
+                <div class="sp-prog-step {{ $currentStep >= 2 ? 'done' : '' }} {{ $isPending ? 'active' : '' }}">
                     <div class="sp-prog-bar"><div class="sp-prog-bar-fill" style="width: {{ $currentStep >= 3 ? '100' : '0' }}%"></div></div>
-                    <div class="sp-prog-dot">{{ $isRejected ? '✕' : '2' }}</div>
-                    <span class="sp-prog-label">{{ $isRejected ? 'Ditolak' : 'Review' }}</span>
+                    <div class="sp-prog-dot">2</div>
+                    <span class="sp-prog-label">Review</span>
                 </div>
-                <div class="sp-prog-step {{ $currentStep >= 3 ? 'done' : '' }} {{ $isAccepted && !$isFinished ? 'active' : '' }}">
+                <div class="sp-prog-step {{ $currentStep >= 3 && !$isRejected ? 'done' : '' }} {{ ($isAccepted && !$isFinished) ? 'active' : '' }} {{ $isRejected ? 'fail' : '' }}">
                     <div class="sp-prog-bar"><div class="sp-prog-bar-fill" style="width: {{ $isFinished ? '100' : '0' }}%"></div></div>
-                    <div class="sp-prog-dot">3</div>
-                    <span class="sp-prog-label">Diterima</span>
+                    <div class="sp-prog-dot">{{ $isRejected ? '✕' : '3' }}</div>
+                    <span class="sp-prog-label">Status</span>
                 </div>
                 <div class="sp-prog-step {{ $isFinished ? 'done' : '' }}">
                     <div class="sp-prog-dot">4</div>
@@ -97,13 +97,46 @@
             {{-- ===== PENDING / REJECTED STATE ===== --}}
 
             @if($isRejected)
-                <div class="sp-alert sp-alert-red sp-anim sp-anim-2">
-                    <div class="sp-alert-icon">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                @php
+                    $reapplyDate = $application->updated_at->addMonth();
+                    $canReapply = $user->canReapplyForInternship();
+                @endphp
+                <div class="sp-rejection-card sp-anim sp-anim-2">
+                    <div class="sp-rejection-header">
+                        <div class="sp-rejection-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                        </div>
+                        <div>
+                            <h3 class="sp-rejection-title">Pengajuan Magang Ditolak</h3>
+                            <p class="sp-rejection-date">Ditolak pada {{ $application->updated_at->format('d M Y, H:i') }} WIB</p>
+                        </div>
                     </div>
-                    <div class="sp-alert-body">
-                        <div class="sp-alert-title">Pengajuan Ditolak</div>
-                        <div class="sp-alert-desc">{{ $application->notes ?? 'Hubungi admin untuk informasi lebih lanjut.' }}</div>
+
+                    <div class="sp-rejection-reason">
+                        <div class="sp-rejection-reason-label">Alasan Penolakan</div>
+                        <div class="sp-rejection-reason-text">{{ $application->notes ?? 'Tidak ada alasan yang diberikan. Hubungi admin untuk informasi lebih lanjut.' }}</div>
+                    </div>
+
+                    <div class="sp-rejection-reapply">
+                        @if($canReapply)
+                            <div class="sp-reapply-ready">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                <span>Anda sudah dapat mendaftar kembali</span>
+                            </div>
+                            <a href="{{ route('dashboard.reapply') }}" class="sp-btn sp-btn-red">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                                Daftar Kembali
+                            </a>
+                        @else
+                            <div class="sp-reapply-wait">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                <span>Anda dapat mendaftar kembali pada <strong>{{ $reapplyDate->format('d M Y') }}</strong></span>
+                            </div>
+                            <button class="sp-btn sp-btn-disabled" disabled>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                Daftar Kembali
+                            </button>
+                        @endif
                     </div>
                 </div>
             @endif
@@ -218,8 +251,58 @@
         @else
             {{-- ===== ACCEPTED / FINISHED STATE ===== --}}
 
+            {{-- Congratulation + Mentor Card --}}
+            @if($application->divisionMentor)
+            <div class="sp-congrats-card sp-anim sp-anim-3">
+                <div class="sp-congrats-confetti">
+                    <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+                </div>
+                <div class="sp-congrats-header">
+                    <div class="sp-congrats-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/></svg>
+                    </div>
+                    <div>
+                        <h3 class="sp-congrats-title">Selamat, {{ $user->name }}!</h3>
+                        <p class="sp-congrats-desc">Anda resmi diterima dalam program magang PT Telkom Indonesia. Berikut adalah mentor yang akan membimbing Anda selama program magang berlangsung.</p>
+                    </div>
+                </div>
+
+                <div class="sp-mentor-card">
+                    <div class="sp-mentor-avatar">
+                        @if($mentorUser && $mentorUser->profile_picture)
+                            <img src="{{ asset('storage/' . $mentorUser->profile_picture) }}" alt="{{ $application->divisionMentor->mentor_name }}">
+                        @else
+                            <span class="sp-mentor-initials">{{ strtoupper(substr($application->divisionMentor->mentor_name, 0, 2)) }}</span>
+                        @endif
+                    </div>
+                    <div class="sp-mentor-info">
+                        <h4 class="sp-mentor-name">{{ $application->divisionMentor->mentor_name }}</h4>
+                        <span class="sp-mentor-role">Pembimbing Lapangan</span>
+                        <div class="sp-mentor-details">
+                            <div class="sp-mentor-detail">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2"/></svg>
+                                <span><strong>NIK:</strong> {{ $application->divisionMentor->nik_number }}</span>
+                            </div>
+                            <div class="sp-mentor-detail">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+                                <span><strong>Divisi:</strong> {{ $application->divisionMentor->division->division_name ?? '-' }}</span>
+                            </div>
+                            <div class="sp-mentor-detail">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
+                                <span><strong>Telepon:</strong> {{ $mentorUser && $mentorUser->phone ? $mentorUser->phone : 'Belum tersedia' }}</span>
+                            </div>
+                            <div class="sp-mentor-detail">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                                <span><strong>Email:</strong> {{ $mentorUser && $mentorUser->email ? $mentorUser->email : 'Belum tersedia' }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            @endif
+
             {{-- Placement Card --}}
-            <div class="sp-card sp-anim sp-anim-2">
+            <div class="sp-card sp-anim sp-anim-3">
                 <div class="sp-card-head">
                     <div class="sp-card-icon sp-ci-green">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
@@ -233,15 +316,7 @@
                     <div class="sp-placement">
                         <div class="sp-place-item sp-place-item-main">
                             <div class="sp-place-label">Divisi Penempatan</div>
-                            <div class="sp-place-value">{{ $application->divisi->name ?? '-' }}</div>
-                        </div>
-                        <div class="sp-place-item">
-                            <div class="sp-place-label">Sub Direktorat</div>
-                            <div class="sp-place-value">{{ $application->divisi->subDirektorat->name ?? '-' }}</div>
-                        </div>
-                        <div class="sp-place-item">
-                            <div class="sp-place-label">Direktorat</div>
-                            <div class="sp-place-value">{{ $application->divisi->subDirektorat->direktorat->name ?? '-' }}</div>
+                            <div class="sp-place-value">{{ $application->divisionMentor->division->division_name ?? ($application->divisionAdmin->division_name ?? '-') }}</div>
                         </div>
                     </div>
 
@@ -256,23 +331,6 @@
                     @endif
                 </div>
 
-                {{-- Additional Requirements --}}
-                @if($application->status == 'accepted')
-                    @if(!$application->acknowledged_additional_requirements)
-                        @include('dashboard.partials.status-requirements-alert')
-                    @elseif(
-                        !$application->cover_letter_path ||
-                        !$application->foto_nametag_path ||
-                        !$application->screenshot_pospay_path ||
-                        !$application->foto_prangko_prisma_path ||
-                        !$application->ss_follow_ig_museum_path ||
-                        !$application->ss_follow_ig_posindonesia_path ||
-                        !$application->ss_subscribe_youtube_path
-                    )
-                        @include('dashboard.partials.status-upload-section')
-                    @endif
-                @endif
-
                 {{-- Acceptance Letter Download --}}
                 @if($application->acceptance_letter_path && is_null($application->acceptance_letter_downloaded_at))
                     @include('dashboard.partials.status-download-section')
@@ -280,7 +338,7 @@
             </div>
 
             {{-- Biodata + Timeline Grid --}}
-            <div class="sp-grid sp-grid-wide sp-anim sp-anim-3">
+            <div class="sp-grid sp-grid-wide sp-anim sp-anim-4">
                 {{-- Biodata --}}
                 <div class="sp-card">
                     <div class="sp-card-head">
@@ -379,18 +437,38 @@
                                 <div class="sp-contact-icon">
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
                                 </div>
-                                <span>hr@telkom.co.id</span>
+                                <span>{{ $mentorUser->email ?? 'hr@telkom.co.id' }}</span>
                             </div>
+                            @if($mentorUser && $mentorUser->phone)
                             <div class="sp-contact">
                                 <div class="sp-contact-icon">
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
                                 </div>
-                                <span>(021) 789-0123</span>
+                                <span>{{ $mentorUser->phone }}</span>
                             </div>
+                            @endif
                         </div>
                     </div>
                 </div>
             </div>
+
+            {{-- Siap Magang Button (at the very bottom, only for accepted users who haven't entered dashboard) --}}
+            @if($isAccepted && !$isFinished && !session('dashboard_entered_' . $application->id))
+            <div class="sp-siap-magang sp-anim sp-anim-5">
+                <form method="POST" action="{{ route('dashboard.enter') }}">
+                    @csrf
+                    <button type="submit" class="sp-btn-siap-magang">
+                        <span class="sp-btn-siap-bg"></span>
+                        <span class="sp-btn-siap-content">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                            Siap Magang
+                        </span>
+                    </button>
+                </form>
+                <p class="sp-siap-hint">Klik tombol di atas untuk membuka akses penuh ke dashboard magang Anda</p>
+            </div>
+            @endif
+
         @endif
 
     @else

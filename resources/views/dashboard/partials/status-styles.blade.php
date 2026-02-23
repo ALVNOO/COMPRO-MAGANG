@@ -872,6 +872,350 @@
 .mt-4 { margin-top: 16px; }
 
 /* ==========================================
+   CONGRATULATION + MENTOR CARD
+   ========================================== */
+.sp-congrats-card {
+    background: linear-gradient(135deg, #ECFDF5, #F0FDF4);
+    border: 1px solid #A7F3D0;
+    border-radius: var(--r-lg);
+    padding: 24px;
+    margin-bottom: 12px;
+}
+
+.sp-congrats-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    margin-bottom: 20px;
+}
+
+.sp-congrats-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    background: var(--green);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    color: white;
+}
+.sp-congrats-icon svg { width: 22px; height: 22px; }
+
+.sp-congrats-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: #065F46;
+}
+
+.sp-congrats-desc {
+    font-size: 13px;
+    color: #047857;
+    margin-top: 4px;
+    line-height: 1.6;
+}
+
+.sp-mentor-card {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    background: white;
+    border: 1px solid #D1FAE5;
+    border-radius: var(--r);
+    padding: 20px;
+}
+
+.sp-mentor-avatar {
+    width: 56px;
+    height: 56px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, var(--red), var(--red-d));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    overflow: hidden;
+}
+.sp-mentor-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.sp-mentor-initials {
+    font-size: 18px;
+    font-weight: 700;
+    color: white;
+    letter-spacing: 1px;
+}
+
+.sp-mentor-info { flex: 1; min-width: 0; }
+
+.sp-mentor-name {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--slate-800);
+    margin-bottom: 2px;
+}
+
+.sp-mentor-role {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--green);
+    background: var(--green-l);
+    padding: 3px 10px;
+    border-radius: 6px;
+    margin-bottom: 12px;
+}
+
+.sp-mentor-details {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.sp-mentor-detail {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: var(--slate-600);
+}
+.sp-mentor-detail svg {
+    width: 16px;
+    height: 16px;
+    color: var(--slate-400);
+    flex-shrink: 0;
+}
+.sp-mentor-detail strong {
+    color: var(--slate-500);
+    font-weight: 600;
+}
+
+/* ==========================================
+   REJECTION CARD
+   ========================================== */
+.sp-rejection-card {
+    background: white;
+    border: 1px solid #FECACA;
+    border-radius: var(--r-lg);
+    padding: 24px;
+    margin-bottom: 12px;
+}
+
+.sp-rejection-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    margin-bottom: 20px;
+}
+
+.sp-rejection-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    background: #EF4444;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    color: white;
+}
+.sp-rejection-icon svg { width: 22px; height: 22px; }
+
+.sp-rejection-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: #991B1B;
+}
+
+.sp-rejection-date {
+    font-size: 13px;
+    color: #B91C1C;
+    margin-top: 2px;
+}
+
+.sp-rejection-reason {
+    background: #FEF2F2;
+    border: 1px solid #FECACA;
+    border-radius: var(--r);
+    padding: 16px;
+    margin-bottom: 20px;
+}
+
+.sp-rejection-reason-label {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+    color: #991B1B;
+    margin-bottom: 6px;
+}
+
+.sp-rejection-reason-text {
+    font-size: 14px;
+    color: #7F1D1D;
+    line-height: 1.6;
+}
+
+.sp-rejection-reapply {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.sp-reapply-ready {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--green);
+}
+.sp-reapply-ready svg { width: 18px; height: 18px; }
+
+.sp-reapply-wait {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: var(--slate-500);
+}
+.sp-reapply-wait svg { width: 18px; height: 18px; color: var(--amber); }
+.sp-reapply-wait strong { color: var(--slate-700); }
+
+.sp-btn-disabled {
+    background: var(--slate-200);
+    color: var(--slate-400);
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+.sp-btn-disabled:hover {
+    transform: none;
+    box-shadow: none;
+}
+
+/* ==========================================
+   CONFETTI ANIMATION (Congrats Card)
+   ========================================== */
+.sp-congrats-card {
+    position: relative;
+    overflow: hidden;
+}
+
+.sp-congrats-confetti {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 100%;
+    pointer-events: none;
+    overflow: hidden;
+}
+
+.sp-congrats-confetti span {
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    border-radius: 2px;
+    animation: sp-confetti-fall 3s ease-in-out infinite;
+    opacity: 0;
+}
+
+.sp-congrats-confetti span:nth-child(1) { left: 5%; background: #EE2E24; animation-delay: 0s; }
+.sp-congrats-confetti span:nth-child(2) { left: 15%; background: #F59E0B; animation-delay: 0.3s; border-radius: 50%; }
+.sp-congrats-confetti span:nth-child(3) { left: 30%; background: #059669; animation-delay: 0.6s; }
+.sp-congrats-confetti span:nth-child(4) { left: 45%; background: #2563EB; animation-delay: 0.9s; border-radius: 50%; }
+.sp-congrats-confetti span:nth-child(5) { left: 60%; background: #7C3AED; animation-delay: 0.4s; }
+.sp-congrats-confetti span:nth-child(6) { left: 75%; background: #EE2E24; animation-delay: 0.7s; border-radius: 50%; }
+.sp-congrats-confetti span:nth-child(7) { left: 85%; background: #F59E0B; animation-delay: 1s; }
+.sp-congrats-confetti span:nth-child(8) { left: 95%; background: #059669; animation-delay: 0.2s; border-radius: 50%; }
+
+@keyframes sp-confetti-fall {
+    0% { top: -10%; opacity: 1; transform: rotate(0deg) scale(1); }
+    50% { opacity: 0.8; }
+    100% { top: 100%; opacity: 0; transform: rotate(720deg) scale(0.5); }
+}
+
+/* ==========================================
+   SIAP MAGANG BUTTON (Bottom CTA)
+   ========================================== */
+.sp-siap-magang {
+    text-align: center;
+    padding: 32px 0 16px;
+}
+
+.sp-btn-siap-magang {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px 48px;
+    font-size: 16px;
+    font-weight: 700;
+    color: white;
+    background: none;
+    border: none;
+    border-radius: 14px;
+    cursor: pointer;
+    overflow: hidden;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    box-shadow: 0 8px 30px rgba(238, 46, 36, 0.3);
+    letter-spacing: 0.3px;
+}
+
+.sp-btn-siap-magang:hover {
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 0 12px 40px rgba(238, 46, 36, 0.4);
+}
+
+.sp-btn-siap-magang:active {
+    transform: translateY(-1px) scale(0.99);
+}
+
+.sp-btn-siap-bg {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, #EE2E24, #C41E1A, #B91C1C);
+    border-radius: 14px;
+    z-index: 0;
+}
+
+.sp-btn-siap-bg::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.15) 0%, transparent 50%, rgba(255,255,255,0.05) 100%);
+    border-radius: 14px;
+}
+
+.sp-btn-siap-content {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.sp-btn-siap-content svg {
+    width: 22px;
+    height: 22px;
+    animation: sp-bolt-pulse 2s ease-in-out infinite;
+}
+
+@keyframes sp-bolt-pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.15); }
+}
+
+.sp-siap-hint {
+    margin-top: 12px;
+    font-size: 13px;
+    color: var(--slate-400);
+    font-weight: 500;
+}
+
+.sp-anim-5 { animation-delay: .25s; }
+
+/* ==========================================
    RESPONSIVE
    ========================================== */
 @media (max-width: 768px) {
@@ -881,6 +1225,9 @@
         padding: 1.5rem;
         padding-bottom: 0;
     }
+    .sp-mentor-card { flex-direction: column; align-items: center; text-align: center; }
+    .sp-mentor-details { align-items: center; }
+    .sp-rejection-reapply { flex-direction: column; align-items: flex-start; }
 }
 @media (max-width: 640px) {
     .sp {
@@ -896,5 +1243,7 @@
     .sp-prog-label { font-size: 9px; }
     .sp-placement { grid-template-columns: 1fr; }
     .download-section { flex-direction: column; text-align: center; }
+    .sp-congrats-card { padding: 18px; }
+    .sp-rejection-card { padding: 18px; }
 }
 </style>

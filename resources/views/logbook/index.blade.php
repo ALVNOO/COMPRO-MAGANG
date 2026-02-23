@@ -23,6 +23,8 @@
    LOGBOOK PAGE STYLES
    ============================================ */
 
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
 /* Hero Section */
 .page-hero {
     background: linear-gradient(135deg, #EE2E24 0%, #C41E1A 50%, #9B1B1B 100%);
@@ -227,13 +229,24 @@
     white-space: pre-wrap;
     word-wrap: break-word;
     max-width: 500px;
-    line-height: 1.6;
+    line-height: 1.7;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 0.9rem;
+    color: #374151;
+    letter-spacing: 0.01em;
 }
 
 .logbook-date {
-    font-weight: 600;
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    font-weight: 500;
+    font-size: 0.85rem;
     color: #1f2937;
     white-space: nowrap;
+    letter-spacing: 0.02em;
+    background: #f3f4f6;
+    padding: 0.35rem 0.65rem;
+    border-radius: 8px;
+    display: inline-block;
 }
 
 /* Action Buttons */
@@ -277,6 +290,32 @@
 
 .logbook-table tbody tr.editing td {
     padding: 1.25rem 1.5rem;
+}
+
+.logbook-table tbody tr.editing input[type="date"] {
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    font-size: 0.85rem;
+    letter-spacing: 0.02em;
+    border-radius: 10px;
+    border: 1px solid #d1d5db;
+    padding: 0.5rem 0.75rem;
+}
+
+.logbook-table tbody tr.editing textarea {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 0.9rem;
+    line-height: 1.7;
+    letter-spacing: 0.01em;
+    border-radius: 10px;
+    border: 1px solid #d1d5db;
+    padding: 0.65rem 0.85rem;
+}
+
+.logbook-table tbody tr.editing input:focus,
+.logbook-table tbody tr.editing textarea:focus {
+    border-color: #EE2E24;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(238, 46, 36, 0.1);
 }
 
 /* Add New Section */
@@ -342,9 +381,23 @@
 }
 
 .form-group-inline label {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
     font-weight: 600;
     color: #374151;
     font-size: 0.9rem;
+}
+
+.form-group-inline .form-control {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 0.9rem;
+    line-height: 1.7;
+    letter-spacing: 0.01em;
+}
+
+.form-group-inline input[type="date"] {
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    font-size: 0.85rem;
+    letter-spacing: 0.02em;
 }
 
 .form-actions {
@@ -364,6 +417,7 @@
     border-radius: 10px;
     border: 1px solid #d1d5db;
     padding: 0.5rem 0.75rem;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
     font-size: 0.9rem;
     transition: border-color 0.2s;
 }
@@ -418,6 +472,10 @@
 .logbook-textarea {
     min-height: 70px;
     resize: vertical;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 0.9rem;
+    line-height: 1.7;
+    letter-spacing: 0.01em;
 }
 
 /* Empty State */
@@ -482,6 +540,9 @@
     border-radius: 12px;
     border: 1px solid #d1d5db;
     padding: 0.75rem 1rem;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 0.9rem;
+    line-height: 1.7;
 }
 
 .modal-body .form-control:focus {
