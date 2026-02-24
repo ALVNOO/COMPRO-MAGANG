@@ -363,6 +363,48 @@
     margin-top: 0.25rem;
 }
 
+/* Detail Peserta Banner */
+.participant-detail-banner {
+    margin-bottom: 1.25rem;
+    padding: 1rem 1.25rem;
+    border-radius: 16px;
+    background: linear-gradient(135deg, #EE2E24 0%, #C41E1A 70%);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    box-shadow: 0 10px 30px rgba(238, 46, 36, 0.25);
+}
+
+.participant-detail-banner-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.16);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+}
+
+.participant-detail-banner-text {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+}
+
+.participant-detail-banner-title {
+    font-size: 0.95rem;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+}
+
+.participant-detail-banner-subtitle {
+    font-size: 0.85rem;
+    opacity: 0.9;
+}
+
 /* Form Card */
 .form-card {
     background: rgba(255, 255, 255, 0.95);
@@ -1233,6 +1275,17 @@ input[type="date"] {
 
     {{-- Tab: Overview Peserta --}}
     <div id="tab-overview" class="tab-content active">
+        <div class="participant-detail-banner">
+            <div class="participant-detail-banner-icon">
+                <i class="fas fa-user-graduate"></i>
+            </div>
+            <div class="participant-detail-banner-text">
+                <div class="participant-detail-banner-title">Detail Peserta</div>
+                <div class="participant-detail-banner-subtitle">
+                    Pilih salah satu peserta untuk melihat tugas dan status penilaiannya.
+                </div>
+            </div>
+        </div>
         <div class="participants-grid">
             @foreach($participants as $participant)
                 @php
