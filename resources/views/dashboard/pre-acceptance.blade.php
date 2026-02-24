@@ -9,6 +9,7 @@
 
 @section('content')
 <div class="preaccept-page">
+
     <!-- Floating Save Indicator -->
     <div class="save-indicator" id="saveIndicator">
         <div class="save-indicator-content">

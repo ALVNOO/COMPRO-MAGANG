@@ -305,7 +305,8 @@
 
 .calendar-legend {
     display: flex;
-    gap: 1rem;
+    gap: 0.75rem;
+    flex-wrap: wrap;
 }
 
 .legend-item {
@@ -711,12 +712,20 @@
             </div>
             <div class="calendar-legend">
                 <span class="legend-item">
-                    <span class="legend-dot" style="background: #EE2E24;"></span>
-                    Tugas
+                    <span class="legend-dot" style="background: #3B82F6;"></span>
+                    Harian
                 </span>
                 <span class="legend-item">
-                    <span class="legend-dot" style="background: #3B82F6;"></span>
-                    Magang
+                    <span class="legend-dot" style="background: #8B5CF6;"></span>
+                    Proyek
+                </span>
+                <span class="legend-item">
+                    <span class="legend-dot" style="background: #F59E0B;"></span>
+                    Presentasi
+                </span>
+                <span class="legend-item">
+                    <span class="legend-dot" style="background: #10B981;"></span>
+                    Selesai
                 </span>
             </div>
         </div>
@@ -876,19 +885,40 @@ document.addEventListener('DOMContentLoaded', function() {
     @endif
 
     @foreach($user->assignments as $assignment)
+        @php
+            // Color based on status first, then by type
+            $isCompleted = $assignment->submitted_at && $assignment->grade;
+            if ($isCompleted) {
+                $eventColor = '#10B981'; // Green for completed
+            } elseif ($assignment->assignment_type === 'tugas_harian') {
+                $eventColor = '#3B82F6'; // Blue for daily tasks
+            } else {
+                $eventColor = '#8B5CF6'; // Purple for project tasks
+            }
+        @endphp
         events.push({
-            title: '{{ addslashes(Str::limit($assignment->description, 25)) }}',
-            start: '{{ $assignment->created_at->format('Y-m-d') }}',
-            @if($assignment->deadline)
-            end: '{{ \Carbon\Carbon::parse($assignment->deadline)->format('Y-m-d') }}',
-            @endif
-            backgroundColor: '{{ $assignment->submitted_at && $assignment->grade ? "#10B981" : ($assignment->is_revision ? "#EF4444" : "#EE2E24") }}',
-            borderColor: '{{ $assignment->submitted_at && $assignment->grade ? "#10B981" : ($assignment->is_revision ? "#EF4444" : "#EE2E24") }}',
+            title: '{{ addslashes(Str::limit($assignment->title ?? $assignment->description, 25)) }}',
+            start: '{{ $assignment->deadline ? $assignment->deadline->format('Y-m-d') : $assignment->created_at->format('Y-m-d') }}',
+            backgroundColor: '{{ $eventColor }}',
+            borderColor: '{{ $eventColor }}',
             textColor: 'white',
             extendedProps: {
                 type: 'assignment'
             }
         });
+
+        @if($assignment->presentation_date)
+        events.push({
+            title: '📊 Presentasi: {{ addslashes(Str::limit($assignment->title ?? $assignment->description, 20)) }}',
+            start: '{{ $assignment->presentation_date->format('Y-m-d') }}',
+            backgroundColor: '#F59E0B',
+            borderColor: '#F59E0B',
+            textColor: 'white',
+            extendedProps: {
+                type: 'assignment'
+            }
+        });
+        @endif
     @endforeach
 
     var calendar = new FullCalendar.Calendar(calendarEl, {

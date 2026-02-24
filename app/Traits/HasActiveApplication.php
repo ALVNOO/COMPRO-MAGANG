@@ -75,4 +75,38 @@ trait HasActiveApplication
     {
         return !$this->hasPendingApplication() && !$this->hasActiveInternship();
     }
+
+    /**
+     * Check if user can reapply after rejection (1 month cooldown).
+     */
+    public function canReapplyForInternship(): bool
+    {
+        if ($this->hasPendingApplication() || $this->hasActiveInternship()) {
+            return false;
+        }
+
+        $lastRejected = $this->internshipApplications()
+            ->where('status', 'rejected')
+            ->latest()
+            ->first();
+
+        if (!$lastRejected) {
+            return true;
+        }
+
+        return $lastRejected->updated_at->addMonth()->isPast();
+    }
+
+    /**
+     * Get the reapply eligible date (1 month after last rejection).
+     */
+    public function getReapplyDateAttribute(): ?\Carbon\Carbon
+    {
+        $lastRejected = $this->internshipApplications()
+            ->where('status', 'rejected')
+            ->latest()
+            ->first();
+
+        return $lastRejected ? $lastRejected->updated_at->addMonth() : null;
+    }
 }

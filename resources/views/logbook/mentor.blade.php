@@ -177,6 +177,8 @@
     color: white;
     font-weight: 700;
     font-size: 1.5rem;
+    overflow: hidden;
+    flex-shrink: 0;
     flex-shrink: 0;
 }
 
@@ -440,7 +442,11 @@
                 <div class="participant-header" data-target="logbook-{{ $index }}">
                     <div class="participant-info">
                         <div class="participant-avatar">
-                            {{ strtoupper(substr($participant['user']->name, 0, 1)) }}
+                            @if($participant['user']->profile_picture)
+                                <img src="{{ asset('storage/' . $participant['user']->profile_picture) }}" alt="{{ $participant['user']->name }}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
+                            @else
+                                {{ strtoupper(substr($participant['user']->name, 0, 1)) }}
+                            @endif
                         </div>
                         <div class="participant-details">
                             <div class="name">{{ $participant['user']->name }}</div>

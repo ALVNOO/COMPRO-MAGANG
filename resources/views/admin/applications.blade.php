@@ -896,6 +896,11 @@
                     <td>
                         <strong>{{ $app->user->name ?? '-' }}</strong>
                         <div style="font-size: 0.75rem; color: #6b7280;">{{ $app->user->nim ?? '-' }}</div>
+                        @if($app->user && $app->user->internshipApplications()->where('status', 'rejected')->exists())
+                            <span style="display: inline-flex; align-items: center; gap: 4px; margin-top: 4px; padding: 2px 8px; background: rgba(245, 158, 11, 0.1); color: #D97706; font-size: 0.7rem; font-weight: 600; border-radius: 6px;">
+                                <i class="fas fa-redo" style="font-size: 0.6rem;"></i> Pendaftar Ulang
+                            </span>
+                        @endif
                     </td>
                     <td>{{ Str::limit($app->user->university ?? '-', 25) }}</td>
                     <td>{{ $app->fieldOfInterest->name ?? '-' }}</td>
@@ -960,6 +965,7 @@ $applicationsJson = $applications->map(function($app) {
             'phone' => $app->user->phone ?? '-',
             'ktp_number' => $app->user->ktp_number ?? '-',
             'profile_picture' => $app->user->profile_picture ? asset('storage/' . $app->user->profile_picture) : null,
+            'is_reapplicant' => $app->user->internshipApplications()->where('status', 'rejected')->exists(),
         ],
         'field' => $app->fieldOfInterest->name ?? '-',
         'start_date' => $app->start_date ? \Carbon\Carbon::parse($app->start_date)->format('d M Y') : '-',
@@ -1044,6 +1050,7 @@ function openDetailModal(appId) {
                       app.status === 'rejected' ? '<i class="fas fa-times"></i> Ditolak' :
                       app.status === 'finished' ? '<i class="fas fa-check-double"></i> Selesai' : app.status}
                 </span>
+                ${app.user.is_reapplicant ? '<span style="display:inline-flex;align-items:center;gap:4px;margin-left:6px;padding:2px 8px;background:rgba(245,158,11,0.1);color:#D97706;font-size:0.7rem;font-weight:600;border-radius:6px;"><i class="fas fa-redo" style="font-size:0.6rem;"></i> Pendaftar Ulang</span>' : ''}
                 <div class="meta">
                     <div class="meta-item"><i class="fas fa-id-card"></i> ${app.user.nim}</div>
                     <div class="meta-item"><i class="fas fa-university"></i> ${app.user.university}</div>

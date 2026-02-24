@@ -82,8 +82,12 @@ document.addEventListener('DOMContentLoaded', function() {
             }
 
             if (this.form && this.form.checkValidity()) {
-                this.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Loading...';
-                this.disabled = true;
+                const btn = this;
+                // Use setTimeout so the form submits before the button is disabled
+                setTimeout(function() {
+                    btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Loading...';
+                    btn.disabled = true;
+                }, 0);
             }
         });
     });

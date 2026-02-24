@@ -46,6 +46,8 @@
    PENUGASAN PAGE STYLES
    ============================================ */
 
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
 /* Hero Section */
 .mentor-hero {
     background: linear-gradient(135deg, #EE2E24 0%, #C41E1A 50%, #9B1B1B 100%);
@@ -280,6 +282,13 @@
     font-weight: 700;
     font-size: 1.25rem;
     flex-shrink: 0;
+    overflow: hidden;
+}
+
+.participant-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
 }
 
 .participant-info {
@@ -484,7 +493,10 @@
     padding: 0.875rem 1rem;
     border: 2px solid #e5e7eb;
     border-radius: 10px;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
     font-size: 0.9375rem;
+    line-height: 1.6;
+    letter-spacing: 0.01em;
     transition: all 0.2s ease;
     background: white;
     color: #1f2937;
@@ -499,6 +511,7 @@
 textarea.form-control {
     resize: vertical;
     min-height: 120px;
+    line-height: 1.7;
 }
 
 /* Buttons */
@@ -629,6 +642,7 @@ textarea.form-control {
 
 .data-table td {
     padding: 1rem 1.25rem;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
     font-size: 0.875rem;
     color: #1f2937;
     border-bottom: 1px solid rgba(0, 0, 0, 0.04);
@@ -732,7 +746,9 @@ textarea.form-control {
     padding: 0.5rem 0.75rem;
     border: 1.5px solid #e5e7eb;
     border-radius: 8px;
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
     font-size: 0.875rem;
+    font-weight: 500;
     text-align: center;
 }
 
@@ -746,7 +762,9 @@ textarea.form-control {
     padding: 0.5rem 0.75rem;
     border: 1.5px solid #e5e7eb;
     border-radius: 8px;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
     font-size: 0.875rem;
+    letter-spacing: 0.01em;
 }
 
 .feedback-input:focus {
@@ -774,9 +792,250 @@ textarea.form-control {
 }
 
 .grade-display {
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
     font-size: 1.1rem;
     font-weight: 700;
     color: #EE2E24;
+}
+
+input[type="date"] {
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    letter-spacing: 0.02em;
+}
+
+/* Action Buttons Group */
+.action-btns {
+    display: flex;
+    gap: 0.375rem;
+    align-items: center;
+}
+
+.btn-delete {
+    color: #DC2626 !important;
+    border-color: rgba(220, 38, 38, 0.2) !important;
+}
+
+.btn-delete:hover {
+    background: rgba(220, 38, 38, 0.08) !important;
+    border-color: #DC2626 !important;
+}
+
+.btn-danger-solid {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.5rem 1.25rem;
+    background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-danger-solid:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
+}
+
+/* Custom Popup Overlay */
+.popup-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 99999;
+    justify-content: center;
+    align-items: center;
+    padding: 1rem;
+    animation: popupFadeIn 0.2s ease;
+}
+
+.popup-overlay.active {
+    display: flex;
+}
+
+@keyframes popupFadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes popupSlideIn {
+    from { opacity: 0; transform: translateY(-20px) scale(0.97); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.popup-card {
+    background: #fff;
+    border-radius: 16px;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+    animation: popupSlideIn 0.25s ease;
+}
+
+.popup-card.popup-lg {
+    max-width: 700px;
+}
+
+.popup-card.popup-sm {
+    max-width: 400px;
+}
+
+.popup-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.5rem 1.5rem 1rem;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.popup-header-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, rgba(238, 46, 36, 0.1), rgba(196, 30, 26, 0.1));
+    color: #EE2E24;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    flex-shrink: 0;
+}
+
+.popup-title {
+    font-size: 1.15rem;
+    font-weight: 600;
+    color: #1f2937;
+    margin: 0;
+}
+
+.popup-subtitle {
+    font-size: 0.85rem;
+    color: #6b7280;
+    margin: 0;
+}
+
+.popup-close {
+    margin-left: auto;
+    align-self: flex-start;
+    background: none;
+    border: none;
+    font-size: 1.25rem;
+    color: #9ca3af;
+    cursor: pointer;
+    padding: 0.25rem;
+    line-height: 1;
+    border-radius: 6px;
+    transition: all 0.15s;
+}
+
+.popup-close:hover {
+    color: #1f2937;
+    background: rgba(0, 0, 0, 0.05);
+}
+
+.popup-body {
+    padding: 1.5rem;
+}
+
+.popup-footer {
+    padding: 1rem 1.5rem;
+    background: #f9fafb;
+    border-top: 1px solid rgba(0, 0, 0, 0.06);
+    border-radius: 0 0 16px 16px;
+}
+
+/* Detail Grid */
+.detail-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.25rem;
+    margin-bottom: 1.5rem;
+}
+
+.detail-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.375rem;
+}
+
+.detail-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+}
+
+.detail-label i {
+    font-size: 0.7rem;
+    color: #9ca3af;
+}
+
+.detail-value {
+    font-size: 0.9375rem;
+    font-weight: 500;
+    color: #1f2937;
+}
+
+.detail-description {
+    margin-bottom: 1.25rem;
+}
+
+.detail-desc-content {
+    margin-top: 0.5rem;
+    padding: 1rem;
+    background: #f9fafb;
+    border-radius: 10px;
+    font-size: 0.9rem;
+    color: #374151;
+    line-height: 1.7;
+    white-space: pre-wrap;
+}
+
+.detail-files {
+    margin-bottom: 0.5rem;
+}
+
+.detail-files-list {
+    margin-top: 0.5rem;
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+/* Delete Modal */
+.delete-icon-wrap {
+    width: 64px;
+    height: 64px;
+    margin: 0 auto 1rem;
+    background: rgba(220, 38, 38, 0.1);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    color: #DC2626;
+}
+
+@media (max-width: 576px) {
+    .detail-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .action-btns {
+        flex-direction: column;
+    }
 }
 
 /* Empty State */
@@ -812,46 +1071,6 @@ textarea.form-control {
     margin: 0;
 }
 
-/* Modal Styles */
-.modal-content {
-    border-radius: 16px;
-    border: none;
-    overflow: hidden;
-}
-
-.modal-header {
-    background: linear-gradient(135deg, #EE2E24 0%, #C41E1A 100%);
-    color: white;
-    padding: 1.25rem 1.5rem;
-    border: none;
-}
-
-.modal-title {
-    font-size: 1.125rem;
-    font-weight: 600;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-.modal-body {
-    padding: 1.5rem;
-}
-
-.modal-footer {
-    padding: 1rem 1.5rem;
-    background: #f9fafb;
-    border-top: 1px solid rgba(0, 0, 0, 0.06);
-}
-
-.btn-close-white {
-    filter: brightness(0) invert(1);
-    opacity: 0.8;
-}
-
-.btn-close-white:hover {
-    opacity: 1;
-}
 
 /* Form Actions */
 .form-actions {
@@ -1012,21 +1231,6 @@ textarea.form-control {
         </button>
     </div>
 
-    {{-- Detail Peserta (Modal / Panel) --}}
-    <div class="modal fade" id="participantDetailModal" tabindex="-1">
-        <div class="modal-dialog modal-xl">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title"><i class="fas fa-user-graduate"></i> Detail Peserta</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body" id="participantDetailContent">
-                    {{-- Content will be loaded here --}}
-                </div>
-            </div>
-        </div>
-    </div>
-
     {{-- Tab: Overview Peserta --}}
     <div id="tab-overview" class="tab-content active">
         <div class="participants-grid">
@@ -1045,7 +1249,11 @@ textarea.form-control {
                      @if($hasStarted) onclick="viewParticipantDetail({{ $participant->user->id }})" @endif>
                     <div class="participant-header">
                         <div class="participant-avatar">
-                            {{ strtoupper(substr($participant->user->name ?? 'U', 0, 1)) }}
+                            @if($participant->user->profile_picture)
+                                <img src="{{ asset('storage/' . $participant->user->profile_picture) }}" alt="{{ $participant->user->name }}">
+                            @else
+                                {{ strtoupper(substr($participant->user->name ?? 'U', 0, 1)) }}
+                            @endif
                         </div>
                         <div class="participant-info">
                             <h3 class="participant-name">
@@ -1254,7 +1462,7 @@ textarea.form-control {
                         <th style="width: 120px;">Deadline</th>
                         <th style="width: 140px;">Status</th>
                         <th style="width: 80px;">Nilai</th>
-                        <th style="width: 80px;">Aksi</th>
+                        <th style="width: 160px;">Aksi</th>
                     </tr>
                 </thead>
                 <tbody id="taskTableBody">
@@ -1329,18 +1537,20 @@ textarea.form-control {
                                     @endif
                                 </td>
                                 <td>
-                                    @if($hasSubmissions || $assignment->submission_file_path)
-                                        <a href="{{ $hasSubmissions ? asset('storage/' . $latestSubmission->file_path) : asset('storage/' . $assignment->submission_file_path) }}"
-                                           target="_blank"
-                                           class="btn-action btn-outline btn-sm"
-                                           title="Download file">
-                                            <i class="fas fa-download"></i>
-                                        </a>
-                                    @else
-                                        <button class="btn-action btn-outline btn-sm" disabled title="Belum ada file">
+                                    <div class="action-btns">
+                                        <button class="btn-action btn-outline btn-sm" title="Lihat Detail"
+                                            onclick="viewTaskDetail({{ $assignment->id }})">
                                             <i class="fas fa-eye"></i>
                                         </button>
-                                    @endif
+                                        <button class="btn-action btn-outline btn-sm" title="Edit Tugas"
+                                            onclick="editTask({{ $assignment->id }})">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="btn-action btn-outline btn-sm btn-delete" title="Hapus Tugas"
+                                            onclick="confirmDeleteTask({{ $assignment->id }})">
+                                            <i class="fas fa-trash-alt"></i>
+                                        </button>
+                                    </div>
                                 </td>
                             </tr>
                         @endforeach
@@ -1471,7 +1681,236 @@ textarea.form-control {
 @endsection
 
 @push('scripts')
+{{-- Modals must be outside @section('content') to avoid stacking context issues --}}
+
+{{-- Modal Detail Participant --}}
+<div class="modal fade" id="participantDetailModal" tabindex="-1">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <button type="button" class="btn-close" data-bs-dismiss="modal" style="position: absolute; top: 1rem; right: 1rem; z-index: 10;"></button>
+            <div class="modal-body" id="participantDetailContent">
+                {{-- Content will be loaded here --}}
+            </div>
+        </div>
+    </div>
+</div>
+
+{{-- Popup View Task Detail --}}
+<div class="popup-overlay" id="taskDetailPopup">
+    <div class="popup-card popup-lg">
+        <div class="popup-header">
+            <div class="popup-header-icon">
+                <i class="fas fa-clipboard-list"></i>
+            </div>
+            <div>
+                <h5 class="popup-title" id="detailModalTitle">Detail Tugas</h5>
+                <p class="popup-subtitle" id="detailModalPeserta"></p>
+            </div>
+            <button type="button" class="popup-close" onclick="closePopup('taskDetailPopup')">&times;</button>
+        </div>
+        <div class="popup-body">
+            <div class="detail-grid">
+                <div class="detail-item">
+                    <span class="detail-label"><i class="fas fa-tag"></i> Jenis Tugas</span>
+                    <span class="detail-value" id="detailType"></span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label"><i class="fas fa-calendar"></i> Deadline</span>
+                    <span class="detail-value" id="detailDeadline"></span>
+                </div>
+                <div class="detail-item" id="detailPresentationRow" style="display: none;">
+                    <span class="detail-label"><i class="fas fa-chalkboard"></i> Tanggal Presentasi</span>
+                    <span class="detail-value" id="detailPresentation"></span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label"><i class="fas fa-info-circle"></i> Status</span>
+                    <span id="detailStatus"></span>
+                </div>
+                <div class="detail-item" id="detailGradeRow" style="display: none;">
+                    <span class="detail-label"><i class="fas fa-star"></i> Nilai</span>
+                    <span class="detail-value grade-display" id="detailGrade"></span>
+                </div>
+                <div class="detail-item" id="detailFeedbackRow" style="display: none;">
+                    <span class="detail-label"><i class="fas fa-comment"></i> Feedback</span>
+                    <span class="detail-value" id="detailFeedback"></span>
+                </div>
+            </div>
+            <div class="detail-description">
+                <span class="detail-label"><i class="fas fa-align-left"></i> Deskripsi</span>
+                <div class="detail-desc-content" id="detailDescription"></div>
+            </div>
+            <div class="detail-files" id="detailFilesSection" style="display: none;">
+                <span class="detail-label"><i class="fas fa-paperclip"></i> File</span>
+                <div class="detail-files-list" id="detailFilesList"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{-- Popup Edit Task --}}
+<div class="popup-overlay" id="editTaskPopup">
+    <div class="popup-card popup-lg">
+        <div class="popup-header">
+            <div class="popup-header-icon" style="background: linear-gradient(135deg, rgba(59,130,246,0.15), rgba(37,99,235,0.15)); color: #2563EB;">
+                <i class="fas fa-edit"></i>
+            </div>
+            <div>
+                <h5 class="popup-title">Edit Tugas</h5>
+                <p class="popup-subtitle">Perbarui detail tugas</p>
+            </div>
+            <button type="button" class="popup-close" onclick="closePopup('editTaskPopup')">&times;</button>
+        </div>
+        <form method="POST" id="editTaskForm" enctype="multipart/form-data">
+            @csrf
+            @method('PUT')
+            <div class="popup-body">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="form-label">Jenis Tugas <span class="required">*</span></label>
+                            <select name="assignment_type" class="form-select" id="editAssignmentType" required>
+                                <option value="tugas_harian">Tugas Harian</option>
+                                <option value="tugas_proyek">Tugas Proyek</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="form-label">Judul Tugas <span class="required">*</span></label>
+                            <input type="text" name="title" class="form-control" id="editTitle" required>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="form-label">Deadline <span class="required">*</span></label>
+                            <input type="date" name="deadline" class="form-control" id="editDeadline" required>
+                        </div>
+                    </div>
+                    <div class="col-md-6" id="editPresentationDateGroup" style="display: none;">
+                        <div class="form-group">
+                            <label class="form-label">Tanggal Presentasi</label>
+                            <input type="date" name="presentation_date" class="form-control" id="editPresentationDate">
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="form-label">Ganti File Tugas <span style="color: #6b7280; font-weight: 400;">(Opsional)</span></label>
+                            <input type="file" name="file_path" class="form-control">
+                            <div id="editCurrentFile" style="margin-top: 0.5rem; font-size: 0.8rem; color: #6b7280;"></div>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label class="form-label">Deskripsi Tugas</label>
+                            <textarea name="description" class="form-control" id="editDescription" rows="4"></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="popup-footer" style="display: flex; justify-content: flex-end; gap: 0.75rem;">
+                <button type="button" class="btn-action btn-outline" onclick="closePopup('editTaskPopup')">Batal</button>
+                <button type="submit" class="btn-submit" id="editSubmitBtn">
+                    <span class="btn-text"><i class="fas fa-save"></i> Simpan Perubahan</span>
+                    <span class="btn-loading"><span class="spinner-border spinner-border-sm me-2"></span> Menyimpan...</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+{{-- Popup Confirm Delete --}}
+<div class="popup-overlay" id="deleteTaskPopup">
+    <div class="popup-card popup-sm">
+        <div class="popup-body" style="padding: 2rem; text-align: center;">
+            <div class="delete-icon-wrap">
+                <i class="fas fa-trash-alt"></i>
+            </div>
+            <h5 style="font-weight: 600; margin-bottom: 0.5rem;">Hapus Tugas?</h5>
+            <p style="font-size: 0.875rem; color: #6b7280; margin-bottom: 1.5rem;">
+                Tugas "<span id="deleteTaskTitle"></span>" akan dihapus permanen beserta submission-nya.
+            </p>
+            <form method="POST" id="deleteTaskForm">
+                @csrf
+                @method('DELETE')
+                <div style="display: flex; gap: 0.75rem; justify-content: center;">
+                    <button type="button" class="btn-action btn-outline" onclick="closePopup('deleteTaskPopup')">Batal</button>
+                    <button type="submit" class="btn-action btn-danger-solid">
+                        <i class="fas fa-trash-alt"></i> Hapus
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 <script>
+// Popup open/close helpers
+function openPopup(popupId) {
+    var el = document.getElementById(popupId);
+    if (el) {
+        el.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+}
+
+function closePopup(popupId) {
+    var el = document.getElementById(popupId);
+    if (el) {
+        el.classList.remove('active');
+        // Only restore scroll if no other popups are open
+        if (!document.querySelector('.popup-overlay.active')) {
+            document.body.style.overflow = '';
+        }
+    }
+}
+
+// Close popup when clicking overlay background
+document.addEventListener('click', function(e) {
+    if (e.target.classList.contains('popup-overlay') && e.target.classList.contains('active')) {
+        closePopup(e.target.id);
+    }
+});
+
+// Close popup on Escape key
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        var activePopup = document.querySelector('.popup-overlay.active');
+        if (activePopup) {
+            closePopup(activePopup.id);
+        }
+    }
+});
+
+// Assignment data store (safe JSON, no inline JS escaping issues)
+var taskDataStore = @php
+    $store = [];
+    foreach ($participants as $participant) {
+        foreach ($participant->user->assignments as $assignment) {
+            $hasSub = $assignment->submissions && $assignment->submissions->count() > 0;
+            $latestSub = $hasSub ? $assignment->submissions->sortByDesc('submitted_at')->first() : null;
+            $st = 'belum_dikerjakan';
+            if ($assignment->is_revision === 1) { $st = 'revisi'; }
+            elseif ($assignment->grade !== null) { $st = 'sudah_dinilai'; }
+            elseif ($hasSub || $assignment->submission_file_path) { $st = 'sudah_submit'; }
+
+            $store[$assignment->id] = [
+                'title' => $assignment->title ?? '-',
+                'peserta' => $participant->user->name ?? '-',
+                'type' => $assignment->assignment_type === 'tugas_harian' ? 'Tugas Harian' : 'Tugas Proyek',
+                'deadline' => $assignment->deadline ? \Carbon\Carbon::parse($assignment->deadline)->format('d M Y') : '-',
+                'presentationDate' => $assignment->presentation_date ? \Carbon\Carbon::parse($assignment->presentation_date)->format('d M Y') : '',
+                'description' => $assignment->description ?? 'Tidak ada deskripsi',
+                'status' => $st,
+                'grade' => $assignment->grade ?? '',
+                'feedback' => $assignment->feedback ?? '',
+                'filePath' => $assignment->file_path ? asset('storage/' . $assignment->file_path) : '',
+                'submissionPath' => $hasSub && $latestSub && $latestSub->file_path ? asset('storage/' . $latestSub->file_path) : ($assignment->submission_file_path ? asset('storage/' . $assignment->submission_file_path) : ''),
+                'submittedAt' => $hasSub && $latestSub && $latestSub->submitted_at ? \Carbon\Carbon::parse($latestSub->submitted_at)->format('d M Y H:i') : '',
+            ];
+        }
+    }
+    echo json_encode($store);
+@endphp;
+
 // Tab switching
 function switchTab(tabName) {
     // Hide all tabs
@@ -1607,5 +2046,151 @@ document.querySelectorAll('.grade-form').forEach(form => {
         }
     });
 });
+
+// View task detail (lookup from data store by assignment ID)
+function viewTaskDetail(assignmentId) {
+    var data = taskDataStore[assignmentId];
+    if (!data) { alert('Data tugas tidak ditemukan.'); return; }
+
+    document.getElementById('detailModalTitle').textContent = data.title;
+    document.getElementById('detailModalPeserta').textContent = 'Peserta: ' + data.peserta;
+    document.getElementById('detailType').textContent = data.type;
+    document.getElementById('detailDeadline').textContent = data.deadline;
+    document.getElementById('detailDescription').textContent = data.description;
+
+    // Presentation date
+    var presRow = document.getElementById('detailPresentationRow');
+    if (data.presentationDate) {
+        presRow.style.display = '';
+        document.getElementById('detailPresentation').textContent = data.presentationDate;
+    } else {
+        presRow.style.display = 'none';
+    }
+
+    // Status badge
+    var statusMap = {
+        'belum_dikerjakan': '<span class="badge badge-info"><i class="fas fa-hourglass-half"></i> Belum Dikerjakan</span>',
+        'sudah_submit': '<span class="badge badge-warning"><i class="fas fa-clock"></i> Menunggu Nilai</span>',
+        'sudah_dinilai': '<span class="badge badge-success"><i class="fas fa-check"></i> Dinilai</span>',
+        'revisi': '<span class="badge badge-danger"><i class="fas fa-redo"></i> Revisi</span>'
+    };
+    document.getElementById('detailStatus').innerHTML = statusMap[data.status] || data.status;
+
+    // Grade
+    var gradeRow = document.getElementById('detailGradeRow');
+    if (data.grade) {
+        gradeRow.style.display = '';
+        document.getElementById('detailGrade').textContent = data.grade;
+    } else {
+        gradeRow.style.display = 'none';
+    }
+
+    // Feedback
+    var feedbackRow = document.getElementById('detailFeedbackRow');
+    if (data.feedback) {
+        feedbackRow.style.display = '';
+        document.getElementById('detailFeedback').textContent = data.feedback;
+    } else {
+        feedbackRow.style.display = 'none';
+    }
+
+    // Files
+    var filesSection = document.getElementById('detailFilesSection');
+    var filesList = document.getElementById('detailFilesList');
+    filesList.innerHTML = '';
+    var hasFiles = false;
+
+    if (data.filePath) {
+        hasFiles = true;
+        filesList.innerHTML += '<a href="' + data.filePath + '" target="_blank" class="btn-action btn-outline btn-sm"><i class="fas fa-download"></i> File Tugas</a>';
+    }
+    if (data.submissionPath) {
+        hasFiles = true;
+        filesList.innerHTML += '<a href="' + data.submissionPath + '" target="_blank" class="btn-action btn-success btn-sm"><i class="fas fa-download"></i> File Submission' + (data.submittedAt ? ' (' + data.submittedAt + ')' : '') + '</a>';
+    }
+    filesSection.style.display = hasFiles ? '' : 'none';
+
+    openPopup('taskDetailPopup');
+}
+
+// Edit task
+function editTask(assignmentId) {
+    fetch('/mentor/penugasan/' + assignmentId + '/edit', {
+        headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
+    })
+    .then(response => response.json())
+    .then(result => {
+        if (result.success) {
+            const data = result.data;
+            document.getElementById('editTaskForm').action = '/mentor/penugasan/' + assignmentId + '/update';
+            document.getElementById('editTitle').value = data.title || '';
+            document.getElementById('editAssignmentType').value = data.assignment_type || 'tugas_harian';
+            document.getElementById('editDeadline').value = data.deadline || '';
+            document.getElementById('editDescription').value = data.description || '';
+
+            // Presentation date
+            const presGroup = document.getElementById('editPresentationDateGroup');
+            const presInput = document.getElementById('editPresentationDate');
+            if (data.assignment_type === 'tugas_proyek') {
+                presGroup.style.display = 'block';
+                presInput.value = data.presentation_date || '';
+            } else {
+                presGroup.style.display = 'none';
+                presInput.value = '';
+            }
+
+            // Current file indicator
+            const currentFile = document.getElementById('editCurrentFile');
+            if (data.file_path) {
+                currentFile.innerHTML = '<i class="fas fa-paperclip"></i> File saat ini: <a href="/storage/' + data.file_path + '" target="_blank">Lihat file</a>';
+            } else {
+                currentFile.innerHTML = '';
+            }
+
+            openPopup('editTaskPopup');
+        }
+    })
+    .catch(error => {
+        alert('Gagal memuat data tugas. Silakan coba lagi.');
+    });
+}
+
+// Toggle presentation date in edit modal
+document.getElementById('editAssignmentType')?.addEventListener('change', function() {
+    const presGroup = document.getElementById('editPresentationDateGroup');
+    const presInput = document.getElementById('editPresentationDate');
+    if (this.value === 'tugas_proyek') {
+        presGroup.style.display = 'block';
+    } else {
+        presGroup.style.display = 'none';
+        presInput.value = '';
+    }
+});
+
+// Edit form submit with loading
+const editTaskForm = document.getElementById('editTaskForm');
+if (editTaskForm) {
+    let editSubmitted = false;
+    editTaskForm.addEventListener('submit', function(e) {
+        if (editSubmitted) { e.preventDefault(); return false; }
+        const btn = document.getElementById('editSubmitBtn');
+        const btnText = btn.querySelector('.btn-text');
+        const btnLoading = btn.querySelector('.btn-loading');
+        if (btnText && btnLoading) {
+            btnText.style.display = 'none';
+            btnLoading.style.display = 'inline-flex';
+            btn.disabled = true;
+        }
+        editSubmitted = true;
+    });
+}
+
+// Confirm delete task (lookup title from data store)
+function confirmDeleteTask(assignmentId) {
+    var data = taskDataStore[assignmentId];
+    document.getElementById('deleteTaskTitle').textContent = data ? data.title : 'tugas ini';
+    document.getElementById('deleteTaskForm').action = '/mentor/penugasan/' + assignmentId + '/delete';
+    openPopup('deleteTaskPopup');
+}
 </script>
 @endpush

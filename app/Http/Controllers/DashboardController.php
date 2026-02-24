@@ -69,8 +69,13 @@ class DashboardController extends Controller
             return redirect()->route('dashboard.status');
         }
         
-        // Jika belum diterima (rejected, postponed) atau tidak ada aplikasi, redirect ke status
+        // Jika belum diterima (rejected, dll) atau tidak ada aplikasi, redirect ke status
         if (!$application || !in_array($application->status, ['accepted', 'finished'])) {
+            return redirect()->route('dashboard.status');
+        }
+
+        // Jika accepted tapi belum pernah "masuk dashboard", redirect ke status (tampilkan selamat + mentor info)
+        if ($application->status === 'accepted' && !session('dashboard_entered_' . $application->id)) {
             return redirect()->route('dashboard.status');
         }
 
@@ -136,17 +141,26 @@ class DashboardController extends Controller
             ->whereDate('end_date', '<', now())
             ->update(['status' => 'finished']);
         $application = $user->internshipApplications()
-            ->with('divisi.subDirektorat.direktorat', 'fieldOfInterest')
+            ->with('divisi.subDirektorat.direktorat', 'fieldOfInterest', 'divisionMentor.division', 'divisionAdmin')
             ->whereIn('status', ['pending', 'accepted', 'finished'])
             ->latest()
             ->first();
         if (!$application) {
             $application = $user->internshipApplications()
-                ->with('divisi.subDirektorat.direktorat', 'fieldOfInterest')
+                ->with('divisi.subDirektorat.direktorat', 'fieldOfInterest', 'divisionMentor.division', 'divisionAdmin')
                 ->latest()
                 ->first();
         }
-        return view('dashboard.status', compact('user', 'application'));
+
+        // Load mentor user data (phone, email) if application has a mentor assigned
+        $mentorUser = null;
+        if ($application && $application->divisionMentor) {
+            $mentorUser = \App\Models\User::where('username', $application->divisionMentor->nik_number)
+                ->where('role', 'pembimbing')
+                ->first();
+        }
+
+        return view('dashboard.status', compact('user', 'application', 'mentorUser'));
     }
 
     /**
@@ -440,13 +454,60 @@ class DashboardController extends Controller
     public function profile()
     {
         $user = Auth::user();
-        $application = $user->internshipApplications()
-            ->with('divisi.subDirektorat.direktorat', 'fieldOfInterest', 'divisionAdmin', 'divisionMentor')
-            ->whereIn('status', ['pending', 'accepted', 'finished'])
-            ->latest()
-            ->first();
-        
-        return view('dashboard.profile', compact('user', 'application'));
+        $application = null;
+        $divisionMentor = null;
+        $mentorParticipants = collect();
+        $adminStats = null;
+
+        if ($user->role === 'peserta') {
+            $application = $user->internshipApplications()
+                ->with('divisi.subDirektorat.direktorat', 'fieldOfInterest', 'divisionAdmin', 'divisionMentor')
+                ->whereIn('status', ['pending', 'accepted', 'finished'])
+                ->latest()
+                ->first();
+        } elseif ($user->role === 'pembimbing') {
+            $divisionMentor = \App\Models\DivisionMentor::where('nik_number', $user->username)
+                ->with('division')
+                ->first();
+            if ($divisionMentor) {
+                $mentorParticipants = InternshipApplication::where('division_mentor_id', $divisionMentor->id)
+                    ->where('status', 'accepted')
+                    ->with('user')
+                    ->get();
+            }
+        } elseif ($user->role === 'admin') {
+            $adminStats = [
+                'total_participants' => InternshipApplication::where('status', 'accepted')->count(),
+                'total_mentors' => \App\Models\DivisionMentor::count(),
+                'total_divisions' => \App\Models\DivisiAdmin::where('is_active', true)->count(),
+                'pending_applications' => InternshipApplication::where('status', 'pending')->count(),
+            ];
+        }
+
+        return view('dashboard.profile', compact('user', 'application', 'divisionMentor', 'mentorParticipants', 'adminStats'));
+    }
+
+    /**
+     * Update mentor biodata (phone/email) from profile page.
+     */
+    public function updateMentorBiodata(Request $request)
+    {
+        $user = Auth::user();
+
+        if ($user->role !== 'pembimbing') {
+            abort(403);
+        }
+
+        $request->validateWithBag('biodata', [
+            'phone' => 'nullable|string|max:20',
+            'email' => 'required|email|max:255|unique:users,email,' . $user->id,
+        ]);
+
+        $user->phone = $request->phone;
+        $user->email = $request->email;
+        $user->save();
+
+        return redirect()->route('dashboard.profile')->with('biodata_success', 'Biodata kontak berhasil diperbarui.');
     }
 
     /**
@@ -459,14 +520,32 @@ class DashboardController extends Controller
             ->where('status', 'pending')
             ->latest()
             ->first();
-        
+
         if (!$application) {
             return redirect()->route('dashboard');
         }
-        
+
         $fields = FieldOfInterest::active()->ordered()->get();
-        
+
         return view('dashboard.pre-acceptance', compact('user', 'application', 'fields'));
+    }
+
+    /**
+     * Mark acceptance as viewed and enter dashboard.
+     */
+    public function enterDashboard()
+    {
+        $user = Auth::user();
+        $application = $user->internshipApplications()
+            ->whereIn('status', ['accepted', 'finished'])
+            ->latest()
+            ->first();
+
+        if ($application) {
+            session(['dashboard_entered_' . $application->id => true]);
+        }
+
+        return redirect()->route('dashboard');
     }
 
     /**

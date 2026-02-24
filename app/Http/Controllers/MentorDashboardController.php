@@ -119,50 +119,50 @@ class MentorDashboardController extends Controller
         ];
 
         // Chart Data: Participant Completion Percentage
-        $participantCompletionData = collect();
+        $participantCompletionData = ['labels' => [], 'data' => []];
+        $completionDistributionData = ['labels' => [], 'data' => []];
+
         if ($divisionMentor) {
             $acceptedParticipants = \App\Models\InternshipApplication::with('user.assignments')
                 ->where('division_mentor_id', $divisionMentor->id)
                 ->where('status', 'accepted')
                 ->get();
+
+            $completedAllCount = 0;
+            $inProgressCount = 0;
+            $notStartedCount = 0;
+            $noTaskCount = 0;
 
             foreach ($acceptedParticipants as $participant) {
                 $totalTasks = $participant->user->assignments->count();
                 $completedTasks = $participant->user->assignments->whereNotNull('grade')->count();
                 $completionPercentage = $totalTasks > 0 ? round(($completedTasks / $totalTasks) * 100, 1) : 0;
 
-                $participantCompletionData->push([
-                    'name' => $participant->user->name ?? 'Unknown',
-                    'percentage' => $completionPercentage,
-                    'completed' => $completedTasks,
-                    'total' => $totalTasks
-                ]);
-            }
-        }
+                // Bar chart data
+                $participantCompletionData['labels'][] = $participant->user->name ?? 'Unknown';
+                $participantCompletionData['data'][] = $completionPercentage;
 
-        // Chart Data: Completion Distribution (Completed All vs Incomplete)
-        $completionDistributionData = [
-            'completedAll' => collect(),
-            'incomplete' => collect()
-        ];
-
-        if ($divisionMentor) {
-            $acceptedParticipants = \App\Models\InternshipApplication::with('user.assignments')
-                ->where('division_mentor_id', $divisionMentor->id)
-                ->where('status', 'accepted')
-                ->get();
-
-            foreach ($acceptedParticipants as $participant) {
-                $totalTasks = $participant->user->assignments->count();
-                $completedTasks = $participant->user->assignments->whereNotNull('grade')->count();
-                $userName = $participant->user->name ?? 'Unknown';
-
-                if ($totalTasks > 0 && $completedTasks === $totalTasks) {
-                    $completionDistributionData['completedAll']->push($userName);
+                // Distribution data
+                if ($totalTasks === 0) {
+                    $noTaskCount++;
+                } elseif ($completedTasks === $totalTasks) {
+                    $completedAllCount++;
+                } elseif ($completedTasks > 0) {
+                    $inProgressCount++;
                 } else {
-                    $completionDistributionData['incomplete']->push($userName);
+                    $notStartedCount++;
                 }
             }
+
+            // Build distribution chart data (only include non-zero categories)
+            $distLabels = [];
+            $distData = [];
+            if ($completedAllCount > 0) { $distLabels[] = 'Selesai Semua'; $distData[] = $completedAllCount; }
+            if ($inProgressCount > 0) { $distLabels[] = 'Sedang Mengerjakan'; $distData[] = $inProgressCount; }
+            if ($notStartedCount > 0) { $distLabels[] = 'Belum Mulai'; $distData[] = $notStartedCount; }
+            if ($noTaskCount > 0) { $distLabels[] = 'Belum Ada Tugas'; $distData[] = $noTaskCount; }
+
+            $completionDistributionData = ['labels' => $distLabels, 'data' => $distData];
         }
 
         return view('mentor.dashboard', [
@@ -268,6 +268,22 @@ class MentorDashboardController extends Controller
             'divisionMentor' => $divisionMentor,
             'divisionAdmin' => $divisionAdmin
         ]);
+    }
+
+    public function updateBiodata(Request $request)
+    {
+        $request->validateWithBag('biodata', [
+            'phone' => 'nullable|string|max:20',
+            'email' => 'required|email|max:255|unique:users,email,' . Auth::id(),
+        ]);
+
+        $user = Auth::user();
+        $user->phone = $request->phone;
+        $user->email = $request->email;
+        $user->save();
+
+        return redirect()->route('mentor.profil')
+            ->with('biodata_success', 'Biodata kontak berhasil diperbarui.');
     }
 
     public function absensi()

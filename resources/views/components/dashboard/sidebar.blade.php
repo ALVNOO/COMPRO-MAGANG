@@ -49,8 +49,10 @@
             ->latest()
             ->first();
         $isAccepted = $application && in_array($application->status, ['accepted', 'finished']);
+        $hasEnteredDashboard = $application && session('dashboard_entered_' . $application->id);
 
-        if ($isAccepted) {
+        if ($isAccepted && $hasEnteredDashboard) {
+            // Accepted/Finished AND user has clicked "Siap Magang" - Full Menu
             $navItems = [
                 ['route' => 'dashboard', 'icon' => 'fa-gauge-high', 'label' => 'Dashboard', 'routeMatch' => 'dashboard'],
                 ['route' => 'attendance.index', 'icon' => 'fa-calendar-check', 'label' => 'Absensi', 'routeMatch' => 'attendance.*'],
@@ -59,6 +61,7 @@
                 ['route' => 'dashboard.certificates', 'icon' => 'fa-award', 'label' => 'Sertifikat', 'routeMatch' => 'dashboard.certificates*'],
             ];
         } else {
+            // Pending, rejected, or accepted but not yet entered dashboard - Limited Menu
             $navItems = [
                 ['route' => 'dashboard.status', 'icon' => 'fa-hourglass-half', 'label' => 'Status Pengajuan', 'routeMatch' => 'dashboard.status'],
             ];
@@ -89,8 +92,8 @@
 <aside class="unified-sidebar" id="unifiedSidebar">
     {{-- Logo Section --}}
     <div class="sidebar-header">
-        <a href="{{ route('home') }}" class="sidebar-logo">
-            <img src="{{ asset('images/telkom-logo.png') }}" alt="Telkom" class="logo-image" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+        <a href="{{ $role === 'admin' ? route('admin.dashboard') : ($role === 'mentor' ? route('mentor.dashboard') : route('dashboard')) }}" class="sidebar-logo">
+            <img src="{{ asset('images/telkom.png') }}" alt="Telkom" class="logo-image" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
             <div class="logo-fallback" style="display: none;">
                 <i class="fas fa-building"></i>
             </div>
@@ -100,7 +103,7 @@
 
     {{-- User Profile Section --}}
     <div class="sidebar-profile">
-        <a href="{{ $role === 'admin' ? '#' : ($role === 'mentor' ? '#' : route('dashboard.profile')) }}" class="profile-link">
+        <a href="{{ route('dashboard.profile') }}" class="profile-link">
             <div class="profile-avatar">
                 @if($user->profile_picture)
                     <img src="{{ asset('storage/' . $user->profile_picture) }}" alt="{{ $user->name }}">
@@ -115,6 +118,7 @@
                     {{ $config['badge'] }}
                 </span>
             </div>
+            <span class="profile-edit-icon"><i class="fas fa-wrench"></i></span>
         </a>
     </div>
 
@@ -259,10 +263,43 @@
     border-radius: 12px;
     text-decoration: none;
     transition: background 0.2s;
+    position: relative;
 }
 
 .profile-link:hover {
     background: var(--color-gray-50);
+}
+
+.profile-edit-icon {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    width: 22px;
+    height: 22px;
+    border-radius: 6px;
+    background: transparent;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s;
+}
+
+.profile-edit-icon i {
+    font-size: 0.6rem;
+    color: var(--color-gray-300);
+    transition: color 0.2s;
+}
+
+.profile-link:hover .profile-edit-icon {
+    background: var(--color-gray-100);
+}
+
+.profile-link:hover .profile-edit-icon i {
+    color: var(--color-gray-600);
+}
+
+.unified-sidebar.collapsed .profile-edit-icon {
+    display: none;
 }
 
 .profile-avatar {
@@ -422,6 +459,67 @@
     opacity: 0;
     width: 0;
     overflow: hidden;
+}
+
+.unified-sidebar.collapsed .nav-item {
+    padding: 0.2rem 0.5rem;
+}
+
+.unified-sidebar.collapsed .nav-link {
+    justify-content: center;
+    padding: 0.85rem;
+    gap: 0;
+}
+
+.unified-sidebar.collapsed .nav-link:hover {
+    transform: none;
+}
+
+.unified-sidebar.collapsed .nav-link.active::before {
+    /* Change from left bar to bottom bar for centered appearance */
+    left: 50%;
+    top: auto;
+    bottom: 0;
+    transform: translateX(-50%);
+    width: 60%;
+    height: 3px;
+    border-radius: 3px 3px 0 0;
+}
+
+.unified-sidebar.collapsed .nav-link.active:hover::before {
+    opacity: 1;
+}
+
+.unified-sidebar.collapsed .nav-icon {
+    width: auto;
+    font-size: 1.1rem;
+}
+
+.unified-sidebar.collapsed .sidebar-header {
+    padding: 1.25rem 0.5rem;
+}
+
+.unified-sidebar.collapsed .sidebar-logo {
+    justify-content: center;
+}
+
+.unified-sidebar.collapsed .sidebar-profile {
+    padding: 1rem 0.5rem;
+}
+
+.unified-sidebar.collapsed .profile-link {
+    justify-content: center;
+    padding: 0.75rem 0.5rem;
+}
+
+.unified-sidebar.collapsed .sidebar-footer {
+    padding: 0.75rem 0.5rem;
+}
+
+.unified-sidebar.collapsed .logout-btn {
+    justify-content: center;
+    padding: 0.85rem;
+    gap: 0;
 }
 
 .active-indicator {
