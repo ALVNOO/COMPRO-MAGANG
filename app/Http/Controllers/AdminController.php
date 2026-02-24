@@ -809,7 +809,7 @@ class AdminController extends Controller
             'division_count' => 'required|integer|min:0',
             'position_count' => 'required|integer|min:0',
             'duration_months' => 'required|integer|min:1',
-            'sort_order' => 'required|integer|min:0',
+            'sort_order' => 'required|integer|min:0', 
         ]);
 
         FieldOfInterest::create($request->all());
@@ -817,7 +817,7 @@ class AdminController extends Controller
         return redirect()->route('admin.fields')->with('success', 'Bidang peminatan berhasil ditambahkan');
     }
 
-    public function editField(FieldOfInterest $field)
+    public function editField(FieldOfInterest $field) 
     {
         return view('admin.field-form', compact('field'));
     }
@@ -832,7 +832,7 @@ class AdminController extends Controller
             'division_count' => 'required|integer|min:0',
             'position_count' => 'required|integer|min:0',
             'duration_months' => 'required|integer|min:1',
-            'sort_order' => 'required|integer|min:0',
+            'sort_order' => 'required|integer|min:0', 
         ]);
 
         $field->update($request->all());

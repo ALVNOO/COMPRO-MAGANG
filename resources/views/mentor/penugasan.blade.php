@@ -1012,6 +1012,21 @@ textarea.form-control {
         </button>
     </div>
 
+    {{-- Detail Peserta (Modal / Panel) --}}
+    <div class="modal fade" id="participantDetailModal" tabindex="-1">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fas fa-user-graduate"></i> Detail Peserta</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" id="participantDetailContent">
+                    {{-- Content will be loaded here --}}
+                </div>
+            </div>
+        </div>
+    </div>
+
     {{-- Tab: Overview Peserta --}}
     <div id="tab-overview" class="tab-content active">
         <div class="participants-grid">
@@ -1452,21 +1467,6 @@ textarea.form-control {
         </div>
     </div>
 @endif
-
-{{-- Modal Detail Participant --}}
-<div class="modal fade" id="participantDetailModal" tabindex="-1">
-    <div class="modal-dialog modal-xl">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title"><i class="fas fa-user-graduate"></i> Detail Peserta</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body" id="participantDetailContent">
-                {{-- Content will be loaded here --}}
-            </div>
-        </div>
-    </div>
-</div>
 
 @endsection
 
