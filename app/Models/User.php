@@ -6,6 +6,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Str;
 use PragmaRX\Google2FA\Google2FA;
 use App\Traits\HasActiveApplication;
 
@@ -184,6 +185,27 @@ class User extends Authenticatable
         $this->save();
     }
 
+    /**
+     * Reset all Two-Factor Authentication data for this user.
+     *
+     * Digunakan saat akun dialihkan ke orang lain (misalnya pembimbing diganti),
+     * sehingga orang baru bisa melakukan setup 2FA dari awal.
+     */
+    public function resetTwoFactor()
+    {
+        $this->two_factor_secret = null;
+        $this->two_factor_verified_at = null;
+        $this->two_factor_code_generated_at = null;
+        $this->two_factor_last_used_at = null;
+        $this->two_factor_attempts = 0;
+        $this->two_factor_attempts_reset_at = null;
+        $this->trusted_device_token = null;
+        $this->trusted_device_expires_at = null;
+        $this->device_fingerprint = null;
+
+        $this->save();
+    }
+
     // Increment failed attempts
     private function incrementTwoFactorAttempts()
     {
@@ -271,7 +293,7 @@ class User extends Authenticatable
     public function trustDevice($deviceFingerprint, $days = 30)
     {
         $this->update([
-            "trusted_device_token" => \Str::random(60),
+            "trusted_device_token" => Str::random(60),
             "trusted_device_expires_at" => now()->addDays($days),
             "device_fingerprint" => $deviceFingerprint,
         ]);

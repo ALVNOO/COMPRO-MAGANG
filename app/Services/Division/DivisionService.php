@@ -192,6 +192,8 @@ class DivisionService
         // Update user account
         $user = User::where('username', $oldNik)->first();
         if ($user) {
+            $originalName = $user->name;
+
             $updateData = ['name' => $mentorData['mentor_name']];
 
             if ($oldNik !== $mentorData['nik_number']) {
@@ -200,6 +202,14 @@ class DivisionService
             }
 
             $user->update($updateData);
+
+            // Reset 2FA ketika identitas pembimbing berubah (nama atau NIK)
+            if (
+                $originalName !== $mentorData['mentor_name'] ||
+                $oldNik !== $mentorData['nik_number']
+            ) {
+                $user->resetTwoFactor();
+            }
         }
 
         return $mentor;
