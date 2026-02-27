@@ -49,7 +49,7 @@
             ->latest()
             ->first();
         $isAccepted = $application && in_array($application->status, ['accepted', 'finished']);
-        $hasEnteredDashboard = $application && session('dashboard_entered_' . $application->id);
+        $hasEnteredDashboard = $application && $application->dashboard_entered_at;
 
         if ($isAccepted && $hasEnteredDashboard) {
             // Accepted/Finished AND user has clicked "Siap Magang" - Full Menu

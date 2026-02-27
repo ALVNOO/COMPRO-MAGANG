@@ -453,7 +453,7 @@
             </div>
 
             {{-- Siap Magang Button (at the very bottom, only for accepted users who haven't entered dashboard) --}}
-            @if($isAccepted && !$isFinished && !session('dashboard_entered_' . $application->id))
+            @if($isAccepted && !$isFinished && !$application->dashboard_entered_at)
             <div class="sp-siap-magang sp-anim sp-anim-5">
                 <form method="POST" action="{{ route('dashboard.enter') }}">
                     @csrf

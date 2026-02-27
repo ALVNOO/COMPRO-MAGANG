@@ -75,7 +75,8 @@ class DashboardController extends Controller
         }
 
         // Jika accepted tapi belum pernah "masuk dashboard", redirect ke status (tampilkan selamat + mentor info)
-        if ($application->status === 'accepted' && !session('dashboard_entered_' . $application->id)) {
+        // Menggunakan kolom database agar persisten setelah logout/login ulang
+        if ($application->status === 'accepted' && !$application->dashboard_entered_at) {
             return redirect()->route('dashboard.status');
         }
 
@@ -541,8 +542,9 @@ class DashboardController extends Controller
             ->latest()
             ->first();
 
-        if ($application) {
-            session(['dashboard_entered_' . $application->id => true]);
+        if ($application && !$application->dashboard_entered_at) {
+            $application->dashboard_entered_at = now();
+            $application->save();
         }
 
         return redirect()->route('dashboard');
