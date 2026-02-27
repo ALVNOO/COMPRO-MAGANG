@@ -835,6 +835,7 @@ let saveTimeout = null;
 let currentSection = 1;
 let cropper = null;
 let originalFile = null;
+let profileValidationInProgress = false;
 
 // Initialize on DOM ready
 document.addEventListener('DOMContentLoaded', function() {
@@ -899,7 +900,7 @@ function setupAutoSave() {
     });
 }
 
-function saveProfileData() {
+function buildProfileFormData() {
     const formData = new FormData();
     formData.append('_token', CSRF_TOKEN);
 
@@ -908,6 +909,12 @@ function saveProfileData() {
         const input = document.getElementById(field);
         if (input) formData.append(field, input.value);
     });
+
+    return formData;
+}
+
+function saveProfileData() {
+    const formData = buildProfileFormData();
 
     showSaveIndicator('saving');
 
@@ -918,6 +925,11 @@ function saveProfileData() {
     })
     .then(response => response.json().catch(() => ({ success: true })))
     .then(data => {
+        if (data && data.success === false) {
+            showSaveIndicator('error');
+            showToast(data.message || 'Gagal menyimpan data profil.', 'error');
+            return;
+        }
         showSaveIndicator('saved');
         updateProgress();
     })
@@ -1378,23 +1390,78 @@ function setupNavigation() {
 }
 
 function goToSection(sectionNumber) {
-    // Update current section
+    // Jika ingin pindah ke langkah > 1, pastikan NIM valid dan tidak duplikat
+    if (sectionNumber > 1) {
+        validateProfileBeforeNavigation(sectionNumber);
+        return;
+    }
+
+    setActiveSection(sectionNumber);
+}
+
+function setActiveSection(sectionNumber) {
     currentSection = sectionNumber;
 
-    // Update sections visibility
     document.querySelectorAll('.form-section').forEach(section => {
         section.classList.remove('active');
     });
-    document.getElementById('section' + sectionNumber).classList.add('active');
+    const targetSection = document.getElementById('section' + sectionNumber);
+    if (targetSection) {
+        targetSection.classList.add('active');
+    }
 
-    // Update navigation pills
     document.querySelectorAll('.nav-pill').forEach(pill => {
         pill.classList.remove('active');
     });
-    document.getElementById('navPill' + sectionNumber).classList.add('active');
+    const targetPill = document.getElementById('navPill' + sectionNumber);
+    if (targetPill) {
+        targetPill.classList.add('active');
+    }
 
-    // Scroll to top of section
     window.scrollTo({ top: 200, behavior: 'smooth' });
+}
+
+function validateProfileBeforeNavigation(targetSection) {
+    if (profileValidationInProgress) return;
+
+    const nimInput = document.getElementById('nim');
+    if (!nimInput || !nimInput.value.trim()) {
+        showToast('NIM wajib diisi terlebih dahulu sebelum lanjut ke Bidang Minat.', 'error');
+        if (nimInput) nimInput.focus();
+        return;
+    }
+
+    const formData = buildProfileFormData();
+
+    profileValidationInProgress = true;
+    showSaveIndicator('saving');
+
+    fetch('{{ route("dashboard.pre-acceptance.profile") }}', {
+        method: 'POST',
+        body: formData,
+        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+    })
+    .then(response => response.json().catch(() => ({ success: true })))
+    .then(data => {
+        profileValidationInProgress = false;
+
+        if (data && data.success === false) {
+            showSaveIndicator('error');
+            showToast(data.message || 'NIM yang dimasukkan sudah digunakan.', 'error');
+            nimInput.focus();
+            return;
+        }
+
+        showSaveIndicator('saved');
+        updateProgress();
+        setActiveSection(targetSection);
+    })
+    .catch(error => {
+        profileValidationInProgress = false;
+        showSaveIndicator('error');
+        console.error('Profile validation error:', error);
+        showToast('Gagal memvalidasi data profil. Silakan coba lagi.', 'error');
+    });
 }
 
 // Progress tracking

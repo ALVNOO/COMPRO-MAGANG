@@ -558,13 +558,14 @@ class DashboardController extends Controller
         try {
             $request->validate([
                 'name' => 'nullable|string|max:255',
-                'nim' => 'nullable|string|max:50',
+                'nim' => 'nullable|string|max:50|unique:users,nim,' . $user->id,
                 'university' => 'nullable|string|max:255',
                 'major' => 'nullable|string|max:255',
                 'phone' => 'nullable|string|max:20',
                 'ktp_number' => 'nullable|regex:/^[0-9]{0,16}$/',
             ], [
                 'ktp_number.regex' => 'NIK (No.KTP) harus terdiri dari maksimal 16 digit angka.',
+                'nim.unique' => 'NIM yang dimasukkan sudah digunakan.',
             ]);
         } catch (\Illuminate\Validation\ValidationException $e) {
             if ($request->expectsJson()) {

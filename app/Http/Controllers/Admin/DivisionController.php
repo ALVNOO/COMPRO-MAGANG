@@ -63,7 +63,7 @@ class DivisionController extends Controller
         if (!empty($duplicates['existing'])) {
             return redirect()->back()
                 ->withInput()
-                ->withErrors(['mentors' => 'NIK ' . implode(', ', $duplicates['existing']) . ' sudah digunakan.']);
+                ->withErrors(['mentors' => 'NIK ' . implode(', ', $duplicates['existing']) . ' sudah terdaftar sebagai mentor dalam suatu divisi.']);
         }
 
         $validated['is_active'] = $request->has('is_active');
@@ -114,7 +114,7 @@ class DivisionController extends Controller
         if (!empty($duplicates['existing'])) {
             return redirect()->back()
                 ->withInput()
-                ->withErrors(['mentors' => 'NIK ' . implode(', ', $duplicates['existing']) . ' sudah digunakan di divisi lain.']);
+                ->withErrors(['mentors' => 'NIK ' . implode(', ', $duplicates['existing']) . ' sudah terdaftar sebagai mentor dalam suatu divisi lain.']);
         }
 
         $validated['is_active'] = $request->has('is_active');

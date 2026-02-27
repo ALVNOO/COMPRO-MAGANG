@@ -901,7 +901,7 @@ class AdminController extends Controller
         if ($existingNiks->isNotEmpty()) {
             return redirect()->back()
                 ->withInput()
-                ->withErrors(['mentors' => 'NIK ' . $existingNiks->implode(', ') . ' sudah digunakan.']);
+                ->withErrors(['mentors' => 'NIK ' . $existingNiks->implode(', ') . ' sudah terdaftar sebagai mentor dalam suatu divisi.']);
         }
 
         // Set default value for is_active if not provided
@@ -995,7 +995,7 @@ class AdminController extends Controller
         if ($existingNiks->isNotEmpty()) {
             return redirect()->back()
                 ->withInput()
-                ->withErrors(['mentors' => 'NIK ' . $existingNiks->implode(', ') . ' sudah digunakan di divisi lain.']);
+                ->withErrors(['mentors' => 'NIK ' . $existingNiks->implode(', ') . ' sudah terdaftar sebagai mentor dalam suatu divisi lain.']);
         }
 
         // Set default value for is_active if not provided

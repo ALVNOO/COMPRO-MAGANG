@@ -709,11 +709,19 @@
 @endpush
 
 @section('content')
-<div x-data="divisionsManager()">
-
+@php
+    $initialMentors = old('mentors') ?? [['id' => null, 'mentor_name' => '', 'nik_number' => '']];
+@endphp
+<div x-data="divisionsManager()"
+     data-initial-show-modal="{{ $errors->any() ? 'true' : 'false' }}"
+     data-initial-form-mode="{{ old('form_mode', 'create') }}"
+     data-initial-division-id="{{ old('division_id') }}"
+     data-initial-division-name="{{ old('division_name') }}"
+     data-initial-is-active="{{ old('is_active', 1) ? 'true' : 'false' }}"
+     data-initial-mentors='@json($initialMentors)'>
     {{-- Hero Section --}}
     <div class="admin-hero">
-        <div class="hero-content">
+        <div class="hero-content">  
             <div class="hero-text">
                 <h1><i class="fas fa-sitemap"></i> Kelola Divisi</h1>
                 <p>Kelola divisi dan pembimbing untuk program magang PT Telkom Indonesia</p>
@@ -809,16 +817,23 @@
                         </td>
                         <td>
                             <div class="action-btns">
-                                <button class="action-btn edit" @click="openEditModal({{ json_encode([
-                                    'id' => $division->id,
-                                    'division_name' => $division->division_name,
-                                    'is_active' => $division->is_active,
-                                    'mentors' => $division->mentors ? $division->mentors->map(fn($m) => [
-                                        'id' => $m->id,
-                                        'mentor_name' => $m->mentor_name,
-                                        'nik_number' => $m->nik_number
-                                    ]) : []
-                                ]) }})">
+                                @php
+                                    $divisionPayload = [
+                                        'id' => $division->id,
+                                        'division_name' => $division->division_name,
+                                        'is_active' => (bool) $division->is_active,
+                                        'mentors' => $division->mentors
+                                            ? $division->mentors->map(function ($m) {
+                                                return [
+                                                    'id' => $m->id,
+                                                    'mentor_name' => $m->mentor_name,
+                                                    'nik_number' => $m->nik_number,
+                                                ];
+                                            })->values()->toArray()
+                                            : [],
+                                    ];
+                                @endphp
+                                <button class="action-btn edit" @click='openEditModal(@json($divisionPayload))'>
                                     <i class="fas fa-edit"></i> Edit
                                 </button>
                                 <form action="{{ route('admin.divisions.toggle', $division) }}" method="POST" style="display: inline;">
@@ -869,6 +884,8 @@
             <form :action="formAction" method="POST" @submit="handleSubmit">
                 @csrf
                 <input type="hidden" name="_method" x-bind:value="modalMode === 'edit' ? 'PUT' : 'POST'">
+                <input type="hidden" name="form_mode" x-model="modalMode">
+                <input type="hidden" name="division_id" x-model="selectedDivisionId">
 
                 <div class="modal-body">
                     {{-- Division Name --}}
@@ -962,14 +979,29 @@
 @push('scripts')
 <script>
 function divisionsManager() {
+    const rootEl = document.querySelector('[x-data="divisionsManager()"]');
+    const dataset = rootEl ? rootEl.dataset : {};
+
+    let mentors = [];
+    if (dataset.initialMentors) {
+        try {
+            mentors = JSON.parse(dataset.initialMentors);
+        } catch (e) {
+            mentors = [];
+        }
+    }
+    if (!Array.isArray(mentors) || mentors.length === 0) {
+        mentors = [{ id: null, mentor_name: '', nik_number: '' }];
+    }
+
     return {
-        showModal: false,
-        modalMode: 'create',
-        selectedDivisionId: null,
+        showModal: dataset.initialShowModal === 'true',
+        modalMode: dataset.initialFormMode || 'create',
+        selectedDivisionId: dataset.initialDivisionId ? Number(dataset.initialDivisionId) : null,
         formData: {
-            division_name: '',
-            is_active: true,
-            mentors: [{ id: null, mentor_name: '', nik_number: '' }]
+            division_name: dataset.initialDivisionName || '',
+            is_active: dataset.initialIsActive === 'true',
+            mentors: mentors
         },
 
         get formAction() {

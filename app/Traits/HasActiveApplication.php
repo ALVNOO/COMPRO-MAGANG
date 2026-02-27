@@ -81,20 +81,18 @@ trait HasActiveApplication
      */
     public function canReapplyForInternship(): bool
     {
-        if ($this->hasPendingApplication() || $this->hasActiveInternship()) {
+        // User dapat mengajukan ulang selama:
+        // - Tidak ada pengajuan pending, dan
+        // - Tidak sedang memiliki pengajuan dengan status accepted
+        if ($this->hasPendingApplication()) {
             return false;
         }
 
-        $lastRejected = $this->internshipApplications()
-            ->where('status', 'rejected')
-            ->latest()
-            ->first();
+        $hasAccepted = $this->internshipApplications()
+            ->where('status', 'accepted')
+            ->exists();
 
-        if (!$lastRejected) {
-            return true;
-        }
-
-        return $lastRejected->updated_at->addMonth()->isPast();
+        return !$hasAccepted;
     }
 
     /**
@@ -102,11 +100,8 @@ trait HasActiveApplication
      */
     public function getReapplyDateAttribute(): ?\Carbon\Carbon
     {
-        $lastRejected = $this->internshipApplications()
-            ->where('status', 'rejected')
-            ->latest()
-            ->first();
-
-        return $lastRejected ? $lastRejected->updated_at->addMonth() : null;
+        // Cooldown 1 bulan setelah penolakan sudah dihapus.
+        // Method ini dikembalikan null untuk kompatibilitas ke belakang.
+        return null;
     }
 }
