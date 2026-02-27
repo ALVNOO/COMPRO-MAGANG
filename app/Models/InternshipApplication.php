@@ -28,6 +28,7 @@ class InternshipApplication extends Model
         'completion_letter_path',
         'acceptance_letter_path',
         'acceptance_letter_downloaded_at',
+        'dashboard_entered_at',
     ];
 
     protected $casts = [
