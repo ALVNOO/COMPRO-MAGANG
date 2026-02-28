@@ -1033,11 +1033,11 @@
                                         {{-- Surat Selesai --}}
                                         @if(!empty($app->completion_letter_path))
                                             <a href="{{ asset('storage/' . $app->completion_letter_path) }}" target="_blank" class="doc-icon available" title="Surat Selesai">
-                                                <i class="fas fa-file-check"></i>
+                                                <i class="fas fa-file-circle-check"></i>
                                             </a>
                                         @else
                                             <span class="doc-icon missing" title="Surat Selesai belum ada">
-                                                <i class="fas fa-file-check"></i>
+                                                <i class="fas fa-file-circle-check"></i>
                                             </span>
                                         @endif
                                     </div>
@@ -1179,7 +1179,7 @@
                         </div>
                         <div class="doc-item">
                             <div class="doc-item-icon" :class="selectedParticipant?.hasCompletion ? 'has-file' : 'no-file'">
-                                <i class="fas fa-file-check"></i>
+                                <i class="fas fa-file-circle-check"></i>
                             </div>
                             <div class="doc-item-info">
                                 <div class="doc-item-name">Surat Selesai</div>
@@ -1224,7 +1224,7 @@
 
                     {{-- Upload Surat Selesai --}}
                     <div class="upload-form" style="margin-top: 0.75rem;">
-                        <div class="upload-form-title"><i class="fas fa-file-check me-2"></i> Surat Selesai Magang</div>
+                        <div class="upload-form-title"><i class="fas fa-file-circle-check me-2"></i> Surat Selesai Magang</div>
                         <form :action="'/admin/participants/' + selectedParticipant?.id + '/upload-completion-letter'" method="POST" enctype="multipart/form-data" class="upload-form-row">
                             @csrf
                             <input type="file" name="completion_letter" accept=".pdf" class="upload-input" required>
