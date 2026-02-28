@@ -248,7 +248,15 @@
                                             <polyline points="20 6 9 17 4 12"/>
                                         </svg>
                                     </span>
+                                    <span class="field-error">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <circle cx="12" cy="12" r="10"/>
+                                            <line x1="12" y1="8" x2="12" y2="12"/>
+                                            <line x1="12" y1="16" x2="12.01" y2="16"/>
+                                        </svg>
+                                    </span>
                                 </div>
+                                <span class="field-error-message" id="nim-error-message"></span>
                             </div>
                         </div>
 
@@ -887,6 +895,30 @@ function setupAutoSave() {
     profileFields.forEach(input => {
         input.addEventListener('input', function() {
             clearTimeout(saveTimeout);
+            
+            // Special handling for NIM field - validate in real-time
+            if (input.id === 'nim') {
+                clearTimeout(nimValidationTimeout);
+                
+                // Clear error immediately when user starts typing
+                if (this.value.trim()) {
+                    const wrapper = this.closest('.field-input-wrap');
+                    if (wrapper && wrapper.classList.contains('has-error')) {
+                        wrapper.classList.remove('has-error');
+                        const errorMessage = document.getElementById('nim-error-message');
+                        if (errorMessage) {
+                            errorMessage.textContent = '';
+                        }
+                    }
+                    
+                    // Validate after user stops typing
+                    nimValidationTimeout = setTimeout(() => validateNIM(this.value.trim()), 500);
+                } else {
+                    // Clear error if field is empty
+                    clearFieldError(this);
+                }
+            }
+            
             saveTimeout = setTimeout(() => saveProfileData(), AUTOSAVE_DELAY);
             updateFieldStatus(this);
         });
@@ -898,6 +930,72 @@ function setupAutoSave() {
             }
         });
     });
+}
+
+let nimValidationTimeout = null;
+
+function validateNIM(nim) {
+    const nimInput = document.getElementById('nim');
+    const wrapper = nimInput.closest('.field-input-wrap');
+    const errorMessage = document.getElementById('nim-error-message');
+    
+    if (!nim || nim.trim() === '') {
+        clearFieldError(nimInput);
+        return;
+    }
+
+    const formData = new FormData();
+    formData.append('_token', CSRF_TOKEN);
+    formData.append('nim', nim);
+
+    fetch('{{ route("dashboard.pre-acceptance.profile") }}', {
+        method: 'POST',
+        body: formData,
+        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+    })
+    .then(response => response.json().catch(() => ({ success: true })))
+    .then(data => {
+        if (data && data.success === false) {
+            // NIM sudah digunakan atau ada error
+            setFieldError(nimInput, data.message || 'NIM yang dimasukkan sudah digunakan.');
+        } else {
+            // NIM valid
+            clearFieldError(nimInput);
+        }
+    })
+    .catch(error => {
+        console.error('NIM validation error:', error);
+    });
+}
+
+function setFieldError(input, message) {
+    const wrapper = input.closest('.field-input-wrap');
+    const errorMessage = document.getElementById(input.id + '-error-message');
+    
+    if (wrapper) {
+        wrapper.classList.remove('filled');
+        wrapper.classList.add('has-error');
+    }
+    
+    if (errorMessage) {
+        errorMessage.textContent = message;
+    }
+}
+
+function clearFieldError(input) {
+    const wrapper = input.closest('.field-input-wrap');
+    const errorMessage = document.getElementById(input.id + '-error-message');
+    
+    if (wrapper) {
+        wrapper.classList.remove('has-error');
+        if (input.value.trim()) {
+            wrapper.classList.add('filled');
+        }
+    }
+    
+    if (errorMessage) {
+        errorMessage.textContent = '';
+    }
 }
 
 function buildProfileFormData() {
@@ -928,9 +1026,25 @@ function saveProfileData() {
         if (data && data.success === false) {
             showSaveIndicator('error');
             showToast(data.message || 'Gagal menyimpan data profil.', 'error');
+            
+            // Check if error is related to NIM
+            const errorMessage = data.message || '';
+            if (errorMessage.toLowerCase().includes('nim')) {
+                const nimInput = document.getElementById('nim');
+                if (nimInput) {
+                    setFieldError(nimInput, errorMessage);
+                }
+            }
             return;
         }
         showSaveIndicator('saved');
+        
+        // Clear any field errors on successful save
+        const nimInput = document.getElementById('nim');
+        if (nimInput) {
+            clearFieldError(nimInput);
+        }
+        
         updateProgress();
     })
     .catch(error => {
@@ -1448,6 +1562,7 @@ function validateProfileBeforeNavigation(targetSection) {
         if (data && data.success === false) {
             showSaveIndicator('error');
             showToast(data.message || 'NIM yang dimasukkan sudah digunakan.', 'error');
+            setFieldError(nimInput, data.message || 'NIM yang dimasukkan sudah digunakan.');
             nimInput.focus();
             return;
         }
@@ -1592,10 +1707,16 @@ function updateSectionStatus(sectionNum, isComplete) {
 function updateFieldStatus(input) {
     const wrapper = input.closest('.field-input-wrap');
     if (wrapper) {
-        if (input.value.trim()) {
+        // Don't add 'filled' class if field has error
+        if (input.value.trim() && !wrapper.classList.contains('has-error')) {
             wrapper.classList.add('filled');
-        } else {
+        } else if (!input.value.trim()) {
             wrapper.classList.remove('filled');
+            wrapper.classList.remove('has-error');
+            const errorMessage = document.getElementById(input.id + '-error-message');
+            if (errorMessage) {
+                errorMessage.textContent = '';
+            }
         }
     }
 }
@@ -1603,6 +1724,11 @@ function updateFieldStatus(input) {
 function markFilledFields() {
     document.querySelectorAll('input[data-field="profile"]').forEach(input => {
         updateFieldStatus(input);
+        
+        // Validate NIM on page load if it has a value
+        if (input.id === 'nim' && input.value.trim()) {
+            validateNIM(input.value.trim());
+        }
     });
 }
 

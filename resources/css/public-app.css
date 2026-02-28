@@ -4496,6 +4496,45 @@ h1, h2, h3, h4, h5, h6, p {
     transform: scale(1);
 }
 
+.field-error {
+    position: absolute;
+    right: var(--space-3);
+    color: var(--color-danger);
+    opacity: 0;
+    transform: scale(0.8);
+    transition: all var(--transition-fast);
+    width: 16px;
+    height: 16px;
+    display: none;
+}
+
+.field-input-wrap.has-error .field-error {
+    display: block;
+    opacity: 1;
+    transform: scale(1);
+}
+
+.field-input-wrap.has-error .field-check {
+    display: none;
+}
+
+.field-input-wrap.has-error input {
+    border-color: var(--color-danger);
+    background: rgba(239, 68, 68, 0.03);
+}
+
+.field-input-wrap.has-error .field-icon {
+    color: var(--color-danger);
+}
+
+.field-error-message {
+    display: block;
+    font-size: var(--text-xs);
+    color: var(--color-danger);
+    margin-top: var(--space-1);
+    min-height: 16px;
+}
+
 /* Email field readonly */
 .field-input-wrap input[readonly] {
     background: var(--color-gray-50);
