@@ -44,7 +44,7 @@ class FieldOfInterestController extends Controller
 
         FieldOfInterest::create($request->all());
 
-        return redirect()->route('admin.fields.index')
+        return redirect()->route('admin.fields')
             ->with('success', 'Bidang peminatan berhasil ditambahkan');
     }
 
@@ -74,7 +74,7 @@ class FieldOfInterestController extends Controller
 
         $field->update($request->all());
 
-        return redirect()->route('admin.fields.index')
+        return redirect()->route('admin.fields')
             ->with('success', 'Bidang peminatan berhasil diperbarui');
     }
 
@@ -87,7 +87,7 @@ class FieldOfInterestController extends Controller
 
         $status = $field->is_active ? 'diaktifkan' : 'dinonaktifkan';
 
-        return redirect()->route('admin.fields.index')
+        return redirect()->route('admin.fields')
             ->with('success', "Bidang peminatan {$field->name} berhasil {$status}");
     }
 
@@ -98,7 +98,7 @@ class FieldOfInterestController extends Controller
     {
         $field->delete();
 
-        return redirect()->route('admin.fields.index')
+        return redirect()->route('admin.fields')
             ->with('success', 'Bidang peminatan berhasil dihapus');
     }
 }
