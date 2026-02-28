@@ -307,7 +307,7 @@ class AuthController extends Controller
             // Trust device if "remember device" is checked
             if ($request->has("remember_device")) {
                 $deviceFingerprint = User::generateDeviceFingerprint($request);
-                $user->trustDevice($deviceFingerprint, 30); // Trust for 30 days
+                $user->trustDevice($deviceFingerprint, 1); // Trust for 1 day
             }
 
             return redirect()->intended($this->getDashboardUrl($user));

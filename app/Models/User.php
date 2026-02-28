@@ -290,7 +290,7 @@ class User extends Authenticatable
     /**
      * Trust current device for specified duration
      */
-    public function trustDevice($deviceFingerprint, $days = 30)
+    public function trustDevice($deviceFingerprint, $days = 1)
     {
         $this->update([
             "trusted_device_token" => Str::random(60),

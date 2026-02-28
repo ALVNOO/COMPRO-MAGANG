@@ -160,7 +160,7 @@
                             <span class="checkmark"></span>
                             <span class="remember-text">
                                 <strong>Ingat perangkat ini</strong>
-                                <span class="remember-subtitle">Tidak perlu 2FA selama 30 hari di perangkat ini</span>
+                                <span class="remember-subtitle">Tidak perlu 2FA selama 1 hari di perangkat ini</span>
                             </span>
                         </label>
                     </div>
