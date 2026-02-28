@@ -603,9 +603,12 @@
                                                 </div>
                                                 @if(!$hasAccepted || $hasFinished)
                                                     @if($hasRejectedApplication && !$hasFinished)
-                                                        <a href="{{ route('dashboard.reapply') }}?divisi={{ $divisi->id }}" class="btn-reapply">
-                                                            <i class="fas fa-redo"></i> Ajukan Ulang
-                                                        </a>
+                                                        <form method="POST" action="{{ route('dashboard.reapply') }}" style="display: inline;">
+                                                            @csrf
+                                                            <button type="submit" class="btn-reapply">
+                                                                <i class="fas fa-redo"></i> Ajukan Ulang
+                                                            </button>
+                                                        </form>
                                                     @else
                                                         <a href="{{ route('internship.apply', ['divisi' => $divisi->id]) }}" class="btn-apply">
                                                             <i class="fas fa-paper-plane"></i> Ajukan Magang

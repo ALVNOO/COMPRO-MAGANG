@@ -338,47 +338,33 @@ class DashboardController extends Controller
     }
 
     /**
-     * Show re-application form for existing users.
+     * Handle re-application: create new pending application and redirect to pre-acceptance.
+     * Profile data stays filled (from user model), but field of interest, documents,
+     * and dates need to be filled again.
      */
     public function reapply(Request $request)
     {
         $user = Auth::user();
-        $divisis = Divisi::with('subDirektorat.direktorat')->get();
-        $selectedDivisi = null;
-        
-        if ($request->has('divisi')) {
-            $selectedDivisi = Divisi::with('subDirektorat.direktorat')->find($request->divisi);
+
+        // Check if user already has a pending application
+        $existingPending = $user->internshipApplications()
+            ->where('status', 'pending')
+            ->first();
+
+        if ($existingPending) {
+            // Already has pending, just redirect to pre-acceptance
+            return redirect()->route('dashboard.pre-acceptance');
         }
-        
-        return view('dashboard.reapply', compact('user', 'divisis', 'selectedDivisi'));
-    }
 
-    /**
-     * Handle re-application submission.
-     */
-    public function submitReapply(Request $request)
-    {
-        $request->validate([
-            'divisi_id' => 'required|exists:divisis,id',
-            'start_date' => 'required|date|after:today',
-            'end_date' => 'required|date|after:start_date',
-        ], [
-            'start_date.after' => 'Tanggal mulai harus setelah hari ini.',
-            'end_date.after' => 'Tanggal selesai harus setelah tanggal mulai.',
-        ]);
-
-        $user = Auth::user();
-
-        // Create new internship application
+        // Create a new pending application (biodata stays on user model,
+        // but documents/field_of_interest/dates are fresh)
         InternshipApplication::create([
             'user_id' => $user->id,
-            'divisi_id' => $request->divisi_id,
-            'start_date' => $request->start_date,
-            'end_date' => $request->end_date,
             'status' => 'pending',
         ]);
 
-        return redirect('/dashboard')->with('success', 'Pengajuan ulang berhasil dikirim! Status akan diperbarui segera.');
+        return redirect()->route('dashboard.pre-acceptance')
+            ->with('info', 'Silakan lengkapi kembali bidang minat, dokumen, dan tanggal pengajuan Anda.');
     }
 
     public function acknowledgePersyaratanTambahan(Request $request)

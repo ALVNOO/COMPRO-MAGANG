@@ -31,7 +31,7 @@ class InternshipController extends Controller
         
         if ($hasAnyApplication) {
             // User already has applications, redirect to reapply form
-            return redirect()->route('dashboard.reapply', ['divisi' => $divisiId])
+            return redirect()->route('dashboard')
                 ->with('info', 'Anda sudah pernah mengajukan magang sebelumnya. Silakan gunakan form pengajuan ulang.');
         }
         
@@ -49,7 +49,7 @@ class InternshipController extends Controller
         $hasAnyApplication = $user->internshipApplications()->exists();
         
         if ($hasAnyApplication) {
-            return redirect()->route('dashboard.reapply', ['divisi' => $divisiId])
+            return redirect()->route('dashboard')
                 ->with('error', 'Anda sudah pernah mengajukan magang sebelumnya. Silakan gunakan form pengajuan ulang.');
         }
         

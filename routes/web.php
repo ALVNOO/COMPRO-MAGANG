@@ -144,15 +144,11 @@ Route::middleware(["auth", "throttle:global"])->group(function () {
         "program",
     ])->name("dashboard.program");
 
-    // Re-application routes
-    Route::get("/dashboard/reapply", [
+    // Re-application route
+    Route::post("/dashboard/reapply", [
         DashboardController::class,
         "reapply",
     ])->name("dashboard.reapply");
-    Route::post("/dashboard/reapply", [
-        DashboardController::class,
-        "submitReapply",
-    ])->name("dashboard.submit-reapply");
 
     // Profile routes
     Route::get("/dashboard/profile", [
