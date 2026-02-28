@@ -14,7 +14,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Schema;
 
 class DashboardController extends Controller
 {
@@ -543,12 +542,7 @@ class DashboardController extends Controller
             ->latest()
             ->first();
 
-        // Hanya set kolom jika benar-benar ada di database
-        if (
-            $application &&
-            Schema::hasColumn('internship_applications', 'dashboard_entered_at') &&
-            !$application->dashboard_entered_at
-        ) {
+        if ($application && !$application->dashboard_entered_at) {
             $application->dashboard_entered_at = now();
             $application->save();
         }
