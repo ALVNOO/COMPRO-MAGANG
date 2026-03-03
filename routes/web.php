@@ -419,6 +419,14 @@ Route::middleware(["auth", "throttle:global"])
             AdminParticipantController::class,
             "uploadCertificate",
         ])->name("participants.upload-certificate");
+        Route::post("/participants/{applicationId}/upload-location-permission-letter", [
+            AdminParticipantController::class,
+            "uploadLocationPermissionLetter",
+        ])->name("participants.upload-location-permission-letter");
+        Route::post("/participants/{applicationId}/upload-integrity-pact", [
+            AdminParticipantController::class,
+            "uploadIntegrityPact",
+        ])->name("participants.upload-integrity-pact");
 
         // Mentors
         Route::get("/mentors", [AdminMentorController::class, "index"])->name(

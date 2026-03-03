@@ -105,6 +105,52 @@ class ParticipantController extends Controller
     }
 
     /**
+     * Upload location permission letter for an application.
+     */
+    public function uploadLocationPermissionLetter(Request $request, $applicationId)
+    {
+        $request->validate([
+            'location_permission_letter' => 'required|file|mimes:pdf|max:10240',
+        ]);
+
+        $application = InternshipApplication::findOrFail($applicationId);
+
+        $path = $this->fileUploadService->uploadLocationPermissionLetter(
+            $request->file('location_permission_letter'),
+            $application->location_permission_letter_path
+        );
+
+        $application->location_permission_letter_path = $path;
+        $application->save();
+
+        return redirect()->route('admin.participants')
+            ->with('success', 'Surat izin masuk lokasi berhasil diupload.');
+    }
+
+    /**
+     * Upload integrity pact document for an application.
+     */
+    public function uploadIntegrityPact(Request $request, $applicationId)
+    {
+        $request->validate([
+            'integrity_pact' => 'required|file|mimes:pdf|max:10240',
+        ]);
+
+        $application = InternshipApplication::findOrFail($applicationId);
+
+        $path = $this->fileUploadService->uploadIntegrityPact(
+            $request->file('integrity_pact'),
+            $application->integrity_pact_path
+        );
+
+        $application->integrity_pact_path = $path;
+        $application->save();
+
+        return redirect()->route('admin.participants')
+            ->with('success', 'Pakta integritas berhasil diupload.');
+    }
+
+    /**
      * Upload certificate for a user.
      */
     public function uploadCertificate(Request $request, $userId)

@@ -26,6 +26,8 @@ class InternshipApplication extends Model
         'end_date',
         'assessment_report_path',
         'completion_letter_path',
+        'location_permission_letter_path',
+        'integrity_pact_path',
         'acceptance_letter_path',
         'acceptance_letter_downloaded_at',
         'dashboard_entered_at',

@@ -1040,6 +1040,28 @@
                                                 <i class="fas fa-file-circle-check"></i>
                                             </span>
                                         @endif
+
+                                        {{-- Surat Izin Masuk Lokasi --}}
+                                        @if(!empty($app->location_permission_letter_path))
+                                            <a href="{{ asset('storage/' . $app->location_permission_letter_path) }}" target="_blank" class="doc-icon available" title="Surat Izin Masuk Lokasi">
+                                                <i class="fas fa-map-marked-alt"></i>
+                                            </a>
+                                        @else
+                                            <span class="doc-icon missing" title="Surat Izin Masuk Lokasi belum ada">
+                                                <i class="fas fa-map-marked-alt"></i>
+                                            </span>
+                                        @endif
+
+                                        {{-- Pakta Integritas --}}
+                                        @if(!empty($app->integrity_pact_path))
+                                            <a href="{{ asset('storage/' . $app->integrity_pact_path) }}" target="_blank" class="doc-icon available" title="Pakta Integritas">
+                                                <i class="fas fa-file-contract"></i>
+                                            </a>
+                                        @else
+                                            <span class="doc-icon missing" title="Pakta Integritas belum ada">
+                                                <i class="fas fa-file-contract"></i>
+                                            </span>
+                                        @endif
                                     </div>
                                 </td>
                                 <td>
@@ -1063,6 +1085,10 @@
                                             'certificatePath' => $certificate ? $certificate->certificate_path : null,
                                             'hasCompletion' => (bool)$app->completion_letter_path,
                                             'completionPath' => $app->completion_letter_path,
+                                            'hasLocationPermission' => (bool)$app->location_permission_letter_path,
+                                            'locationPermissionPath' => $app->location_permission_letter_path,
+                                            'hasIntegrityPact' => (bool)$app->integrity_pact_path,
+                                            'integrityPactPath' => $app->integrity_pact_path,
                                         ]) }})"
                                     >
                                         <i class="fas fa-folder-open"></i> Kelola
@@ -1191,6 +1217,34 @@
                                 </a>
                             </template>
                         </div>
+                        <div class="doc-item">
+                            <div class="doc-item-icon" :class="selectedParticipant?.hasLocationPermission ? 'has-file' : 'no-file'">
+                                <i class="fas fa-map-marked-alt"></i>
+                            </div>
+                            <div class="doc-item-info">
+                                <div class="doc-item-name">Surat Izin Masuk Lokasi</div>
+                                <div class="doc-item-status" x-text="selectedParticipant?.hasLocationPermission ? 'Tersedia' : 'Belum ada'"></div>
+                            </div>
+                            <template x-if="selectedParticipant?.hasLocationPermission">
+                                <a :href="'/storage/' + selectedParticipant?.locationPermissionPath" target="_blank" class="action-btn secondary">
+                                    <i class="fas fa-download"></i>
+                                </a>
+                            </template>
+                        </div>
+                        <div class="doc-item">
+                            <div class="doc-item-icon" :class="selectedParticipant?.hasIntegrityPact ? 'has-file' : 'no-file'">
+                                <i class="fas fa-file-contract"></i>
+                            </div>
+                            <div class="doc-item-info">
+                                <div class="doc-item-name">Pakta Integritas</div>
+                                <div class="doc-item-status" x-text="selectedParticipant?.hasIntegrityPact ? 'Tersedia' : 'Belum ada'"></div>
+                            </div>
+                            <template x-if="selectedParticipant?.hasIntegrityPact">
+                                <a :href="'/storage/' + selectedParticipant?.integrityPactPath" target="_blank" class="action-btn secondary">
+                                    <i class="fas fa-download"></i>
+                                </a>
+                            </template>
+                        </div>
                     </div>
                 </div>
 
@@ -1228,6 +1282,30 @@
                         <form :action="'/admin/participants/' + selectedParticipant?.id + '/upload-completion-letter'" method="POST" enctype="multipart/form-data" class="upload-form-row">
                             @csrf
                             <input type="file" name="completion_letter" accept=".pdf" class="upload-input" required>
+                            <button type="submit" class="upload-btn">
+                                <i class="fas fa-upload"></i> Upload
+                            </button>
+                        </form>
+                    </div>
+
+                    {{-- Upload Surat Izin Masuk Lokasi --}}
+                    <div class="upload-form" style="margin-top: 0.75rem;">
+                        <div class="upload-form-title"><i class="fas fa-map-marked-alt me-2"></i> Surat Izin Masuk Lokasi</div>
+                        <form :action="'/admin/participants/' + selectedParticipant?.id + '/upload-location-permission-letter'" method="POST" enctype="multipart/form-data" class="upload-form-row">
+                            @csrf
+                            <input type="file" name="location_permission_letter" accept=".pdf" class="upload-input" required>
+                            <button type="submit" class="upload-btn">
+                                <i class="fas fa-upload"></i> Upload
+                            </button>
+                        </form>
+                    </div>
+
+                    {{-- Upload Pakta Integritas --}}
+                    <div class="upload-form" style="margin-top: 0.75rem;">
+                        <div class="upload-form-title"><i class="fas fa-file-contract me-2"></i> Pakta Integritas</div>
+                        <form :action="'/admin/participants/' + selectedParticipant?.id + '/upload-integrity-pact'" method="POST" enctype="multipart/form-data" class="upload-form-row">
+                            @csrf
+                            <input type="file" name="integrity_pact" accept=".pdf" class="upload-input" required>
                             <button type="submit" class="upload-btn">
                                 <i class="fas fa-upload"></i> Upload
                             </button>

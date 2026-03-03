@@ -886,16 +886,19 @@
                 </div>
             </div>
             <div class="info-item">
-                <div class="info-item-label"><i class="fas fa-calendar"></i> <span>Tanggal Pengajuan</span></div>
-                <div class="info-item-value">{{ $application->created_at ? $application->created_at->format('d M Y') : '-' }}</div>
-            </div>
-            <div class="info-item">
-                <div class="info-item-label"><i class="fas fa-calendar-check"></i> <span>Mulai Magang</span></div>
-                <div class="info-item-value">{{ $application->start_date ? \Carbon\Carbon::parse($application->start_date)->format('d M Y') : '-' }}</div>
-            </div>
-            <div class="info-item">
-                <div class="info-item-label"><i class="fas fa-calendar-times"></i> <span>Selesai Magang</span></div>
-                <div class="info-item-value">{{ $application->end_date ? \Carbon\Carbon::parse($application->end_date)->format('d M Y') : '-' }}</div>
+                <div class="info-item-label"><i class="fas fa-calendar"></i> <span>Periode Magang</span></div>
+                <div class="info-item-value">
+                    @if($application->start_date && $application->end_date)
+                        @php
+                            $start = \Carbon\Carbon::parse($application->start_date);
+                            $end = \Carbon\Carbon::parse($application->end_date);
+                            $totalDays = $start->diffInDays($end) + 1;
+                        @endphp
+                        {{ $start->format('d M Y') }} - {{ $end->format('d M Y') }} ({{ $totalDays }} hari)
+                    @else
+                        -
+                    @endif
+                </div>
             </div>
             @if($application->status == 'accepted' || $application->status == 'finished')
             <div class="info-item">
@@ -903,6 +906,30 @@
                 <div class="info-item-value">
                     @if($application->acceptance_letter_path && \Illuminate\Support\Facades\Storage::disk('public')->exists($application->acceptance_letter_path))
                         <a href="{{ route('dashboard.acceptance-letter.download') }}" class="btn-download-letter" target="_blank">
+                            <i class="fas fa-download"></i> Download
+                        </a>
+                    @else
+                        <span style="color: #9ca3af;">Belum tersedia</span>
+                    @endif
+                </div>
+            </div>
+            <div class="info-item">
+                <div class="info-item-label"><i class="fas fa-map-marked-alt"></i> <span>Surat Izin Masuk Lokasi</span></div>
+                <div class="info-item-value">
+                    @if($application->location_permission_letter_path && \Illuminate\Support\Facades\Storage::disk('public')->exists($application->location_permission_letter_path))
+                        <a href="{{ asset('storage/' . $application->location_permission_letter_path) }}" class="btn-download-letter" target="_blank">
+                            <i class="fas fa-download"></i> Download
+                        </a>
+                    @else
+                        <span style="color: #9ca3af;">Belum tersedia</span>
+                    @endif
+                </div>
+            </div>
+            <div class="info-item">
+                <div class="info-item-label"><i class="fas fa-file-contract"></i> <span>Pakta Integritas</span></div>
+                <div class="info-item-value">
+                    @if($application->integrity_pact_path && \Illuminate\Support\Facades\Storage::disk('public')->exists($application->integrity_pact_path))
+                        <a href="{{ asset('storage/' . $application->integrity_pact_path) }}" class="btn-download-letter" target="_blank">
                             <i class="fas fa-download"></i> Download
                         </a>
                     @else

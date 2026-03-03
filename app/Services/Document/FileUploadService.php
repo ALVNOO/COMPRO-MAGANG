@@ -154,6 +154,22 @@ class FileUploadService
     }
 
     /**
+     * Upload location permission letter.
+     */
+    public function uploadLocationPermissionLetter(UploadedFile $file, ?string $existingPath = null): string
+    {
+        return $this->uploadAndReplace($file, 'location_permission_letters', $existingPath);
+    }
+
+    /**
+     * Upload integrity pact document.
+     */
+    public function uploadIntegrityPact(UploadedFile $file, ?string $existingPath = null): string
+    {
+        return $this->uploadAndReplace($file, 'integrity_pacts', $existingPath);
+    }
+
+    /**
      * Upload certificate.
      */
     public function uploadCertificate(UploadedFile $file, ?string $existingPath = null): string
