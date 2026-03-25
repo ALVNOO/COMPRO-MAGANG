@@ -6,31 +6,17 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
-    public function up(): void
+    public function up()
     {
-        // Drop tabel jika sudah ada
-        Schema::dropIfExists('internship_applications');
-
-        // Buat tabel baru dengan status enum yang sudah ditambah 'finished'
-        Schema::create('internship_applications', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('user_id')->constrained()->onDelete('cascade');
-            $table->foreignId('divisi_id')->constrained()->onDelete('cascade');
-            $table->enum('status', ['pending', 'accepted', 'rejected', 'finished', 'postponed'])->default('pending');
-            $table->string('cover_letter_path')->nullable();
-            $table->text('notes')->nullable();
-            $table->timestamps();
-        });
+        DB::statement("ALTER TABLE internship_applications DROP CONSTRAINT IF EXISTS internship_applications_status_check");
+        
+        DB::statement("ALTER TABLE internship_applications ADD CONSTRAINT internship_applications_status_check CHECK (status IN ('pending', 'approved', 'rejected', 'finished'))");
     }
-
-    /**
-     * Reverse the migrations.
-     */
-    public function down(): void
+    
+    public function down()
     {
-        Schema::dropIfExists('internship_applications');
+        DB::statement("ALTER TABLE internship_applications DROP CONSTRAINT IF EXISTS internship_applications_status_check");
+        
+        DB::statement("ALTER TABLE internship_applications ADD CONSTRAINT internship_applications_status_check CHECK (status IN ('pending', 'approved', 'rejected'))");
     }
 };

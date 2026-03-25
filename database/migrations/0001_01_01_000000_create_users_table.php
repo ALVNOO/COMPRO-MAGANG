@@ -24,8 +24,7 @@ return new class extends Migration
             $table->string('phone')->nullable();
             $table->string('ktp_number')->nullable();
             $table->enum('role', ['admin', 'peserta', 'pembimbing'])->default('peserta');
-            $table->foreignId('divisi_id')->nullable()->constrained('divisis')->nullOnDelete();
-            $table->rememberToken();
+            $table->unsignedBigInteger('divisi_id')->nullable();   
             $table->timestamps();
         });
 
