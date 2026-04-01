@@ -124,6 +124,21 @@ class InternshipApplicationService
     {
         return InternshipApplication::with(['user', 'fieldOfInterest'])
             ->where('status', 'pending')
+            ->whereNotNull('field_of_interest_id')
+            ->whereNotNull('start_date')
+            ->whereNotNull('end_date')
+            ->whereNotNull('ktm_path')
+            ->whereNotNull('surat_permohonan_path')
+            ->whereNotNull('cv_path')
+            ->whereNotNull('good_behavior_path')
+            ->whereHas('user', function ($query) {
+                $query->whereNotNull('name')
+                    ->whereNotNull('nim')
+                    ->whereNotNull('university')
+                    ->whereNotNull('major')
+                    ->whereNotNull('phone')
+                    ->whereNotNull('ktp_number');
+            })
             ->latest()
             ->get();
     }
