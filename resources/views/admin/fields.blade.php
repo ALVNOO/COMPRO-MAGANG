@@ -16,8 +16,6 @@
     // Count stats
     $totalFields = $fields->count();
     $activeFields = $fields->where('is_active', true)->count();
-    $totalDivisions = $fields->sum('division_count');
-    $totalPositions = $fields->sum('position_count');
 @endphp
 
 @push('styles')
@@ -97,7 +95,7 @@
 /* Stats Grid */
 .stats-grid {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(2, 1fr);
     gap: 1.25rem;
     margin-bottom: 2rem;
 }
@@ -531,7 +529,7 @@
         <div class="hero-content">
             <div class="hero-text">
                 <h1><i class="fas fa-tags"></i> Bidang Peminatan</h1>
-                <p>Kelola bidang peminatan dan posisi untuk program magang</p>
+                <p>Kelola bidang peminatan untuk program magang</p>
             </div>
             <a href="{{ route('admin.fields.create') }}" class="hero-btn">
                 <i class="fas fa-plus"></i> Tambah Bidang
@@ -557,24 +555,6 @@
             <div class="stat-content">
                 <h3>{{ $activeFields }}</h3>
                 <p>Bidang Aktif</p>
-            </div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-icon divisions">
-                <i class="fas fa-sitemap"></i>
-            </div>
-            <div class="stat-content">
-                <h3>{{ $totalDivisions }}</h3>
-                <p>Total Divisi</p>
-            </div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-icon positions">
-                <i class="fas fa-briefcase"></i>
-            </div>
-            <div class="stat-content">
-                <h3>{{ $totalPositions }}</h3>
-                <p>Total Posisi</p>
             </div>
         </div>
     </div>
@@ -618,17 +598,6 @@
                         </span>
                     </div>
                     <div class="field-description">{{ $field->description ?? 'Tidak ada deskripsi' }}</div>
-                </div>
-            </div>
-
-            <div class="field-card-stats">
-                <div class="field-stat">
-                    <div class="field-stat-value">{{ $field->division_count }}</div>
-                    <div class="field-stat-label">Divisi</div>
-                </div>
-                <div class="field-stat">
-                    <div class="field-stat-value">{{ $field->position_count }}</div>
-                    <div class="field-stat-label">Posisi</div>
                 </div>
             </div>
 

@@ -12,10 +12,18 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->timestamp('two_factor_code_generated_at')->nullable()->after('two_factor_verified_at');
-            $table->timestamp('two_factor_last_used_at')->nullable()->after('two_factor_code_generated_at');
-            $table->integer('two_factor_attempts')->default(0)->after('two_factor_last_used_at');
-            $table->timestamp('two_factor_attempts_reset_at')->nullable()->after('two_factor_attempts');
+            if (!Schema::hasColumn('users', 'two_factor_code_generated_at')) {
+                $table->timestamp('two_factor_code_generated_at')->nullable()->after('two_factor_verified_at');
+            }
+            if (!Schema::hasColumn('users', 'two_factor_last_used_at')) {
+                $table->timestamp('two_factor_last_used_at')->nullable()->after('two_factor_code_generated_at');
+            }
+            if (!Schema::hasColumn('users', 'two_factor_attempts')) {
+                $table->integer('two_factor_attempts')->default(0)->after('two_factor_last_used_at');
+            }
+            if (!Schema::hasColumn('users', 'two_factor_attempts_reset_at')) {
+                $table->timestamp('two_factor_attempts_reset_at')->nullable()->after('two_factor_attempts');
+            }
         });
     }
 

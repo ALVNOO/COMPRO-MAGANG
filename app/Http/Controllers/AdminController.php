@@ -580,14 +580,14 @@ class AdminController extends Controller
 
         // Create user pembimbing for this divisi
         $username = 'mentor_' . strtolower(str_replace(' ', '_', $request->name));
-        $email = $username . '@posindonesia.co.id';
+        $email = $username . '@telkomindonesia.co.id';
         
         // Check if username already exists, if so, add number
         $originalUsername = $username;
         $counter = 1;
         while (User::where('username', $username)->exists()) {
             $username = $originalUsername . '_' . $counter;
-            $email = $username . '@posindonesia.co.id';
+            $email = $username . '@telkomindonesia.co.id';
             $counter++;
         }
 
@@ -640,14 +640,14 @@ class AdminController extends Controller
             // Update username if divisi name changed
             if ($oldDivisiName !== $request->name) {
                 $newUsername = 'mentor_' . strtolower(str_replace(' ', '_', $request->name));
-                $newEmail = $newUsername . '@posindonesia.co.id';
+                $newEmail = $newUsername . '@telkomindonesia.co.id';
                 
                 // Check if new username already exists, if so, add number
                 $originalUsername = $newUsername;
                 $counter = 1;
                 while (User::where('username', $newUsername)->where('id', '!=', $pembimbing->id)->exists()) {
                     $newUsername = $originalUsername . '_' . $counter;
-                    $newEmail = $newUsername . '@posindonesia.co.id';
+                    $newEmail = $newUsername . '@telkomindonesia.co.id';
                     $counter++;
                 }
                 

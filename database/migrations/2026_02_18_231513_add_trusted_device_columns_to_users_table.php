@@ -12,9 +12,15 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->string('trusted_device_token', 100)->nullable()->after('two_factor_attempts_reset_at');
-            $table->timestamp('trusted_device_expires_at')->nullable()->after('trusted_device_token');
-            $table->string('device_fingerprint', 255)->nullable()->after('trusted_device_expires_at');
+            if (!Schema::hasColumn('users', 'trusted_device_token')) {
+                $table->string('trusted_device_token', 100)->nullable()->after('two_factor_attempts_reset_at');
+            }
+            if (!Schema::hasColumn('users', 'trusted_device_expires_at')) {
+                $table->timestamp('trusted_device_expires_at')->nullable()->after('trusted_device_token');
+            }
+            if (!Schema::hasColumn('users', 'device_fingerprint')) {
+                $table->string('device_fingerprint', 255)->nullable()->after('trusted_device_expires_at');
+            }
         });
     }
 

@@ -16,16 +16,12 @@ class FieldOfInterest extends Model
         'color',
         'is_active',
         'sort_order',
-        'division_count',
-        'position_count',
         'duration_months'
     ];
 
     protected $casts = [
         'is_active' => 'boolean',
         'sort_order' => 'integer',
-        'division_count' => 'integer',
-        'position_count' => 'integer',
         'duration_months' => 'integer'
     ];
 

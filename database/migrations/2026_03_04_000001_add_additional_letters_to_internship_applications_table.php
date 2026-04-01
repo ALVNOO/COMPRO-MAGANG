@@ -8,8 +8,12 @@ return new class extends Migration {
     public function up(): void
     {
         Schema::table('internship_applications', function (Blueprint $table) {
-            $table->string('location_permission_letter_path')->nullable()->after('completion_letter_path');
-            $table->string('integrity_pact_path')->nullable()->after('location_permission_letter_path');
+            if (!Schema::hasColumn('internship_applications', 'location_permission_letter_path')) {
+                $table->string('location_permission_letter_path')->nullable()->after('completion_letter_path');
+            }
+            if (!Schema::hasColumn('internship_applications', 'integrity_pact_path')) {
+                $table->string('integrity_pact_path')->nullable()->after('location_permission_letter_path');
+            }
         });
     }
 

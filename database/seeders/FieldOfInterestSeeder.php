@@ -19,8 +19,6 @@ class FieldOfInterestSeeder extends Seeder
                 'icon' => 'fas fa-building',
                 'color' => '#EE2E24',
                 'sort_order' => 1,
-                'division_count' => 5,
-                'position_count' => 45,
                 'duration_months' => 6,
                 'is_active' => 1
             ],
@@ -30,8 +28,6 @@ class FieldOfInterestSeeder extends Seeder
                 'icon' => 'fas fa-calculator',
                 'color' => '#EE2E24',
                 'sort_order' => 2,
-                'division_count' => 6,
-                'position_count' => 55,
                 'duration_months' => 6
             ],
             [
@@ -40,8 +36,6 @@ class FieldOfInterestSeeder extends Seeder
                 'icon' => 'fas fa-user-tie',
                 'color' => '#EE2E24',
                 'sort_order' => 3,
-                'division_count' => 4,
-                'position_count' => 40,
                 'duration_months' => 6
             ],
             [
@@ -50,8 +44,6 @@ class FieldOfInterestSeeder extends Seeder
                 'icon' => 'fas fa-chart-line',
                 'color' => '#EE2E24',
                 'sort_order' => 4,
-                'division_count' => 6,
-                'position_count' => 80,
                 'duration_months' => 6
             ],
             [
@@ -60,8 +52,6 @@ class FieldOfInterestSeeder extends Seeder
                 'icon' => 'fas fa-bullhorn',
                 'color' => '#EE2E24',
                 'sort_order' => 5,
-                'division_count' => 5,
-                'position_count' => 60,
                 'duration_months' => 6
             ],
             [
@@ -70,8 +60,6 @@ class FieldOfInterestSeeder extends Seeder
                 'icon' => 'fas fa-headset',
                 'color' => '#EE2E24',
                 'sort_order' => 6,
-                'division_count' => 4,
-                'position_count' => 50,
                 'duration_months' => 6
             ],
             [
@@ -80,8 +68,6 @@ class FieldOfInterestSeeder extends Seeder
                 'icon' => 'fas fa-gavel',
                 'color' => '#EE2E24',
                 'sort_order' => 7,
-                'division_count' => 3,
-                'position_count' => 25,
                 'duration_months' => 6
             ],
             [
@@ -90,8 +76,6 @@ class FieldOfInterestSeeder extends Seeder
                 'icon' => 'fas fa-laptop-code',
                 'color' => '#EE2E24',
                 'sort_order' => 8,
-                'division_count' => 12,
-                'position_count' => 150,
                 'duration_months' => 6
             ],
             [
@@ -100,8 +84,6 @@ class FieldOfInterestSeeder extends Seeder
                 'icon' => 'fas fa-palette',
                 'color' => '#EE2E24',
                 'sort_order' => 9,
-                'division_count' => 4,
-                'position_count' => 35,
                 'duration_months' => 6
             ],
             [
@@ -110,8 +92,6 @@ class FieldOfInterestSeeder extends Seeder
                 'icon' => 'fas fa-chart-bar',
                 'color' => '#EE2E24',
                 'sort_order' => 10,
-                'division_count' => 5,
-                'position_count' => 45,
                 'duration_months' => 6
             ],
             [
@@ -120,8 +100,6 @@ class FieldOfInterestSeeder extends Seeder
                 'icon' => 'fas fa-broadcast-tower',
                 'color' => '#EE2E24',
                 'sort_order' => 11,
-                'division_count' => 8,
-                'position_count' => 100,
                 'duration_months' => 6
             ],
             [
@@ -130,8 +108,6 @@ class FieldOfInterestSeeder extends Seeder
                 'icon' => 'fas fa-folder-open',
                 'color' => '#EE2E24',
                 'sort_order' => 12,
-                'division_count' => 4,
-                'position_count' => 35,
                 'duration_months' => 6
             ],
             [
@@ -140,8 +116,6 @@ class FieldOfInterestSeeder extends Seeder
                 'icon' => 'fas fa-cubes',
                 'color' => '#EE2E24',
                 'sort_order' => 13,
-                'division_count' => 5,
-                'position_count' => 40,
                 'duration_months' => 6
             ],
             [
@@ -150,8 +124,6 @@ class FieldOfInterestSeeder extends Seeder
                 'icon' => 'fas fa-hands-helping',
                 'color' => '#EE2E24',
                 'sort_order' => 14,
-                'division_count' => 3,
-                'position_count' => 25,
                 'duration_months' => 6
             ]
         ];
@@ -161,7 +133,7 @@ class FieldOfInterestSeeder extends Seeder
             if (!isset($field['is_active'])) {
                 $field['is_active'] = 1;
             }
-            
+
             // Use updateOrCreate to prevent duplicates based on name
             FieldOfInterest::updateOrCreate(
                 ['name' => $field['name']], // Match by name

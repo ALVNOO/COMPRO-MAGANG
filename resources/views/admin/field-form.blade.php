@@ -523,22 +523,6 @@
                           required>{{ old('description', $field->description ?? '') }}</textarea>
             </div>
 
-            {{-- Row 4: Division & Position --}}
-            <div class="form-grid">
-                <div class="form-group">
-                    <label for="division_count">Jumlah Divisi <span class="required">*</span></label>
-                    <input type="number" class="form-input" id="division_count" name="division_count"
-                           value="{{ old('division_count', $field->division_count ?? 0) }}"
-                           min="0" required>
-                </div>
-                <div class="form-group">
-                    <label for="position_count">Jumlah Posisi <span class="required">*</span></label>
-                    <input type="number" class="form-input" id="position_count" name="position_count"
-                           value="{{ old('position_count', $field->position_count ?? 0) }}"
-                           min="0" required>
-                </div>
-            </div>
-
             {{-- Checkbox Active --}}
             <div class="checkbox-wrapper">
                 <input type="checkbox" class="form-checkbox" id="is_active" name="is_active" value="1"

@@ -36,8 +36,6 @@ class FieldOfInterestController extends Controller
             'description' => 'required|string',
             'icon' => 'nullable|string|max:255',
             'color' => 'nullable|string|max:7',
-            'division_count' => 'required|integer|min:0',
-            'position_count' => 'required|integer|min:0',
             'duration_months' => 'nullable|integer|min:1',
             'sort_order' => 'nullable|integer|min:0',
         ]);
@@ -66,8 +64,6 @@ class FieldOfInterestController extends Controller
             'description' => 'required|string',
             'icon' => 'nullable|string|max:255',
             'color' => 'nullable|string|max:7',
-            'division_count' => 'required|integer|min:0',
-            'position_count' => 'required|integer|min:0',
             'duration_months' => 'nullable|integer|min:1',
             'sort_order' => 'nullable|integer|min:0',
         ]);

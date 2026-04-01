@@ -142,13 +142,13 @@ class LegacyDivisionController extends Controller
 
         // Create mentor user
         $username = 'mentor_' . strtolower(str_replace(' ', '_', $request->name));
-        $email = $username . '@posindonesia.co.id';
+        $email = $username . '@telkomindonesia.co.id';
 
         $originalUsername = $username;
         $counter = 1;
         while (User::where('username', $username)->exists()) {
             $username = $originalUsername . '_' . $counter;
-            $email = $username . '@posindonesia.co.id';
+            $email = $username . '@telkomindonesia.co.id';
             $counter++;
         }
 
@@ -198,13 +198,13 @@ class LegacyDivisionController extends Controller
 
             if ($oldDivisiName !== $request->name) {
                 $newUsername = 'mentor_' . strtolower(str_replace(' ', '_', $request->name));
-                $newEmail = $newUsername . '@posindonesia.co.id';
+                $newEmail = $newUsername . '@telkomindonesia.co.id';
 
                 $originalUsername = $newUsername;
                 $counter = 1;
                 while (User::where('username', $newUsername)->where('id', '!=', $pembimbing->id)->exists()) {
                     $newUsername = $originalUsername . '_' . $counter;
-                    $newEmail = $newUsername . '@posindonesia.co.id';
+                    $newEmail = $newUsername . '@telkomindonesia.co.id';
                     $counter++;
                 }
 
