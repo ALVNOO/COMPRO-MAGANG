@@ -1612,18 +1612,18 @@
                     <label for="password" class="form-label">
                         <i class="fas fa-key"></i> Password Baru
                     </label>
-                    <input type="password" class="form-control @error('password') is-invalid @enderror"
-                           id="password" name="password" required>
-                    @error('password')
+                    <input type="password" class="form-control @error('new_password') is-invalid @enderror"
+                           id="new_password" name="new_password" required>
+                    @error('new_password')
                         <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
                 </div>
                 <div>
-                    <label for="password_confirmation" class="form-label">
+                    <label for="new_password_confirmation" class="form-label">
                         <i class="fas fa-check-double"></i> Konfirmasi Password
                     </label>
                     <input type="password" class="form-control"
-                           id="password_confirmation" name="password_confirmation" required>
+                           id="new_password_confirmation" name="new_password_confirmation" required>
                 </div>
             </div>
             <div style="text-align: right; margin-top: 1.5rem;">

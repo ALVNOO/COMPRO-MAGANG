@@ -894,13 +894,13 @@
                         </label>
                         <div class="form-input-wrapper">
                             <input type="password"
-                                   name="password"
-                                   class="form-input @error('password') is-invalid @enderror"
+                                   name="new_password"
+                                   class="form-input @error('new_password') is-invalid @enderror"
                                    placeholder="Buat password baru"
                                    required>
                             <i class="fas fa-key input-icon"></i>
                         </div>
-                        @error('password')
+                        @error('new_password')
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
                     </div>
@@ -912,7 +912,7 @@
                         </label>
                         <div class="form-input-wrapper">
                             <input type="password"
-                                   name="password_confirmation"
+                                   name="new_password_confirmation"
                                    class="form-input"
                                    placeholder="Ulangi password baru"
                                    required>
