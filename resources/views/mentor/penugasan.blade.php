@@ -1638,8 +1638,8 @@ input[type="date"] {
                         <th style="width: 120px;">File</th>
                         <th style="width: 100px;">Nilai</th>
                         <th style="width: 200px;">Feedback</th>
-                        <th style="width: 110px;">Revisi</th>
-                        <th style="width: 100px;">Aksi</th>
+                        <th style="width: 110px;">Aksi</th>
+                        <th style="width: 100px;">Revisi</th>
                     </tr>
                 </thead>
                 <tbody>

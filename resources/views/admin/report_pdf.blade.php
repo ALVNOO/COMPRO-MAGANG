@@ -23,6 +23,8 @@
                 <th>Tanggal Mulai</th>
                 <th>Tanggal Berakhir</th>
                 <th>Divisi</th>
+                <th>Judul Proyek</th>
+                <th>Nilai</th>
             </tr>
         </thead>
         <tbody>
@@ -36,6 +38,8 @@
                     <td>{{ $row['tanggal_mulai'] }}</td>
                     <td>{{ $row['tanggal_berakhir'] }}</td>
                     <td>{{ $row['divisi'] }}</td>
+                    <td>{{ $row['judul_proyek'] ?? '-' }}</td>
+                    <td>{{ $row['nilai'] ?? '-' }}</td>
                 </tr>
             @endforeach
         </tbody>

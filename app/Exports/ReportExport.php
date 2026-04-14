@@ -16,7 +16,20 @@ class ReportExport implements FromArray, WithHeadings
 
     public function array(): array
     {
-        return $this->data;
+        return collect($this->data)->map(function (array $row) {
+            return [
+                $row['no'] ?? '',
+                $row['nama'] ?? '',
+                $row['universitas'] ?? '',
+                $row['jurusan'] ?? '',
+                $row['nim'] ?? '',
+                $row['tanggal_mulai'] ?? '',
+                $row['tanggal_berakhir'] ?? '',
+                $row['divisi'] ?? '',
+                $row['judul_proyek'] ?? '',
+                $row['nilai'] ?? '',
+            ];
+        })->all();
     }
 
     public function headings(): array
@@ -30,6 +43,8 @@ class ReportExport implements FromArray, WithHeadings
             'Tanggal Mulai',
             'Tanggal Berakhir',
             'Divisi',
+            'Judul Proyek',
+            'Nilai',
         ];
     }
-} 
+}

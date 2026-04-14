@@ -110,6 +110,16 @@
     transform: translateY(-2px);
 }
 
+.hero-export-btn.manual {
+    background: rgba(59, 130, 246, 0.9);
+    color: white;
+}
+
+.hero-export-btn.manual:hover {
+    background: rgba(59, 130, 246, 1);
+    transform: translateY(-2px);
+}
+
 /* Filter Card */
 .filter-card {
     background: rgba(255, 255, 255, 0.95);
@@ -178,6 +188,47 @@
     outline: none;
     border-color: #EE2E24;
     box-shadow: 0 0 0 3px rgba(238, 46, 36, 0.1);
+}
+
+.manual-entry-card {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    border-radius: 16px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+    border: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.manual-entry-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+}
+
+.manual-entry-actions {
+    margin-top: 1rem;
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+}
+
+.manual-entry-hint {
+    font-size: 0.8rem;
+    color: #6b7280;
+}
+
+.manual-entry-submit {
+    border: none;
+    border-radius: 10px;
+    background: #2563eb;
+    color: #fff;
+    padding: 0.6rem 1rem;
+    font-weight: 600;
+}
+
+.manual-entry-submit:hover {
+    background: #1d4ed8;
 }
 
 /* Table Card */
@@ -326,6 +377,10 @@
     .filter-grid {
         grid-template-columns: 1fr;
     }
+
+    .manual-entry-grid {
+        grid-template-columns: 1fr;
+    }
 }
 </style>
 @endpush
@@ -340,6 +395,9 @@
             <p>Generate dan export laporan peserta magang berdasarkan periode</p>
         </div>
         <div class="hero-actions">
+            <button id="btn-toggle-manual-form" class="hero-export-btn manual" type="button">
+                <i class="fas fa-plus-circle"></i> Tambah Data Manual
+            </button>
             <button id="btn-export-pdf" class="hero-export-btn pdf">
                 <i class="fas fa-file-pdf"></i> Export PDF
             </button>
@@ -372,6 +430,64 @@
     </div>
 </div>
 
+{{-- Manual Entry Card --}}
+<div class="manual-entry-card" id="manual-entry-card" style="display: none;">
+    <div class="filter-header">
+        <i class="fas fa-user-plus"></i>
+        <h3>Tambah Data Peserta Manual</h3>
+    </div>
+    <form id="manual-entry-form">
+        @csrf
+        <div class="manual-entry-grid">
+            <div class="filter-group">
+                <label for="manual_nama">Nama Peserta</label>
+                <input id="manual_nama" name="nama" type="text" class="filter-select" required>
+            </div>
+            <div class="filter-group">
+                <label for="manual_universitas">Universitas/Sekolah</label>
+                <input id="manual_universitas" name="universitas" type="text" class="filter-select" required>
+            </div>
+            <div class="filter-group">
+                <label for="manual_jurusan">Jurusan</label>
+                <input id="manual_jurusan" name="jurusan" type="text" class="filter-select" required>
+            </div>
+            <div class="filter-group">
+                <label for="manual_nim">NIM</label>
+                <input id="manual_nim" name="nim" type="text" class="filter-select" required>
+            </div>
+            <div class="filter-group">
+                <label for="manual_tanggal_mulai">Tanggal Mulai</label>
+                <input id="manual_tanggal_mulai" name="tanggal_mulai" type="date" class="filter-select" required>
+            </div>
+            <div class="filter-group">
+                <label for="manual_tanggal_berakhir">Tanggal Berakhir</label>
+                <input id="manual_tanggal_berakhir" name="tanggal_berakhir" type="date" class="filter-select">
+            </div>
+            <div class="filter-group">
+                <label for="manual_divisi">Divisi</label>
+                <select id="manual_divisi" name="divisi" class="filter-select" required>
+                    <option value="">Pilih Divisi</option>
+                    @foreach ($divisions as $division)
+                        <option value="{{ $division->division_name }}">{{ $division->division_name }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="filter-group">
+                <label for="manual_judul_proyek">Judul Proyek</label>
+                <input id="manual_judul_proyek" name="judul_proyek" type="text" class="filter-select">
+            </div>
+            <div class="filter-group">
+                <label for="manual_nilai">Nilai</label>
+                <input id="manual_nilai" name="nilai" type="number" min="0" max="100" step="0.1" class="filter-select">
+            </div>
+        </div>
+        <div class="manual-entry-actions">
+            <button type="submit" class="manual-entry-submit">Simpan Data Manual</button>
+            <span id="manual-entry-status" class="manual-entry-hint"></span>
+        </div>
+    </form>
+</div>
+
 {{-- Report Table --}}
 <div class="table-card">
     <div class="table-header">
@@ -390,11 +506,13 @@
                         <th>Tanggal Mulai</th>
                         <th>Tanggal Berakhir</th>
                         <th>Divisi</th>
+                        <th>Judul Proyek</th>
+                        <th>Nilai</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr>
-                        <td colspan="8">
+                        <td colspan="10">
                             <div class="loading-state">
                                 <i class="fas fa-spinner fa-spin"></i>
                                 <span>Memuat data...</span>
@@ -433,12 +551,6 @@ function loadTahun() {
                     opt.textContent = item.label;
                     tahunSelect.appendChild(opt);
                 });
-                // Set default ke tahun saat ini jika ada
-                const currentYear = new Date().getFullYear();
-                const option = Array.from(tahunSelect.options).find(opt => opt.value == currentYear);
-                if (option) {
-                    tahunSelect.value = currentYear;
-                }
             } else {
                 console.warn('No year data available');
             }
@@ -464,8 +576,13 @@ function loadBulan() {
         'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
     ];
 
-    // Jika tahun dipilih, tampilkan semua bulan untuk tahun tersebut
+    // Jika tahun dipilih, tampilkan opsi semua bulan + daftar bulan untuk tahun tersebut
     if (selectedYear) {
+        const allOpt = document.createElement('option');
+        allOpt.value = 'all';
+        allOpt.textContent = 'Semua Bulan';
+        bulanSelect.appendChild(allOpt);
+
         namaBulan.forEach((nama, index) => {
             const monthNumber = String(index + 1).padStart(2, '0');
             const opt = document.createElement('option');
@@ -475,14 +592,6 @@ function loadBulan() {
             opt.textContent = nama;
             bulanSelect.appendChild(opt);
         });
-
-        // Set default ke bulan saat ini jika tahun yang dipilih adalah tahun saat ini
-        if (selectedYear == new Date().getFullYear()) {
-            const now = new Date();
-            const currentMonth = String(now.getMonth() + 1).padStart(2, '0');
-            const currentValue = `${currentMonth}-${selectedYear}`;
-            bulanSelect.value = currentValue;
-        }
     } else {
         // Jika tidak ada tahun yang dipilih, ambil dari API untuk mendapatkan bulan yang tersedia
         fetch(`/admin/reports/periods?period=bulanan`)
@@ -532,12 +641,77 @@ document.getElementById('tahun').addEventListener('change', function() {
 
 document.getElementById('bulan').addEventListener('change', fetchReport);
 
+const manualCard = document.getElementById('manual-entry-card');
+const manualToggleBtn = document.getElementById('btn-toggle-manual-form');
+const manualForm = document.getElementById('manual-entry-form');
+const manualStatus = document.getElementById('manual-entry-status');
+
+manualToggleBtn.addEventListener('click', function () {
+    const isHidden = manualCard.style.display === 'none';
+    manualCard.style.display = isHidden ? 'block' : 'none';
+});
+
+manualForm.addEventListener('submit', function (event) {
+    event.preventDefault();
+
+    const formData = new FormData(manualForm);
+    manualStatus.textContent = 'Menyimpan data...';
+
+    fetch('/admin/reports/manual', {
+        method: 'POST',
+        headers: {
+            'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value,
+            'Accept': 'application/json',
+        },
+        body: formData,
+    })
+        .then(async (res) => {
+            const payload = await res.json();
+            if (!res.ok) {
+                const firstError = payload?.errors ? Object.values(payload.errors)[0]?.[0] : null;
+                throw new Error(firstError || payload?.message || 'Gagal menyimpan data manual');
+            }
+
+            return payload;
+        })
+        .then((payload) => {
+            const savedStartDate = payload?.data?.tanggal_mulai;
+            if (savedStartDate) {
+                const date = new Date(savedStartDate);
+                if (!Number.isNaN(date.getTime())) {
+                    const savedYear = String(date.getFullYear());
+                    const savedMonth = String(date.getMonth() + 1).padStart(2, '0');
+                    const yearSelect = document.getElementById('tahun');
+                    const hasYearOption = Array.from(yearSelect.options).some(option => option.value === savedYear);
+                    if (!hasYearOption) {
+                        const option = document.createElement('option');
+                        option.value = savedYear;
+                        option.textContent = savedYear;
+                        yearSelect.appendChild(option);
+                    }
+                    yearSelect.value = savedYear;
+                    loadBulan();
+                    document.getElementById('bulan').value = `${savedMonth}-${savedYear}`;
+                }
+            }
+
+            manualStatus.textContent = 'Data manual berhasil disimpan.';
+            manualForm.reset();
+            fetchReport();
+        })
+        .catch((error) => {
+            manualStatus.textContent = error.message || 'Terjadi kesalahan saat menyimpan data.';
+        });
+});
+
 function fetchReport() {
     const tahun = document.getElementById('tahun').value;
     const bulan = document.getElementById('bulan').value;
     let url = `/admin/reports/data?period=bulanan`;
 
-    if (bulan && tahun) {
+    if (bulan === 'all' && tahun) {
+        url = `/admin/reports/data?period=tahunan&year=${tahun}`;
+    } else if (bulan && tahun) {
         // Jika bulan dan tahun dipilih, gunakan keduanya
         const [month, year] = bulan.split('-');
         // Prioritaskan tahun dari dropdown tahun jika ada
@@ -548,15 +722,15 @@ function fetchReport() {
         const [month, year] = bulan.split('-');
         url += `&year=${year}&month=${month}`;
     } else if (tahun) {
-        // Jika hanya tahun dipilih
-        url += `&year=${tahun}`;
+        // Jika hanya tahun dipilih, tampilkan 1 tahun penuh
+        url = `/admin/reports/data?period=tahunan&year=${tahun}`;
     }
 
     // Show loading
     const tbody = document.querySelector('#report-table tbody');
     tbody.innerHTML = `
         <tr>
-            <td colspan="8">
+            <td colspan="10">
                 <div class="loading-state">
                     <i class="fas fa-spinner fa-spin"></i>
                     <span>Memuat data...</span>
@@ -573,22 +747,25 @@ function fetchReport() {
             if (Array.isArray(data) && data.length > 0) {
                 data.forEach(row => {
                     const tr = document.createElement('tr');
+                    const esc = (s) => String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
                     tr.innerHTML = `
                         <td>${row.no}</td>
-                        <td><strong>${row.nama}</strong></td>
-                        <td>${row.universitas}</td>
-                        <td>${row.jurusan}</td>
-                        <td>${row.nim}</td>
-                        <td>${row.tanggal_mulai}</td>
-                        <td>${row.tanggal_berakhir}</td>
-                        <td>${row.divisi}</td>
+                        <td><strong>${esc(row.nama)}</strong></td>
+                        <td>${esc(row.universitas)}</td>
+                        <td>${esc(row.jurusan)}</td>
+                        <td>${esc(row.nim)}</td>
+                        <td>${esc(row.tanggal_mulai)}</td>
+                        <td>${esc(row.tanggal_berakhir)}</td>
+                        <td>${esc(row.divisi)}</td>
+                        <td>${esc(row.judul_proyek)}</td>
+                        <td>${esc(row.nilai)}</td>
                     `;
                     tbody.appendChild(tr);
                 });
             } else {
                 tbody.innerHTML = `
                     <tr>
-                        <td colspan="8">
+                        <td colspan="10">
                             <div class="empty-state">
                                 <i class="fas fa-inbox"></i>
                                 <h4>Tidak Ada Data</h4>
@@ -603,7 +780,7 @@ function fetchReport() {
             console.error('Error fetching report:', error);
             tbody.innerHTML = `
                 <tr>
-                    <td colspan="8">
+                    <td colspan="10">
                         <div class="empty-state">
                             <i class="fas fa-exclamation-triangle"></i>
                             <h4>Gagal Memuat Data</h4>
@@ -628,7 +805,9 @@ document.getElementById('btn-export-pdf').addEventListener('click', function() {
     const bulan = document.getElementById('bulan').value;
     let url = `/admin/reports/export/pdf?period=bulanan`;
 
-    if (bulan && tahun) {
+    if (bulan === 'all' && tahun) {
+        url = `/admin/reports/export/pdf?period=tahunan&year=${tahun}`;
+    } else if (bulan && tahun) {
         const [month, year] = bulan.split('-');
         const selectedYear = tahun || year;
         url += `&year=${selectedYear}&month=${month}`;
@@ -636,7 +815,7 @@ document.getElementById('btn-export-pdf').addEventListener('click', function() {
         const [month, year] = bulan.split('-');
         url += `&year=${year}&month=${month}`;
     } else if (tahun) {
-        url += `&year=${tahun}`;
+        url = `/admin/reports/export/pdf?period=tahunan&year=${tahun}`;
     }
 
     window.location.href = url;
@@ -648,7 +827,9 @@ document.getElementById('btn-export-excel').addEventListener('click', function()
     const bulan = document.getElementById('bulan').value;
     let url = `/admin/reports/export/excel?period=bulanan`;
 
-    if (bulan && tahun) {
+    if (bulan === 'all' && tahun) {
+        url = `/admin/reports/export/excel?period=tahunan&year=${tahun}`;
+    } else if (bulan && tahun) {
         const [month, year] = bulan.split('-');
         const selectedYear = tahun || year;
         url += `&year=${selectedYear}&month=${month}`;
@@ -656,7 +837,7 @@ document.getElementById('btn-export-excel').addEventListener('click', function()
         const [month, year] = bulan.split('-');
         url += `&year=${year}&month=${month}`;
     } else if (tahun) {
-        url += `&year=${tahun}`;
+        url = `/admin/reports/export/excel?period=tahunan&year=${tahun}`;
     }
 
     window.location.href = url;

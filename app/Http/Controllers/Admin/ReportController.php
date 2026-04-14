@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\Controller;
 use App\Exports\ReportExport;
+use App\Http\Controllers\Controller;
+use App\Models\DivisiAdmin;
 use App\Services\Report\ReportService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Maatwebsite\Excel\Facades\Excel;
 
 class ReportController extends Controller
@@ -20,7 +22,13 @@ class ReportController extends Controller
      */
     public function index()
     {
-        return view('admin.reports');
+        $divisions = DivisiAdmin::query()
+            ->where('is_active', true)
+            ->orderBy('sort_order')
+            ->orderBy('division_name')
+            ->get(['id', 'division_name']);
+
+        return view('admin.reports', compact('divisions'));
     }
 
     /**
@@ -59,6 +67,7 @@ class ReportController extends Controller
     public function exportPdf(Request $request)
     {
         $data = $this->reportService->getReportDataForExport(
+            $request->input('period'),
             $request->input('year'),
             $request->input('month')
         );
@@ -75,6 +84,7 @@ class ReportController extends Controller
     public function exportExcel(Request $request)
     {
         $data = $this->reportService->getReportDataForExport(
+            $request->input('period'),
             $request->input('year'),
             $request->input('month')
         );
@@ -95,5 +105,30 @@ class ReportController extends Controller
         );
 
         return response()->json($summary);
+    }
+
+    /**
+     * Store manual report participant data.
+     */
+    public function storeManualEntry(Request $request)
+    {
+        $validated = $request->validate([
+            'nama' => ['required', 'string', 'max:255'],
+            'universitas' => ['required', 'string', 'max:255'],
+            'jurusan' => ['required', 'string', 'max:255'],
+            'nim' => ['required', 'string', 'max:100'],
+            'tanggal_mulai' => ['required', 'date'],
+            'tanggal_berakhir' => ['nullable', 'date', 'after_or_equal:tanggal_mulai'],
+            'divisi' => ['required', 'string', 'max:255'],
+            'judul_proyek' => ['nullable', 'string', 'max:255'],
+            'nilai' => ['nullable', 'numeric', 'min:0', 'max:100'],
+        ]);
+
+        $entry = $this->reportService->createManualEntry($validated, (int) Auth::id());
+
+        return response()->json([
+            'message' => 'Data peserta manual berhasil ditambahkan.',
+            'data' => $entry,
+        ], 201);
     }
 }
