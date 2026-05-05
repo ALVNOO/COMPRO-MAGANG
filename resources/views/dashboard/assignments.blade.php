@@ -886,7 +886,7 @@
             <i class="fas fa-star"></i>
         </div>
         <div class="stat-info">
-            <h3>{{ $avgGrade !== null ? $avgGrade . '/10' : '-' }}</h3>
+            <h3>{{ $avgGrade !== null ? $avgGrade . '/100' : '-' }}</h3>
             <p>Rata-rata Nilai</p>
         </div>
     </div>
@@ -1101,7 +1101,7 @@ function openDetailPopup(id) {
             gradeHtml = `
                 <div class="popup-grade-item">
                     <div class="popup-grade-label">Nilai</div>
-                    <div class="popup-grade-value">${data.grade}/10</div>
+                    <div class="popup-grade-value">${data.grade}/100</div>
                 </div>
             `;
         } else {
