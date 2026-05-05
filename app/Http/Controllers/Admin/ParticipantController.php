@@ -5,11 +5,14 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\Certificate;
+use App\Models\DivisionMentor;
 use App\Models\InternshipApplication;
 use App\Services\Application\InternshipApplicationService;
 use App\Services\Document\FileUploadService;
+use App\Services\NotificationService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class ParticipantController extends Controller
 {
@@ -30,7 +33,7 @@ class ParticipantController extends Controller
             ->with([
                 'internshipApplications' => function ($query) {
                     $query->whereIn('status', ['accepted', 'finished'])
-                        ->with('divisionAdmin');
+                        ->with(['divisionAdmin.mentors', 'divisionMentor']);
                 },
                 'certificates',
                 'assignments'
@@ -191,5 +194,105 @@ class ParticipantController extends Controller
 
         return redirect()->route('admin.participants')
             ->with('success', 'Sertifikat berhasil diupload.');
+    }
+
+    /**
+     * Change mentor assignment for accepted participant.
+     */
+    public function changeMentor(Request $request, $applicationId)
+    {
+        $request->validate([
+            'division_mentor_id' => 'required|exists:division_mentors,id',
+            'transfer_reason' => 'nullable|string|max:1000',
+        ]);
+
+        $application = InternshipApplication::with(['user', 'divisionMentor', 'divisionAdmin'])
+            ->findOrFail($applicationId);
+
+        if ($application->status !== 'accepted') {
+            return redirect()->route('admin.participants')
+                ->with('error', 'Penggantian mentor hanya dapat dilakukan untuk peserta dengan status accepted.');
+        }
+
+        if ($application->division_mentor_id === null) {
+            return redirect()->route('admin.participants')
+                ->with('error', 'Peserta yang belum memiliki mentor tidak dapat menggunakan form penggantian mentor.');
+        }
+
+        $newMentor = DivisionMentor::findOrFail($request->division_mentor_id);
+        if ((int) $newMentor->division_id !== (int) $application->division_admin_id) {
+            return redirect()->route('admin.participants')
+                ->with('error', 'Mentor pengganti wajib berasal dari divisi yang sama.');
+        }
+
+        if ((int) $application->division_mentor_id === (int) $newMentor->id) {
+            return redirect()->route('admin.participants')
+                ->with('error', 'Mentor yang dipilih sama dengan mentor saat ini.');
+        }
+
+        $oldMentor = $application->divisionMentor;
+        $oldMentorId = $application->division_mentor_id;
+
+        DB::transaction(function () use ($application, $newMentor, $oldMentor, $oldMentorId, $request) {
+            $application->division_mentor_id = $newMentor->id;
+            $application->save();
+
+            DB::table('mentor_transfer_histories')->insert([
+                'internship_application_id' => $application->id,
+                'old_division_mentor_id' => $oldMentorId,
+                'new_division_mentor_id' => $newMentor->id,
+                'changed_by_admin_id' => Auth::id(),
+                'reason' => $request->transfer_reason,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+
+            $participant = $application->user;
+            $oldMentorUser = $oldMentor
+                ? User::where('username', $oldMentor->nik_number)->where('role', 'pembimbing')->first()
+                : null;
+            $newMentorUser = User::where('username', $newMentor->nik_number)->where('role', 'pembimbing')->first();
+
+            NotificationService::create(
+                $participant,
+                'mentor_changed',
+                'Mentor magang Anda diperbarui',
+                'Admin mengganti mentor Anda menjadi ' . $newMentor->mentor_name . '.',
+                'info',
+                route('dashboard.program'),
+                [
+                    'application_id' => $application->id,
+                    'old_mentor_id' => $oldMentorId,
+                    'new_mentor_id' => $newMentor->id,
+                ]
+            );
+
+            if ($oldMentorUser) {
+                NotificationService::create(
+                    $oldMentorUser,
+                    'mentor_reassigned',
+                    'Peserta dialihkan ke mentor lain',
+                    'Peserta ' . $participant->name . ' telah dialihkan ke mentor lain oleh admin.',
+                    'warning',
+                    route('mentor.dashboard'),
+                    ['application_id' => $application->id]
+                );
+            }
+
+            if ($newMentorUser) {
+                NotificationService::create(
+                    $newMentorUser,
+                    'mentor_reassigned',
+                    'Peserta baru dialihkan ke Anda',
+                    'Peserta ' . $participant->name . ' telah dialihkan ke Anda oleh admin.',
+                    'success',
+                    route('mentor.dashboard'),
+                    ['application_id' => $application->id]
+                );
+            }
+        });
+
+        return redirect()->route('admin.participants')
+            ->with('success', 'Mentor peserta berhasil diperbarui tanpa mengubah progres magang.');
     }
 }

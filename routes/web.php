@@ -425,6 +425,10 @@ Route::middleware(['auth', 'throttle:global'])
             AdminParticipantController::class,
             'uploadIntegrityPact',
         ])->name('participants.upload-integrity-pact');
+        Route::post('/participants/{applicationId}/change-mentor', [
+            AdminParticipantController::class,
+            'changeMentor',
+        ])->name('participants.change-mentor')->middleware('throttle:form-submission');
 
         // Mentors
         Route::get('/mentors', [AdminMentorController::class, 'index'])->name(

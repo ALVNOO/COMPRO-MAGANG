@@ -959,6 +959,12 @@
                                 $hasCertificate = $peserta->certificates && $peserta->certificates->count() > 0;
                                 $certificate = $hasCertificate ? $peserta->certificates->first() : null;
                                 $isDocComplete = $app->acceptance_letter_path && $hasCertificate && $app->completion_letter_path;
+                                $mentorOptions = $app->divisionAdmin && $app->divisionAdmin->mentors
+                                    ? $app->divisionAdmin->mentors->map(fn($mentor) => [
+                                        'id' => $mentor->id,
+                                        'name' => $mentor->mentor_name,
+                                    ])->values()->toArray()
+                                    : [];
                             @endphp
                             <tr class="participant-row"
                                 data-name="{{ strtolower($peserta->name) }}"
@@ -1077,6 +1083,11 @@
                                             'startDate' => $startDate ? $startDate->format('d M Y') : '-',
                                             'endDate' => $endDate ? $endDate->format('d M Y') : '-',
                                             'status' => $statusLabel,
+                                            'isAccepted' => $app->status === 'accepted',
+                                            'hasMentor' => (bool)$app->division_mentor_id,
+                                            'currentMentorId' => $app->division_mentor_id,
+                                            'currentMentorName' => $app->divisionMentor->mentor_name ?? '-',
+                                            'mentorOptions' => $mentorOptions,
                                             'hasAcceptance' => (bool)$app->acceptance_letter_path,
                                             'acceptancePath' => $app->acceptance_letter_path,
                                             'hasReport' => (bool)$app->assessment_report_path,
@@ -1176,11 +1187,39 @@
                             </template>
                         </div>
                         <div class="doc-item">
+                            <div class="doc-item-icon" :class="selectedParticipant?.hasLocationPermission ? 'has-file' : 'no-file'">
+                                <i class="fas fa-map-marked-alt"></i>
+                            </div>
+                            <div class="doc-item-info">
+                                <div class="doc-item-name">Surat Izin Masuk Lokasi</div>
+                                <div class="doc-item-status" x-text="selectedParticipant?.hasLocationPermission ? 'Tersedia' : 'Belum ada'"></div>
+                            </div>
+                            <template x-if="selectedParticipant?.hasLocationPermission">
+                                <a :href="'/storage/' + selectedParticipant?.locationPermissionPath" target="_blank" class="action-btn secondary">
+                                    <i class="fas fa-download"></i>
+                                </a>
+                            </template>
+                        </div>
+                        <div class="doc-item">
+                            <div class="doc-item-icon" :class="selectedParticipant?.hasIntegrityPact ? 'has-file' : 'no-file'">
+                                <i class="fas fa-file-contract"></i>
+                            </div>
+                            <div class="doc-item-info">
+                                <div class="doc-item-name">Pakta Integritas</div>
+                                <div class="doc-item-status" x-text="selectedParticipant?.hasIntegrityPact ? 'Tersedia' : 'Belum ada'"></div>
+                            </div>
+                            <template x-if="selectedParticipant?.hasIntegrityPact">
+                                <a :href="'/storage/' + selectedParticipant?.integrityPactPath" target="_blank" class="action-btn secondary">
+                                    <i class="fas fa-download"></i>
+                                </a>
+                            </template>
+                        </div>
+                        <div class="doc-item">
                             <div class="doc-item-icon" :class="selectedParticipant?.hasReport ? 'has-file' : 'no-file'">
                                 <i class="fas fa-file-alt"></i>
                             </div>
                             <div class="doc-item-info">
-                                <div class="doc-item-name">Laporan Magang</div>
+                                <div class="doc-item-name">Laporan Penilaian</div>
                                 <div class="doc-item-status" x-text="selectedParticipant?.hasReport ? 'Tersedia' : 'Belum ada'"></div>
                             </div>
                             <template x-if="selectedParticipant?.hasReport">
@@ -1217,34 +1256,40 @@
                                 </a>
                             </template>
                         </div>
-                        <div class="doc-item">
-                            <div class="doc-item-icon" :class="selectedParticipant?.hasLocationPermission ? 'has-file' : 'no-file'">
-                                <i class="fas fa-map-marked-alt"></i>
-                            </div>
-                            <div class="doc-item-info">
-                                <div class="doc-item-name">Surat Izin Masuk Lokasi</div>
-                                <div class="doc-item-status" x-text="selectedParticipant?.hasLocationPermission ? 'Tersedia' : 'Belum ada'"></div>
-                            </div>
-                            <template x-if="selectedParticipant?.hasLocationPermission">
-                                <a :href="'/storage/' + selectedParticipant?.locationPermissionPath" target="_blank" class="action-btn secondary">
-                                    <i class="fas fa-download"></i>
-                                </a>
-                            </template>
+                    </div>
+                </div>
+
+                {{-- Mentor Transfer --}}
+                <div class="modal-section" x-show="selectedParticipant?.isAccepted && selectedParticipant?.hasMentor" x-cloak>
+                    <div class="modal-section-title">Penggantian Mentor (Satu Divisi)</div>
+                    <div class="upload-form">
+                        <div class="upload-form-title">
+                            <i class="fas fa-user-tie me-2"></i>
+                            Mentor Saat Ini: <span x-text="selectedParticipant?.currentMentorName || '-'"></span>
                         </div>
-                        <div class="doc-item">
-                            <div class="doc-item-icon" :class="selectedParticipant?.hasIntegrityPact ? 'has-file' : 'no-file'">
-                                <i class="fas fa-file-contract"></i>
+                        <form :action="'/admin/participants/' + selectedParticipant?.id + '/change-mentor'" method="POST">
+                            @csrf
+                            <div style="display: grid; gap: 0.75rem;">
+                                <select name="division_mentor_id" class="upload-input" required>
+                                    <option value="">-- Pilih Mentor Pengganti --</option>
+                                    <template x-for="mentor in (selectedParticipant?.mentorOptions || [])" :key="mentor.id">
+                                        <option :value="mentor.id" :selected="mentor.id === selectedParticipant?.currentMentorId" x-text="mentor.name"></option>
+                                    </template>
+                                </select>
+                                <textarea
+                                    name="transfer_reason"
+                                    class="upload-input"
+                                    rows="3"
+                                    placeholder="Alasan penggantian mentor (opsional)"
+                                    style="resize: vertical;"
+                                ></textarea>
+                                <div style="display: flex; justify-content: flex-end;">
+                                    <button type="submit" class="upload-btn">
+                                        <i class="fas fa-exchange-alt"></i> Simpan Perubahan Mentor
+                                    </button>
+                                </div>
                             </div>
-                            <div class="doc-item-info">
-                                <div class="doc-item-name">Pakta Integritas</div>
-                                <div class="doc-item-status" x-text="selectedParticipant?.hasIntegrityPact ? 'Tersedia' : 'Belum ada'"></div>
-                            </div>
-                            <template x-if="selectedParticipant?.hasIntegrityPact">
-                                <a :href="'/storage/' + selectedParticipant?.integrityPactPath" target="_blank" class="action-btn secondary">
-                                    <i class="fas fa-download"></i>
-                                </a>
-                            </template>
-                        </div>
+                        </form>
                     </div>
                 </div>
 
@@ -1258,30 +1303,6 @@
                         <form :action="'/admin/participants/' + selectedParticipant?.id + '/upload-acceptance-letter'" method="POST" enctype="multipart/form-data" class="upload-form-row">
                             @csrf
                             <input type="file" name="acceptance_letter" accept=".pdf" class="upload-input" required>
-                            <button type="submit" class="upload-btn">
-                                <i class="fas fa-upload"></i> Upload
-                            </button>
-                        </form>
-                    </div>
-
-                    {{-- Upload Sertifikat --}}
-                    <div class="upload-form" style="margin-top: 0.75rem;">
-                        <div class="upload-form-title"><i class="fas fa-certificate me-2"></i> Sertifikat</div>
-                        <form :action="'/admin/participants/' + selectedParticipant?.userId + '/upload-certificate'" method="POST" enctype="multipart/form-data" class="upload-form-row">
-                            @csrf
-                            <input type="file" name="certificate" accept=".pdf" class="upload-input" required>
-                            <button type="submit" class="upload-btn">
-                                <i class="fas fa-upload"></i> Upload
-                            </button>
-                        </form>
-                    </div>
-
-                    {{-- Upload Surat Selesai --}}
-                    <div class="upload-form" style="margin-top: 0.75rem;">
-                        <div class="upload-form-title"><i class="fas fa-file-circle-check me-2"></i> Surat Selesai Magang</div>
-                        <form :action="'/admin/participants/' + selectedParticipant?.id + '/upload-completion-letter'" method="POST" enctype="multipart/form-data" class="upload-form-row">
-                            @csrf
-                            <input type="file" name="completion_letter" accept=".pdf" class="upload-input" required>
                             <button type="submit" class="upload-btn">
                                 <i class="fas fa-upload"></i> Upload
                             </button>
@@ -1311,6 +1332,30 @@
                             </button>
                         </form>
                     </div>
+
+                    {{-- Upload Sertifikat --}}
+                    <div class="upload-form" style="margin-top: 0.75rem;">
+                        <div class="upload-form-title"><i class="fas fa-certificate me-2"></i> Sertifikat</div>
+                        <form :action="'/admin/participants/' + selectedParticipant?.userId + '/upload-certificate'" method="POST" enctype="multipart/form-data" class="upload-form-row">
+                            @csrf
+                            <input type="file" name="certificate" accept=".pdf" class="upload-input" required>
+                            <button type="submit" class="upload-btn">
+                                <i class="fas fa-upload"></i> Upload
+                            </button>
+                        </form>
+                    </div>
+
+                    {{-- Upload Surat Selesai --}}
+                    <div class="upload-form" style="margin-top: 0.75rem;">
+                        <div class="upload-form-title"><i class="fas fa-file-circle-check me-2"></i> Surat Selesai Magang</div>
+                        <form :action="'/admin/participants/' + selectedParticipant?.id + '/upload-completion-letter'" method="POST" enctype="multipart/form-data" class="upload-form-row">
+                            @csrf
+                            <input type="file" name="completion_letter" accept=".pdf" class="upload-input" required>
+                            <button type="submit" class="upload-btn">
+                                <i class="fas fa-upload"></i> Upload
+                            </button>
+                        </form>
+                    </div>
                 </div>
             </div>
         </div>
@@ -1327,8 +1372,14 @@ function participantsManager() {
         docFilter: '',
         showModal: false,
         selectedParticipant: null,
-        visibleCount: {{ $totalParticipants }},
-        totalCount: {{ $totalParticipants }},
+        visibleCount: 0,
+        totalCount: 0,
+
+        init() {
+            const rows = document.querySelectorAll('.participant-row');
+            this.totalCount = rows.length;
+            this.visibleCount = rows.length;
+        },
 
         filterTable() {
             const rows = document.querySelectorAll('.participant-row');
