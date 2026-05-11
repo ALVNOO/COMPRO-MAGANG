@@ -41,7 +41,7 @@ class MentorController extends Controller
     {
         $mentor = $this->divisionService->resetMentorPassword($id);
 
-        return redirect()->route('admin.mentors.index')
+        return redirect()->route('admin.mentors')
             ->with('success', 'Password pembimbing ' . $mentor->name . ' berhasil direset menjadi "mentor123"');
     }
 }
