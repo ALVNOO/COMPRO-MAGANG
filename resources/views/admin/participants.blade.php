@@ -1151,7 +1151,7 @@ table.participants-table > thead > tr > th {
                                 </td>
                                 <td>
                                     <div class="doc-status">
-                                        {{-- Surat Penerimaan --}}
+                                        {{-- 1. Surat Penerimaan --}}
                                         @if($app->acceptance_letter_path)
                                             <a href="{{ asset('storage/' . $app->acceptance_letter_path) }}" target="_blank" class="doc-icon available" title="Surat Penerimaan">
                                                 <i class="fas fa-file-signature"></i>
@@ -1162,40 +1162,7 @@ table.participants-table > thead > tr > th {
                                             </span>
                                         @endif
 
-                                        {{-- Laporan --}}
-                                        @if($app->assessment_report_path)
-                                            <a href="{{ route('admin.participants.download-assessment-report', $app->id) }}" class="doc-icon available" title="Laporan">
-                                                <i class="fas fa-file-alt"></i>
-                                            </a>
-                                        @else
-                                            <span class="doc-icon missing" title="Laporan belum ada">
-                                                <i class="fas fa-file-alt"></i>
-                                            </span>
-                                        @endif
-
-                                        {{-- Sertifikat --}}
-                                        @if($certificate && $certificate->certificate_path)
-                                            <a href="{{ asset('storage/' . $certificate->certificate_path) }}" target="_blank" class="doc-icon available" title="Sertifikat">
-                                                <i class="fas fa-certificate"></i>
-                                            </a>
-                                        @else
-                                            <span class="doc-icon missing" title="Sertifikat belum ada">
-                                                <i class="fas fa-certificate"></i>
-                                            </span>
-                                        @endif
-
-                                        {{-- Surat Selesai --}}
-                                        @if(!empty($app->completion_letter_path))
-                                            <a href="{{ asset('storage/' . $app->completion_letter_path) }}" target="_blank" class="doc-icon available" title="Surat Selesai">
-                                                <i class="fas fa-file-circle-check"></i>
-                                            </a>
-                                        @else
-                                            <span class="doc-icon missing" title="Surat Selesai belum ada">
-                                                <i class="fas fa-file-circle-check"></i>
-                                            </span>
-                                        @endif
-
-                                        {{-- Surat Izin Masuk Lokasi --}}
+                                        {{-- 2. Surat Izin Masuk Lokasi --}}
                                         @if(!empty($app->location_permission_letter_path))
                                             <a href="{{ asset('storage/' . $app->location_permission_letter_path) }}" target="_blank" class="doc-icon available" title="Surat Izin Masuk Lokasi">
                                                 <i class="fas fa-map-marked-alt"></i>
@@ -1206,7 +1173,7 @@ table.participants-table > thead > tr > th {
                                             </span>
                                         @endif
 
-                                        {{-- Pakta Integritas --}}
+                                        {{-- 3. Pakta Integritas --}}
                                         @if(!empty($app->integrity_pact_path))
                                             <a href="{{ asset('storage/' . $app->integrity_pact_path) }}" target="_blank" class="doc-icon available" title="Pakta Integritas">
                                                 <i class="fas fa-file-contract"></i>
@@ -1214,6 +1181,39 @@ table.participants-table > thead > tr > th {
                                         @else
                                             <span class="doc-icon missing" title="Pakta Integritas belum ada">
                                                 <i class="fas fa-file-contract"></i>
+                                            </span>
+                                        @endif
+
+                                        {{-- 4. Laporan Penilaian --}}
+                                        @if($app->assessment_report_path)
+                                            <a href="{{ route('admin.participants.download-assessment-report', $app->id) }}" class="doc-icon available" title="Laporan Penilaian">
+                                                <i class="fas fa-file-alt"></i>
+                                            </a>
+                                        @else
+                                            <span class="doc-icon missing" title="Laporan Penilaian belum ada">
+                                                <i class="fas fa-file-alt"></i>
+                                            </span>
+                                        @endif
+
+                                        {{-- 5. Surat Selesai --}}
+                                        @if(!empty($app->completion_letter_path))
+                                            <a href="{{ asset('storage/' . $app->completion_letter_path) }}" target="_blank" class="doc-icon available" title="Surat Selesai">
+                                                <i class="fas fa-file-circle-check"></i>
+                                            </a>
+                                        @else
+                                            <span class="doc-icon missing" title="Surat Selesai belum ada">
+                                                <i class="fas fa-file-circle-check"></i>
+                                            </span>
+                                        @endif
+
+                                        {{-- 6. Sertifikat --}}
+                                        @if($certificate && $certificate->certificate_path)
+                                            <a href="{{ asset('storage/' . $certificate->certificate_path) }}" target="_blank" class="doc-icon available" title="Sertifikat">
+                                                <i class="fas fa-certificate"></i>
+                                            </a>
+                                        @else
+                                            <span class="doc-icon missing" title="Sertifikat belum ada">
+                                                <i class="fas fa-certificate"></i>
                                             </span>
                                         @endif
                                     </div>

@@ -469,6 +469,30 @@
     transform: translateY(-2px);
 }
 
+.btn-cancel-text {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.6rem 1.25rem;
+    width: auto;
+    height: auto;
+    border-radius: 10px;
+    border: 1px solid #d1d5db;
+    cursor: pointer;
+    transition: all 0.3s;
+    background: white;
+    color: #6b7280;
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.btn-cancel-text:hover {
+    background: #f3f4f6;
+    border-color: #9ca3af;
+    color: #374151;
+    transform: translateY(-2px);
+}
+
 .logbook-textarea {
     min-height: 70px;
     resize: vertical;
@@ -849,7 +873,7 @@
                 </div>
             </div>
             <div class="form-actions">
-                <button type="button" class="btn-cancel-entry" id="btnCancelNew">
+                <button type="button" class="btn-cancel-text" id="btnCancelNew">
                     <i class="fas fa-times"></i> Batal
                 </button>
                 <button type="button" class="btn-modal-save" id="btnSaveNew">
