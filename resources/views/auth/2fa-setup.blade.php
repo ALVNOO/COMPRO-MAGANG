@@ -2,6 +2,14 @@
 
 @section('title', 'Setup 2FA - Sistem Magang PT Telkom Indonesia')
 
+@push('styles')
+<style>
+    body.public-page .navbar { display: none !important; }
+    .auth-page { padding-top: 0 !important; }
+    .auth-wrapper { min-height: 100vh !important; }
+</style>
+@endpush
+
 @section('content')
 <div class="auth-page">
     <div class="auth-wrapper">
