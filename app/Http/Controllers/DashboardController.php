@@ -2,18 +2,17 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\User;
-use App\Models\Direktorat;
-use App\Models\Divisi;
-use App\Models\InternshipApplication;
 use App\Models\Assignment;
-use App\Models\Certificate;
 use App\Models\AssignmentSubmission;
+use App\Models\Certificate;
+use App\Models\Direktorat;
 use App\Models\FieldOfInterest;
+use App\Models\InternshipApplication;
+use App\Models\User;
+use App\Services\Document\FileUploadService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Hash;
 
 class DashboardController extends Controller
 {
@@ -23,60 +22,61 @@ class DashboardController extends Controller
     public function index()
     {
         $user = Auth::user();
-        
+
         // Update otomatis status menjadi finished jika end_date sudah lewat
         $user->internshipApplications()
             ->where('status', 'accepted')
             ->whereDate('end_date', '<', now())
             ->update(['status' => 'finished']);
-            
+
         if ($user->role === 'pembimbing') {
             return redirect('/mentor/dashboard');
         }
-        
+
         // Eager load relationships untuk menghindari N+1 query
         $user->load([
             'assignments',
             'certificates',
             'attendances',
-            'internshipApplications.divisi.subDirektorat.direktorat'
+            'internshipApplications.divisi.subDirektorat.direktorat',
         ]);
-        
+
         $application = $user->internshipApplications()
             ->with('divisi.subDirektorat.direktorat')
             ->whereIn('status', ['pending', 'accepted', 'finished'])
             ->latest()
             ->first();
-        if (!$application) {
+        if (! $application) {
             $application = $user->internshipApplications()
                 ->with('divisi.subDirektorat.direktorat')
                 ->latest()
                 ->first();
         }
-        
+
         // Check if user has pending application yang belum lengkap
         // Redirect ke pre-acceptance hanya jika aplikasi pending dan belum lengkap (belum ada field_of_interest_id atau dokumen belum lengkap)
         if ($application && $application->status === 'pending') {
             $profileComplete = (bool) ($user->name && $user->nim && $user->university && $user->major && $user->phone && $user->ktp_number);
             $documentsComplete = (bool) ($application->ktm_path && $application->surat_permohonan_path && $application->cv_path && $application->good_behavior_path);
             $fieldOfInterestSelected = (bool) $application->field_of_interest_id;
-            
+
             // Jika belum lengkap, redirect ke pre-acceptance
-            if (!$profileComplete || !$documentsComplete || !$fieldOfInterestSelected) {
+            if (! $profileComplete || ! $documentsComplete || ! $fieldOfInterestSelected) {
                 return redirect()->route('dashboard.pre-acceptance');
             }
+
             // Jika sudah lengkap tapi masih pending, redirect ke status pengajuan (bukan dashboard)
             return redirect()->route('dashboard.status');
         }
-        
+
         // Jika belum diterima (rejected, dll) atau tidak ada aplikasi, redirect ke status
-        if (!$application || !in_array($application->status, ['accepted', 'finished'])) {
+        if (! $application || ! in_array($application->status, ['accepted', 'finished'])) {
             return redirect()->route('dashboard.status');
         }
 
         // Jika accepted tapi belum pernah "masuk dashboard", redirect ke status (tampilkan selamat + mentor info)
         // Menggunakan kolom database agar persisten setelah logout/login ulang
-        if ($application->status === 'accepted' && !$application->dashboard_entered_at) {
+        if ($application->status === 'accepted' && ! $application->dashboard_entered_at) {
             return redirect()->route('dashboard.status');
         }
 
@@ -146,7 +146,7 @@ class DashboardController extends Controller
             ->whereIn('status', ['pending', 'accepted', 'finished'])
             ->latest()
             ->first();
-        if (!$application) {
+        if (! $application) {
             $application = $user->internshipApplications()
                 ->with('divisi.subDirektorat.direktorat', 'fieldOfInterest', 'divisionMentor.division', 'divisionAdmin')
                 ->latest()
@@ -174,14 +174,14 @@ class DashboardController extends Controller
             ->with('submissions')
             ->orderBy('created_at', 'desc')
             ->get();
-        
+
         // Ambil pengajuan terbaru yang statusnya pending/accepted/finished
         $application = $user->internshipApplications()
             ->with('divisi.subDirektorat.direktorat')
             ->whereIn('status', ['pending', 'accepted', 'finished'])
             ->latest()
             ->first();
-        if (!$application) {
+        if (! $application) {
             $application = $user->internshipApplications()
                 ->with('divisi.subDirektorat.direktorat')
                 ->latest()
@@ -222,7 +222,7 @@ class DashboardController extends Controller
                 'user_id' => Auth::id(),
                 'file_path' => $filePath,
                 'submitted_at' => now(),
-                'keterangan' => 'Kumpul tugas' . ($isRevision ? ' (Revisi)' : ''),
+                'keterangan' => 'Kumpul tugas'.($isRevision ? ' (Revisi)' : ''),
             ]);
         }
         if ($request->filled('online_text')) {
@@ -239,7 +239,7 @@ class DashboardController extends Controller
         try {
             // Reload assignment untuk mendapatkan data terbaru termasuk submissions
             $assignment->refresh();
-            
+
             // Cari internship application untuk mendapatkan mentor
             $application = \App\Models\InternshipApplication::where('user_id', $assignment->user_id)
                 ->where('status', 'accepted')
@@ -263,35 +263,53 @@ class DashboardController extends Controller
                 }
             }
         } catch (\Exception $e) {
-            \Illuminate\Support\Facades\Log::warning('Error creating notification for mentor: ' . $e->getMessage());
+            \Illuminate\Support\Facades\Log::warning('Error creating notification for mentor: '.$e->getMessage());
         }
 
         return back()->with('success', 'Tugas berhasil dikumpulkan!');
     }
 
     /**
-     * Display certificates.
+     * Display certificates and completion letter (surat selesai) after internship period.
+     * Admin may upload files anytime; peserta can preview listing but download only after evaluasi akhir.
      */
     public function certificates()
     {
         $user = Auth::user();
         $certificates = collect();
-        
-        // Get latest application
+        $completionLetterPath = null;
+        $eligible = false;
+
         $latestApp = $user->internshipApplications()
             ->whereIn('status', ['accepted', 'finished'])
             ->latest()
             ->first();
-        
-        // Tampilkan sertifikat hanya jika sudah selesai magang atau melampaui end_date
-        if ($latestApp && $latestApp->end_date && now()->isAfter(\Carbon\Carbon::parse($latestApp->end_date))) {
-            $certificates = $user->certificates()->orderBy('created_at', 'desc')->get();
-        } elseif ($latestApp && $latestApp->status === 'finished') {
-            // Jika status sudah finished, tampilkan sertifikat
-            $certificates = $user->certificates()->orderBy('created_at', 'desc')->get();
+
+        if ($latestApp) {
+            if ($latestApp->end_date && now()->isAfter(\Carbon\Carbon::parse($latestApp->end_date))) {
+                $eligible = true;
+            } elseif ($latestApp->status === 'finished') {
+                $eligible = true;
+            }
         }
-        
-        return view('dashboard.certificates', compact('user', 'certificates'));
+
+        $documentsUnlocked = $latestApp && $latestApp->hasFinalEvaluationDocument();
+
+        if ($eligible && $latestApp) {
+            $certificates = $user->certificates()->orderBy('created_at', 'desc')->get();
+            $completionLetterPath = $latestApp->completion_letter_path;
+        }
+
+        $finalEvaluationRequired = $eligible && $latestApp && ! $documentsUnlocked;
+
+        return view('dashboard.certificates', compact(
+            'user',
+            'certificates',
+            'finalEvaluationRequired',
+            'documentsUnlocked',
+            'completionLetterPath',
+            'eligible',
+        ));
     }
 
     /**
@@ -300,18 +318,138 @@ class DashboardController extends Controller
     public function downloadCertificate($id)
     {
         $certificate = Certificate::findOrFail($id);
-        
+
         if ($certificate->user_id !== Auth::id()) {
             abort(403);
         }
 
+        $user = Auth::user();
+        $latestApp = $user->internshipApplications()
+            ->whereIn('status', ['accepted', 'finished'])
+            ->latest()
+            ->first();
+
+        if (! $latestApp || ! $latestApp->hasFinalEvaluationDocument()) {
+            return redirect()->route('dashboard.certificates')
+                ->with('error', 'Unggah dokumen evaluasi akhir terlebih dahulu untuk mengunduh sertifikat (unggah sendiri atau melalui admin).');
+        }
+
         if (Storage::disk('public')->exists($certificate->certificate_path)) {
-            $user = Auth::user();
-            $filename = 'Sertifikat_' . str_replace(' ', '_', $user->name) . '_' . $user->nim . '.pdf';
+            $filename = 'Sertifikat_'.str_replace(' ', '_', $user->name).'_'.$user->nim.'.pdf';
+
             return Storage::disk('public')->download($certificate->certificate_path, $filename);
         }
 
         abort(404);
+    }
+
+    /**
+     * Download surat keterangan selesai magang (PDF) — sama syarat unduh seperti sertifikat (evaluasi akhir).
+     */
+    public function downloadCompletionLetter()
+    {
+        $user = Auth::user();
+        $latestApp = $user->internshipApplications()
+            ->whereIn('status', ['accepted', 'finished'])
+            ->latest()
+            ->first();
+
+        if (! $latestApp || ! $latestApp->hasFinalEvaluationDocument()) {
+            return redirect()->route('dashboard.certificates')
+                ->with('error', 'Anda harus memiliki dokumen evaluasi akhir sebelum dapat mengunduh surat selesai magang.');
+        }
+
+        if (! $latestApp->completion_letter_path || ! Storage::disk('public')->exists($latestApp->completion_letter_path)) {
+            abort(404);
+        }
+
+        $filename = 'Surat_Selesai_Magang_'.str_replace(' ', '_', $user->name).'_'.$user->nim.'.pdf';
+
+        return Storage::disk('public')->download($latestApp->completion_letter_path, $filename);
+    }
+
+    /**
+     * Form unggah evaluasi akhir (PDF).
+     */
+    public function finalEvaluation()
+    {
+        $user = Auth::user();
+        $application = $user->internshipApplications()
+            ->whereIn('status', ['accepted', 'finished'])
+            ->latest()
+            ->first();
+
+        return view('dashboard.final-evaluation', compact('user', 'application'));
+    }
+
+    /**
+     * Simpan PDF evaluasi akhir peserta.
+     */
+    public function uploadFinalEvaluation(Request $request)
+    {
+        $user = Auth::user();
+        $application = $user->internshipApplications()
+            ->whereIn('status', ['accepted', 'finished'])
+            ->latest()
+            ->first();
+
+        if (! $application) {
+            return redirect()->route('dashboard.status')
+                ->with('error', 'Tidak ada pengajuan magang yang aktif untuk mengunggah evaluasi akhir.');
+        }
+
+        if (! empty($application->final_evaluation_admin_path)) {
+            return redirect()->route('dashboard.final-evaluation')
+                ->with('error', 'Dokumen evaluasi akhir sudah diunggah oleh admin. Peserta tidak dapat mengunggah file dari akun ini.');
+        }
+
+        $request->validate([
+            'final_evaluation' => 'required|file|mimes:pdf|max:2048',
+        ]);
+
+        /** @var FileUploadService $files */
+        $files = app(FileUploadService::class);
+        $path = $files->uploadFinalEvaluation(
+            $request->file('final_evaluation'),
+            'participant',
+            $application->final_evaluation_participant_path
+        );
+
+        $application->final_evaluation_participant_path = $path;
+        $application->final_evaluation_participant_uploaded_at = now();
+        $application->save();
+
+        return redirect()->route('dashboard.final-evaluation')
+            ->with('success', 'Dokumen evaluasi akhir berhasil diunggah.');
+    }
+
+    /**
+     * Unduh dokumen evaluasi akhir (sumber peserta atau admin).
+     */
+    public function downloadFinalEvaluationParticipant()
+    {
+        $user = Auth::user();
+        $application = $user->internshipApplications()
+            ->whereIn('status', ['accepted', 'finished'])
+            ->latest()
+            ->first();
+
+        $path = $application?->finalEvaluationDocumentPath();
+
+        if (! $application || ! $path) {
+            abort(404);
+        }
+
+        /** @var FileUploadService $files */
+        $files = app(FileUploadService::class);
+        if (! $files->exists($path)) {
+            abort(404);
+        }
+
+        return $files->download(
+            $path,
+            'Evaluasi_Akhir_'.str_replace(' ', '_', $user->name).'.pdf'
+        );
     }
 
     /**
@@ -321,19 +459,19 @@ class DashboardController extends Controller
     {
         $user = Auth::user();
         $direktorats = Direktorat::with(['subDirektorats.divisis'])->get();
-        
+
         // Check if user has any accepted or finished applications
         $hasAccepted = (bool) $user->internshipApplications()
             ->whereIn('status', ['accepted', 'finished'])
             ->exists();
-            
+
         // Check if user has any finished applications (completed internships)
         $hasFinished = (bool) $user->internshipApplications()
             ->where('status', 'finished')
             ->exists();
-            
+
         $hasCertificate = (bool) $user->certificates()->exists();
-        
+
         return view('dashboard.program', compact('user', 'direktorats', 'hasAccepted', 'hasFinished', 'hasCertificate'));
     }
 
@@ -378,6 +516,7 @@ class DashboardController extends Controller
             $application->acknowledged_additional_requirements = true;
             $application->save();
         }
+
         return redirect()->route('dashboard.status');
     }
 
@@ -388,7 +527,7 @@ class DashboardController extends Controller
             ->whereIn('status', ['accepted', 'finished'])
             ->latest()
             ->first();
-        if (!$application) {
+        if (! $application) {
             return redirect()->route('dashboard.status')->with('error', 'Tidak ada pengajuan yang diterima.');
         }
         $request->validate([
@@ -409,6 +548,7 @@ class DashboardController extends Controller
         $application->ss_follow_ig_posindonesia_path = $request->file('ss_follow_ig_posindonesia')->store('additional_docs', 'public');
         $application->ss_subscribe_youtube_path = $request->file('ss_subscribe_youtube')->store('additional_docs', 'public');
         $application->save();
+
         return redirect()->route('dashboard.status')->with('success', 'Dokumen tambahan berhasil dikumpulkan!');
     }
 
@@ -417,7 +557,8 @@ class DashboardController extends Controller
         $user = Auth::user();
         $application = $user->internshipApplications()->whereIn('status', ['accepted', 'finished'])->latest()->first();
         if ($application && $application->acceptance_letter_path && Storage::disk('public')->exists($application->acceptance_letter_path)) {
-            $filename = 'Surat Penerimaan_' . str_replace(' ', '_', $user->name) . '_' . $user->nim . '.pdf';
+            $filename = 'Surat Penerimaan_'.str_replace(' ', '_', $user->name).'_'.$user->nim.'.pdf';
+
             return Storage::disk('public')->download($application->acceptance_letter_path, $filename);
         }
         abort(404);
@@ -432,6 +573,7 @@ class DashboardController extends Controller
             $application->save();
         }
         session(['download_acceptance_letter' => true]);
+
         return response()->json(['success' => true]);
     }
 
@@ -487,7 +629,7 @@ class DashboardController extends Controller
 
         $request->validateWithBag('biodata', [
             'phone' => 'nullable|string|max:20',
-            'email' => 'required|email|max:255|unique:users,email,' . $user->id,
+            'email' => 'required|email|max:255|unique:users,email,'.$user->id,
         ]);
 
         $user->phone = $request->phone;
@@ -508,7 +650,7 @@ class DashboardController extends Controller
             ->latest()
             ->first();
 
-        if (!$application) {
+        if (! $application) {
             return redirect()->route('dashboard');
         }
 
@@ -528,7 +670,7 @@ class DashboardController extends Controller
             ->latest()
             ->first();
 
-        if ($application && !$application->dashboard_entered_at) {
+        if ($application && ! $application->dashboard_entered_at) {
             $application->dashboard_entered_at = now();
             $application->save();
         }
@@ -546,7 +688,7 @@ class DashboardController extends Controller
         try {
             $request->validate([
                 'name' => 'nullable|string|max:255',
-                'nim' => 'nullable|string|max:50|unique:users,nim,' . $user->id,
+                'nim' => 'nullable|string|max:50|unique:users,nim,'.$user->id,
                 'university' => 'nullable|string|max:255',
                 'major' => 'nullable|string|max:255',
                 'phone' => 'nullable|string|max:20',
@@ -559,7 +701,7 @@ class DashboardController extends Controller
             if ($request->expectsJson()) {
                 return response()->json([
                     'success' => false,
-                    'message' => $e->validator->errors()->first()
+                    'message' => $e->validator->errors()->first(),
                 ], 422);
             }
             throw $e;
@@ -577,7 +719,7 @@ class DashboardController extends Controller
         if ($request->expectsJson()) {
             return response()->json([
                 'success' => true,
-                'message' => 'Data diri berhasil disimpan!'
+                'message' => 'Data diri berhasil disimpan!',
             ]);
         }
 
@@ -594,19 +736,19 @@ class DashboardController extends Controller
             ->where('status', 'pending')
             ->latest()
             ->first();
-        
+
         // Jika belum ada application, buat baru
-        if (!$application) {
+        if (! $application) {
             $application = InternshipApplication::create([
                 'user_id' => $user->id,
                 'status' => 'pending',
             ]);
         }
-        
+
         // Validasi untuk upload per file
         $fieldName = $request->input('field_name');
         $validationRules = [];
-        
+
         if ($fieldName === 'ktm') {
             $validationRules = ['file' => 'required|file|mimes:jpg,jpeg,png,pdf|max:2048'];
         } elseif (in_array($fieldName, ['surat_permohonan', 'cv', 'good_behavior'])) {
@@ -620,24 +762,24 @@ class DashboardController extends Controller
                 'good_behavior' => 'nullable|file|mimes:pdf|max:2048',
             ];
         }
-        
+
         try {
             $request->validate($validationRules);
         } catch (\Illuminate\Validation\ValidationException $e) {
             if ($request->expectsJson()) {
                 return response()->json([
                     'success' => false,
-                    'message' => $e->validator->errors()->first()
+                    'message' => $e->validator->errors()->first(),
                 ], 422);
             }
             throw $e;
         }
-        
+
         // Upload file individual
         if ($fieldName && $request->hasFile('file')) {
             $file = $request->file('file');
             $path = '';
-            
+
             switch ($fieldName) {
                 case 'ktm':
                     $path = $file->store('documents/ktm', 'public');
@@ -656,20 +798,20 @@ class DashboardController extends Controller
                     $application->good_behavior_path = $path;
                     break;
             }
-            
+
             $application->save();
-            
+
             if ($request->expectsJson()) {
                 return response()->json([
                     'success' => true,
                     'message' => 'File berhasil diunggah!',
-                    'filename' => basename($path)
+                    'filename' => basename($path),
                 ]);
             }
-            
+
             return back()->with('success', 'File berhasil diunggah!');
         }
-        
+
         // Upload semua file sekaligus (fallback)
         if ($request->hasFile('ktm')) {
             $application->ktm_path = $request->file('ktm')->store('documents/ktm', 'public');
@@ -683,9 +825,9 @@ class DashboardController extends Controller
         if ($request->hasFile('good_behavior')) {
             $application->good_behavior_path = $request->file('good_behavior')->store('documents/good_behavior', 'public');
         }
-        
+
         $application->save();
-        
+
         return back()->with('success', 'Dokumen berhasil diunggah!');
     }
 
@@ -701,7 +843,7 @@ class DashboardController extends Controller
             ->first();
 
         // Jika belum ada application, buat baru
-        if (!$application) {
+        if (! $application) {
             $application = InternshipApplication::create([
                 'user_id' => $user->id,
                 'status' => 'pending',
@@ -722,7 +864,7 @@ class DashboardController extends Controller
             if ($request->expectsJson()) {
                 return response()->json([
                     'success' => false,
-                    'message' => $e->validator->errors()->first()
+                    'message' => $e->validator->errors()->first(),
                 ], 422);
             }
             throw $e;
@@ -735,7 +877,7 @@ class DashboardController extends Controller
         if ($request->expectsJson()) {
             return response()->json([
                 'success' => true,
-                'message' => 'Jadwal magang berhasil disimpan!'
+                'message' => 'Jadwal magang berhasil disimpan!',
             ]);
         }
 
@@ -753,7 +895,7 @@ class DashboardController extends Controller
             ->latest()
             ->first();
 
-        if (!$application) {
+        if (! $application) {
             $application = InternshipApplication::create([
                 'user_id' => $user->id,
                 'status' => 'pending',
@@ -768,7 +910,7 @@ class DashboardController extends Controller
             if ($request->expectsJson()) {
                 return response()->json([
                     'success' => false,
-                    'message' => $e->validator->errors()->first()
+                    'message' => $e->validator->errors()->first(),
                 ], 422);
             }
             throw $e;
@@ -780,7 +922,7 @@ class DashboardController extends Controller
         if ($request->expectsJson()) {
             return response()->json([
                 'success' => true,
-                'message' => 'Bidang minat berhasil disimpan!'
+                'message' => 'Bidang minat berhasil disimpan!',
             ]);
         }
 
@@ -793,7 +935,7 @@ class DashboardController extends Controller
     public function completeApplication(Request $request)
     {
         $user = Auth::user();
-        
+
         // Cek apakah sudah ada application pending
         $existingApplication = $user->internshipApplications()
             ->where('status', 'pending')
@@ -802,20 +944,20 @@ class DashboardController extends Controller
 
         // Cek kelengkapan profil
         $profileComplete = (bool) ($user->name && $user->nim && $user->university && $user->major && $user->phone && $user->ktp_number);
-        
+
         // Cek kelengkapan dokumen
         $documentsComplete = false;
         if ($existingApplication) {
             $documentsComplete = (bool) ($existingApplication->ktm_path && $existingApplication->surat_permohonan_path && $existingApplication->cv_path && $existingApplication->good_behavior_path);
         }
-        
+
         // Cek kelengkapan tanggal
         $datesComplete = false;
         if ($existingApplication) {
             $datesComplete = (bool) ($existingApplication->start_date && $existingApplication->end_date);
         }
 
-        if (!$profileComplete || !$documentsComplete || !$datesComplete) {
+        if (! $profileComplete || ! $documentsComplete || ! $datesComplete) {
             return back()->with('error', 'Silakan lengkapi data diri, semua dokumen, dan waktu magang terlebih dahulu.');
         }
 
@@ -881,7 +1023,7 @@ class DashboardController extends Controller
             if ($request->expectsJson()) {
                 return response()->json([
                     'success' => false,
-                    'message' => $e->validator->errors()->first()
+                    'message' => $e->validator->errors()->first(),
                 ], 422);
             }
             throw $e;
@@ -901,7 +1043,7 @@ class DashboardController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Foto profil berhasil diunggah!',
-                'path' => asset('storage/' . $path)
+                'path' => asset('storage/'.$path),
             ]);
         }
 
@@ -924,7 +1066,7 @@ class DashboardController extends Controller
         if ($request->expectsJson()) {
             return response()->json([
                 'success' => true,
-                'message' => 'Foto profil berhasil dihapus!'
+                'message' => 'Foto profil berhasil dihapus!',
             ]);
         }
 

@@ -3,10 +3,10 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\User;
 use App\Models\Certificate;
 use App\Models\DivisionMentor;
 use App\Models\InternshipApplication;
+use App\Models\User;
 use App\Services\Application\InternshipApplicationService;
 use App\Services\Document\FileUploadService;
 use App\Services\NotificationService;
@@ -36,7 +36,7 @@ class ParticipantController extends Controller
                         ->with(['divisionAdmin.mentors', 'divisionMentor']);
                 },
                 'certificates',
-                'assignments'
+                'assignments',
             ])
             ->get();
 
@@ -73,14 +73,14 @@ class ParticipantController extends Controller
     {
         $application = InternshipApplication::findOrFail($applicationId);
 
-        if (!$application->assessment_report_path || !$this->fileUploadService->exists($application->assessment_report_path)) {
+        if (! $application->assessment_report_path || ! $this->fileUploadService->exists($application->assessment_report_path)) {
             return redirect()->route('admin.participants')
                 ->with('error', 'File laporan tidak ditemukan.');
         }
 
         return $this->fileUploadService->download(
             $application->assessment_report_path,
-            'Laporan_Penilaian_' . $application->user->name . '.pdf'
+            'Laporan_Penilaian_'.$application->user->name.'.pdf'
         );
     }
 
@@ -164,6 +164,11 @@ class ParticipantController extends Controller
 
         $user = User::findOrFail($userId);
 
+        $application = InternshipApplication::where('user_id', $userId)
+            ->whereIn('status', ['accepted', 'finished'])
+            ->latest()
+            ->first();
+
         // Find or create certificate record
         $certificate = Certificate::where('user_id', $userId)->first();
 
@@ -172,14 +177,8 @@ class ParticipantController extends Controller
             $this->fileUploadService->delete($certificate->certificate_path);
         } else {
             // Create new certificate
-            $certificate = new Certificate();
+            $certificate = new Certificate;
             $certificate->user_id = $userId;
-
-            // Get internship application that is accepted
-            $application = InternshipApplication::where('user_id', $userId)
-                ->whereIn('status', ['accepted', 'finished'])
-                ->latest()
-                ->first();
 
             if ($application) {
                 $certificate->internship_application_id = $application->id;
@@ -257,7 +256,7 @@ class ParticipantController extends Controller
                 $participant,
                 'mentor_changed',
                 'Mentor magang Anda diperbarui',
-                'Admin mengganti mentor Anda menjadi ' . $newMentor->mentor_name . '.',
+                'Admin mengganti mentor Anda menjadi '.$newMentor->mentor_name.'.',
                 'info',
                 route('dashboard.program'),
                 [
@@ -272,7 +271,7 @@ class ParticipantController extends Controller
                     $oldMentorUser,
                     'mentor_reassigned',
                     'Peserta dialihkan ke mentor lain',
-                    'Peserta ' . $participant->name . ' telah dialihkan ke mentor lain oleh admin.',
+                    'Peserta '.$participant->name.' telah dialihkan ke mentor lain oleh admin.',
                     'warning',
                     route('mentor.dashboard'),
                     ['application_id' => $application->id]
@@ -284,7 +283,7 @@ class ParticipantController extends Controller
                     $newMentorUser,
                     'mentor_reassigned',
                     'Peserta baru dialihkan ke Anda',
-                    'Peserta ' . $participant->name . ' telah dialihkan ke Anda oleh admin.',
+                    'Peserta '.$participant->name.' telah dialihkan ke Anda oleh admin.',
                     'success',
                     route('mentor.dashboard'),
                     ['application_id' => $application->id]

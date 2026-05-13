@@ -64,6 +64,12 @@
                     <span class="nav-text">Laporan Penilaian</span>
                 </a>
             </div>
+            <div class="nav-item">
+                <a href="{{ route('mentor.evaluasi-akhir') }}" class="nav-link {{ request()->routeIs('mentor.evaluasi-akhir*') ? 'active' : '' }}">
+                    <i class="fas fa-file-signature nav-icon"></i>
+                    <span class="nav-text">Evaluasi Akhir</span>
+                </a>
+            </div>
         </nav>
         
         <div class="mt-auto p-3">

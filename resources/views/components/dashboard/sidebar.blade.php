@@ -58,7 +58,8 @@
                 ['route' => 'attendance.index', 'icon' => 'fa-calendar-check', 'label' => 'Absensi', 'routeMatch' => 'attendance.*'],
                 ['route' => 'dashboard.assignments', 'icon' => 'fa-clipboard-list', 'label' => 'Tugas', 'routeMatch' => 'dashboard.assignments*'],
                 ['route' => 'logbook.index', 'icon' => 'fa-book-open', 'label' => 'Logbook', 'routeMatch' => 'logbook.*'],
-                ['route' => 'dashboard.certificates', 'icon' => 'fa-award', 'label' => 'Sertifikat', 'routeMatch' => 'dashboard.certificates*'],
+                ['route' => 'dashboard.final-evaluation', 'icon' => 'fa-file-signature', 'label' => 'Evaluasi Akhir', 'routeMatch' => 'dashboard.final-evaluation*'],
+                ['route' => 'dashboard.certificates', 'icon' => 'fa-award', 'label' => 'Sertifikat & Surat', 'routeMatch' => 'dashboard.certificates*'],
             ];
         } else {
             // Pending, rejected, or accepted but not yet entered dashboard - Limited Menu
@@ -71,6 +72,7 @@
             ['route' => 'admin.dashboard', 'icon' => 'fa-gauge-high', 'label' => 'Dashboard', 'routeMatch' => 'admin.dashboard'],
             ['route' => 'admin.applications', 'icon' => 'fa-file-signature', 'label' => 'Pengajuan Magang', 'routeMatch' => 'admin.applications*'],
             ['route' => 'admin.participants', 'icon' => 'fa-users', 'label' => 'Daftar Peserta', 'routeMatch' => 'admin.participants*'],
+            ['route' => 'admin.final-evaluation.index', 'icon' => 'fa-file-signature', 'label' => 'Evaluasi Akhir', 'routeMatch' => 'admin.final-evaluation*'],
             ['route' => 'admin.mentors', 'icon' => 'fa-user-tie', 'label' => 'Monitoring Mentor', 'routeMatch' => 'admin.mentors*'],
             ['route' => 'admin.attendance', 'icon' => 'fa-calendar-check', 'label' => 'Absensi', 'routeMatch' => 'admin.attendance*'],
             ['route' => 'admin.logbook', 'icon' => 'fa-book-open', 'label' => 'Logbook', 'routeMatch' => 'admin.logbook*'],
@@ -85,6 +87,7 @@
             ['route' => 'mentor.absensi', 'icon' => 'fa-calendar-check', 'label' => 'Absensi', 'routeMatch' => 'mentor.absensi*'],
             ['route' => 'mentor.logbook', 'icon' => 'fa-book-open', 'label' => 'Logbook', 'routeMatch' => 'mentor.logbook*'],
             ['route' => 'mentor.laporan-penilaian', 'icon' => 'fa-chart-bar', 'label' => 'Laporan Penilaian', 'routeMatch' => 'mentor.laporan-penilaian*'],
+            ['route' => 'mentor.evaluasi-akhir', 'icon' => 'fa-file-signature', 'label' => 'Evaluasi Akhir', 'routeMatch' => 'mentor.evaluasi-akhir*'],
         ];
     }
 @endphp

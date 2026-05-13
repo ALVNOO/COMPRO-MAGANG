@@ -31,12 +31,42 @@ class InternshipApplication extends Model
         'acceptance_letter_path',
         'acceptance_letter_downloaded_at',
         'dashboard_entered_at',
+        'final_evaluation_participant_path',
+        'final_evaluation_participant_uploaded_at',
+        'final_evaluation_admin_path',
+        'final_evaluation_admin_uploaded_at',
     ];
 
     protected $casts = [
         'start_date' => 'date',
         'end_date' => 'date',
+        'final_evaluation_participant_uploaded_at' => 'datetime',
+        'final_evaluation_admin_uploaded_at' => 'datetime',
     ];
+
+    /**
+     * Whether a final evaluation PDF exists (uploaded by participant and/or admin).
+     */
+    public function hasFinalEvaluationDocument(): bool
+    {
+        return ! empty($this->final_evaluation_participant_path)
+            || ! empty($this->final_evaluation_admin_path);
+    }
+
+    /**
+     * Path to the stored final evaluation PDF (participant upload takes precedence if both exist).
+     */
+    public function finalEvaluationDocumentPath(): ?string
+    {
+        if (! empty($this->final_evaluation_participant_path)) {
+            return $this->final_evaluation_participant_path;
+        }
+        if (! empty($this->final_evaluation_admin_path)) {
+            return $this->final_evaluation_admin_path;
+        }
+
+        return null;
+    }
 
     /**
      * Get the user that owns the internship application.

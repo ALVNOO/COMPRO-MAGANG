@@ -4,6 +4,7 @@ use App\Http\Controllers\Admin\ApplicationController as AdminApplicationControll
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\DivisionController as AdminDivisionController;
 use App\Http\Controllers\Admin\FieldOfInterestController as AdminFieldOfInterestController;
+use App\Http\Controllers\Admin\FinalEvaluationController as AdminFinalEvaluationController;
 use App\Http\Controllers\Admin\LegacyDivisionController as AdminLegacyDivisionController;
 use App\Http\Controllers\Admin\MentorController as AdminMentorController;
 use App\Http\Controllers\Admin\ParticipantController as AdminParticipantController;
@@ -133,10 +134,26 @@ Route::middleware(['auth', 'throttle:global'])->group(function () {
         DashboardController::class,
         'certificates',
     ])->name('dashboard.certificates');
+    Route::get('/dashboard/certificates/completion-letter/download', [
+        DashboardController::class,
+        'downloadCompletionLetter',
+    ])->name('dashboard.certificates.download-completion-letter');
     Route::get('/dashboard/certificates/{id}/download', [
         DashboardController::class,
         'downloadCertificate',
     ])->name('dashboard.certificates.download');
+    Route::get('/dashboard/final-evaluation', [
+        DashboardController::class,
+        'finalEvaluation',
+    ])->name('dashboard.final-evaluation');
+    Route::post('/dashboard/final-evaluation', [
+        DashboardController::class,
+        'uploadFinalEvaluation',
+    ])->name('dashboard.final-evaluation.upload')->middleware('throttle:form-submission');
+    Route::get('/dashboard/final-evaluation/download', [
+        DashboardController::class,
+        'downloadFinalEvaluationParticipant',
+    ])->name('dashboard.final-evaluation.download');
     Route::get('/dashboard/program', [
         DashboardController::class,
         'program',
@@ -349,6 +366,14 @@ Route::middleware(['auth', 'throttle:global'])
             MentorDashboardController::class,
             'deleteLaporanPenilaian',
         ])->name('mentor.laporan-penilaian.delete');
+        Route::get('/evaluasi-akhir', [
+            MentorDashboardController::class,
+            'evaluasiAkhir',
+        ])->name('mentor.evaluasi-akhir');
+        Route::get('/evaluasi-akhir/{applicationId}/download', [
+            MentorDashboardController::class,
+            'downloadFinalEvaluation',
+        ])->name('mentor.evaluasi-akhir.download');
     });
 
 Route::middleware(['auth', 'throttle:global'])
@@ -429,6 +454,19 @@ Route::middleware(['auth', 'throttle:global'])
             AdminParticipantController::class,
             'changeMentor',
         ])->name('participants.change-mentor')->middleware('throttle:form-submission');
+
+        Route::get('/final-evaluation', [
+            AdminFinalEvaluationController::class,
+            'index',
+        ])->name('final-evaluation.index');
+        Route::get('/final-evaluation/{applicationId}/download', [
+            AdminFinalEvaluationController::class,
+            'download',
+        ])->name('final-evaluation.download');
+        Route::post('/final-evaluation/{applicationId}', [
+            AdminFinalEvaluationController::class,
+            'uploadForApplication',
+        ])->name('final-evaluation.upload')->middleware('throttle:form-submission');
 
         // Mentors
         Route::get('/mentors', [AdminMentorController::class, 'index'])->name(

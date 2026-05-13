@@ -89,6 +89,12 @@
                         </a>
                     </li>
                     <li>
+                        <a href="{{ route('admin.final-evaluation.index') }}"
+                            class="flex items-center px-3 py-2 rounded-sm border-l-4 transition font-medium border-l-transparent hover:border-l-[#B91C1C] hover:text-[#B91C1C] {{ request()->routeIs('admin.final-evaluation*') ? 'border-l-[#B91C1C] bg-[#FEF2F2] text-[#B91C1C] font-semibold' : '' }} transform hover:scale-105">
+                            <i class="fas fa-file-signature mr-2"></i>Evaluasi Akhir
+                        </a>
+                    </li>
+                    <li>
                         <a href="{{ route('admin.mentors') }}"
                             class="flex items-center px-3 py-2 rounded-sm border-l-4 transition font-medium border-l-transparent hover:border-l-[#B91C1C] hover:text-[#B91C1C] {{ request()->routeIs('admin.mentors') ? 'border-l-[#B91C1C] bg-[#FEF2F2] text-[#B91C1C] font-semibold' : '' }} transform hover:scale-105">
                             <i class="fas fa-user-tie mr-2"></i>Monitoring Pembimbing

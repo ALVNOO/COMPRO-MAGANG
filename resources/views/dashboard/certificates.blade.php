@@ -6,13 +6,18 @@
 
 @extends('layouts.dashboard-unified')
 
-@section('title', 'Sertifikat Magang')
+@section('title', 'Sertifikat & Surat Selesai')
 
 @php
     $role = 'participant';
-    $pageTitle = 'Sertifikat';
+    $pageTitle = 'Sertifikat & Surat Selesai';
+    $documentsUnlocked = $documentsUnlocked ?? false;
+    $eligible = $eligible ?? false;
+    $completionLetterPath = $completionLetterPath ?? null;
+    $hasCompletionLetter = ! empty($completionLetterPath);
 
     $totalCertificates = $certificates->count();
+    $totalDocumentsShown = $totalCertificates + ($hasCompletionLetter ? 1 : 0);
 @endphp
 
 @push('styles')
@@ -223,10 +228,34 @@
     box-shadow: 0 4px 14px rgba(238, 46, 36, 0.25);
 }
 
-.btn-download-cert:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(238, 46, 36, 0.35);
-    color: white;
+.cert-preview-locked {
+    width: 100%;
+    height: 180px;
+    border-radius: 12px;
+    border: 1px dashed rgba(0, 0, 0, 0.12);
+    margin-bottom: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%);
+    color: #6b7280;
+    font-size: 0.9rem;
+    text-align: center;
+    padding: 1rem;
+}
+
+.cert-preview-locked i {
+    font-size: 2rem;
+    color: #d1d5db;
+}
+
+.btn-download-cert:disabled,
+.btn-download-cert.disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+    pointer-events: none;
 }
 
 /* Info Card */
@@ -466,32 +495,76 @@
 
 @section('content')
 
+@php
+    $finalEvaluationRequired = $finalEvaluationRequired ?? false;
+@endphp
+
+@if($finalEvaluationRequired)
+<div class="alert alert-warning border-0 shadow-sm mb-4" style="border-radius: 16px;" role="alert">
+    <div class="d-flex align-items-start gap-3">
+        <i class="fas fa-exclamation-triangle fa-lg mt-1" style="color: #b45309;"></i>
+        <div>
+            <strong>Evaluasi akhir diperlukan untuk unduh</strong>
+            <p class="mb-2 small text-secondary">Admin dapat mengunggah sertifikat dan surat selesai kapan saja. Anda dapat melihat dokumen di halaman ini setelah magang selesai, namun tombol unduh sertifikat dan surat selesai magang aktif setelah Anda mengunggah evaluasi akhir (atau admin mengunggahkannya untuk Anda). Persyaratan ini menambah syarat yang sudah berlaku sebelumnya.</p>
+            <a href="{{ route('dashboard.final-evaluation') }}" class="btn btn-sm btn-danger rounded-pill">
+                <i class="fas fa-file-signature me-1"></i>Buka Evaluasi Akhir
+            </a>
+        </div>
+    </div>
+</div>
+@endif
+
 {{-- Hero Section --}}
 <div class="page-hero">
     <div class="hero-content">
         <div class="hero-text">
             <h1>
                 <i class="fas fa-award"></i>
-                Sertifikat Magang
+                Sertifikat & Surat Selesai
             </h1>
-            <p>Download sertifikat resmi dari program magang PT Telkom Indonesia</p>
+            <p>Sertifikat magang dan surat keterangan selesai magang (jika sudah diunggah admin)</p>
         </div>
-        @if($totalCertificates > 0)
+        @if($eligible && $totalDocumentsShown > 0)
         <div class="hero-badge">
             <div class="hero-badge-icon">
-                <i class="fas fa-certificate"></i>
+                <i class="fas fa-folder-open"></i>
             </div>
             <div class="hero-badge-text">
-                <h4>{{ $totalCertificates }}</h4>
-                <p>Sertifikat</p>
+                <h4>{{ $totalDocumentsShown }}</h4>
+                <p>Dokumen</p>
             </div>
         </div>
         @endif
     </div>
 </div>
 
-@if($totalCertificates > 0)
-{{-- Certificate Cards --}}
+@if(! $eligible)
+{{-- Belum periode unduh --}}
+<div class="empty-card" style="margin-bottom: 2rem;">
+    <div class="empty-state">
+        <div class="empty-state-icon">
+            <i class="fas fa-award"></i>
+        </div>
+        <h4>Program Masih Berlangsung</h4>
+        <p>Setelah magang selesai (melewati tanggal selesai atau status selesai), sertifikat dan surat selesai magang akan ditampilkan di halaman ini jika sudah diunggah admin.</p>
+        <div class="empty-actions">
+            <a href="{{ route('dashboard.assignments') }}" class="btn-empty-primary">
+                <i class="fas fa-tasks"></i> Lihat Tugas
+            </a>
+        </div>
+    </div>
+</div>
+@elseif($totalDocumentsShown === 0)
+<div class="empty-card" style="margin-bottom: 2rem;">
+    <div class="empty-state">
+        <div class="empty-state-icon">
+            <i class="fas fa-folder-open"></i>
+        </div>
+        <h4>Belum Ada Dokumen</h4>
+        <p>Belum ada sertifikat atau surat keterangan selesai magang dari admin. Hubungi admin jika Anda sudah menyelesaikan program.</p>
+    </div>
+</div>
+@else
 <div class="cert-grid">
     @foreach($certificates as $certificate)
     <div class="cert-card">
@@ -503,9 +576,16 @@
         </div>
         <div class="cert-card-body">
             @if($certificate->certificate_path)
-            <div class="cert-preview">
-                <embed src="{{ asset('storage/' . $certificate->certificate_path) }}" type="application/pdf">
-            </div>
+                @if($documentsUnlocked)
+                <div class="cert-preview">
+                    <embed src="{{ asset('storage/' . $certificate->certificate_path) }}" type="application/pdf">
+                </div>
+                @else
+                <div class="cert-preview-locked">
+                    <i class="fas fa-lock"></i>
+                    <span>Pratinjau PDF tersedia setelah evaluasi akhir diunggah.</span>
+                </div>
+                @endif
             @endif
 
             <div class="cert-meta">
@@ -513,26 +593,58 @@
                 <span>Diterbitkan: <strong>{{ $certificate->created_at->locale('id')->isoFormat('D MMMM Y') }}</strong></span>
             </div>
 
+            @if($documentsUnlocked)
             <a href="{{ route('dashboard.certificates.download', $certificate->id) }}" class="btn-download-cert">
-                <i class="fas fa-download"></i> Download Sertifikat
+                <i class="fas fa-download"></i> Unduh Sertifikat
             </a>
+            @else
+            <button type="button" class="btn-download-cert w-100 border-0" disabled aria-disabled="true">
+                <i class="fas fa-lock"></i> Unduh setelah evaluasi akhir
+            </button>
+            @endif
         </div>
     </div>
     @endforeach
-</div>
-@else
-{{-- Empty State --}}
-<div class="empty-card" style="margin-bottom: 2rem;">
-    <div class="empty-state">
-        <div class="empty-state-icon">
-            <i class="fas fa-award"></i>
+
+    <div class="cert-card">
+        <div class="cert-card-header">
+            <div class="cert-icon-wrapper">
+                <i class="fas fa-file-signature"></i>
+            </div>
+            <h4>Surat Selesai Magang</h4>
         </div>
-        <h4>Belum Ada Sertifikat</h4>
-        <p>Sertifikat magang akan tersedia setelah Anda menyelesaikan program magang dan semua tugas yang diberikan oleh pembimbing.</p>
-        <div class="empty-actions">
-            <a href="{{ route('dashboard.assignments') }}" class="btn-empty-primary">
-                <i class="fas fa-tasks"></i> Lihat Tugas
-            </a>
+        <div class="cert-card-body">
+            @if($hasCompletionLetter)
+                @if($documentsUnlocked)
+                <div class="cert-preview">
+                    <embed src="{{ asset('storage/' . $completionLetterPath) }}" type="application/pdf">
+                </div>
+                @else
+                <div class="cert-preview-locked">
+                    <i class="fas fa-lock"></i>
+                    <span>Pratinjau PDF tersedia setelah evaluasi akhir diunggah.</span>
+                </div>
+                @endif
+                <div class="cert-meta">
+                    <i class="fas fa-check-double"></i>
+                    <span>Surat keterangan selesai magang</span>
+                </div>
+                @if($documentsUnlocked)
+                <a href="{{ route('dashboard.certificates.download-completion-letter') }}" class="btn-download-cert">
+                    <i class="fas fa-download"></i> Unduh Surat Selesai
+                </a>
+                @else
+                <button type="button" class="btn-download-cert w-100 border-0" disabled aria-disabled="true">
+                    <i class="fas fa-lock"></i> Unduh setelah evaluasi akhir
+                </button>
+                @endif
+            @else
+                <div class="cert-preview-locked" style="border-style: solid;">
+                    <i class="fas fa-inbox"></i>
+                    <span>Belum ada file dari admin.</span>
+                </div>
+                <p class="text-muted small mb-0 mt-2">Surat selesai akan muncul di sini setelah admin mengunggahnya.</p>
+            @endif
         </div>
     </div>
 </div>
@@ -543,7 +655,7 @@
     <div class="info-card-header">
         <h3>
             <i class="fas fa-info-circle" style="color: #EE2E24;"></i>
-            Informasi Sertifikat
+            Informasi Dokumen
         </h3>
     </div>
     <div class="info-card-body">
@@ -569,6 +681,10 @@
                     <li>
                         <i class="fas fa-check-circle"></i>
                         <span>Mendapatkan penilaian positif dari pembimbing</span>
+                    </li>
+                    <li>
+                        <i class="fas fa-check-circle"></i>
+                        <span>Mengunggah dokumen evaluasi akhir (PDF) untuk mengaktifkan unduh sertifikat dan surat selesai magang di halaman ini (tambahan; selain persyaratan yang sudah ada)</span>
                     </li>
                 </ul>
             </div>

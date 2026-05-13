@@ -24,7 +24,7 @@ class FileUploadService
     public function uploadAs(UploadedFile $file, string $directory, string $filename): string
     {
         $extension = $file->getClientOriginalExtension();
-        $fullFilename = $filename . '.' . $extension;
+        $fullFilename = $filename.'.'.$extension;
 
         return $file->storeAs($directory, $fullFilename, $this->disk);
     }
@@ -58,7 +58,7 @@ class FileUploadService
      */
     public function exists(?string $path): bool
     {
-        if (!$path) {
+        if (! $path) {
             return false;
         }
 
@@ -70,7 +70,7 @@ class FileUploadService
      */
     public function getUrl(?string $path): ?string
     {
-        if (!$path) {
+        if (! $path) {
             return null;
         }
 
@@ -90,7 +90,7 @@ class FileUploadService
      */
     public function download(string $path, ?string $name = null)
     {
-        if (!$this->exists($path)) {
+        if (! $this->exists($path)) {
             throw new \Exception('File tidak ditemukan.');
         }
 
@@ -102,7 +102,7 @@ class FileUploadService
      */
     public function getContents(string $path): string
     {
-        if (!$this->exists($path)) {
+        if (! $this->exists($path)) {
             throw new \Exception('File tidak ditemukan.');
         }
 
@@ -167,6 +167,18 @@ class FileUploadService
     public function uploadIntegrityPact(UploadedFile $file, ?string $existingPath = null): string
     {
         return $this->uploadAndReplace($file, 'integrity_pacts', $existingPath);
+    }
+
+    /**
+     * Upload final evaluation PDF (participant or admin copy).
+     *
+     * @param  string  $kind  "participant" or "admin"
+     */
+    public function uploadFinalEvaluation(UploadedFile $file, string $kind, ?string $existingPath = null): string
+    {
+        $dir = $kind === 'admin' ? 'final_evaluations/admin' : 'final_evaluations/participant';
+
+        return $this->uploadAndReplace($file, $dir, $existingPath);
     }
 
     /**
@@ -271,6 +283,7 @@ class FileUploadService
     public function setDisk(string $disk): self
     {
         $this->disk = $disk;
+
         return $this;
     }
 }

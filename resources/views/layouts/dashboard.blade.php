@@ -349,9 +349,13 @@
                     <i class="fas fa-book"></i>
                     <span>Logbook</span>
                 </a>
-                <a class="nav-link {{ request()->routeIs('dashboard.certificates') ? 'active' : '' }}" href="{{ route('dashboard.certificates') }}">
+                <a class="nav-link {{ request()->routeIs('dashboard.final-evaluation*') ? 'active' : '' }}" href="{{ route('dashboard.final-evaluation') }}">
+                    <i class="fas fa-file-signature"></i>
+                    <span>Evaluasi Akhir</span>
+                </a>
+                <a class="nav-link {{ request()->routeIs('dashboard.certificates*') ? 'active' : '' }}" href="{{ route('dashboard.certificates') }}">
                     <i class="fas fa-certificate"></i>
-                    <span>Sertifikat</span>
+                    <span>Sertifikat & Surat</span>
                 </a>
                 @endif
             </nav>

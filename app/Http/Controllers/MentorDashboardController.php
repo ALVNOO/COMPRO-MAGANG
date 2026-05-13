@@ -2,13 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use App\Models\InternshipApplication;
 use Barryvdh\DomPDF\Facade\Pdf;
-use Illuminate\Support\Facades\Storage;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Storage;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 
 class MentorDashboardController extends Controller
@@ -19,35 +18,35 @@ class MentorDashboardController extends Controller
         // Cari division_mentor berdasarkan username (nik_number) mentor yang login
         $divisionMentor = \App\Models\DivisionMentor::where('nik_number', $user->username)->first();
         $divisi = $user->divisi;
-        
+
         // Pengajuan pending masih menggunakan divisi (karena belum di-assign ke mentor)
         $pendingApplications = $divisi
             ? $divisi->internshipApplications()->where('status', 'pending')->count()
             : 0;
-        
+
         // Peserta aktif menggunakan division_mentor_id
         $activeParticipants = $divisionMentor
             ? \App\Models\InternshipApplication::where('division_mentor_id', $divisionMentor->id)
                 ->where('status', 'accepted')
-                ->where(function($q) {
+                ->where(function ($q) {
                     $q->whereNull('end_date')->orWhere('end_date', '>=', now());
                 })
                 ->count()
             : 0;
-        
+
         // Tugas yang perlu dinilai menggunakan division_mentor_id
         $assignmentsToGrade = $divisionMentor
-            ? \App\Models\Assignment::whereHas('user.internshipApplications', function($q) use ($divisionMentor) {
+            ? \App\Models\Assignment::whereHas('user.internshipApplications', function ($q) use ($divisionMentor) {
                 $q->where('division_mentor_id', $divisionMentor->id)->where('status', 'accepted');
             })->whereNotNull('submission_file_path')->whereNull('grade')->count()
             : 0;
-        
+
         $pengajuanBaru = $divisi
             ? $divisi->internshipApplications()->where('status', 'pending')->count()
             : 0;
-        
+
         $tugasBaruDiupload = $divisionMentor
-            ? \App\Models\Assignment::whereHas('user.internshipApplications', function($q) use ($divisionMentor) {
+            ? \App\Models\Assignment::whereHas('user.internshipApplications', function ($q) use ($divisionMentor) {
                 $q->where('division_mentor_id', $divisionMentor->id)->where('status', 'accepted');
             })->whereNotNull('submission_file_path')->whereNull('grade')->count()
             : 0;
@@ -56,20 +55,20 @@ class MentorDashboardController extends Controller
 
         // Task Statistics
         $totalAssignments = $divisionMentor
-            ? \App\Models\Assignment::whereHas('user.internshipApplications', function($q) use ($divisionMentor) {
+            ? \App\Models\Assignment::whereHas('user.internshipApplications', function ($q) use ($divisionMentor) {
                 $q->where('division_mentor_id', $divisionMentor->id)->where('status', 'accepted');
             })->count()
             : 0;
 
         $completedAssignments = $divisionMentor
-            ? \App\Models\Assignment::whereHas('user.internshipApplications', function($q) use ($divisionMentor) {
+            ? \App\Models\Assignment::whereHas('user.internshipApplications', function ($q) use ($divisionMentor) {
                 $q->where('division_mentor_id', $divisionMentor->id)->where('status', 'accepted');
             })->whereNotNull('grade')->count()
             : 0;
 
         // Performance Metrics
         $averageGrade = $divisionMentor
-            ? \App\Models\Assignment::whereHas('user.internshipApplications', function($q) use ($divisionMentor) {
+            ? \App\Models\Assignment::whereHas('user.internshipApplications', function ($q) use ($divisionMentor) {
                 $q->where('division_mentor_id', $divisionMentor->id)->where('status', 'accepted');
             })->whereNotNull('grade')->avg('grade')
             : 0;
@@ -80,34 +79,34 @@ class MentorDashboardController extends Controller
 
         // Recent Activity (Last 7 days) - with submissions relationship
         $recentSubmissions = $divisionMentor
-            ? \App\Models\Assignment::whereHas('user.internshipApplications', function($q) use ($divisionMentor) {
+            ? \App\Models\Assignment::whereHas('user.internshipApplications', function ($q) use ($divisionMentor) {
                 $q->where('division_mentor_id', $divisionMentor->id)->where('status', 'accepted');
             })
-            ->with(['user', 'submissions' => function($q) {
-                $q->orderBy('submitted_at', 'desc')->limit(1);
-            }])
-            ->whereHas('submissions', function($q) {
-                $q->where('submitted_at', '>=', now()->subDays(7));
-            })
-            ->orderByDesc(function($query) {
-                $query->select('submitted_at')
-                    ->from('assignment_submissions')
-                    ->whereColumn('assignment_id', 'assignments.id')
-                    ->orderBy('submitted_at', 'desc')
-                    ->limit(1);
-            })
-            ->limit(10)
-            ->get()
+                ->with(['user', 'submissions' => function ($q) {
+                    $q->orderBy('submitted_at', 'desc')->limit(1);
+                }])
+                ->whereHas('submissions', function ($q) {
+                    $q->where('submitted_at', '>=', now()->subDays(7));
+                })
+                ->orderByDesc(function ($query) {
+                    $query->select('submitted_at')
+                        ->from('assignment_submissions')
+                        ->whereColumn('assignment_id', 'assignments.id')
+                        ->orderBy('submitted_at', 'desc')
+                        ->limit(1);
+                })
+                ->limit(10)
+                ->get()
             : collect();
 
         // Today's Attendance Summary
         $todayAttendance = $divisionMentor
             ? \App\Models\Attendance::whereDate('date', today())
-                ->whereIn('user_id', function($query) use ($divisionMentor) {
+                ->whereIn('user_id', function ($query) use ($divisionMentor) {
                     $query->select('user_id')
-                          ->from('internship_applications')
-                          ->where('division_mentor_id', $divisionMentor->id)
-                          ->where('status', 'accepted');
+                        ->from('internship_applications')
+                        ->where('division_mentor_id', $divisionMentor->id)
+                        ->where('status', 'accepted');
                 })
                 ->get()
             : collect();
@@ -157,10 +156,22 @@ class MentorDashboardController extends Controller
             // Build distribution chart data (only include non-zero categories)
             $distLabels = [];
             $distData = [];
-            if ($completedAllCount > 0) { $distLabels[] = 'Selesai Semua'; $distData[] = $completedAllCount; }
-            if ($inProgressCount > 0) { $distLabels[] = 'Sedang Mengerjakan'; $distData[] = $inProgressCount; }
-            if ($notStartedCount > 0) { $distLabels[] = 'Belum Mulai'; $distData[] = $notStartedCount; }
-            if ($noTaskCount > 0) { $distLabels[] = 'Belum Ada Tugas'; $distData[] = $noTaskCount; }
+            if ($completedAllCount > 0) {
+                $distLabels[] = 'Selesai Semua';
+                $distData[] = $completedAllCount;
+            }
+            if ($inProgressCount > 0) {
+                $distLabels[] = 'Sedang Mengerjakan';
+                $distData[] = $inProgressCount;
+            }
+            if ($notStartedCount > 0) {
+                $distLabels[] = 'Belum Mulai';
+                $distData[] = $notStartedCount;
+            }
+            if ($noTaskCount > 0) {
+                $distLabels[] = 'Belum Ada Tugas';
+                $distData[] = $noTaskCount;
+            }
 
             $completionDistributionData = ['labels' => $distLabels, 'data' => $distData];
         }
@@ -192,8 +203,9 @@ class MentorDashboardController extends Controller
         $user = Auth::user();
         $divisi = $user->divisi;
         $applications = $divisi ? $divisi->internshipApplications()->with('user')->orderBy('created_at', 'desc')->get() : collect();
+
         return view('mentor.pengajuan', [
-            'applications' => $applications
+            'applications' => $applications,
         ]);
     }
 
@@ -203,17 +215,18 @@ class MentorDashboardController extends Controller
         // Cari division_mentor berdasarkan username (nik_number) mentor yang login
         $divisionMentor = \App\Models\DivisionMentor::where('nik_number', $user->username)->first();
         $acceptedParticipants = $divisionMentor
-            ? \App\Models\InternshipApplication::with(['user.assignments.submissions' => function($q) {
+            ? \App\Models\InternshipApplication::with(['user.assignments.submissions' => function ($q) {
                 $q->orderBy('submitted_at', 'desc');
-              }, 'user.assignments' => function($q) {
+            }, 'user.assignments' => function ($q) {
                 $q->orderBy('created_at', 'desc');
-              }])
+            }])
                 ->where('division_mentor_id', $divisionMentor->id)
                 ->where('status', 'accepted')
                 ->get()
             : collect();
+
         return view('mentor.penugasan', [
-            'participants' => $acceptedParticipants
+            'participants' => $acceptedParticipants,
         ]);
     }
 
@@ -228,45 +241,46 @@ class MentorDashboardController extends Controller
                 ->whereIn('status', ['accepted', 'finished'])
                 ->get()
             : collect();
-        
+
         // Update otomatis status menjadi finished jika end_date sudah lewat
-        $participants->each(function($p) {
+        $participants->each(function ($p) {
             if ($p->status === 'accepted' && $p->end_date && now()->isAfter($p->end_date)) {
                 $p->status = 'finished';
                 $p->save();
             }
         });
-        
+
         // Tambahkan status selesai magang (hanya berdasarkan end_date)
-        $participants = $participants->map(function($p) {
+        $participants = $participants->map(function ($p) {
             $assignments = $p->user->assignments;
             $isEndDatePassed = $p->end_date && now()->isAfter($p->end_date);
-            $allAssignmentsGraded = $assignments->count() > 0 && $assignments->every(fn($a) => $a->grade !== null);
-            $noRevision = $assignments->count() > 0 && $assignments->every(fn($a) => $a->is_revision !== 1);
+            $allAssignmentsGraded = $assignments->count() > 0 && $assignments->every(fn ($a) => $a->grade !== null);
+            $noRevision = $assignments->count() > 0 && $assignments->every(fn ($a) => $a->is_revision !== 1);
             // Syarat upload: semua tugas dinilai/feedback dan tidak ada tugas status revisi
             $p->can_upload_certificate = $allAssignmentsGraded && $noRevision;
             $p->is_completed = $isEndDatePassed;
             $p->all_assignments_graded = $allAssignmentsGraded;
+
             return $p;
         });
-        
+
         return view('mentor.sertifikat', [
-            'participants' => $participants
+            'participants' => $participants,
         ]);
     }
 
     public function profil()
     {
         $user = Auth::user();
-        
+
         // Get division mentor data based on username (NIK)
         $divisionMentor = \App\Models\DivisionMentor::where('nik_number', $user->username)->first();
         $divisionAdmin = $divisionMentor ? $divisionMentor->division : null;
-        
+
         return view('mentor.profil', [
             'user' => $user,
             'divisionMentor' => $divisionMentor,
-            'divisionAdmin' => $divisionAdmin
+            'divisionAdmin' => $divisionAdmin,
         ]);
     }
 
@@ -274,7 +288,7 @@ class MentorDashboardController extends Controller
     {
         $request->validateWithBag('biodata', [
             'phone' => 'nullable|string|max:20',
-            'email' => 'required|email|max:255|unique:users,email,' . Auth::id(),
+            'email' => 'required|email|max:255|unique:users,email,'.Auth::id(),
         ]);
 
         $user = Auth::user();
@@ -297,9 +311,9 @@ class MentorDashboardController extends Controller
                 ->where('status', 'accepted')
                 ->get()
             : collect();
-        
+
         return view('mentor.absensi', [
-            'participants' => $participants
+            'participants' => $participants,
         ]);
     }
 
@@ -313,8 +327,8 @@ class MentorDashboardController extends Controller
         $user = Auth::user();
         // Cari division_mentor berdasarkan username (nik_number) mentor yang login
         $divisionMentor = \App\Models\DivisionMentor::where('nik_number', $user->username)->first();
-        
-        if (!$divisionMentor) {
+
+        if (! $divisionMentor) {
             return response()->json(['data' => []]);
         }
 
@@ -340,35 +354,35 @@ class MentorDashboardController extends Controller
             $start = $now->copy()->startOfMonth();
             $end = $now->copy()->endOfMonth();
         }
-        
+
         // Filter berdasarkan overlap periode magang
-        $query->where(function($q) use ($start, $end) {
-            $q->where(function($sub) use ($start, $end) {
+        $query->where(function ($q) use ($start, $end) {
+            $q->where(function ($sub) use ($start, $end) {
                 $sub->whereDate('start_date', '<=', $end->toDateString())
-                     ->where(function($sub2) use ($start) {
-                         $sub2->whereNull('end_date')
-                               ->orWhereDate('end_date', '>=', $start->toDateString());
-                     });
+                    ->where(function ($sub2) use ($start) {
+                        $sub2->whereNull('end_date')
+                            ->orWhereDate('end_date', '>=', $start->toDateString());
+                    });
             });
         });
 
         $applications = $query->orderBy('start_date', 'asc')->get();
 
         // Data peserta dengan status upload laporan
-        $peserta = $applications->map(function($app, $i) {
+        $peserta = $applications->map(function ($app, $i) {
             $user = $app->user;
-            
+
             return [
-                'no' => $i+1,
+                'no' => $i + 1,
                 'id' => $app->id,
                 'nama' => $user->name ?? '-',
                 'assessment_report_path' => $app->assessment_report_path,
-                'has_report' => !empty($app->assessment_report_path),
+                'has_report' => ! empty($app->assessment_report_path),
             ];
         })->toArray();
 
         return response()->json([
-            'data' => $peserta
+            'data' => $peserta,
         ]);
     }
 
@@ -377,8 +391,8 @@ class MentorDashboardController extends Controller
         $user = Auth::user();
         // Cari division_mentor berdasarkan username (nik_number) mentor yang login
         $divisionMentor = \App\Models\DivisionMentor::where('nik_number', $user->username)->first();
-        
-        if (!$divisionMentor) {
+
+        if (! $divisionMentor) {
             return response()->json(['data' => []]);
         }
 
@@ -389,11 +403,11 @@ class MentorDashboardController extends Controller
         $maxDate = \App\Models\InternshipApplication::where('division_mentor_id', $divisionMentor->id)
             ->whereNotNull('start_date')
             ->max('start_date');
-        
+
         $currentYear = date('Y');
         $minYear = $minDate ? date('Y', strtotime($minDate)) : $currentYear;
         $maxYear = $maxDate ? date('Y', strtotime($maxDate)) : $currentYear;
-        
+
         if ($minYear > $currentYear) {
             $minYear = $currentYear;
         }
@@ -404,7 +418,7 @@ class MentorDashboardController extends Controller
         for ($y = $minYear; $y <= $maxYear; $y++) {
             $data[] = ['value' => $y, 'label' => $y];
         }
-        
+
         return response()->json(['data' => $data]);
     }
 
@@ -413,8 +427,8 @@ class MentorDashboardController extends Controller
         $user = Auth::user();
         // Cari division_mentor berdasarkan username (nik_number) mentor yang login
         $divisionMentor = \App\Models\DivisionMentor::where('nik_number', $user->username)->first();
-        
-        if (!$divisionMentor) {
+
+        if (! $divisionMentor) {
             return response()->json(['data' => []]);
         }
 
@@ -425,11 +439,11 @@ class MentorDashboardController extends Controller
         $maxDate = \App\Models\InternshipApplication::where('division_mentor_id', $divisionMentor->id)
             ->whereNotNull('start_date')
             ->max('start_date');
-        
+
         $currentYear = date('Y');
         $minYear = $minDate ? date('Y', strtotime($minDate)) : $currentYear;
         $maxYear = $maxDate ? date('Y', strtotime($maxDate)) : $currentYear;
-        
+
         if ($minYear > $currentYear) {
             $minYear = $currentYear;
         }
@@ -439,15 +453,15 @@ class MentorDashboardController extends Controller
 
         $months = [
             1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April', 5 => 'Mei', 6 => 'Juni',
-            7 => 'Juli', 8 => 'Agustus', 9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'
+            7 => 'Juli', 8 => 'Agustus', 9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember',
         ];
-        
+
         for ($y = $minYear; $y <= $maxYear; $y++) {
             foreach ($months as $num => $name) {
-                $data[] = [ 'value' => sprintf('%02d', $num).'-'.$y, 'label' => $name.' '.$y ];
+                $data[] = ['value' => sprintf('%02d', $num).'-'.$y, 'label' => $name.' '.$y];
             }
         }
-        
+
         return response()->json(['data' => $data]);
     }
 
@@ -459,7 +473,7 @@ class MentorDashboardController extends Controller
 
         $application = \App\Models\InternshipApplication::findOrFail($applicationId);
         $user = Auth::user();
-        
+
         // Pastikan hanya mentor divisi terkait yang bisa upload
         if ($user->divisi_id !== $application->divisi_id) {
             abort(403);
@@ -478,7 +492,7 @@ class MentorDashboardController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Laporan penilaian berhasil diupload.',
-            'path' => $path
+            'path' => $path,
         ]);
     }
 
@@ -486,19 +500,19 @@ class MentorDashboardController extends Controller
     {
         $application = \App\Models\InternshipApplication::findOrFail($applicationId);
         $user = Auth::user();
-        
+
         // Pastikan hanya mentor divisi terkait yang bisa download
         if ($user->divisi_id !== $application->divisi_id) {
             abort(403);
         }
 
-        if (!$application->assessment_report_path || !\Illuminate\Support\Facades\Storage::disk('public')->exists($application->assessment_report_path)) {
+        if (! $application->assessment_report_path || ! \Illuminate\Support\Facades\Storage::disk('public')->exists($application->assessment_report_path)) {
             abort(404, 'File tidak ditemukan.');
         }
 
         return \Illuminate\Support\Facades\Storage::disk('public')->download(
             $application->assessment_report_path,
-            'Laporan_Penilaian_' . $application->user->name . '.pdf'
+            'Laporan_Penilaian_'.$application->user->name.'.pdf'
         );
     }
 
@@ -506,7 +520,7 @@ class MentorDashboardController extends Controller
     {
         $application = \App\Models\InternshipApplication::findOrFail($applicationId);
         $user = Auth::user();
-        
+
         // Pastikan hanya mentor divisi terkait yang bisa delete
         if ($user->divisi_id !== $application->divisi_id) {
             abort(403);
@@ -521,7 +535,7 @@ class MentorDashboardController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Laporan penilaian berhasil dihapus.'
+            'message' => 'Laporan penilaian berhasil dihapus.',
         ]);
     }
 
@@ -531,7 +545,7 @@ class MentorDashboardController extends Controller
             'status' => 'required|in:accepted,rejected,postponed',
             'notes' => 'required_if:status,rejected,postponed',
         ], [
-            'notes.required_if' => 'Alasan wajib diisi untuk penolakan atau penundaan.'
+            'notes.required_if' => 'Alasan wajib diisi untuk penolakan atau penundaan.',
         ]);
 
         $application = \App\Models\InternshipApplication::findOrFail($id);
@@ -565,7 +579,7 @@ class MentorDashboardController extends Controller
             'description' => 'nullable|string|max:5000',
             'file_path' => 'nullable|file|mimes:pdf,doc,docx,zip|max:4096',
         ]);
-        
+
         // Validasi deadline manual untuk fleksibilitas lebih baik
         $deadline = \Carbon\Carbon::parse($request->deadline);
         if ($deadline->lt(now()->startOfDay())) {
@@ -573,7 +587,7 @@ class MentorDashboardController extends Controller
                 ->withErrors(['deadline' => 'Deadline harus hari ini atau setelahnya.'])
                 ->withInput($request->except('file_path'));
         }
-        
+
         // Validasi presentation_date jika diisi
         if ($request->presentation_date) {
             $presentationDate = \Carbon\Carbon::parse($request->presentation_date);
@@ -583,20 +597,20 @@ class MentorDashboardController extends Controller
                     ->withInput($request->except('file_path'));
             }
         }
-        
+
         // Validasi khusus untuk tugas proyek
-        if ($request->assignment_type === 'tugas_proyek' && !$request->presentation_date) {
+        if ($request->assignment_type === 'tugas_proyek' && ! $request->presentation_date) {
             return redirect()->back()
                 ->withErrors(['presentation_date' => 'Tanggal presentasi wajib diisi untuk tugas proyek.'])
                 ->withInput($request->except('file_path'));
         }
-        
+
         $user = Auth::user();
 
         // Cari division_mentor dengan caching untuk performa lebih baik
         $divisionMentor = \App\Models\DivisionMentor::where('nik_number', $user->username)->first();
 
-        if (!$divisionMentor) {
+        if (! $divisionMentor) {
             return redirect()->back()
                 ->with('error', 'Anda tidak memiliki akses untuk membuat penugasan.')
                 ->withInput($request->except('file_path'));
@@ -608,7 +622,8 @@ class MentorDashboardController extends Controller
             try {
                 $filePath = $request->file('file_path')->store('assignments', 'public');
             } catch (\Exception $e) {
-                Log::error('Error uploading file: ' . $e->getMessage());
+                Log::error('Error uploading file: '.$e->getMessage());
+
                 return redirect()->back()
                     ->with('error', 'Gagal mengupload file. Pastikan file tidak terlalu besar dan format sesuai.')
                     ->withInput($request->except('file_path'));
@@ -628,8 +643,9 @@ class MentorDashboardController extends Controller
                 ->orderBy('start_date', 'desc')
                 ->first();
 
-            if (!$application) {
+            if (! $application) {
                 $errorUsers[] = $userId;
+
                 continue;
             }
 
@@ -638,6 +654,7 @@ class MentorDashboardController extends Controller
                 $startDate = \Carbon\Carbon::parse($application->start_date);
                 if ($startDate->gt(now())) {
                     $errorUsers[] = $userId;
+
                     continue;
                 }
             }
@@ -658,32 +675,32 @@ class MentorDashboardController extends Controller
             // Buat assignment
             try {
                 $assignment = \App\Models\Assignment::create($data);
-                
+
                 // Buat notifikasi untuk peserta
                 try {
                     $user = \App\Models\User::find($userId);
                     if ($user) {
                         $notification = \App\Services\NotificationService::assignmentCreated($user, $assignment);
-                        Log::info('Notification created for user ' . $userId . ', notification ID: ' . $notification->id);
+                        Log::info('Notification created for user '.$userId.', notification ID: '.$notification->id);
                     } else {
-                        Log::warning('User not found for notification: ' . $userId);
+                        Log::warning('User not found for notification: '.$userId);
                     }
                 } catch (\Exception $notifError) {
-                    Log::error('Error creating notification for assignment: ' . $notifError->getMessage());
-                    Log::error('Stack trace: ' . $notifError->getTraceAsString());
+                    Log::error('Error creating notification for assignment: '.$notifError->getMessage());
+                    Log::error('Stack trace: '.$notifError->getTraceAsString());
                 }
-                
+
                 $successCount++;
             } catch (\Exception $e) {
-                Log::error('Error creating assignment for user ' . $userId . ': ' . $e->getMessage());
+                Log::error('Error creating assignment for user '.$userId.': '.$e->getMessage());
                 $errorUsers[] = $userId;
             }
         }
 
         // Generate response message
         $message = "Berhasil membuat {$successCount} penugasan.";
-        if (!empty($errorUsers)) {
-            $message .= " Gagal untuk " . count($errorUsers) . " peserta.";
+        if (! empty($errorUsers)) {
+            $message .= ' Gagal untuk '.count($errorUsers).' peserta.';
         }
 
         return redirect()->route('mentor.penugasan')
@@ -698,7 +715,7 @@ class MentorDashboardController extends Controller
         $divisionMentor = \App\Models\DivisionMentor::where('nik_number', $user->username)->first();
         // Validasi: pastikan assignment milik peserta yang di-assign ke mentor ini
         $application = $assignment->user ? $assignment->user->internshipApplications()->where('status', 'accepted')->first() : null;
-        if (!$application || !$divisionMentor || $application->division_mentor_id !== $divisionMentor->id) {
+        if (! $application || ! $divisionMentor || $application->division_mentor_id !== $divisionMentor->id) {
             abort(403);
         }
         // Jika revisi diizinkan, hanya feedback yang bisa diinput
@@ -722,6 +739,7 @@ class MentorDashboardController extends Controller
             $assignment->feedback = $request->feedback;
         }
         $assignment->save();
+
         return redirect()->route('mentor.penugasan')
             ->with('success', 'Penilaian tugas berhasil disimpan.')
             ->with('feedback_saved_assignment_id', $assignment->id);
@@ -739,7 +757,7 @@ class MentorDashboardController extends Controller
         $divisionMentor = \App\Models\DivisionMentor::where('nik_number', $user->username)->first();
         // Validasi: pastikan assignment milik peserta yang di-assign ke mentor ini
         $application = $assignment->user ? $assignment->user->internshipApplications()->where('status', 'accepted')->first() : null;
-        if (!$application || !$divisionMentor || $application->division_mentor_id !== $divisionMentor->id) {
+        if (! $application || ! $divisionMentor || $application->division_mentor_id !== $divisionMentor->id) {
             abort(403);
         }
         $assignment->is_revision = (int) $request->is_revision;
@@ -769,7 +787,7 @@ class MentorDashboardController extends Controller
         $user = Auth::user();
         $divisionMentor = \App\Models\DivisionMentor::where('nik_number', $user->username)->first();
 
-        if (!$divisionMentor) {
+        if (! $divisionMentor) {
             abort(403, 'Anda tidak memiliki akses untuk mengedit penugasan.');
         }
 
@@ -781,7 +799,7 @@ class MentorDashboardController extends Controller
             ->where('division_mentor_id', $divisionMentor->id)
             ->first() : null;
 
-        if (!$application) {
+        if (! $application) {
             abort(403, 'Anda tidak memiliki akses untuk mengedit penugasan ini.');
         }
 
@@ -795,7 +813,7 @@ class MentorDashboardController extends Controller
                 'deadline' => $assignment->deadline,
                 'presentation_date' => $assignment->presentation_date,
                 'file_path' => $assignment->file_path,
-            ]
+            ],
         ]);
     }
 
@@ -813,7 +831,7 @@ class MentorDashboardController extends Controller
         $user = Auth::user();
         $divisionMentor = \App\Models\DivisionMentor::where('nik_number', $user->username)->first();
 
-        if (!$divisionMentor) {
+        if (! $divisionMentor) {
             return redirect()->back()->with('error', 'Anda tidak memiliki akses untuk mengupdate penugasan.');
         }
 
@@ -825,7 +843,7 @@ class MentorDashboardController extends Controller
             ->where('division_mentor_id', $divisionMentor->id)
             ->first() : null;
 
-        if (!$application) {
+        if (! $application) {
             return redirect()->back()->with('error', 'Anda tidak memiliki akses untuk mengupdate penugasan ini.');
         }
 
@@ -848,7 +866,7 @@ class MentorDashboardController extends Controller
         }
 
         // Validasi khusus untuk tugas proyek
-        if ($request->assignment_type === 'tugas_proyek' && !$request->presentation_date) {
+        if ($request->assignment_type === 'tugas_proyek' && ! $request->presentation_date) {
             return redirect()->back()
                 ->withErrors(['presentation_date' => 'Tanggal presentasi wajib diisi untuk tugas proyek.'])
                 ->withInput($request->except('file_path'));
@@ -873,7 +891,8 @@ class MentorDashboardController extends Controller
             try {
                 $assignment->file_path = $request->file('file_path')->store('assignments', 'public');
             } catch (\Exception $e) {
-                Log::error('Error uploading file: ' . $e->getMessage());
+                Log::error('Error uploading file: '.$e->getMessage());
+
                 return redirect()->back()
                     ->with('error', 'Gagal mengupload file. Pastikan file tidak terlalu besar dan format sesuai.')
                     ->withInput($request->except('file_path'));
@@ -882,10 +901,12 @@ class MentorDashboardController extends Controller
 
         try {
             $assignment->save();
+
             return redirect()->route('mentor.penugasan')
                 ->with('success', 'Penugasan berhasil diperbarui.');
         } catch (\Exception $e) {
-            Log::error('Error updating assignment: ' . $e->getMessage());
+            Log::error('Error updating assignment: '.$e->getMessage());
+
             return redirect()->back()
                 ->with('error', 'Terjadi kesalahan saat mengupdate penugasan. Silakan coba lagi.')
                 ->withInput($request->except('file_path'));
@@ -897,7 +918,7 @@ class MentorDashboardController extends Controller
         $user = Auth::user();
         $divisionMentor = \App\Models\DivisionMentor::where('nik_number', $user->username)->first();
 
-        if (!$divisionMentor) {
+        if (! $divisionMentor) {
             return redirect()->back()->with('error', 'Anda tidak memiliki akses untuk menghapus penugasan.');
         }
 
@@ -909,7 +930,7 @@ class MentorDashboardController extends Controller
             ->where('division_mentor_id', $divisionMentor->id)
             ->first() : null;
 
-        if (!$application) {
+        if (! $application) {
             return redirect()->back()->with('error', 'Anda tidak memiliki akses untuk menghapus penugasan ini.');
         }
 
@@ -929,7 +950,8 @@ class MentorDashboardController extends Controller
             return redirect()->route('mentor.penugasan')
                 ->with('success', 'Penugasan berhasil dihapus.');
         } catch (\Exception $e) {
-            Log::error('Error deleting assignment: ' . $e->getMessage());
+            Log::error('Error deleting assignment: '.$e->getMessage());
+
             return redirect()->back()
                 ->with('error', 'Terjadi kesalahan saat menghapus penugasan. Silakan coba lagi.');
         }
@@ -955,6 +977,7 @@ class MentorDashboardController extends Controller
                 'issued_at' => now(),
             ]);
         }
+
         return redirect()->route('mentor.sertifikat')->with('success', 'Sertifikat berhasil diupload.');
     }
 
@@ -966,9 +989,10 @@ class MentorDashboardController extends Controller
             abort(403);
         }
         // Hanya bisa jika sudah ada surat pengantar dan belum ada surat penerimaan
-        if (!$application->cover_letter_path || $application->acceptance_letter_path) {
+        if (! $application->cover_letter_path || $application->acceptance_letter_path) {
             return redirect()->route('mentor.pengajuan')->with('error', 'Surat Penerimaan hanya bisa dikirim jika Surat Pengantar sudah diupload dan belum pernah dikirim.');
         }
+
         return view('mentor.acceptance_letter_form', compact('application'));
     }
 
@@ -980,6 +1004,7 @@ class MentorDashboardController extends Controller
         }
         $data = $this->getAcceptanceLetterData($request, $application);
         $pdf = Pdf::loadView('surat.surat_penerimaan', $data)->setPaper('A4', 'portrait');
+
         return $pdf->stream('Surat_Penerimaan.pdf');
     }
 
@@ -994,47 +1019,56 @@ class MentorDashboardController extends Controller
         }
         $data = $this->getAcceptanceLetterData($request, $application);
         $pdf = Pdf::loadView('surat.surat_penerimaan', $data)->setPaper('A4', 'portrait');
-        $filename = 'surat_penerimaan_' . $application->id . '_' . time() . '.pdf';
-        $path = 'acceptance_letters/' . $filename;
+        $filename = 'surat_penerimaan_'.$application->id.'_'.time().'.pdf';
+        $path = 'acceptance_letters/'.$filename;
         Storage::disk('public')->put($path, $pdf->output());
         $application->acceptance_letter_path = $path;
         $application->save();
+
         return redirect()->route('mentor.pengajuan')->with('success', 'Surat Penerimaan berhasil dikirim dan dapat diunduh oleh peserta.');
     }
 
     public function showCertificateForm($userId)
     {
-        $user = \App\Models\User::with(['certificates', 'internshipApplications' => function($q) {
+        $user = \App\Models\User::with(['certificates', 'internshipApplications' => function ($q) {
             $q->whereIn('status', ['accepted', 'finished']);
         }, 'divisi'])->findOrFail($userId);
         $application = $user->internshipApplications->sortByDesc('end_date')->first();
-        if (!$application) abort(404);
+        if (! $application) {
+            abort(404);
+        }
+
         return view('mentor.certificate_form', compact('user', 'application'));
     }
 
     public function previewCertificate(Request $request, $userId)
     {
-        $user = \App\Models\User::with(['certificates', 'internshipApplications' => function($q) {
+        $user = \App\Models\User::with(['certificates', 'internshipApplications' => function ($q) {
             $q->whereIn('status', ['accepted', 'finished']);
         }, 'divisi'])->findOrFail($userId);
         $application = $user->internshipApplications->sortByDesc('end_date')->first();
-        if (!$application) abort(404);
+        if (! $application) {
+            abort(404);
+        }
         $data = $this->getCertificateData($request, $user, $application);
         $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('surat.sertifikat', $data)->setPaper('A4', 'landscape');
+
         return $pdf->stream('Sertifikat.pdf');
     }
 
     public function sendCertificate(Request $request, $userId)
     {
-        $user = \App\Models\User::with(['certificates', 'internshipApplications' => function($q) {
+        $user = \App\Models\User::with(['certificates', 'internshipApplications' => function ($q) {
             $q->whereIn('status', ['accepted', 'finished']);
         }, 'divisi'])->findOrFail($userId);
         $application = $user->internshipApplications->sortByDesc('end_date')->first();
-        if (!$application) abort(404);
+        if (! $application) {
+            abort(404);
+        }
         $data = $this->getCertificateData($request, $user, $application);
         $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('surat.sertifikat', $data)->setPaper('A4', 'landscape');
-        $filename = 'sertifikat_' . $user->id . '_' . time() . '.pdf';
-        $path = 'certificates/' . $filename;
+        $filename = 'sertifikat_'.$user->id.'_'.time().'.pdf';
+        $path = 'certificates/'.$filename;
         Storage::disk('public')->put($path, $pdf->output());
         $user->certificates()->create([
             'certificate_path' => $path,
@@ -1042,7 +1076,54 @@ class MentorDashboardController extends Controller
             'nomor_sertifikat' => $request->input('nomor_sertifikat'),
             'predikat' => $request->input('predikat'),
         ]);
+
         return redirect()->route('mentor.sertifikat')->with('success', 'Sertifikat berhasil dikirim dan dapat diunduh oleh peserta.');
+    }
+
+    /**
+     * Daftar evaluasi akhir peserta bimbingan (hanya lihat/unduh).
+     */
+    public function evaluasiAkhir()
+    {
+        $user = Auth::user();
+        $divisionMentor = \App\Models\DivisionMentor::where('nik_number', $user->username)->first();
+        $applications = $divisionMentor
+            ? InternshipApplication::with(['user'])
+                ->where('division_mentor_id', $divisionMentor->id)
+                ->whereIn('status', ['accepted', 'finished'])
+                ->orderByDesc('end_date')
+                ->get()
+            : collect();
+
+        return view('mentor.evaluasi-akhir', [
+            'applications' => $applications,
+        ]);
+    }
+
+    public function downloadFinalEvaluation($applicationId)
+    {
+        $application = InternshipApplication::with('user')->findOrFail($applicationId);
+        $this->authorizeMentorForFinalEvaluation($application);
+
+        $path = $application->finalEvaluationDocumentPath();
+
+        if (! $path || ! Storage::disk('public')->exists($path)) {
+            abort(404);
+        }
+
+        return Storage::disk('public')->download(
+            $path,
+            'Evaluasi_Akhir_'.str_replace(' ', '_', $application->user->name).'.pdf'
+        );
+    }
+
+    private function authorizeMentorForFinalEvaluation(InternshipApplication $application): void
+    {
+        $user = Auth::user();
+        $divisionMentor = \App\Models\DivisionMentor::where('nik_number', $user->username)->first();
+        if (! $divisionMentor || (int) $application->division_mentor_id !== (int) $divisionMentor->id) {
+            abort(403);
+        }
     }
 
     private function getAcceptanceLetterData(Request $request, $application)
@@ -1062,11 +1143,12 @@ class MentorDashboardController extends Controller
             'tanggal_selesai' => $application->end_date,
             'ktm' => $user->ktm,
         ]);
-        
+
         // Format data dengan prefix yang menghindari interpretasi sebagai nomor telepon
-        $qrText = "PESERTA MAGANG PT POS INDONESIA\n\nNama: " . $user->name . "\nID Mahasiswa: " . $user->nim . "\nUniversitas: " . $user->university . "\nDivisi: " . $divisi->name . "\n\nData ini valid dan dapat diverifikasi.";
+        $qrText = "PESERTA MAGANG PT POS INDONESIA\n\nNama: ".$user->name."\nID Mahasiswa: ".$user->nim."\nUniversitas: ".$user->university."\nDivisi: ".$divisi->name."\n\nData ini valid dan dapat diverifikasi.";
         $qrSvg = QrCode::format('svg')->size(400)->margin(10)->backgroundColor(0, 0, 0, 0)->generate($qrText);
-        $qrBase64 = 'data:image/svg+xml;base64,' . base64_encode($qrSvg);
+        $qrBase64 = 'data:image/svg+xml;base64,'.base64_encode($qrSvg);
+
         return [
             'nomor_surat_penerimaan' => $request->input('nomor_surat_penerimaan'),
             'nomor_surat_pengantar' => $request->input('nomor_surat_pengantar'),
@@ -1078,7 +1160,7 @@ class MentorDashboardController extends Controller
             'nama_peserta' => $user->name,
             'nim' => $user->nim,
             'jurusan' => $user->major,
-            'jabatan' => $divisi->vp ? 'VP ' . str_replace('Divisi ', '', $divisi->name) : '',
+            'jabatan' => $divisi->vp ? 'VP '.str_replace('Divisi ', '', $divisi->name) : '',
             'nama_pic' => $divisi->vp,
             'nippos' => $divisi->nippos,
             'start_date' => \Carbon\Carbon::parse($application->start_date)->locale('id')->isoFormat('D MMMM Y'),
@@ -1103,12 +1185,12 @@ class MentorDashboardController extends Controller
             'predikat' => $request->input('predikat'),
             'ktm' => $user->ktm,
         ]);
-        
+
         // Format data dengan prefix yang menghindari interpretasi sebagai nomor telepon
-        $qrText = "SERTIFIKAT MAGANG PT POS INDONESIA\n\nNama: " . $user->name . "\nID Mahasiswa: " . $user->nim . "\nUniversitas: " . $user->university . "\nDivisi: " . ($user->divisi ? $user->divisi->name : '') . "\nPredikat: " . $request->input('predikat') . "\n\nSertifikat ini valid dan dapat diverifikasi.";
+        $qrText = "SERTIFIKAT MAGANG PT POS INDONESIA\n\nNama: ".$user->name."\nID Mahasiswa: ".$user->nim."\nUniversitas: ".$user->university."\nDivisi: ".($user->divisi ? $user->divisi->name : '')."\nPredikat: ".$request->input('predikat')."\n\nSertifikat ini valid dan dapat diverifikasi.";
         $qrSvg = QrCode::format('svg')->size(400)->margin(10)->backgroundColor(0, 0, 0, 0)->generate($qrText);
-        $qrBase64 = 'data:image/svg+xml;base64,' . base64_encode($qrSvg);
-        
+        $qrBase64 = 'data:image/svg+xml;base64,'.base64_encode($qrSvg);
+
         return [
             'nomor_sertifikat' => $request->input('nomor_sertifikat'),
             'predikat' => $request->input('predikat'),
@@ -1120,9 +1202,9 @@ class MentorDashboardController extends Controller
             'end_date' => \Carbon\Carbon::parse($application->end_date)->locale('id')->isoFormat('D MMMM Y'),
             'nama_pic' => $user->divisi ? $user->divisi->vp : '',
             'nippos' => $user->divisi ? $user->divisi->nippos : '',
-            'jabatan' => $user->divisi ? 'VP ' . str_replace('Divisi ', '', $user->divisi->name) : '',
+            'jabatan' => $user->divisi ? 'VP '.str_replace('Divisi ', '', $user->divisi->name) : '',
             'tanggal_sertifikat' => now()->locale('id')->isoFormat('D MMMM Y'),
             'qr_base64' => $qrBase64,
         ];
     }
-} 
+}
