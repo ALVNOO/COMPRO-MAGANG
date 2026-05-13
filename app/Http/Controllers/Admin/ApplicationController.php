@@ -72,6 +72,21 @@ class ApplicationController extends Controller
     }
 
     /**
+     * Permanently reject an application (user cannot reapply).
+     */
+    public function permanentReject(Request $request, $id)
+    {
+        $request->validate([
+            'notes' => 'nullable|string',
+        ]);
+
+        $this->applicationService->permanentRejectApplication($id, $request->notes);
+
+        return redirect()->route('admin.applications')
+            ->with('success', 'Pengajuan magang berhasil ditolak secara permanen.');
+    }
+
+    /**
      * Send acceptance letter via email.
      */
     public function sendAcceptanceLetter($id)

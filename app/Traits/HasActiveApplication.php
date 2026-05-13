@@ -69,11 +69,25 @@ trait HasActiveApplication
 
     /**
      * Check if user can apply for internship.
-     * Can apply if no pending or active applications.
+     * Can apply if no pending or active applications, and not permanently rejected.
      */
     public function canApplyForInternship(): bool
     {
-        return !$this->hasPendingApplication() && !$this->hasActiveInternship();
+        if ($this->hasPendingApplication() || $this->hasActiveInternship()) {
+            return false;
+        }
+
+        return !$this->isPermanentlyRejected();
+    }
+
+    /**
+     * Check if user is permanently rejected (cannot reapply ever).
+     */
+    public function isPermanentlyRejected(): bool
+    {
+        return $this->internshipApplications()
+            ->where('status', 'permanently_rejected')
+            ->exists();
     }
 
     /**
@@ -83,8 +97,9 @@ trait HasActiveApplication
     {
         // User dapat mengajukan ulang selama:
         // - Tidak ada pengajuan pending, dan
-        // - Tidak sedang memiliki pengajuan dengan status accepted
-        if ($this->hasPendingApplication()) {
+        // - Tidak sedang memiliki pengajuan dengan status accepted, dan
+        // - Tidak di-blacklist (permanently_rejected)
+        if ($this->hasPendingApplication() || $this->isPermanentlyRejected()) {
             return false;
         }
 

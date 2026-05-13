@@ -416,6 +416,10 @@ Route::middleware(['auth', 'throttle:global'])
             AdminApplicationController::class,
             'reject',
         ])->name('applications.reject')->middleware('throttle:form-submission');
+        Route::post('/applications/{id}/permanent-reject', [
+            AdminApplicationController::class,
+            'permanentReject',
+        ])->name('applications.permanent-reject')->middleware('throttle:form-submission');
         Route::post('/applications/{id}/send-acceptance-letter', [
             AdminApplicationController::class,
             'sendAcceptanceLetter',

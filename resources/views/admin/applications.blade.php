@@ -287,8 +287,8 @@
 }
 
 .status-badge.rejected {
-    background: rgba(239, 68, 68, 0.1);
-    color: #EF4444;
+    background: rgba(217, 119, 6, 0.1);
+    color: #D97706;
 }
 
 .status-badge.finished {
@@ -363,15 +363,16 @@
     margin: 0;
 }
 
+/* ============================================
+   REDESIGNED MODAL — NO-SCROLL TWO-PANEL LAYOUT
+   ============================================ */
+
 /* Modal Overlay */
 .modal-overlay {
     position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.5);
-    backdrop-filter: blur(4px);
+    inset: 0;
+    background: rgba(15, 23, 42, 0.6);
+    backdrop-filter: blur(6px);
     z-index: 1000;
     display: flex;
     align-items: center;
@@ -379,7 +380,7 @@
     padding: 1rem;
     opacity: 0;
     visibility: hidden;
-    transition: all 0.3s ease;
+    transition: opacity 0.25s ease, visibility 0.25s ease;
 }
 
 .modal-overlay.show {
@@ -387,371 +388,632 @@
     visibility: visible;
 }
 
+/* Modal Shell — wide, fixed height, NO overflow */
 .modal-content {
-    background: white;
-    border-radius: 24px;
+    background: #fff;
+    border-radius: 20px;
     width: 100%;
-    max-width: 700px;
-    max-height: 90vh;
-    overflow-y: auto;
-    transform: scale(0.9) translateY(20px);
-    transition: transform 0.3s ease;
-    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.3);
+    max-width: 860px;
+    height: min(92vh, 640px);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    transform: translateY(24px) scale(0.97);
+    transition: transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
+    box-shadow: 0 32px 80px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(0,0,0,0.06);
 }
 
 .modal-overlay.show .modal-content {
-    transform: scale(1) translateY(0);
+    transform: translateY(0) scale(1);
 }
 
+/* Modal Header — slim accent bar */
 .modal-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 1.5rem;
-    border-bottom: 1px solid #f3f4f6;
-    position: sticky;
-    top: 0;
-    background: white;
-    z-index: 10;
+    padding: 0.875rem 1.25rem;
+    background: linear-gradient(135deg, #EE2E24 0%, #C41E1A 100%);
+    flex-shrink: 0;
 }
 
 .modal-header h3 {
-    font-size: 1.25rem;
+    font-size: 0.95rem;
     font-weight: 700;
-    color: #1f2937;
+    color: white;
     margin: 0;
     display: flex;
     align-items: center;
-    gap: 0.75rem;
+    gap: 0.6rem;
+    letter-spacing: 0.01em;
+}
+
+.modal-header h3 i {
+    opacity: 0.85;
+    font-size: 0.85rem;
 }
 
 .modal-close {
-    width: 36px;
-    height: 36px;
-    border-radius: 10px;
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
     border: none;
-    background: #f3f4f6;
-    color: #6b7280;
+    background: rgba(255,255,255,0.18);
+    color: white;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: all 0.2s;
+    font-size: 0.8rem;
+    transition: background 0.15s;
+    flex-shrink: 0;
 }
 
 .modal-close:hover {
-    background: #e5e7eb;
-    color: #374151;
+    background: rgba(255,255,255,0.30);
 }
 
+/* Modal Body — two-panel flex, fills remaining height */
 .modal-body {
-    padding: 1.5rem;
-}
-
-.modal-footer {
     display: flex;
-    gap: 1rem;
-    padding: 1.5rem;
-    border-top: 1px solid #f3f4f6;
-    background: #f9fafb;
-    border-radius: 0 0 24px 24px;
-    justify-content: flex-end;
+    flex: 1;
+    overflow: hidden;
+    min-height: 0;
 }
 
-/* Applicant Info Card */
-.applicant-info {
-    display: grid;
-    grid-template-columns: auto 1fr;
-    gap: 1.5rem;
-    margin-bottom: 1.5rem;
+/* LEFT PANEL — applicant profile + details */
+.modal-panel-left {
+    width: 52%;
+    padding: 1.125rem 1.25rem;
+    border-right: 1px solid #f1f5f9;
+    display: flex;
+    flex-direction: column;
+    gap: 0.875rem;
+    overflow: hidden;
+    flex-shrink: 0;
 }
 
-.applicant-photo {
-    width: 100px;
-    height: 100px;
-    border-radius: 16px;
-    background: linear-gradient(135deg, #f3f4f6, #e5e7eb);
+/* RIGHT PANEL — actions / status */
+.modal-panel-right {
+    flex: 1;
+    padding: 1.125rem 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.875rem;
+    overflow: hidden;
+    min-width: 0;
+}
+
+/* Applicant Identity Row */
+.applicant-identity {
+    display: flex;
+    align-items: center;
+    gap: 0.875rem;
+    padding-bottom: 0.875rem;
+    border-bottom: 1px solid #f1f5f9;
+    flex-shrink: 0;
+}
+
+.applicant-avatar {
+    width: 64px;
+    height: 64px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #f1f5f9, #e2e8f0);
     display: flex;
     align-items: center;
     justify-content: center;
     overflow: hidden;
+    flex-shrink: 0;
+    border: 2px solid #f1f5f9;
 }
 
-.applicant-photo img {
+.applicant-avatar img {
     width: 100%;
     height: 100%;
     object-fit: cover;
 }
 
-.applicant-photo .placeholder-icon {
-    font-size: 2.5rem;
-    color: #9ca3af;
+.applicant-avatar .placeholder-icon {
+    font-size: 1.75rem;
+    color: #94a3b8;
 }
 
-.applicant-details h4 {
-    font-size: 1.25rem;
+.applicant-name-block h4 {
+    font-size: 1rem;
     font-weight: 700;
-    color: #1f2937;
-    margin: 0 0 0.5rem 0;
+    color: #0f172a;
+    margin: 0 0 0.3rem 0;
+    line-height: 1.2;
 }
 
-.applicant-details .meta {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 1rem;
-    margin-top: 0.75rem;
-}
-
-.applicant-details .meta-item {
+.applicant-name-block .badge-row {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
-    font-size: 0.85rem;
-    color: #6b7280;
+    flex-wrap: wrap;
+    gap: 0.35rem;
 }
 
-.applicant-details .meta-item i {
+/* Compact Info List */
+.detail-list {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
+    flex-shrink: 0;
+}
+
+.detail-item {
+    background: #f8fafc;
+    border-radius: 9px;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid #f1f5f9;
+}
+
+.detail-item .di-label {
+    font-size: 0.68rem;
+    font-weight: 600;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    display: block;
+    margin-bottom: 0.15rem;
+}
+
+.detail-item .di-value {
+    font-size: 0.82rem;
+    color: #1e293b;
+    font-weight: 500;
+    display: block;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Period Strip */
+.period-strip {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    background: linear-gradient(135deg, #f0fdf4, #dcfce7);
+    border-radius: 10px;
+    border: 1px solid #bbf7d0;
+    flex-shrink: 0;
+    overflow: hidden;
+}
+
+.ps-date-block {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0.5rem 0.625rem;
+    gap: 0.1rem;
+}
+
+.ps-date-block .ps-label {
+    font-size: 0.6rem;
+    font-weight: 700;
+    color: #4ade80;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+}
+
+.ps-date-block .ps-date {
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: #14532d;
+    white-space: nowrap;
+}
+
+.ps-arrow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    flex-shrink: 0;
+    color: #4ade80;
+    font-size: 0.7rem;
+}
+
+.ps-divider {
+    width: 1px;
+    height: 32px;
+    background: #bbf7d0;
+    flex-shrink: 0;
+}
+
+
+/* Duration Label */
+.duration-label {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.35rem;
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: #4ade80;
+    letter-spacing: 0.04em;
+    margin-top: -0.25rem;
+    flex-shrink: 0;
+}
+
+.duration-label i { font-size: 0.65rem; }
+
+/* Documents Row */
+.docs-section {
+    flex-shrink: 0;
+}
+
+.docs-label {
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.4rem;
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+.docs-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+}
+
+.doc-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.35rem 0.65rem;
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 7px;
+    font-size: 0.76rem;
+    font-weight: 600;
+    color: #475569;
+    text-decoration: none;
+    transition: all 0.15s;
+}
+
+.doc-chip:hover {
+    border-color: #EE2E24;
+    color: #EE2E24;
+    background: #fff5f5;
+    transform: translateY(-1px);
+}
+
+.doc-chip i {
+    font-size: 0.7rem;
     color: #EE2E24;
 }
 
-/* Info Grid */
-.info-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 1rem;
-    margin-bottom: 1.5rem;
+/* ── RIGHT PANEL CONTENTS ── */
+
+/* Action Tabs */
+.action-tabs {
+    display: flex;
+    gap: 0.375rem;
+    background: #f8fafc;
+    border-radius: 10px;
+    padding: 0.25rem;
+    flex-shrink: 0;
+    border: 1px solid #f1f5f9;
 }
 
-@media (max-width: 640px) {
-    .info-grid { grid-template-columns: 1fr; }
-    .applicant-info { grid-template-columns: 1fr; text-align: center; }
-    .applicant-photo { margin: 0 auto; }
-}
-
-.info-item {
-    padding: 1rem;
-    background: #f9fafb;
-    border-radius: 12px;
-}
-
-.info-item label {
-    display: block;
-    font-size: 0.75rem;
+.action-tab {
+    flex: 1;
+    padding: 0.5rem;
+    border: none;
+    border-radius: 7px;
+    font-size: 0.78rem;
     font-weight: 600;
-    color: #9ca3af;
-    text-transform: uppercase;
-    margin-bottom: 0.25rem;
-}
-
-.info-item span {
-    font-size: 0.9rem;
-    color: #374151;
-    font-weight: 500;
-}
-
-/* Documents Section */
-.documents-section h5 {
-    font-size: 0.9rem;
-    font-weight: 600;
-    color: #374151;
-    margin: 0 0 1rem 0;
+    cursor: pointer;
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    justify-content: center;
+    gap: 0.4rem;
+    background: transparent;
+    color: #64748b;
+    transition: all 0.18s;
 }
 
-.documents-grid {
+.action-tab.active-approve {
+    background: white;
+    color: #059669;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+}
+
+.action-tab.active-revisi {
+    background: white;
+    color: #d97706;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+}
+
+.action-tab.active-reject {
+    background: white;
+    color: #dc2626;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+}
+
+.action-tab:hover:not(.active-approve):not(.active-revisi):not(.active-reject) {
+    background: rgba(255,255,255,0.6);
+    color: #475569;
+}
+
+/* Panel Revisi */
+.panel-revisi {
+    background: #fffbeb;
+    border: 1px solid #fde68a;
+    border-radius: 12px;
+    padding: 1rem;
     display: flex;
-    flex-wrap: wrap;
+    flex-direction: column;
+    gap: 0.75rem;
+    height: 100%;
+    box-sizing: border-box;
+}
+
+.panel-revisi .form-field select,
+.panel-revisi .form-field textarea {
+    border-color: #fcd34d;
+}
+
+.panel-revisi .form-field select:focus,
+.panel-revisi .form-field textarea:focus {
+    border-color: #d97706;
+    box-shadow: 0 0 0 3px rgba(217, 119, 6, 0.1);
+}
+
+/* Permanently rejected status badge */
+.status-badge.permanently_rejected {
+    background: rgba(127, 29, 29, 0.1);
+    color: #7f1d1d;
+}
+
+/* Tolak total btn */
+.btn-permanent-reject {
+    width: 100%;
+    padding: 0.65rem;
+    background: linear-gradient(135deg, #7f1d1d, #991b1b);
+    border: none;
+    border-radius: 9px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    transition: all 0.2s;
+    flex-shrink: 0;
+    letter-spacing: 0.01em;
+}
+
+.btn-permanent-reject:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(127, 29, 29, 0.4);
+}
+
+/* Revisi btn */
+.btn-revisi {
+    width: 100%;
+    padding: 0.65rem;
+    background: linear-gradient(135deg, #D97706, #B45309);
+    border: none;
+    border-radius: 9px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    transition: all 0.2s;
+    flex-shrink: 0;
+    letter-spacing: 0.01em;
+}
+
+.btn-revisi:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(217, 119, 6, 0.35);
+}
+
+/* Tab Panels */
+.tab-panels {
+    flex: 1;
+    min-height: 0;
+    position: relative;
+}
+
+.tab-panel {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.18s ease;
+    display: flex;
+    flex-direction: column;
     gap: 0.75rem;
 }
 
-.doc-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.75rem 1rem;
-    background: white;
-    border: 1px solid #e5e7eb;
-    border-radius: 10px;
-    font-size: 0.85rem;
-    font-weight: 500;
-    color: #374151;
-    text-decoration: none;
-    transition: all 0.2s;
+.tab-panel.visible {
+    opacity: 1;
+    pointer-events: auto;
 }
 
-.doc-btn:hover {
-    border-color: #EE2E24;
-    color: #EE2E24;
-    background: #fef2f2;
-}
-
-.doc-btn i {
-    color: #EE2E24;
-}
-
-/* Period Info */
-.period-info {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    padding: 1rem;
-    background: linear-gradient(135deg, #f0fdf4, #dcfce7);
-    border-radius: 12px;
-    margin-bottom: 1.5rem;
-}
-
-.period-info i {
-    font-size: 1.5rem;
-    color: #10B981;
-}
-
-.period-info .period-text {
-    flex: 1;
-}
-
-.period-info .period-dates {
-    font-weight: 600;
-    color: #1f2937;
-}
-
-.period-info .period-duration {
-    font-size: 0.85rem;
-    color: #6b7280;
-}
-
-/* Approve Form */
-.approve-form {
-    padding: 1.5rem;
+/* Panel inner forms */
+.panel-approve {
     background: #f0fdf4;
+    border: 1px solid #bbf7d0;
     border-radius: 12px;
-    margin-bottom: 1rem;
-}
-
-.approve-form h5 {
-    font-size: 0.9rem;
-    font-weight: 600;
-    color: #10B981;
-    margin: 0 0 1rem 0;
+    padding: 1rem;
     display: flex;
-    align-items: center;
-    gap: 0.5rem;
+    flex-direction: column;
+    gap: 0.75rem;
+    height: 100%;
+    box-sizing: border-box;
 }
 
-.form-group {
-    margin-bottom: 1rem;
+.panel-reject {
+    background: #fff5f5;
+    border: 1px solid #fecaca;
+    border-radius: 12px;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    height: 100%;
+    box-sizing: border-box;
 }
 
-.form-group label {
+.form-field label {
     display: block;
-    font-size: 0.85rem;
-    font-weight: 500;
-    color: #374151;
-    margin-bottom: 0.5rem;
+    font-size: 0.76rem;
+    font-weight: 600;
+    color: #475569;
+    margin-bottom: 0.35rem;
 }
 
-.form-group select {
+.form-field select,
+.form-field textarea {
     width: 100%;
-    padding: 0.75rem 1rem;
+    padding: 0.6rem 0.875rem;
     border: 1px solid #d1d5db;
-    border-radius: 10px;
-    font-size: 0.9rem;
+    border-radius: 8px;
+    font-size: 0.84rem;
     background: white;
+    box-sizing: border-box;
+    transition: border-color 0.15s, box-shadow 0.15s;
 }
 
-.form-group select:focus {
+.form-field select:focus {
     outline: none;
     border-color: #10B981;
     box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
 }
 
-/* Reject Form */
-.reject-form {
-    padding: 1.5rem;
-    background: #fef2f2;
-    border-radius: 12px;
-    margin-bottom: 1rem;
+.form-field textarea {
+    resize: none;
+    flex: 1;
+    min-height: 0;
 }
 
-.reject-form h5 {
-    font-size: 0.9rem;
-    font-weight: 600;
-    color: #EF4444;
-    margin: 0 0 1rem 0;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-.reject-form textarea {
-    width: 100%;
-    padding: 0.75rem 1rem;
-    border: 1px solid #fecaca;
-    border-radius: 10px;
-    font-size: 0.9rem;
-    resize: vertical;
-    min-height: 100px;
-}
-
-.reject-form textarea:focus {
+.form-field textarea:focus {
     outline: none;
     border-color: #EF4444;
     box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
 }
 
-/* Modal Buttons */
-.btn-cancel {
-    padding: 0.75rem 1.5rem;
-    background: white;
-    border: 1px solid #d1d5db;
+/* Info-only right panel (accepted/rejected/finished) */
+.status-info-panel {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    padding: 1rem;
+    border-radius: 12px;
+    background: #f8fafc;
+    border: 1px solid #f1f5f9;
+}
+
+.status-info-panel .si-icon {
+    width: 52px;
+    height: 52px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+}
+
+.status-info-panel .si-icon.accepted  { background: #d1fae5; color: #059669; }
+.status-info-panel .si-icon.rejected  { background: #fee2e2; color: #dc2626; }
+.status-info-panel .si-icon.finished  { background: #dbeafe; color: #2563eb; }
+
+.status-info-panel .si-label {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.rejection-note {
+    background: #fff1f2;
+    border: 1px solid #fecaca;
     border-radius: 10px;
-    font-weight: 500;
-    color: #374151;
-    cursor: pointer;
-    transition: all 0.2s;
+    padding: 0.875rem 1rem;
+    font-size: 0.84rem;
+    color: #7f1d1d;
+    line-height: 1.5;
+    width: 100%;
+    text-align: left;
+    box-sizing: border-box;
 }
 
-.btn-cancel:hover {
-    background: #f3f4f6;
-}
-
+/* Submit Buttons */
 .btn-approve {
-    padding: 0.75rem 1.5rem;
+    width: 100%;
+    padding: 0.65rem;
     background: linear-gradient(135deg, #10B981, #059669);
     border: none;
-    border-radius: 10px;
-    font-weight: 600;
+    border-radius: 9px;
+    font-size: 0.85rem;
+    font-weight: 700;
     color: white;
     cursor: pointer;
     display: flex;
     align-items: center;
+    justify-content: center;
     gap: 0.5rem;
     transition: all 0.2s;
+    flex-shrink: 0;
+    letter-spacing: 0.01em;
 }
 
 .btn-approve:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(16, 185, 129, 0.35);
 }
 
 .btn-reject {
-    padding: 0.75rem 1.5rem;
+    width: 100%;
+    padding: 0.65rem;
     background: linear-gradient(135deg, #EF4444, #DC2626);
     border: none;
-    border-radius: 10px;
-    font-weight: 600;
+    border-radius: 9px;
+    font-size: 0.85rem;
+    font-weight: 700;
     color: white;
     cursor: pointer;
     display: flex;
     align-items: center;
+    justify-content: center;
     gap: 0.5rem;
     transition: all 0.2s;
+    flex-shrink: 0;
+    letter-spacing: 0.01em;
 }
 
 .btn-reject:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(239, 68, 68, 0.35);
+}
+
+/* Status Badge unchanged */
+
+/* Responsive — stack on small screens */
+@media (max-width: 680px) {
+    .modal-content { height: min(96vh, 700px); }
+    .modal-body { flex-direction: column; overflow-y: auto; }
+    .modal-panel-left { width: 100%; border-right: none; border-bottom: 1px solid #f1f5f9; }
+    .modal-panel-right { flex: none; }
+    .tab-panels { height: 320px; position: relative; }
 }
 
 /* Responsive Hero */
@@ -847,7 +1109,8 @@
         <option value="">Semua Status</option>
         <option value="pending">Pending</option>
         <option value="accepted">Diterima</option>
-        <option value="rejected">Ditolak</option>
+        <option value="rejected">Revisi</option>
+        <option value="permanently_rejected">Ditolak Permanen</option>
         <option value="finished">Selesai</option>
     </select>
     <button type="button" class="filter-btn" @click="filterTable()">
@@ -912,7 +1175,9 @@
                             @elseif($app->status === 'accepted')
                                 <i class="fas fa-check"></i> Diterima
                             @elseif($app->status === 'rejected')
-                                <i class="fas fa-times"></i> Ditolak
+                                <i class="fas fa-redo"></i> Revisi
+                            @elseif($app->status === 'permanently_rejected')
+                                <i class="fas fa-ban"></i> Ditolak Permanen
                             @elseif($app->status === 'finished')
                                 <i class="fas fa-check-double"></i> Selesai
                             @else
@@ -970,7 +1235,17 @@ $applicationsJson = $applications->map(function($app) {
         'field' => $app->fieldOfInterest->name ?? '-',
         'start_date' => $app->start_date ? \Carbon\Carbon::parse($app->start_date)->format('d M Y') : '-',
         'end_date' => $app->end_date ? \Carbon\Carbon::parse($app->end_date)->format('d M Y') : '-',
-        'duration' => $app->start_date && $app->end_date ? \Carbon\Carbon::parse($app->start_date)->diffInMonths(\Carbon\Carbon::parse($app->end_date)) : 0,
+        'duration_label' => (function() use ($app) {
+            if (!$app->start_date || !$app->end_date) return '-';
+            $start  = \Carbon\Carbon::parse($app->start_date);
+            $end    = \Carbon\Carbon::parse($app->end_date);
+            $months = (int) $start->diffInMonths($end);
+            $days   = $start->copy()->addMonths($months)->diffInDays($end);
+            $parts  = [];
+            if ($months > 0) $parts[] = "{$months} Bulan";
+            if ($days   > 0) $parts[] = "{$days} Hari";
+            return implode(' ', $parts) ?: '0 Hari';
+        })(),
         'documents' => [
             'ktm' => $app->ktm_path ? asset('storage/' . $app->ktm_path) : null,
             'cv' => $app->cv_path ? asset('storage/' . $app->cv_path) : null,
@@ -979,6 +1254,7 @@ $applicationsJson = $applications->map(function($app) {
         ],
         'approve_url' => route('admin.applications.approve', $app->id),
         'reject_url' => route('admin.applications.reject', $app->id),
+        'permanent_reject_url' => route('admin.applications.permanent-reject', $app->id),
     ];
 })->keyBy('id');
 
@@ -1024,7 +1300,7 @@ function filterTable() {
     });
 }
 
-// Modal functionality
+// Modal functionality — two-panel no-scroll layout
 function openDetailModal(appId) {
     const app = applicationsData[appId];
     if (!app) return;
@@ -1033,122 +1309,245 @@ function openDetailModal(appId) {
     const modalBody = document.getElementById('modalBody');
     const modalTitle = document.getElementById('modalTitle');
 
-    modalTitle.textContent = 'Detail Pengajuan - ' + app.user.name;
+    modalTitle.textContent = app.user.name;
 
-    let html = `
-        <div class="applicant-info">
-            <div class="applicant-photo">
-                ${app.user.profile_picture
-                    ? `<img src="${app.user.profile_picture}" alt="Foto Profil">`
-                    : `<i class="fas fa-user placeholder-icon"></i>`}
-            </div>
-            <div class="applicant-details">
-                <h4>${app.user.name}</h4>
-                <span class="status-badge ${app.status}">
-                    ${app.status === 'pending' ? '<i class="fas fa-clock"></i> Pending' :
-                      app.status === 'accepted' ? '<i class="fas fa-check"></i> Diterima' :
-                      app.status === 'rejected' ? '<i class="fas fa-times"></i> Ditolak' :
-                      app.status === 'finished' ? '<i class="fas fa-check-double"></i> Selesai' : app.status}
-                </span>
-                ${app.user.is_reapplicant ? '<span style="display:inline-flex;align-items:center;gap:4px;margin-left:6px;padding:2px 8px;background:rgba(245,158,11,0.1);color:#D97706;font-size:0.7rem;font-weight:600;border-radius:6px;"><i class="fas fa-redo" style="font-size:0.6rem;"></i> Pendaftar Ulang</span>' : ''}
-                <div class="meta">
-                    <div class="meta-item"><i class="fas fa-id-card"></i> ${app.user.nim}</div>
-                    <div class="meta-item"><i class="fas fa-university"></i> ${app.user.university}</div>
+    // ── Status badge HTML helper
+    const statusBadge = () => {
+        const map = {
+            pending:              ['fa-clock',        'Pending'],
+            accepted:             ['fa-check',        'Diterima'],
+            rejected:             ['fa-redo',         'Revisi'],
+            permanently_rejected: ['fa-ban',          'Ditolak Permanen'],
+            finished:             ['fa-check-double', 'Selesai'],
+        };
+        const [icon, label] = map[app.status] || ['fa-circle', app.status];
+        return `<span class="status-badge ${app.status}"><i class="fas ${icon}"></i> ${label}</span>`;
+    };
+
+    // ── Documents chips
+    const docMap = [
+        { key: 'ktm',   label: 'KTM' },
+        { key: 'cv',    label: 'CV' },
+        { key: 'surat', label: 'Surat' },
+        { key: 'skck',  label: 'SKCK' },
+    ];
+    const docChips = docMap
+        .filter(d => app.documents[d.key])
+        .map(d => `<a href="${app.documents[d.key]}" target="_blank" class="doc-chip"><i class="fas fa-file-pdf"></i>${d.label}</a>`)
+        .join('');
+
+    // ── LEFT PANEL
+    const leftPanel = `
+        <div class="modal-panel-left">
+            <div class="applicant-identity">
+                <div class="applicant-avatar">
+                    ${app.user.profile_picture
+                        ? `<img src="${app.user.profile_picture}" alt="Foto">`
+                        : `<i class="fas fa-user placeholder-icon"></i>`}
+                </div>
+                <div class="applicant-name-block">
+                    <h4>${app.user.name}</h4>
+                    <div class="badge-row">
+                        ${statusBadge()}
+                        ${app.user.is_reapplicant
+                            ? `<span style="display:inline-flex;align-items:center;gap:3px;padding:2px 7px;background:rgba(245,158,11,0.1);color:#D97706;font-size:0.68rem;font-weight:700;border-radius:5px;"><i class="fas fa-redo" style="font-size:0.6rem;"></i>Ulang</span>`
+                            : ''}
+                    </div>
                 </div>
             </div>
-        </div>
 
-        <div class="info-grid">
-            <div class="info-item">
-                <label>Jurusan</label>
-                <span>${app.user.major}</span>
+            <div class="detail-list">
+                <div class="detail-item">
+                    <span class="di-label"><i class="fas fa-id-card" style="margin-right:3px;"></i>NIM/NIP</span>
+                    <span class="di-value">${app.user.nim}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="di-label"><i class="fas fa-phone" style="margin-right:3px;"></i>No. HP</span>
+                    <span class="di-value">${app.user.phone}</span>
+                </div>
+                <div class="detail-item" style="grid-column: 1/-1;">
+                    <span class="di-label"><i class="fas fa-university" style="margin-right:3px;"></i>Institusi</span>
+                    <span class="di-value">${app.user.university}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="di-label"><i class="fas fa-graduation-cap" style="margin-right:3px;"></i>Jurusan</span>
+                    <span class="di-value">${app.user.major}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="di-label"><i class="fas fa-fingerprint" style="margin-right:3px;"></i>NIK</span>
+                    <span class="di-value">${app.user.ktp_number}</span>
+                </div>
+                <div class="detail-item" style="grid-column: 1/-1;">
+                    <span class="di-label"><i class="fas fa-tag" style="margin-right:3px;"></i>Bidang Peminatan</span>
+                    <span class="di-value">${app.field}</span>
+                </div>
             </div>
-            <div class="info-item">
-                <label>No. HP</label>
-                <span>${app.user.phone}</span>
-            </div>
-            <div class="info-item">
-                <label>NIK</label>
-                <span>${app.user.ktp_number}</span>
-            </div>
-            <div class="info-item">
-                <label>Bidang Peminatan</label>
-                <span>${app.field}</span>
-            </div>
-        </div>
 
-        <div class="period-info">
-            <i class="fas fa-calendar-alt"></i>
-            <div class="period-text">
-                <div class="period-dates">${app.start_date} &rarr; ${app.end_date}</div>
-                <div class="period-duration">Durasi: ${app.duration} bulan</div>
+            <div class="period-strip">
+                <div class="ps-date-block">
+                    <span class="ps-label">Mulai</span>
+                    <span class="ps-date">${app.start_date}</span>
+                </div>
+                <div class="ps-arrow"><i class="fas fa-arrow-right"></i></div>
+                <div class="ps-divider"></div>
+                <div class="ps-date-block">
+                    <span class="ps-label">Selesai</span>
+                    <span class="ps-date">${app.end_date}</span>
+                </div>
             </div>
-        </div>
+            ${app.duration_label && app.duration_label !== '-' ? `
+            <div class="duration-label">
+                <i class="fas fa-hourglass-half"></i> Durasi: ${app.duration_label}
+            </div>` : ''}
 
-        <div class="documents-section">
-            <h5><i class="fas fa-folder-open"></i> Dokumen</h5>
-            <div class="documents-grid">
-                ${app.documents.ktm ? `<a href="${app.documents.ktm}" target="_blank" class="doc-btn"><i class="fas fa-file-pdf"></i> KTM</a>` : ''}
-                ${app.documents.cv ? `<a href="${app.documents.cv}" target="_blank" class="doc-btn"><i class="fas fa-file-pdf"></i> CV</a>` : ''}
-                ${app.documents.surat ? `<a href="${app.documents.surat}" target="_blank" class="doc-btn"><i class="fas fa-file-pdf"></i> Surat Permohonan</a>` : ''}
-                ${app.documents.skck ? `<a href="${app.documents.skck}" target="_blank" class="doc-btn"><i class="fas fa-file-pdf"></i> SKCK/SBB</a>` : ''}
-                ${!app.documents.ktm && !app.documents.cv && !app.documents.surat && !app.documents.skck ? '<span style="color: #9ca3af;">Tidak ada dokumen</span>' : ''}
+            <div class="docs-section">
+                <div class="docs-label"><i class="fas fa-folder-open"></i> Dokumen</div>
+                <div class="docs-row">
+                    ${docChips || '<span style="font-size:0.78rem;color:#94a3b8;">Tidak ada dokumen</span>'}
+                </div>
             </div>
         </div>
     `;
 
-    // Show action forms only for pending applications
-    if (app.status === 'pending') {
-        html += `
-            <div class="approve-form" id="approveForm${appId}">
-                <h5><i class="fas fa-check-circle"></i> Terima Pengajuan</h5>
-                <form action="${app.approve_url}" method="POST">
-                    <input type="hidden" name="_token" value="${csrfToken}">
-                    <div class="form-group">
-                        <label>Pilih Divisi <span style="color: #EF4444;">*</span></label>
-                        <select name="divisi_id" required onchange="updateMentors(this, ${appId})">
-                            <option value="">-- Pilih Divisi --</option>
-                            ${divisions.map(d => `<option value="${d.id}">${d.name}</option>`).join('')}
-                        </select>
-                    </div>
-                    <div class="form-group" id="mentorGroup${appId}" style="display: none;">
-                        <label>Pilih Mentor <span style="color: #9ca3af;">(Opsional)</span></label>
-                        <select name="division_mentor_id" id="mentorSelect${appId}">
-                            <option value="">-- Pilih Mentor --</option>
-                        </select>
-                    </div>
-                    <button type="submit" class="btn-approve">
-                        <i class="fas fa-check"></i> Terima Pengajuan
-                    </button>
-                </form>
-            </div>
+    // ── RIGHT PANEL — build based on status
+    let rightPanel = '';
 
-            <div class="reject-form">
-                <h5><i class="fas fa-times-circle"></i> Tolak Pengajuan</h5>
-                <form action="${app.reject_url}" method="POST">
-                    <input type="hidden" name="_token" value="${csrfToken}">
-                    <div class="form-group">
-                        <label>Alasan Penolakan <span style="color: #9ca3af;">(Opsional)</span></label>
-                        <textarea name="notes" placeholder="Masukkan alasan penolakan..."></textarea>
-                    </div>
-                    <button type="submit" class="btn-reject">
-                        <i class="fas fa-times"></i> Tolak Pengajuan
+    if (app.status === 'pending') {
+        rightPanel = `
+            <div class="modal-panel-right">
+                <div class="action-tabs">
+                    <button class="action-tab active-approve" onclick="switchTab('approve', ${appId})" id="tabApprove${appId}">
+                        <i class="fas fa-check-circle"></i> Terima
                     </button>
-                </form>
+                    <button class="action-tab" onclick="switchTab('revisi', ${appId})" id="tabRevisi${appId}">
+                        <i class="fas fa-redo"></i> Revisi
+                    </button>
+                    <button class="action-tab" onclick="switchTab('reject', ${appId})" id="tabReject${appId}">
+                        <i class="fas fa-ban"></i> Tolak
+                    </button>
+                </div>
+
+                <div class="tab-panels">
+                    <div class="tab-panel visible" id="panelApprove${appId}">
+                        <div class="panel-approve" style="display:flex;flex-direction:column;gap:0.75rem;">
+                            <form action="${app.approve_url}" method="POST" style="display:flex;flex-direction:column;gap:0.75rem;flex:1;">
+                                <input type="hidden" name="_token" value="${csrfToken}">
+                                <div class="form-field">
+                                    <label>Pilih Divisi <span style="color:#EF4444;">*</span></label>
+                                    <select name="divisi_id" required onchange="updateMentors(this, ${appId})">
+                                        <option value="">-- Pilih Divisi --</option>
+                                        ${divisions.map(d => `<option value="${d.id}">${d.name}</option>`).join('')}
+                                    </select>
+                                </div>
+                                <div class="form-field" id="mentorGroup${appId}" style="display:none;">
+                                    <label>Pilih Mentor <span style="color:#94a3b8;">(Opsional)</span></label>
+                                    <select name="division_mentor_id" id="mentorSelect${appId}">
+                                        <option value="">-- Pilih Mentor --</option>
+                                    </select>
+                                </div>
+                                <div style="flex:1;"></div>
+                                <button type="submit" class="btn-approve">
+                                    <i class="fas fa-check"></i> Konfirmasi Penerimaan
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <div class="tab-panel" id="panelRevisi${appId}">
+                        <div class="panel-revisi" style="display:flex;flex-direction:column;gap:0.75rem;">
+                            <div style="font-size:0.75rem;color:#92400e;background:rgba(217,119,6,0.08);border-radius:8px;padding:0.5rem 0.75rem;border:1px solid #fde68a;">
+                                <i class="fas fa-info-circle" style="margin-right:4px;"></i>
+                                Peserta masih dapat mendaftar ulang setelah revisi.
+                            </div>
+                            <form action="${app.reject_url}" method="POST" style="display:flex;flex-direction:column;gap:0.75rem;flex:1;">
+                                <input type="hidden" name="_token" value="${csrfToken}">
+                                <div class="form-field" style="display:flex;flex-direction:column;flex:1;">
+                                    <label>Catatan Revisi <span style="color:#94a3b8;">(Opsional)</span></label>
+                                    <textarea name="notes" placeholder="Tuliskan catatan untuk peserta..." style="flex:1;min-height:60px;border-color:#fcd34d;"></textarea>
+                                </div>
+                                <button type="submit" class="btn-revisi">
+                                    <i class="fas fa-redo"></i> Kirim Revisi
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <div class="tab-panel" id="panelReject${appId}">
+                        <div class="panel-reject" style="display:flex;flex-direction:column;gap:0.75rem;">
+                            <div style="font-size:0.75rem;color:#7f1d1d;background:rgba(127,29,29,0.07);border-radius:8px;padding:0.5rem 0.75rem;border:1px solid #fca5a5;">
+                                <i class="fas fa-exclamation-triangle" style="margin-right:4px;"></i>
+                                Peserta <strong>tidak dapat</strong> mendaftar ulang setelah ditolak permanen.
+                            </div>
+                            <form action="${app.permanent_reject_url}" method="POST" style="display:flex;flex-direction:column;gap:0.75rem;flex:1;">
+                                <input type="hidden" name="_token" value="${csrfToken}">
+                                <div class="form-field" style="display:flex;flex-direction:column;flex:1;">
+                                    <label>Alasan Penolakan <span style="color:#94a3b8;">(Opsional)</span></label>
+                                    <textarea name="notes" placeholder="Masukkan alasan penolakan permanen..." style="flex:1;min-height:60px;"></textarea>
+                                </div>
+                                <button type="submit" class="btn-permanent-reject">
+                                    <i class="fas fa-ban"></i> Tolak Permanen
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
             </div>
         `;
-    } else if (app.status === 'rejected' && app.notes) {
-        html += `
-            <div class="reject-form">
-                <h5><i class="fas fa-info-circle"></i> Alasan Penolakan</h5>
-                <p style="color: #374151; margin: 0;">${app.notes}</p>
+    } else {
+        // Non-pending: show status info panel
+        const iconMap = {
+            accepted:             { cls: 'accepted',  icon: 'fa-check-circle',   msg: 'Pengajuan telah diterima' },
+            rejected:             { cls: 'rejected',  icon: 'fa-redo',           msg: 'Dikembalikan untuk revisi' },
+            permanently_rejected: { cls: 'rejected',  icon: 'fa-ban',            msg: 'Ditolak permanen' },
+            finished:             { cls: 'finished',  icon: 'fa-flag-checkered', msg: 'Magang telah selesai' },
+        };
+        const si = iconMap[app.status] || { cls: '', icon: 'fa-info-circle', msg: app.status };
+
+        rightPanel = `
+            <div class="modal-panel-right">
+                <div class="status-info-panel">
+                    <div class="si-icon ${si.cls}"><i class="fas ${si.icon}"></i></div>
+                    <div class="si-label">${si.msg}</div>
+                    ${(app.status === 'rejected' || app.status === 'permanently_rejected') && app.notes
+                        ? `<div class="rejection-note"><strong>Catatan:</strong> ${app.notes}</div>`
+                        : ''}
+                </div>
             </div>
         `;
     }
 
-    modalBody.innerHTML = html;
+    modalBody.innerHTML = leftPanel + rightPanel;
     modal.classList.add('show');
     document.body.style.overflow = 'hidden';
+}
+
+// Tab switcher for pending modal (3 tabs: approve / revisi / reject)
+function switchTab(tab, appId) {
+    const tabApprove = document.getElementById('tabApprove' + appId);
+    const tabRevisi  = document.getElementById('tabRevisi'  + appId);
+    const tabReject  = document.getElementById('tabReject'  + appId);
+    const panelApprove = document.getElementById('panelApprove' + appId);
+    const panelRevisi  = document.getElementById('panelRevisi'  + appId);
+    const panelReject  = document.getElementById('panelReject'  + appId);
+
+    // Reset all
+    tabApprove.className = 'action-tab';
+    tabRevisi.className  = 'action-tab';
+    tabReject.className  = 'action-tab';
+    panelApprove.classList.remove('visible');
+    panelRevisi.classList.remove('visible');
+    panelReject.classList.remove('visible');
+
+    if (tab === 'approve') {
+        tabApprove.className = 'action-tab active-approve';
+        panelApprove.classList.add('visible');
+    } else if (tab === 'revisi') {
+        tabRevisi.className = 'action-tab active-revisi';
+        panelRevisi.classList.add('visible');
+    } else {
+        tabReject.className = 'action-tab active-reject';
+        panelReject.classList.add('visible');
+    }
 }
 
 function closeDetailModal() {

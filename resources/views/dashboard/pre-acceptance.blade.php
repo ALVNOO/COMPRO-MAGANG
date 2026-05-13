@@ -694,16 +694,21 @@
                         <div class="date-info" id="dateInfo">
                             @if($application && $application->start_date && $application->end_date)
                             @php
-                                $start = \Carbon\Carbon::parse($application->start_date);
-                                $end = \Carbon\Carbon::parse($application->end_date);
-                                $diff = $start->diffInMonths($end);
+                                $start        = \Carbon\Carbon::parse($application->start_date);
+                                $end          = \Carbon\Carbon::parse($application->end_date);
+                                $diffMonths   = (int) $start->diffInMonths($end);
+                                $diffDays     = $start->copy()->addMonths($diffMonths)->diffInDays($end);
+                                $durationParts = [];
+                                if ($diffMonths > 0) $durationParts[] = "{$diffMonths} Bulan";
+                                if ($diffDays   > 0) $durationParts[] = "{$diffDays} Hari";
+                                $durationLabel = implode(' ', $durationParts) ?: '0 Hari';
                             @endphp
                             <div class="date-info-content">
                                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <circle cx="12" cy="12" r="10"/>
                                     <polyline points="12 6 12 12 16 14"/>
                                 </svg>
-                                <span>Durasi magang: <strong>{{ $diff }} bulan</strong> ({{ $start->format('d M Y') }} - {{ $end->format('d M Y') }})</span>
+                                <span>Durasi magang: <strong>{{ $durationLabel }}</strong></span>
                             </div>
                             @endif
                         </div>
@@ -1392,20 +1397,39 @@ function saveDates() {
     });
 }
 
+function calcDurationLabel(startVal, endVal) {
+    const start = new Date(startVal);
+    const end   = new Date(endVal);
+
+    let months = (end.getFullYear() - start.getFullYear()) * 12
+               + (end.getMonth()    - start.getMonth());
+
+    // Remaining days after full months
+    const afterMonths = new Date(start);
+    afterMonths.setMonth(afterMonths.getMonth() + months);
+    let days = Math.round((end - afterMonths) / (1000 * 60 * 60 * 24));
+
+    // Handle edge case where day-of-month causes overshoot
+    if (days < 0) {
+        months--;
+        const prev = new Date(start);
+        prev.setMonth(prev.getMonth() + months);
+        days = Math.round((end - prev) / (1000 * 60 * 60 * 24));
+    }
+
+    const parts = [];
+    if (months > 0) parts.push(`${months} Bulan`);
+    if (days   > 0) parts.push(`${days} Hari`);
+    return parts.length ? parts.join(' ') : '0 Hari';
+}
+
 function updateDateInfo() {
     const startDate = document.getElementById('start_date').value;
-    const endDate = document.getElementById('end_date').value;
-    const dateInfo = document.getElementById('dateInfo');
+    const endDate   = document.getElementById('end_date').value;
+    const dateInfo  = document.getElementById('dateInfo');
 
     if (startDate && endDate) {
-        const start = new Date(startDate);
-        const end = new Date(endDate);
-        const months = Math.round((end - start) / (1000 * 60 * 60 * 24 * 30));
-
-        const formatDate = (date) => {
-            const options = { day: 'numeric', month: 'short', year: 'numeric' };
-            return date.toLocaleDateString('id-ID', options);
-        };
+        const label = calcDurationLabel(startDate, endDate);
 
         dateInfo.innerHTML = `
             <div class="date-info-content">
@@ -1413,7 +1437,7 @@ function updateDateInfo() {
                     <circle cx="12" cy="12" r="10"/>
                     <polyline points="12 6 12 12 16 14"/>
                 </svg>
-                <span>Durasi magang: <strong>${months} bulan</strong> (${formatDate(start)} - ${formatDate(end)})</span>
+                <span>Durasi magang: <strong>${label}</strong></span>
             </div>
         `;
     }

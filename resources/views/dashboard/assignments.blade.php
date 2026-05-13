@@ -247,32 +247,35 @@
     width: 100%;
     border-collapse: separate;
     border-spacing: 0;
-    table-layout: fixed;
-}
-
-.assignment-table thead th,
-.assignment-table tbody td {
-    padding: 0.875rem 1rem;
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-    vertical-align: middle;
-    text-align: center;
+    table-layout: auto;
 }
 
 .assignment-table thead th {
     background: #f9fafb;
-    font-size: 0.75rem;
-    font-weight: 600;
+    padding: 0.75rem 1rem;
+    font-size: 0.72rem;
+    font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.05em;
     color: #6b7280;
     border-bottom: 1px solid rgba(0, 0, 0, 0.06);
     white-space: nowrap;
+    vertical-align: middle;
 }
 
+.assignment-table thead th.th-no     { width: 50px; text-align: center; }
+.assignment-table thead th.th-title  { text-align: left; min-width: 160px; }
+.assignment-table thead th.th-type   { width: 110px; text-align: center; }
+.assignment-table thead th.th-dl     { width: 130px; text-align: center; }
+.assignment-table thead th.th-status { width: 155px; text-align: center; }
+.assignment-table thead th.th-aksi   { width: 88px;  text-align: center; }
+
 .assignment-table tbody td {
+    padding: 0.875rem 1rem;
     font-size: 0.875rem;
     color: #374151;
     border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+    vertical-align: middle;
 }
 
 .assignment-table tbody tr {
@@ -296,6 +299,8 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    max-width: 260px;
+    text-align: left;
 }
 
 /* Type Badge */
@@ -342,45 +347,35 @@
     color: #374151;
 }
 
-/* Status Icon */
-.status-icon-wrap {
-    display: flex;
+/* Status Badge */
+.status-badge {
+    display: inline-flex;
     align-items: center;
-    justify-content: center;
+    gap: 0.35rem;
+    padding: 0.3rem 0.7rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    white-space: nowrap;
 }
 
-.status-icon {
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 0.8rem;
-    transition: transform 0.2s;
-}
-
-.status-icon:hover {
-    transform: scale(1.15);
-}
-
-.status-icon.pending {
-    background: rgba(239, 68, 68, 0.12);
+.status-badge.pending {
+    background: rgba(239, 68, 68, 0.1);
     color: #dc2626;
 }
 
-.status-icon.submitted {
-    background: rgba(16, 185, 129, 0.15);
+.status-badge.submitted {
+    background: rgba(16, 185, 129, 0.12);
     color: #059669;
 }
 
-.status-icon.revision {
-    background: rgba(245, 158, 11, 0.15);
+.status-badge.revision {
+    background: rgba(245, 158, 11, 0.12);
     color: #d97706;
 }
 
-.status-icon.graded {
-    background: rgba(139, 92, 246, 0.15);
+.status-badge.graded {
+    background: rgba(139, 92, 246, 0.12);
     color: #7c3aed;
 }
 
@@ -409,263 +404,339 @@
 }
 
 /* ============================================
-   DETAIL POPUP OVERLAY
+   DETAIL POPUP — REDESIGNED
    ============================================ */
 .popup-overlay {
     display: none;
     position: fixed;
     inset: 0;
-    background: rgba(0, 0, 0, 0.5);
-    backdrop-filter: blur(4px);
+    background: rgba(10, 15, 30, 0.55);
+    backdrop-filter: blur(6px);
     z-index: 9999;
     justify-content: center;
     align-items: center;
-    padding: 1.5rem;
+    padding: 1.25rem;
 }
 
-.popup-overlay.active {
-    display: flex;
+.popup-overlay.active { display: flex; }
+
+@keyframes popup-in {
+    from { opacity: 0; transform: translateY(18px) scale(0.97); }
+    to   { opacity: 1; transform: translateY(0)   scale(1); }
 }
 
+/* Card shell */
 .popup-card {
     background: #fff;
     border-radius: 20px;
     width: 100%;
-    max-width: 600px;
-    max-height: 90vh;
-    overflow-y: auto;
-    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.3);
-    position: relative;
-    animation: popup-in 0.25s ease-out;
+    max-width: 580px;
+    max-height: 88vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    box-shadow: 0 32px 80px rgba(0,0,0,0.22), 0 0 0 1px rgba(0,0,0,0.05);
+    animation: popup-in 0.26s cubic-bezier(0.34,1.56,0.64,1) both;
 }
 
-@keyframes popup-in {
-    from { opacity: 0; transform: scale(0.95) translateY(10px); }
-    to { opacity: 1; transform: scale(1) translateY(0); }
-}
-
-/* Popup Header */
+/* ── Accent Header ── */
 .popup-header {
-    padding: 1.5rem 1.75rem 1.25rem;
+    background: linear-gradient(135deg, #EE2E24 0%, #C41E1A 100%);
+    padding: 1.125rem 1.375rem 1rem;
     position: relative;
+    flex-shrink: 0;
 }
 
 .popup-close {
     position: absolute;
-    top: 1rem;
-    right: 1rem;
-    width: 34px;
-    height: 34px;
-    border-radius: 10px;
+    top: 0.875rem;
+    right: 0.875rem;
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
     border: none;
-    background: #f3f4f6;
-    color: #6b7280;
-    font-size: 0.9rem;
+    background: rgba(255,255,255,0.18);
+    color: white;
+    font-size: 0.8rem;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: all 0.2s;
+    transition: background 0.15s;
 }
 
-.popup-close:hover {
-    background: #e5e7eb;
-    color: #1f2937;
-}
+.popup-close:hover { background: rgba(255,255,255,0.3); }
 
 .popup-title {
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-    font-size: 1.15rem;
+    font-size: 1rem;
     font-weight: 700;
-    color: #1f2937;
-    margin: 0 0 0.5rem 0;
-    padding-right: 2.5rem;
-    line-height: 1.4;
+    color: white;
+    margin: 0 2rem 0.5rem 0;
+    line-height: 1.35;
+    letter-spacing: 0.01em;
 }
 
 .popup-meta {
     display: flex;
     align-items: center;
-    gap: 0.75rem;
+    gap: 0.5rem;
     flex-wrap: wrap;
 }
 
-.popup-meta-item {
+.popup-meta-chip {
     display: inline-flex;
     align-items: center;
     gap: 0.3rem;
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-    font-size: 0.8rem;
-    color: #6b7280;
-}
-
-.popup-meta-item i {
-    font-size: 0.7rem;
-}
-
-.popup-meta-sep {
-    width: 4px;
-    height: 4px;
-    border-radius: 50%;
-    background: #d1d5db;
-}
-
-/* Popup Sections */
-.popup-section {
-    padding: 1.25rem 1.75rem;
-    border-top: 1px solid #f1f5f9;
-}
-
-.popup-section-label {
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-    font-size: 0.7rem;
+    padding: 0.2rem 0.6rem;
+    background: rgba(255,255,255,0.18);
+    border-radius: 20px;
+    font-size: 0.72rem;
     font-weight: 600;
+    color: rgba(255,255,255,0.92);
+    letter-spacing: 0.01em;
+}
+
+.popup-meta-chip.overdue { background: rgba(0,0,0,0.2); }
+.popup-meta-chip.submitted-chip { background: rgba(255,255,255,0.25); }
+
+/* ── Scrollable body ── */
+.popup-body {
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+}
+
+.popup-body::-webkit-scrollbar { width: 5px; }
+.popup-body::-webkit-scrollbar-track { background: transparent; }
+.popup-body::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 3px; }
+
+/* ── Info Row ── */
+.popup-info-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0;
+    border-bottom: 1px solid #f1f5f9;
+    flex-shrink: 0;
+}
+
+.popup-info-cell {
+    padding: 0.875rem 1.125rem;
+    border-right: 1px solid #f1f5f9;
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+}
+
+.popup-info-cell:last-child { border-right: none; }
+
+.pic-label {
+    font-size: 0.65rem;
+    font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.06em;
     color: #9ca3af;
-    margin-bottom: 0.65rem;
     display: flex;
     align-items: center;
-    gap: 0.4rem;
+    gap: 0.3rem;
 }
 
-.popup-section-label i {
-    font-size: 0.75rem;
-    color: #EE2E24;
+.pic-label i { color: #EE2E24; font-size: 0.6rem; }
+
+.pic-value {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: #1e293b;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
+
+.pic-value.overdue-val { color: #dc2626; }
+.pic-value.upcoming-val { color: #d97706; }
+
+/* ── Sections ── */
+.popup-section {
+    padding: 1rem 1.375rem;
+    border-bottom: 1px solid #f8fafc;
+}
+
+.popup-section:last-child { border-bottom: none; }
+
+.popup-section-label {
+    font-size: 0.67rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: #94a3b8;
+    margin-bottom: 0.55rem;
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+.popup-section-label i { color: #EE2E24; font-size: 0.65rem; }
 
 .popup-desc {
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-    font-size: 0.9rem;
+    font-size: 0.875rem;
     color: #374151;
     line-height: 1.7;
-    letter-spacing: 0.01em;
     white-space: pre-wrap;
     word-wrap: break-word;
 }
 
 .popup-desc-empty {
-    font-size: 0.85rem;
+    font-size: 0.82rem;
     color: #9ca3af;
     font-style: italic;
 }
 
-/* File Download in popup */
+/* ── File Button ── */
 .popup-file-btn {
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
-    padding: 0.55rem 1rem;
-    background: rgba(59, 130, 246, 0.08);
+    padding: 0.5rem 1rem;
+    background: #eff6ff;
     color: #2563eb;
-    border: 1.5px solid rgba(59, 130, 246, 0.2);
-    border-radius: 10px;
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    border: 1.5px solid #bfdbfe;
+    border-radius: 9px;
     font-size: 0.8rem;
     font-weight: 600;
     text-decoration: none;
-    transition: all 0.2s;
+    transition: all 0.18s;
 }
 
 .popup-file-btn:hover {
-    background: rgba(59, 130, 246, 0.15);
+    background: #dbeafe;
     color: #1d4ed8;
     transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(37,99,235,0.15);
 }
 
-.popup-no-file {
-    font-size: 0.85rem;
-    color: #9ca3af;
+.popup-no-file { font-size: 0.82rem; color: #94a3b8; }
+
+/* ── Grade Block ── */
+.popup-grade-block {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 1.25rem;
+    align-items: start;
 }
 
-/* Grade Section in popup */
-.popup-grade-row {
+.grade-score-box {
+    background: linear-gradient(135deg, #fff1f0, #ffe4e3);
+    border: 1.5px solid #fecaca;
+    border-radius: 12px;
+    padding: 0.75rem 1.125rem;
+    text-align: center;
+    min-width: 80px;
+}
+
+.grade-score-num {
+    font-size: 1.75rem;
+    font-weight: 800;
+    color: #EE2E24;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+}
+
+.grade-score-max {
+    font-size: 0.7rem;
+    color: #f87171;
+    font-weight: 600;
+}
+
+.grade-no-score {
+    background: #f8fafc;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 0.75rem 1.125rem;
+    text-align: center;
+    min-width: 80px;
+    font-size: 0.78rem;
+    color: #94a3b8;
     display: flex;
-    gap: 1.5rem;
-    align-items: flex-start;
+    align-items: center;
+    justify-content: center;
+    font-style: italic;
 }
 
-.popup-grade-item {
-    flex: 1;
-}
-
-.popup-grade-label {
-    font-size: 0.75rem;
-    color: #9ca3af;
+.grade-feedback-label {
+    font-size: 0.67rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #94a3b8;
     margin-bottom: 0.35rem;
 }
 
-.popup-grade-value {
-    font-family: 'JetBrains Mono', 'Fira Code', monospace;
-    font-size: 1.25rem;
-    font-weight: 700;
-    color: #EE2E24;
-}
-
-.popup-grade-value.none {
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+.grade-feedback-text {
     font-size: 0.85rem;
-    font-weight: 400;
-    color: #9ca3af;
-}
-
-.popup-feedback-text {
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-    font-size: 0.875rem;
     color: #374151;
     line-height: 1.6;
 }
 
-/* Action Section in popup */
+.grade-feedback-empty {
+    font-size: 0.82rem;
+    color: #94a3b8;
+    font-style: italic;
+}
+
+/* ── Action Footer ── */
 .popup-action {
-    padding: 1.25rem 1.75rem 1.5rem;
+    padding: 1rem 1.375rem;
+    background: #f8fafc;
     border-top: 1px solid #f1f5f9;
-    background: #fafbfc;
-    border-radius: 0 0 20px 20px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.popup-action-hint {
+    font-size: 0.7rem;
+    color: #94a3b8;
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
 }
 
 .popup-submit-btn {
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
-    padding: 0.7rem 1.5rem;
+    padding: 0.65rem 1.375rem;
     background: linear-gradient(135deg, #EE2E24, #C41E1A);
     color: white;
     border: none;
-    border-radius: 12px;
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-    font-size: 0.875rem;
-    font-weight: 600;
+    border-radius: 10px;
+    font-size: 0.85rem;
+    font-weight: 700;
     cursor: pointer;
-    transition: all 0.3s;
-    box-shadow: 0 4px 14px rgba(238, 46, 36, 0.25);
+    transition: all 0.2s;
+    box-shadow: 0 4px 14px rgba(238,46,36,0.25);
+    letter-spacing: 0.01em;
+    flex-shrink: 0;
 }
 
 .popup-submit-btn:hover {
     transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(238, 46, 36, 0.35);
-}
-
-.popup-submit-hint {
-    font-size: 0.72rem;
-    color: #9ca3af;
-    margin-top: 0.5rem;
-    display: flex;
-    align-items: center;
-    gap: 0.3rem;
+    box-shadow: 0 6px 20px rgba(238,46,36,0.35);
 }
 
 .popup-completed-badge {
     display: inline-flex;
     align-items: center;
     gap: 0.4rem;
-    padding: 0.6rem 1.25rem;
-    background: rgba(16, 185, 129, 0.1);
-    color: #059669;
+    padding: 0.55rem 1.125rem;
+    background: #f0fdf4;
+    color: #16a34a;
+    border: 1.5px solid #bbf7d0;
     border-radius: 10px;
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-    font-size: 0.85rem;
-    font-weight: 600;
+    font-size: 0.82rem;
+    font-weight: 700;
 }
 
 /* Empty State */
@@ -907,12 +978,12 @@
         <table class="assignment-table">
             <thead>
                 <tr>
-                    <th style="width: 6%;">No</th>
-                    <th style="width: 34%;">Judul Tugas</th>
-                    <th style="width: 14%;">Jenis</th>
-                    <th style="width: 18%;">Deadline</th>
-                    <th style="width: 10%;">Status</th>
-                    <th style="width: 12%;">Detail</th>
+                    <th class="th-no">No</th>
+                    <th class="th-title">Judul Tugas</th>
+                    <th class="th-type">Jenis</th>
+                    <th class="th-dl">Deadline</th>
+                    <th class="th-status">Status</th>
+                    <th class="th-aksi">Aksi</th>
                 </tr>
             </thead>
             <tbody>
@@ -951,37 +1022,35 @@
                     $needsSubmit = !$assignment->submitted_at || $assignment->is_revision === 1;
                 @endphp
                 <tr onclick="openDetailPopup({{ $assignment->id }})">
-                    <td style="font-weight: 600; color: #6b7280;">{{ $no++ }}</td>
+                    <td style="text-align:center; font-weight:600; color:#9ca3af; font-size:0.8rem;">{{ $no++ }}</td>
                     <td>
                         <div class="task-title">{{ $assignment->title ?? Str::limit($assignment->description, 60) }}</div>
                     </td>
-                    <td>
+                    <td style="text-align:center;">
                         @if($assignment->assignment_type === 'tugas_harian')
                             <span class="type-badge harian"><i class="fas fa-calendar-day"></i> Harian</span>
                         @else
                             <span class="type-badge proyek"><i class="fas fa-project-diagram"></i> Proyek</span>
                         @endif
                     </td>
-                    <td>
+                    <td style="text-align:center;">
                         @if($assignment->deadline)
                             <span class="deadline-text {{ $isOverdue ? 'overdue' : ($isUpcoming ? 'upcoming' : 'normal') }}">
                                 @if($isOverdue)<i class="fas fa-exclamation-triangle"></i> @endif
                                 {{ \Carbon\Carbon::parse($assignment->deadline)->format('d M Y') }}
                             </span>
                         @else
-                            <span style="color: #9ca3af;">-</span>
+                            <span style="color:#9ca3af;">—</span>
                         @endif
                     </td>
-                    <td>
-                        <div class="status-icon-wrap">
-                            <span class="status-icon {{ $statusClass }}" title="{{ $statusTooltip }}">
-                                <i class="fas {{ $statusIcon }}"></i>
-                            </span>
-                        </div>
+                    <td style="text-align:center;">
+                        <span class="status-badge {{ $statusClass }}">
+                            <i class="fas {{ $statusIcon }}"></i> {{ $statusTooltip }}
+                        </span>
                     </td>
-                    <td>
+                    <td style="text-align:center;">
                         <button type="button" class="btn-detail" onclick="event.stopPropagation(); openDetailPopup({{ $assignment->id }})">
-                            <i class="fas fa-eye"></i> Detail
+                            <i class="fas fa-eye"></i>
                         </button>
                     </td>
                 </tr>
@@ -997,16 +1066,8 @@
         <div class="empty-state-icon">
             <i class="fas fa-clipboard-list"></i>
         </div>
-        @if(isset($application) && $application && $application->status == 'accepted')
             <h4>Belum Ada Tugas</h4>
             <p>Tugas dari pembimbing akan muncul di sini. Tunggu hingga pembimbing memberikan tugas pertama Anda.</p>
-        @else
-            <h4>Belum Ada Tugas</h4>
-            <p>Tugas akan tersedia setelah Anda diterima dalam program magang.</p>
-            <a href="{{ route('dashboard.status') }}" class="btn-empty-action">
-                <i class="fas fa-clipboard-list"></i> Lihat Status Pengajuan
-            </a>
-        @endif
     </div>
 </div>
 @endif
@@ -1014,6 +1075,8 @@
 {{-- Detail Popup Overlay --}}
 <div class="popup-overlay" id="detailPopup">
     <div class="popup-card" id="popupCard">
+
+        {{-- Accent Header --}}
         <div class="popup-header">
             <button type="button" class="popup-close" onclick="closeDetailPopup()">
                 <i class="fas fa-times"></i>
@@ -1022,28 +1085,41 @@
             <div class="popup-meta" id="popupMeta"></div>
         </div>
 
-        <div class="popup-section">
-            <div class="popup-section-label">
-                <i class="fas fa-file-alt"></i> Deskripsi
+        {{-- Scrollable Body --}}
+        <div class="popup-body">
+
+            {{-- Info Row: Jenis · Deadline · Status --}}
+            <div class="popup-info-row" id="popupInfoRow"></div>
+
+            {{-- Description --}}
+            <div class="popup-section">
+                <div class="popup-section-label">
+                    <i class="fas fa-align-left"></i> Deskripsi Tugas
+                </div>
+                <div id="popupDesc"></div>
             </div>
-            <div id="popupDesc"></div>
+
+            {{-- File --}}
+            <div class="popup-section">
+                <div class="popup-section-label">
+                    <i class="fas fa-paperclip"></i> File Referensi
+                </div>
+                <div id="popupFile"></div>
+            </div>
+
+            {{-- Grade & Feedback --}}
+            <div class="popup-section">
+                <div class="popup-section-label">
+                    <i class="fas fa-star"></i> Nilai & Feedback
+                </div>
+                <div id="popupGrade"></div>
+            </div>
+
         </div>
 
-        <div class="popup-section">
-            <div class="popup-section-label">
-                <i class="fas fa-paperclip"></i> File Tugas
-            </div>
-            <div id="popupFile"></div>
-        </div>
-
-        <div class="popup-section">
-            <div class="popup-section-label">
-                <i class="fas fa-chart-bar"></i> Penilaian
-            </div>
-            <div id="popupGrade"></div>
-        </div>
-
+        {{-- Action Footer --}}
         <div class="popup-action" id="popupAction"></div>
+
     </div>
 </div>
 
@@ -1060,98 +1136,114 @@ function openDetailPopup(id) {
     const data = assignmentsData.find(a => a.id === id);
     if (!data) return;
 
-    // Title
+    // ── Header: title + meta chips
     document.getElementById('popupTitle').textContent = data.title || 'Tugas';
 
-    // Meta
     const typeLabel = data.assignment_type === 'tugas_harian' ? 'Harian' : 'Proyek';
-    const typeIcon = data.assignment_type === 'tugas_harian' ? 'fa-calendar-day' : 'fa-project-diagram';
-    let metaHtml = `<span class="popup-meta-item"><i class="fas ${typeIcon}"></i> ${typeLabel}</span>`;
-    if (data.deadline) {
-        metaHtml += `<span class="popup-meta-sep"></span>`;
-        metaHtml += `<span class="popup-meta-item ${data.deadline_passed ? 'style="color:#dc2626;font-weight:600;"' : ''}"><i class="fas fa-calendar"></i> ${data.deadline}</span>`;
-    }
+    const typeIcon  = data.assignment_type === 'tugas_harian' ? 'fa-calendar-day' : 'fa-project-diagram';
+
+    let metaHtml = `<span class="popup-meta-chip"><i class="fas ${typeIcon}"></i> ${typeLabel}</span>`;
     if (data.submitted_at) {
-        metaHtml += `<span class="popup-meta-sep"></span>`;
-        metaHtml += `<span class="popup-meta-item" style="color:#059669;"><i class="fas fa-check"></i> Dikumpulkan ${data.submitted_at}</span>`;
+        metaHtml += `<span class="popup-meta-chip submitted-chip"><i class="fas fa-check"></i> Dikumpulkan</span>`;
+    }
+    if (data.deadline_passed && data.needs_submit) {
+        metaHtml += `<span class="popup-meta-chip overdue"><i class="fas fa-exclamation-triangle"></i> Terlambat</span>`;
     }
     document.getElementById('popupMeta').innerHTML = metaHtml;
 
-    // Description
+    // ── Info Row: Jenis · Deadline · Status
+    const statusMap = {
+        pending:   { cls: 'pending',   icon: 'fa-clock',        text: 'Belum Dikumpulkan' },
+        submitted: { cls: 'submitted', icon: 'fa-check-circle', text: 'Sudah Dikumpulkan' },
+        revision:  { cls: 'revision',  icon: 'fa-redo',         text: 'Perlu Revisi' },
+        graded:    { cls: 'graded',    icon: 'fa-star',         text: 'Sudah Dinilai' },
+    };
+    let curStatus = 'pending';
+    if (data.grade !== null)  curStatus = 'graded';
+    else if (data.is_revision) curStatus = 'revision';
+    else if (data.submitted_at) curStatus = 'submitted';
+    const sm = statusMap[curStatus];
+
+    const deadlineClass = data.deadline_passed && data.needs_submit ? 'overdue-val' : '';
+    document.getElementById('popupInfoRow').innerHTML = `
+        <div class="popup-info-cell">
+            <span class="pic-label"><i class="fas ${typeIcon}"></i> Jenis</span>
+            <span class="pic-value">${typeLabel}</span>
+        </div>
+        <div class="popup-info-cell">
+            <span class="pic-label"><i class="fas fa-calendar-alt"></i> Deadline</span>
+            <span class="pic-value ${deadlineClass}">${data.deadline || '—'}</span>
+        </div>
+        <div class="popup-info-cell">
+            <span class="pic-label"><i class="fas fa-info-circle"></i> Status</span>
+            <span class="pic-value">
+                <span class="status-badge ${sm.cls}" style="font-size:0.72rem;">
+                    <i class="fas ${sm.icon}"></i> ${sm.text}
+                </span>
+            </span>
+        </div>
+    `;
+
+    // ── Description
     const descEl = document.getElementById('popupDesc');
-    if (data.description) {
-        descEl.innerHTML = `<div class="popup-desc">${escapeHtml(data.description)}</div>`;
-    } else {
-        descEl.innerHTML = `<div class="popup-desc-empty">Tidak ada deskripsi</div>`;
-    }
+    descEl.innerHTML = data.description
+        ? `<div class="popup-desc">${escapeHtml(data.description)}</div>`
+        : `<div class="popup-desc-empty">Tidak ada deskripsi tugas.</div>`;
 
-    // File
+    // ── File
     const fileEl = document.getElementById('popupFile');
-    if (data.file_path) {
-        fileEl.innerHTML = `<a href="${data.file_path}" target="_blank" class="popup-file-btn"><i class="fas fa-download"></i> Download File Tugas</a>`;
-    } else {
-        fileEl.innerHTML = `<span class="popup-no-file">Tidak ada file tugas</span>`;
-    }
+    fileEl.innerHTML = data.file_path
+        ? `<a href="${data.file_path}" target="_blank" class="popup-file-btn"><i class="fas fa-arrow-down"></i> Unduh File Referensi</a>`
+        : `<span class="popup-no-file">Tidak ada file referensi</span>`;
 
-    // Grade & Feedback
+    // ── Grade & Feedback
     const gradeEl = document.getElementById('popupGrade');
-    if (data.grade !== null || data.feedback) {
-        let gradeHtml = '';
-        if (data.grade !== null) {
-            gradeHtml = `
-                <div class="popup-grade-item">
-                    <div class="popup-grade-label">Nilai</div>
-                    <div class="popup-grade-value">${data.grade}/100</div>
-                </div>
-            `;
-        } else {
-            gradeHtml = `
-                <div class="popup-grade-item">
-                    <div class="popup-grade-label">Nilai</div>
-                    <div class="popup-grade-value none">Belum dinilai</div>
-                </div>
-            `;
-        }
+    const scoreBox = data.grade !== null
+        ? `<div class="grade-score-box">
+               <div class="grade-score-num">${data.grade}</div>
+               <div class="grade-score-max">/100</div>
+           </div>`
+        : `<div class="grade-no-score">Belum<br>dinilai</div>`;
 
-        const feedbackHtml = data.feedback
-            ? `<div class="popup-grade-item"><div class="popup-grade-label">Feedback</div><div class="popup-feedback-text">${escapeHtml(data.feedback)}</div></div>`
-            : `<div class="popup-grade-item"><div class="popup-grade-label">Feedback</div><div class="popup-grade-value none">Tidak ada feedback</div></div>`;
+    const feedbackContent = data.feedback
+        ? `<div class="grade-feedback-text">${escapeHtml(data.feedback)}</div>`
+        : `<div class="grade-feedback-empty">Belum ada feedback dari pembimbing.</div>`;
 
-        gradeEl.innerHTML = `
-            <div class="popup-grade-row">
-                ${gradeHtml}
-                ${feedbackHtml}
+    gradeEl.innerHTML = `
+        <div class="popup-grade-block">
+            ${scoreBox}
+            <div>
+                <div class="grade-feedback-label">Feedback Pembimbing</div>
+                ${feedbackContent}
             </div>
-        `;
-    } else {
-        gradeEl.innerHTML = `<div class="popup-grade-value none">Belum dinilai</div>`;
-    }
+        </div>
+    `;
 
-    // Action
+    // ── Action Footer
     const actionEl = document.getElementById('popupAction');
     if (data.needs_submit) {
-        const btnLabel = data.is_revision ? '<i class="fas fa-redo"></i> Revisi Tugas' : '<i class="fas fa-upload"></i> Kumpulkan';
+        const btnLabel = data.is_revision
+            ? '<i class="fas fa-redo"></i> Kumpulkan Revisi'
+            : '<i class="fas fa-upload"></i> Kumpulkan Tugas';
         actionEl.innerHTML = `
-            <form action="${data.submit_url}" method="POST" enctype="multipart/form-data">
+            <span class="popup-action-hint"><i class="fas fa-info-circle"></i> PDF, DOC, DOCX · Maks. 2MB</span>
+            <form action="${data.submit_url}" method="POST" enctype="multipart/form-data" style="margin:0;">
                 <input type="hidden" name="_token" value="${csrfToken}">
-                <label class="popup-submit-btn" style="cursor:pointer;margin:0;">
+                <label class="popup-submit-btn" style="cursor:pointer;">
                     ${btnLabel}
                     <input type="file" name="submission_file" accept=".pdf,.doc,.docx" style="display:none;" onchange="this.closest('form').submit();" required>
                 </label>
             </form>
-            <div class="popup-submit-hint">
-                <i class="fas fa-info-circle"></i> Format: PDF, DOC, DOCX (Maks. 2MB)
-            </div>
         `;
     } else {
         actionEl.innerHTML = `
+            <div></div>
             <span class="popup-completed-badge">
                 <i class="fas fa-check-circle"></i> Tugas Sudah Dikumpulkan
             </span>
         `;
     }
 
-    // Show
     document.getElementById('detailPopup').classList.add('active');
     document.body.style.overflow = 'hidden';
 }

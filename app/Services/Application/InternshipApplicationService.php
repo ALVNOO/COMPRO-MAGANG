@@ -91,6 +91,20 @@ class InternshipApplicationService
     }
 
     /**
+     * Permanently reject an application — user cannot reapply.
+     */
+    public function permanentRejectApplication(int $applicationId, ?string $notes = null): InternshipApplication
+    {
+        $application = InternshipApplication::findOrFail($applicationId);
+
+        $application->status = 'permanently_rejected';
+        $application->notes = $notes;
+        $application->save();
+
+        return $application->fresh(['user']);
+    }
+
+    /**
      * Postpone an application with notes.
      */
     public function postponeApplication(int $applicationId, ?string $notes = null): InternshipApplication
