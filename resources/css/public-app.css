@@ -1793,13 +1793,16 @@ h1, h2, h3, h4, h5, h6, p {
     background: var(--color-white);
     padding: var(--space-12);
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     justify-content: center;
+    overflow-y: auto;
 }
 
 .auth-form-wrapper {
     width: 100%;
     max-width: 400px;
+    margin-top: auto;
+    margin-bottom: auto;
 }
 
 .auth-logo {
