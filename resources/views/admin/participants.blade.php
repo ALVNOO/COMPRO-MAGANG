@@ -341,7 +341,8 @@
 
 .participants-table th {
     padding: 1rem 0.75rem;
-    text-align: left;
+    text-align: center;
+    vertical-align: middle;
     font-size: 0.75rem;
     font-weight: 600;
     color: #6b7280;
@@ -351,12 +352,40 @@
     white-space: nowrap;
 }
 
+/* Pastikan header tetap tengah meski ada stylesheet global (.table th, dll.) */
+table.participants-table > thead > tr > th {
+    text-align: center !important;
+}
+
 .participants-table td {
     padding: 1rem 0.75rem;
     font-size: 0.875rem;
     color: #374151;
     border-bottom: 1px solid rgba(0, 0, 0, 0.04);
     vertical-align: middle;
+    text-align: left;
+}
+
+/* No, Divisi, Periode, Status, Dokumen, Aksi: isi tengah; Peserta (kolom 2): tetap kiri */
+.participants-table tbody td:nth-child(1),
+.participants-table tbody td:nth-child(3),
+.participants-table tbody td:nth-child(4),
+.participants-table tbody td:nth-child(5),
+.participants-table tbody td:nth-child(6),
+.participants-table tbody td:nth-child(7) {
+    text-align: center;
+}
+
+.participants-table tbody td:nth-child(2) {
+    text-align: left;
+}
+
+.participants-table tbody td:nth-child(4) .period-info {
+    text-align: center;
+}
+
+.participants-table tbody td:nth-child(6) .doc-status {
+    justify-content: center;
 }
 
 .participants-table tbody tr {
@@ -609,6 +638,7 @@
 
 .modal-body {
     padding: 1.5rem;
+    min-width: 0;
 }
 
 .modal-section {
@@ -655,6 +685,11 @@
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     gap: 0.75rem;
+    min-width: 0;
+}
+
+.doc-grid > * {
+    min-width: 0;
 }
 
 .doc-item {
@@ -665,6 +700,119 @@
     background: #f9fafb;
     border-radius: 10px;
     transition: all 0.2s ease;
+}
+
+.doc-item.doc-item-card {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.65rem;
+    min-width: 0;
+    overflow: hidden;
+}
+
+.doc-item-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    min-width: 0;
+}
+
+.doc-item-card .doc-item-info {
+    flex: 1;
+    min-width: 0;
+}
+
+/* Kompak: tanpa input file native lebar di samping tombol */
+.doc-item-upload-row.doc-upload-compact {
+    display: grid;
+    grid-template-columns: 1fr 2.25rem;
+    gap: 0.35rem;
+    align-items: stretch;
+    min-width: 0;
+}
+
+.doc-upload-pick {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 0;
+    min-height: 2.1rem;
+    padding: 0.25rem 0.4rem;
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.doc-upload-pick:hover {
+    border-color: #d1d5db;
+    background: #fafafa;
+}
+
+.doc-upload-pick-input {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+    font-size: 0;
+}
+
+.doc-upload-pick-label {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.doc-upload-pick-text {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.3rem;
+    pointer-events: none;
+    font-size: 0.72rem;
+    font-weight: 500;
+    color: #4b5563;
+    min-width: 0;
+    width: 100%;
+}
+
+.doc-upload-pick-text .fa-file-pdf {
+    color: #EE2E24;
+    flex-shrink: 0;
+    font-size: 0.8rem;
+}
+
+.doc-upload-send {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    min-height: 2.1rem;
+    padding: 0;
+    border: none;
+    border-radius: 8px;
+    background: linear-gradient(135deg, #EE2E24 0%, #C41E1A 100%);
+    color: #fff;
+    cursor: pointer;
+    font-size: 0.85rem;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.doc-upload-send:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 3px 10px rgba(238, 46, 36, 0.28);
+}
+
+.doc-item-muted-note {
+    font-size: 0.72rem;
+    color: #9ca3af;
+    line-height: 1.35;
+    margin: 0;
 }
 
 .doc-item:hover {
@@ -1168,93 +1316,157 @@
                     </div>
                 </div>
 
-                {{-- Documents Status --}}
+                {{-- Dokumen: status + upload per kartu --}}
                 <div class="modal-section">
-                    <div class="modal-section-title">Status Dokumen</div>
+                    <div class="modal-section-title">Status &amp; Unggah Dokumen</div>
                     <div class="doc-grid">
-                        <div class="doc-item">
-                            <div class="doc-item-icon" :class="selectedParticipant?.hasAcceptance ? 'has-file' : 'no-file'">
-                                <i class="fas fa-file-signature"></i>
+                        {{-- Surat Penerimaan --}}
+                        <div class="doc-item doc-item-card">
+                            <div class="doc-item-header">
+                                <div class="doc-item-icon" :class="selectedParticipant?.hasAcceptance ? 'has-file' : 'no-file'">
+                                    <i class="fas fa-file-signature"></i>
+                                </div>
+                                <div class="doc-item-info">
+                                    <div class="doc-item-name">Surat Penerimaan</div>
+                                    <div class="doc-item-status" x-text="selectedParticipant?.hasAcceptance ? 'Tersedia' : 'Belum ada'"></div>
+                                </div>
+                                <template x-if="selectedParticipant?.hasAcceptance">
+                                    <a :href="'/storage/' + selectedParticipant?.acceptancePath" target="_blank" class="action-btn secondary" title="Unduh">
+                                        <i class="fas fa-download"></i>
+                                    </a>
+                                </template>
                             </div>
-                            <div class="doc-item-info">
-                                <div class="doc-item-name">Surat Penerimaan</div>
-                                <div class="doc-item-status" x-text="selectedParticipant?.hasAcceptance ? 'Tersedia' : 'Belum ada'"></div>
-                            </div>
-                            <template x-if="selectedParticipant?.hasAcceptance">
-                                <a :href="'/storage/' + selectedParticipant?.acceptancePath" target="_blank" class="action-btn secondary">
-                                    <i class="fas fa-download"></i>
-                                </a>
-                            </template>
+                            <form :action="'/admin/participants/' + selectedParticipant?.id + '/upload-acceptance-letter'" method="POST" enctype="multipart/form-data" class="doc-item-upload-row doc-upload-compact">
+                                @csrf
+                                <label class="doc-upload-pick">
+                                    <input type="file" name="acceptance_letter" accept=".pdf" class="doc-upload-pick-input" required>
+                                    <span class="doc-upload-pick-text"><i class="fas fa-file-pdf"></i> <span class="doc-upload-pick-label" data-doc-upload-label>Pilih PDF</span></span>
+                                </label>
+                                <button type="submit" class="doc-upload-send" title="Unggah" aria-label="Unggah PDF"><i class="fas fa-upload"></i></button>
+                            </form>
                         </div>
-                        <div class="doc-item">
-                            <div class="doc-item-icon" :class="selectedParticipant?.hasLocationPermission ? 'has-file' : 'no-file'">
-                                <i class="fas fa-map-marked-alt"></i>
+
+                        {{-- Surat Izin Masuk Lokasi --}}
+                        <div class="doc-item doc-item-card">
+                            <div class="doc-item-header">
+                                <div class="doc-item-icon" :class="selectedParticipant?.hasLocationPermission ? 'has-file' : 'no-file'">
+                                    <i class="fas fa-map-marked-alt"></i>
+                                </div>
+                                <div class="doc-item-info">
+                                    <div class="doc-item-name">Surat Izin Masuk Lokasi</div>
+                                    <div class="doc-item-status" x-text="selectedParticipant?.hasLocationPermission ? 'Tersedia' : 'Belum ada'"></div>
+                                </div>
+                                <template x-if="selectedParticipant?.hasLocationPermission">
+                                    <a :href="'/storage/' + selectedParticipant?.locationPermissionPath" target="_blank" class="action-btn secondary" title="Unduh">
+                                        <i class="fas fa-download"></i>
+                                    </a>
+                                </template>
                             </div>
-                            <div class="doc-item-info">
-                                <div class="doc-item-name">Surat Izin Masuk Lokasi</div>
-                                <div class="doc-item-status" x-text="selectedParticipant?.hasLocationPermission ? 'Tersedia' : 'Belum ada'"></div>
-                            </div>
-                            <template x-if="selectedParticipant?.hasLocationPermission">
-                                <a :href="'/storage/' + selectedParticipant?.locationPermissionPath" target="_blank" class="action-btn secondary">
-                                    <i class="fas fa-download"></i>
-                                </a>
-                            </template>
+                            <form :action="'/admin/participants/' + selectedParticipant?.id + '/upload-location-permission-letter'" method="POST" enctype="multipart/form-data" class="doc-item-upload-row doc-upload-compact">
+                                @csrf
+                                <label class="doc-upload-pick">
+                                    <input type="file" name="location_permission_letter" accept=".pdf" class="doc-upload-pick-input" required>
+                                    <span class="doc-upload-pick-text"><i class="fas fa-file-pdf"></i> <span class="doc-upload-pick-label" data-doc-upload-label>Pilih PDF</span></span>
+                                </label>
+                                <button type="submit" class="doc-upload-send" title="Unggah" aria-label="Unggah PDF"><i class="fas fa-upload"></i></button>
+                            </form>
                         </div>
-                        <div class="doc-item">
-                            <div class="doc-item-icon" :class="selectedParticipant?.hasIntegrityPact ? 'has-file' : 'no-file'">
-                                <i class="fas fa-file-contract"></i>
+
+                        {{-- Pakta Integritas --}}
+                        <div class="doc-item doc-item-card">
+                            <div class="doc-item-header">
+                                <div class="doc-item-icon" :class="selectedParticipant?.hasIntegrityPact ? 'has-file' : 'no-file'">
+                                    <i class="fas fa-file-contract"></i>
+                                </div>
+                                <div class="doc-item-info">
+                                    <div class="doc-item-name">Pakta Integritas</div>
+                                    <div class="doc-item-status" x-text="selectedParticipant?.hasIntegrityPact ? 'Tersedia' : 'Belum ada'"></div>
+                                </div>
+                                <template x-if="selectedParticipant?.hasIntegrityPact">
+                                    <a :href="'/storage/' + selectedParticipant?.integrityPactPath" target="_blank" class="action-btn secondary" title="Unduh">
+                                        <i class="fas fa-download"></i>
+                                    </a>
+                                </template>
                             </div>
-                            <div class="doc-item-info">
-                                <div class="doc-item-name">Pakta Integritas</div>
-                                <div class="doc-item-status" x-text="selectedParticipant?.hasIntegrityPact ? 'Tersedia' : 'Belum ada'"></div>
-                            </div>
-                            <template x-if="selectedParticipant?.hasIntegrityPact">
-                                <a :href="'/storage/' + selectedParticipant?.integrityPactPath" target="_blank" class="action-btn secondary">
-                                    <i class="fas fa-download"></i>
-                                </a>
-                            </template>
+                            <form :action="'/admin/participants/' + selectedParticipant?.id + '/upload-integrity-pact'" method="POST" enctype="multipart/form-data" class="doc-item-upload-row doc-upload-compact">
+                                @csrf
+                                <label class="doc-upload-pick">
+                                    <input type="file" name="integrity_pact" accept=".pdf" class="doc-upload-pick-input" required>
+                                    <span class="doc-upload-pick-text"><i class="fas fa-file-pdf"></i> <span class="doc-upload-pick-label" data-doc-upload-label>Pilih PDF</span></span>
+                                </label>
+                                <button type="submit" class="doc-upload-send" title="Unggah" aria-label="Unggah PDF"><i class="fas fa-upload"></i></button>
+                            </form>
                         </div>
-                        <div class="doc-item">
-                            <div class="doc-item-icon" :class="selectedParticipant?.hasReport ? 'has-file' : 'no-file'">
-                                <i class="fas fa-file-alt"></i>
+
+                        {{-- Laporan Penilaian (hanya unduh; unggah dari dashboard mentor) --}}
+                        <div class="doc-item doc-item-card">
+                            <div class="doc-item-header">
+                                <div class="doc-item-icon" :class="selectedParticipant?.hasReport ? 'has-file' : 'no-file'">
+                                    <i class="fas fa-file-alt"></i>
+                                </div>
+                                <div class="doc-item-info">
+                                    <div class="doc-item-name">Laporan Penilaian</div>
+                                    <div class="doc-item-status" x-text="selectedParticipant?.hasReport ? 'Tersedia' : 'Belum ada'"></div>
+                                </div>
+                                <template x-if="selectedParticipant?.hasReport">
+                                    <a :href="'/admin/participants/' + selectedParticipant?.id + '/download-assessment-report'" class="action-btn secondary" title="Unduh">
+                                        <i class="fas fa-download"></i>
+                                    </a>
+                                </template>
                             </div>
-                            <div class="doc-item-info">
-                                <div class="doc-item-name">Laporan Penilaian</div>
-                                <div class="doc-item-status" x-text="selectedParticipant?.hasReport ? 'Tersedia' : 'Belum ada'"></div>
-                            </div>
-                            <template x-if="selectedParticipant?.hasReport">
-                                <a :href="'/admin/participants/' + selectedParticipant?.id + '/download-assessment-report'" class="action-btn secondary">
-                                    <i class="fas fa-download"></i>
-                                </a>
-                            </template>
+                            <p class="doc-item-muted-note">File ini diunggah oleh mentor dari dashboard mentor.</p>
                         </div>
-                        <div class="doc-item">
-                            <div class="doc-item-icon" :class="selectedParticipant?.hasCertificate ? 'has-file' : 'no-file'">
-                                <i class="fas fa-certificate"></i>
+
+                        {{-- Sertifikat --}}
+                        <div class="doc-item doc-item-card">
+                            <div class="doc-item-header">
+                                <div class="doc-item-icon" :class="selectedParticipant?.hasCertificate ? 'has-file' : 'no-file'">
+                                    <i class="fas fa-certificate"></i>
+                                </div>
+                                <div class="doc-item-info">
+                                    <div class="doc-item-name">Sertifikat</div>
+                                    <div class="doc-item-status" x-text="selectedParticipant?.hasCertificate ? 'Tersedia' : 'Belum ada'"></div>
+                                </div>
+                                <template x-if="selectedParticipant?.hasCertificate">
+                                    <a :href="'/storage/' + selectedParticipant?.certificatePath" target="_blank" class="action-btn secondary" title="Unduh">
+                                        <i class="fas fa-download"></i>
+                                    </a>
+                                </template>
                             </div>
-                            <div class="doc-item-info">
-                                <div class="doc-item-name">Sertifikat</div>
-                                <div class="doc-item-status" x-text="selectedParticipant?.hasCertificate ? 'Tersedia' : 'Belum ada'"></div>
-                            </div>
-                            <template x-if="selectedParticipant?.hasCertificate">
-                                <a :href="'/storage/' + selectedParticipant?.certificatePath" target="_blank" class="action-btn secondary">
-                                    <i class="fas fa-download"></i>
-                                </a>
-                            </template>
+                            <form :action="'/admin/participants/' + selectedParticipant?.userId + '/upload-certificate'" method="POST" enctype="multipart/form-data" class="doc-item-upload-row doc-upload-compact">
+                                @csrf
+                                <label class="doc-upload-pick">
+                                    <input type="file" name="certificate" accept=".pdf" class="doc-upload-pick-input" required>
+                                    <span class="doc-upload-pick-text"><i class="fas fa-file-pdf"></i> <span class="doc-upload-pick-label" data-doc-upload-label>Pilih PDF</span></span>
+                                </label>
+                                <button type="submit" class="doc-upload-send" title="Unggah" aria-label="Unggah PDF"><i class="fas fa-upload"></i></button>
+                            </form>
                         </div>
-                        <div class="doc-item">
-                            <div class="doc-item-icon" :class="selectedParticipant?.hasCompletion ? 'has-file' : 'no-file'">
-                                <i class="fas fa-file-circle-check"></i>
+
+                        {{-- Surat Selesai --}}
+                        <div class="doc-item doc-item-card">
+                            <div class="doc-item-header">
+                                <div class="doc-item-icon" :class="selectedParticipant?.hasCompletion ? 'has-file' : 'no-file'">
+                                    <i class="fas fa-file-circle-check"></i>
+                                </div>
+                                <div class="doc-item-info">
+                                    <div class="doc-item-name">Surat Selesai</div>
+                                    <div class="doc-item-status" x-text="selectedParticipant?.hasCompletion ? 'Tersedia' : 'Belum ada'"></div>
+                                </div>
+                                <template x-if="selectedParticipant?.hasCompletion">
+                                    <a :href="'/storage/' + selectedParticipant?.completionPath" target="_blank" class="action-btn secondary" title="Unduh">
+                                        <i class="fas fa-download"></i>
+                                    </a>
+                                </template>
                             </div>
-                            <div class="doc-item-info">
-                                <div class="doc-item-name">Surat Selesai</div>
-                                <div class="doc-item-status" x-text="selectedParticipant?.hasCompletion ? 'Tersedia' : 'Belum ada'"></div>
-                            </div>
-                            <template x-if="selectedParticipant?.hasCompletion">
-                                <a :href="'/storage/' + selectedParticipant?.completionPath" target="_blank" class="action-btn secondary">
-                                    <i class="fas fa-download"></i>
-                                </a>
-                            </template>
+                            <form :action="'/admin/participants/' + selectedParticipant?.id + '/upload-completion-letter'" method="POST" enctype="multipart/form-data" class="doc-item-upload-row doc-upload-compact">
+                                @csrf
+                                <label class="doc-upload-pick">
+                                    <input type="file" name="completion_letter" accept=".pdf" class="doc-upload-pick-input" required>
+                                    <span class="doc-upload-pick-text"><i class="fas fa-file-pdf"></i> <span class="doc-upload-pick-label" data-doc-upload-label>Pilih PDF</span></span>
+                                </label>
+                                <button type="submit" class="doc-upload-send" title="Unggah" aria-label="Unggah PDF"><i class="fas fa-upload"></i></button>
+                            </form>
                         </div>
                     </div>
                 </div>
@@ -1292,71 +1504,6 @@
                         </form>
                     </div>
                 </div>
-
-                {{-- Upload Forms --}}
-                <div class="modal-section">
-                    <div class="modal-section-title">Upload Dokumen</div>
-
-                    {{-- Upload Surat Penerimaan --}}
-                    <div class="upload-form">
-                        <div class="upload-form-title"><i class="fas fa-file-signature me-2"></i> Surat Penerimaan</div>
-                        <form :action="'/admin/participants/' + selectedParticipant?.id + '/upload-acceptance-letter'" method="POST" enctype="multipart/form-data" class="upload-form-row">
-                            @csrf
-                            <input type="file" name="acceptance_letter" accept=".pdf" class="upload-input" required>
-                            <button type="submit" class="upload-btn">
-                                <i class="fas fa-upload"></i> Upload
-                            </button>
-                        </form>
-                    </div>
-
-                    {{-- Upload Surat Izin Masuk Lokasi --}}
-                    <div class="upload-form" style="margin-top: 0.75rem;">
-                        <div class="upload-form-title"><i class="fas fa-map-marked-alt me-2"></i> Surat Izin Masuk Lokasi</div>
-                        <form :action="'/admin/participants/' + selectedParticipant?.id + '/upload-location-permission-letter'" method="POST" enctype="multipart/form-data" class="upload-form-row">
-                            @csrf
-                            <input type="file" name="location_permission_letter" accept=".pdf" class="upload-input" required>
-                            <button type="submit" class="upload-btn">
-                                <i class="fas fa-upload"></i> Upload
-                            </button>
-                        </form>
-                    </div>
-
-                    {{-- Upload Pakta Integritas --}}
-                    <div class="upload-form" style="margin-top: 0.75rem;">
-                        <div class="upload-form-title"><i class="fas fa-file-contract me-2"></i> Pakta Integritas</div>
-                        <form :action="'/admin/participants/' + selectedParticipant?.id + '/upload-integrity-pact'" method="POST" enctype="multipart/form-data" class="upload-form-row">
-                            @csrf
-                            <input type="file" name="integrity_pact" accept=".pdf" class="upload-input" required>
-                            <button type="submit" class="upload-btn">
-                                <i class="fas fa-upload"></i> Upload
-                            </button>
-                        </form>
-                    </div>
-
-                    {{-- Upload Sertifikat --}}
-                    <div class="upload-form" style="margin-top: 0.75rem;">
-                        <div class="upload-form-title"><i class="fas fa-certificate me-2"></i> Sertifikat</div>
-                        <form :action="'/admin/participants/' + selectedParticipant?.userId + '/upload-certificate'" method="POST" enctype="multipart/form-data" class="upload-form-row">
-                            @csrf
-                            <input type="file" name="certificate" accept=".pdf" class="upload-input" required>
-                            <button type="submit" class="upload-btn">
-                                <i class="fas fa-upload"></i> Upload
-                            </button>
-                        </form>
-                    </div>
-
-                    {{-- Upload Surat Selesai --}}
-                    <div class="upload-form" style="margin-top: 0.75rem;">
-                        <div class="upload-form-title"><i class="fas fa-file-circle-check me-2"></i> Surat Selesai Magang</div>
-                        <form :action="'/admin/participants/' + selectedParticipant?.id + '/upload-completion-letter'" method="POST" enctype="multipart/form-data" class="upload-form-row">
-                            @csrf
-                            <input type="file" name="completion_letter" accept=".pdf" class="upload-input" required>
-                            <button type="submit" class="upload-btn">
-                                <i class="fas fa-upload"></i> Upload
-                            </button>
-                        </form>
-                    </div>
-                </div>
             </div>
         </div>
     </div>
@@ -1379,6 +1526,24 @@ function participantsManager() {
             const rows = document.querySelectorAll('.participant-row');
             this.totalCount = rows.length;
             this.visibleCount = rows.length;
+
+            this.$el.addEventListener('change', (e) => {
+                const inp = e.target;
+                if (!(inp instanceof HTMLInputElement) || !inp.classList.contains('doc-upload-pick-input')) {
+                    return;
+                }
+                const lbl = inp.closest('.doc-upload-pick')?.querySelector('[data-doc-upload-label]');
+                if (!lbl) {
+                    return;
+                }
+                const file = inp.files?.[0];
+                if (!file) {
+                    lbl.textContent = 'Pilih PDF';
+
+                    return;
+                }
+                lbl.textContent = file.name.length > 16 ? `${file.name.slice(0, 14)}…` : file.name;
+            });
         },
 
         filterTable() {
@@ -1419,6 +1584,13 @@ function participantsManager() {
         },
 
         openModal(participant) {
+            this.$el.querySelectorAll('.doc-upload-pick-input').forEach((inp) => {
+                inp.value = '';
+                const lbl = inp.closest('.doc-upload-pick')?.querySelector('[data-doc-upload-label]');
+                if (lbl) {
+                    lbl.textContent = 'Pilih PDF';
+                }
+            });
             this.selectedParticipant = participant;
             this.showModal = true;
             document.body.style.overflow = 'hidden';

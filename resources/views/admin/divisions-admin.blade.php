@@ -191,7 +191,7 @@
 
 .divisions-table th {
     padding: 1rem;
-    text-align: left;
+    text-align: center;
     font-size: 0.75rem;
     font-weight: 600;
     color: #6b7280;
@@ -206,6 +206,10 @@
     color: #374151;
     border-bottom: 1px solid rgba(0, 0, 0, 0.04);
     vertical-align: middle;
+}
+
+.divisions-table tbody td:nth-child(1) {
+    text-align: center;
 }
 
 .divisions-table tbody tr {

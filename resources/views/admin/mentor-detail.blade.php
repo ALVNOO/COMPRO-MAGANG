@@ -283,7 +283,7 @@
 
 .admin-table th {
     padding: 1rem;
-    text-align: left;
+    text-align: center;
     font-size: 0.75rem;
     font-weight: 600;
     color: #6b7280;
