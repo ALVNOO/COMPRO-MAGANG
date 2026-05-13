@@ -1113,6 +1113,457 @@ input[type="date"] {
     margin: 0;
 }
 
+/* ── Stacked Action Cell ────────────────────────── */
+.action-cell {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    min-width: 112px;
+}
+
+.btn-cek-tugas {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.375rem;
+    padding: 0.5rem 0.75rem;
+    background: linear-gradient(135deg, #EE2E24 0%, #C41E1A 100%);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    width: 100%;
+    white-space: nowrap;
+}
+
+.btn-cek-tugas:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(238, 46, 36, 0.3);
+}
+
+.action-sub-row {
+    display: flex;
+    gap: 0.25rem;
+}
+
+.action-sub-row .btn-action {
+    flex: 1;
+    justify-content: center;
+}
+
+/* ── Cek Tugas Popup ──────────────────────────────── */
+.cek-popup-wrap {
+    background: #fff;
+    border-radius: 16px;
+    width: 100%;
+    max-width: 720px;
+    max-height: 88vh;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+    animation: popupSlideIn 0.25s ease;
+    display: flex;
+    flex-direction: column;
+}
+
+.cek-popup-header {
+    background: linear-gradient(135deg, #EE2E24 0%, #C41E1A 60%, #8B1A1A 100%);
+    color: white;
+    padding: 1.375rem 1.5rem;
+    position: relative;
+    flex-shrink: 0;
+}
+
+.cek-popup-header-inner {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.875rem;
+    padding-right: 2.5rem;
+}
+
+.cek-popup-icon {
+    width: 44px;
+    height: 44px;
+    background: rgba(255,255,255,0.15);
+    border-radius: 11px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.15rem;
+    flex-shrink: 0;
+}
+
+.cek-popup-title {
+    font-size: 1.05rem;
+    font-weight: 700;
+    margin: 0 0 0.25rem;
+    line-height: 1.3;
+    color: white;
+}
+
+.cek-popup-peserta {
+    font-size: 0.825rem;
+    opacity: 0.85;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+}
+
+.cek-popup-header .cek-close-btn {
+    position: absolute;
+    top: 0.875rem;
+    right: 0.875rem;
+    background: rgba(255,255,255,0.12);
+    border: none;
+    color: rgba(255,255,255,0.8);
+    border-radius: 8px;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: all 0.15s;
+    line-height: 1;
+}
+
+.cek-popup-header .cek-close-btn:hover {
+    background: rgba(255,255,255,0.22);
+    color: white;
+}
+
+/* Info chips */
+.cek-info-chips {
+    display: flex;
+    gap: 0;
+    border-bottom: 1px solid rgba(0,0,0,0.06);
+    flex-shrink: 0;
+}
+
+.cek-chip {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    padding: 0.75rem 1.125rem;
+    border-right: 1px solid rgba(0,0,0,0.06);
+}
+
+.cek-chip:last-child { border-right: none; }
+
+.cek-chip-label {
+    font-size: 0.68rem;
+    font-weight: 600;
+    color: #9ca3af;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+}
+
+.cek-chip-label i { color: #EE2E24; }
+
+.cek-chip-value {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #1f2937;
+}
+
+.cek-grade-value {
+    font-size: 1.2rem;
+    color: #059669;
+    font-family: 'JetBrains Mono', monospace;
+}
+
+/* Body */
+.cek-popup-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1.125rem 1.5rem;
+    min-height: 0;
+}
+
+.cek-section { margin-bottom: 1.125rem; }
+.cek-section:last-child { margin-bottom: 0; }
+
+.cek-section-header {
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+.cek-section-header i { color: #EE2E24; }
+
+.cek-desc-content {
+    background: #f9fafb;
+    border-radius: 10px;
+    padding: 0.75rem 0.875rem;
+    font-size: 0.875rem;
+    color: #374151;
+    line-height: 1.7;
+    white-space: pre-wrap;
+    max-height: 100px;
+    overflow-y: auto;
+}
+
+/* File rows */
+.cek-file-mentor {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.625rem 0.875rem;
+    background: rgba(59,130,246,0.05);
+    border: 1px solid rgba(59,130,246,0.2);
+    border-radius: 9px;
+    margin-bottom: 0.5rem;
+}
+
+.cek-file-submission {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.625rem 0.875rem;
+    border-radius: 9px;
+    margin-bottom: 0.4rem;
+    border: 1px solid rgba(0,0,0,0.07);
+    background: white;
+}
+
+.cek-file-submission-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+}
+
+.cek-file-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-size: 0.775rem;
+    font-weight: 600;
+    padding: 0.2rem 0.6rem;
+    border-radius: 6px;
+}
+
+.cek-file-tag-mentor  { background: rgba(59,130,246,0.1); color: #2563EB; }
+.cek-file-tag-original{ background: rgba(16,185,129,0.1); color: #059669; }
+.cek-file-tag-revision{ background: rgba(245,158,11,0.1); color: #D97706; }
+
+.cek-file-submission-time {
+    font-size: 0.72rem;
+    color: #9ca3af;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.cek-file-download {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.35rem 0.75rem;
+    border-radius: 7px;
+    font-size: 0.775rem;
+    font-weight: 500;
+    text-decoration: none;
+    transition: all 0.18s;
+    white-space: nowrap;
+    background: white;
+    color: #374151;
+    border: 1.5px solid #e5e7eb;
+}
+
+.cek-file-download:hover { border-color: #6b7280; color: #111827; }
+
+.cek-file-download-original {
+    background: rgba(16,185,129,0.07);
+    color: #059669;
+    border-color: rgba(16,185,129,0.3);
+}
+.cek-file-download-original:hover { background: rgba(16,185,129,0.14); color: #047857; border-color: #059669; }
+
+.cek-file-download-revision {
+    background: rgba(245,158,11,0.07);
+    color: #D97706;
+    border-color: rgba(245,158,11,0.3);
+}
+.cek-file-download-revision:hover { background: rgba(245,158,11,0.14); color: #B45309; border-color: #D97706; }
+
+.cek-no-submission {
+    padding: 0.875rem 1rem;
+    text-align: center;
+    color: #9ca3af;
+    font-size: 0.85rem;
+    background: #f9fafb;
+    border-radius: 9px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.cek-feedback-box {
+    background: #f9fafb;
+    border-left: 3px solid #EE2E24;
+    padding: 0.75rem 0.875rem;
+    border-radius: 0 9px 9px 0;
+    font-size: 0.875rem;
+    color: #374151;
+    line-height: 1.65;
+}
+
+/* Footer */
+.cek-popup-footer {
+    border-top: 1px solid rgba(0,0,0,0.06);
+    padding: 0.875rem 1.5rem;
+    background: #f9fafb;
+    border-radius: 0 0 16px 16px;
+    flex-shrink: 0;
+}
+
+.cek-action-hint {
+    font-size: 0.775rem;
+    color: #6b7280;
+    margin-bottom: 0.625rem;
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+.cek-action-hint i { color: #3B82F6; }
+
+.cek-action-buttons {
+    display: flex;
+    gap: 0.75rem;
+}
+
+.btn-cek-revisi {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.7rem 1.25rem;
+    background: white;
+    color: #D97706;
+    border: 2px solid #D97706;
+    border-radius: 9px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-cek-revisi:hover {
+    background: rgba(245,158,11,0.07);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(245,158,11,0.2);
+}
+
+.btn-cek-nilai {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.7rem 1.25rem;
+    background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+    color: white;
+    border: 2px solid transparent;
+    border-radius: 9px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-cek-nilai:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(16,185,129,0.3);
+}
+
+.cek-form-title {
+    font-size: 0.825rem;
+    font-weight: 700;
+    color: #1f2937;
+    margin-bottom: 0.625rem;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.cek-form-title i { color: #EE2E24; }
+
+.cek-nilai-row {
+    display: flex;
+    gap: 0.75rem;
+    align-items: flex-end;
+}
+
+.cek-form-actions {
+    display: flex;
+    gap: 0.625rem;
+    justify-content: flex-end;
+    margin-top: 0.625rem;
+}
+
+.btn-cek-revisi-submit {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.5rem 1.125rem;
+    background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.825rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.btn-cek-revisi-submit:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(245,158,11,0.3); }
+
+.btn-cek-nilai-submit {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.5rem 1.125rem;
+    background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.825rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.btn-cek-nilai-submit:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(16,185,129,0.3); }
+
+.cek-graded-notice {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.7rem;
+    background: rgba(16,185,129,0.08);
+    border: 1px solid rgba(16,185,129,0.2);
+    border-radius: 9px;
+    color: #059669;
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
 
 /* Form Actions */
 .form-actions {
@@ -1264,11 +1715,8 @@ input[type="date"] {
         <button class="tab-btn" data-tab="tasks" onclick="switchTab('tasks', this)">
             <i class="fas fa-list"></i> Semua Tugas
             <span class="badge-count">{{ $totalTasks }}</span>
-        </button>
-        <button class="tab-btn" data-tab="grading" onclick="switchTab('grading', this)">
-            <i class="fas fa-star"></i> Penilaian
             @if($pendingGrading > 0)
-                <span class="badge-count">{{ $pendingGrading }}</span>
+                <span class="badge-count" style="background: rgba(245,158,11,0.25); color: #D97706;">{{ $pendingGrading }} menunggu</span>
             @endif
         </button>
     </div>
@@ -1590,19 +2038,20 @@ input[type="date"] {
                                     @endif
                                 </td>
                                 <td>
-                                    <div class="action-btns">
-                                        <button class="btn-action btn-outline btn-sm" title="Lihat Detail"
-                                            onclick="viewTaskDetail({{ $assignment->id }})">
-                                            <i class="fas fa-eye"></i>
+                                    <div class="action-cell">
+                                        <button class="btn-cek-tugas" onclick="viewTaskDetail({{ $assignment->id }})">
+                                            <i class="fas fa-folder-open"></i> Cek Tugas
                                         </button>
-                                        <button class="btn-action btn-outline btn-sm" title="Edit Tugas"
-                                            onclick="editTask({{ $assignment->id }})">
-                                            <i class="fas fa-edit"></i>
-                                        </button>
-                                        <button class="btn-action btn-outline btn-sm btn-delete" title="Hapus Tugas"
-                                            onclick="confirmDeleteTask({{ $assignment->id }})">
-                                            <i class="fas fa-trash-alt"></i>
-                                        </button>
+                                        <div class="action-sub-row">
+                                            <button class="btn-action btn-outline btn-sm" title="Edit Tugas"
+                                                onclick="editTask({{ $assignment->id }})">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                            <button class="btn-action btn-outline btn-sm btn-delete" title="Hapus Tugas"
+                                                onclick="confirmDeleteTask({{ $assignment->id }})">
+                                                <i class="fas fa-trash-alt"></i>
+                                            </button>
+                                        </div>
                                     </div>
                                 </td>
                             </tr>
@@ -1613,143 +2062,6 @@ input[type="date"] {
         </div>
     </div>
 
-    {{-- Tab: Penilaian --}}
-    <div id="tab-grading" class="tab-content">
-        <div class="table-card">
-            <div class="table-header">
-                <div class="table-title">
-                    <i class="fas fa-star"></i>
-                    <h3>Tugas Menunggu Penilaian</h3>
-                </div>
-            </div>
-            @if(session('revision_set_assignment_id'))
-                <div style="padding: 0.75rem 1.5rem 0; color: #16a34a; font-size: 0.85rem;">
-                    <i class="fas fa-info-circle"></i>
-                    Status revisi sudah ditetapkan. Silakan isi feedback pada tugas terkait lalu tekan tombol Simpan.
-                </div>
-            @endif
-            <table class="data-table">
-                <thead>
-                    <tr>
-                        <th style="width: 50px;">#</th>
-                        <th>Peserta</th>
-                        <th>Judul Tugas</th>
-                        <th style="width: 100px;">Jenis</th>
-                        <th style="width: 120px;">File</th>
-                        <th style="width: 100px;">Nilai</th>
-                        <th style="width: 200px;">Feedback</th>
-                        <th style="width: 110px;">Aksi</th>
-                        <th style="width: 100px;">Revisi</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @php $noGrade = 1; @endphp
-                    @foreach($participants as $participant)
-                        @foreach($participant->user->assignments as $assignment)
-                            @php
-                                $hasSubmissions = $assignment->submissions && $assignment->submissions->count() > 0;
-                                $latestSubmission = $hasSubmissions ? $assignment->submissions->sortByDesc('submitted_at')->first() : null;
-
-                                $perluNilai = false;
-                                if ($hasSubmissions || $assignment->submission_file_path) {
-                                    if (is_null($assignment->grade) && (int) $assignment->is_revision !== 1) {
-                                        $perluNilai = true;
-                                    } elseif ((int) $assignment->is_revision === 1 && empty($assignment->feedback)) {
-                                        $perluNilai = true;
-                                    }
-                                }
-                            @endphp
-                            @if($perluNilai)
-                                <tr>
-                                    <td>{{ $noGrade++ }}</td>
-                                    <td>{{ $participant->user->name ?? '-' }}</td>
-                                    <td>
-                                        {{ $assignment->title ?? '-' }}
-                                        @if($hasSubmissions && $latestSubmission->submitted_at)
-                                            <div class="submission-info">
-                                                <i class="fas fa-clock"></i>
-                                                {{ \Carbon\Carbon::parse($latestSubmission->submitted_at)->format('d/m/Y H:i') }}
-                                            </div>
-                                        @endif
-                                    </td>
-                                    <td>
-                                        @if($assignment->assignment_type === 'tugas_harian')
-                                            <span class="badge badge-primary"><i class="fas fa-calendar-day"></i> Harian</span>
-                                        @else
-                                            <span class="badge badge-warning"><i class="fas fa-project-diagram"></i> Proyek</span>
-                                        @endif
-                                    </td>
-                                    <td>
-                                        @if($hasSubmissions)
-                                            <a href="{{ asset('storage/' . $latestSubmission->file_path) }}" target="_blank" class="btn-action btn-outline btn-sm">
-                                                <i class="fas fa-download"></i> Download
-                                            </a>
-                                        @elseif($assignment->submission_file_path)
-                                            <a href="{{ asset('storage/' . $assignment->submission_file_path) }}" target="_blank" class="btn-action btn-outline btn-sm">
-                                                <i class="fas fa-download"></i> Download
-                                            </a>
-                                        @else
-                                            <span style="color: #9ca3af;">-</span>
-                                        @endif
-                                    </td>
-                                    <td>
-                                        <form method="POST" action="{{ route('mentor.penugasan.nilai', $assignment->id) }}" class="d-inline grade-form">
-                                            @csrf
-                                            <input type="number" name="grade" class="grade-input"
-                                                placeholder="0-100" min="0" max="100"
-                                                value="{{ $assignment->grade ?? '' }}"
-                                                @if((int) $assignment->is_revision === 1) disabled @else required @endif>
-                                    </td>
-                                    <td>
-                                            <input type="text" name="feedback" class="feedback-input"
-                                                placeholder="Feedback"
-                                                value="{{ $assignment->feedback ?? '' }}"
-                                                @if((int) $assignment->is_revision === 1) required @endif>
-                                    </td>
-                                    <td>
-                                            <button type="submit" class="btn-action btn-success btn-sm grade-submit-btn">
-                                                <span class="btn-text">
-                                                    <i class="fas fa-save"></i> Simpan
-                                                </span>
-                                                <span class="btn-loading">
-                                                    <span class="spinner-border spinner-border-sm"></span>
-                                                </span>
-                                            </button>
-                                        </form>
-                                    </td>
-                                    <td>
-                                        <form method="POST" action="{{ route('mentor.penugasan.revisi', $assignment->id) }}" class="d-inline revision-form">
-                                            @csrf
-                                            <input type="hidden" name="is_revision" value="1">
-                                            <input type="hidden" name="feedback" value="">
-                                            <button type="submit"
-                                                class="btn-danger-solid"
-                                                @if((int) $assignment->is_revision === 1) disabled @endif
-                                                onclick="prepareRevisionSubmit(this)"
-                                                title="Tandai tugas sebagai revisi">
-                                                <i class="fas fa-redo"></i> Revisi
-                                            </button>
-                                        </form>
-                                    </td>
-                                </tr>
-                            @endif
-                        @endforeach
-                    @endforeach
-
-                    @if($pendingGrading === 0)
-                        <tr>
-                            <td colspan="8" class="text-center" style="padding: 3rem;">
-                                <div class="empty-icon" style="width: 60px; height: 60px; font-size: 1.5rem;">
-                                    <i class="fas fa-check-circle"></i>
-                                </div>
-                                <p style="margin-top: 1rem; color: #6b7280;">Semua tugas sudah dinilai</p>
-                            </td>
-                        </tr>
-                    @endif
-                </tbody>
-            </table>
-        </div>
-    </div>
 @endif
 
 @endsection
@@ -1769,54 +2081,159 @@ input[type="date"] {
     </div>
 </div>
 
-{{-- Popup View Task Detail --}}
+{{-- Popup: Cek Tugas --}}
 <div class="popup-overlay" id="taskDetailPopup">
-    <div class="popup-card popup-lg">
-        <div class="popup-header">
-            <div class="popup-header-icon">
-                <i class="fas fa-clipboard-list"></i>
+    <div class="cek-popup-wrap">
+
+        {{-- Header --}}
+        <div class="cek-popup-header">
+            <div class="cek-popup-header-inner">
+                <div class="cek-popup-icon"><i class="fas fa-folder-open"></i></div>
+                <div style="flex:1; min-width:0;">
+                    <h5 class="cek-popup-title" id="cekTaskTitle">Cek Tugas</h5>
+                    <p class="cek-popup-peserta"><i class="fas fa-user-graduate"></i> <span id="cekTaskPeserta"></span></p>
+                </div>
+                <span id="cekStatusBadge"></span>
             </div>
-            <div>
-                <h5 class="popup-title" id="detailModalTitle">Detail Tugas</h5>
-                <p class="popup-subtitle" id="detailModalPeserta"></p>
-            </div>
-            <button type="button" class="popup-close" onclick="closePopup('taskDetailPopup')">&times;</button>
+            <button class="cek-close-btn" onclick="closePopup('taskDetailPopup')">&times;</button>
         </div>
-        <div class="popup-body">
-            <div class="detail-grid">
-                <div class="detail-item">
-                    <span class="detail-label"><i class="fas fa-tag"></i> Jenis Tugas</span>
-                    <span class="detail-value" id="detailType"></span>
+
+        {{-- Info chips --}}
+        <div class="cek-info-chips">
+            <div class="cek-chip">
+                <span class="cek-chip-label"><i class="fas fa-tag"></i> Jenis</span>
+                <span class="cek-chip-value" id="cekType">-</span>
+            </div>
+            <div class="cek-chip">
+                <span class="cek-chip-label"><i class="fas fa-calendar-alt"></i> Deadline</span>
+                <span class="cek-chip-value" id="cekDeadline">-</span>
+            </div>
+            <div class="cek-chip" id="cekGradeChip" style="display:none;">
+                <span class="cek-chip-label"><i class="fas fa-star"></i> Nilai</span>
+                <span class="cek-chip-value cek-grade-value" id="cekGrade">-</span>
+            </div>
+            <div class="cek-chip" id="cekPresentationChip" style="display:none;">
+                <span class="cek-chip-label"><i class="fas fa-chalkboard"></i> Presentasi</span>
+                <span class="cek-chip-value" id="cekPresentation">-</span>
+            </div>
+        </div>
+
+        {{-- Scrollable body --}}
+        <div class="cek-popup-body">
+
+            {{-- Description --}}
+            <div class="cek-section">
+                <div class="cek-section-header"><i class="fas fa-align-left"></i> Deskripsi Tugas</div>
+                <div class="cek-desc-content" id="cekDescription">-</div>
+            </div>
+
+            {{-- Files --}}
+            <div class="cek-section" id="cekFilesSection">
+                <div class="cek-section-header"><i class="fas fa-paperclip"></i> File & Pengumpulan</div>
+
+                {{-- Mentor file --}}
+                <div class="cek-file-mentor" id="cekMentorFile" style="display:none;">
+                    <div class="cek-file-tag cek-file-tag-mentor"><i class="fas fa-file-alt"></i> File Tugas (dari mentor)</div>
+                    <a id="cekMentorFileLink" href="#" target="_blank" class="cek-file-download">
+                        <i class="fas fa-download"></i> Download
+                    </a>
                 </div>
-                <div class="detail-item">
-                    <span class="detail-label"><i class="fas fa-calendar"></i> Deadline</span>
-                    <span class="detail-value" id="detailDeadline"></span>
-                </div>
-                <div class="detail-item" id="detailPresentationRow" style="display: none;">
-                    <span class="detail-label"><i class="fas fa-chalkboard"></i> Tanggal Presentasi</span>
-                    <span class="detail-value" id="detailPresentation"></span>
-                </div>
-                <div class="detail-item">
-                    <span class="detail-label"><i class="fas fa-info-circle"></i> Status</span>
-                    <span id="detailStatus"></span>
-                </div>
-                <div class="detail-item" id="detailGradeRow" style="display: none;">
-                    <span class="detail-label"><i class="fas fa-star"></i> Nilai</span>
-                    <span class="detail-value grade-display" id="detailGrade"></span>
-                </div>
-                <div class="detail-item" id="detailFeedbackRow" style="display: none;">
-                    <span class="detail-label"><i class="fas fa-comment"></i> Feedback</span>
-                    <span class="detail-value" id="detailFeedback"></span>
+
+                {{-- Student submissions --}}
+                <div id="cekSubmissionsList"></div>
+
+                {{-- No submission notice --}}
+                <div class="cek-no-submission" id="cekNoSubmission" style="display:none;">
+                    <i class="fas fa-inbox"></i> Belum ada pengumpulan dari peserta
                 </div>
             </div>
-            <div class="detail-description">
-                <span class="detail-label"><i class="fas fa-align-left"></i> Deskripsi</span>
-                <div class="detail-desc-content" id="detailDescription"></div>
+
+            {{-- Existing feedback --}}
+            <div class="cek-section" id="cekExistingFeedbackSection" style="display:none;">
+                <div class="cek-section-header"><i class="fas fa-comment-alt"></i> Feedback Sebelumnya</div>
+                <div class="cek-feedback-box" id="cekExistingFeedback"></div>
             </div>
-            <div class="detail-files" id="detailFilesSection" style="display: none;">
-                <span class="detail-label"><i class="fas fa-paperclip"></i> File</span>
-                <div class="detail-files-list" id="detailFilesList"></div>
+
+        </div>
+
+        {{-- Action Footer --}}
+        <div class="cek-popup-footer">
+
+            {{-- Default: 2 action buttons --}}
+            <div id="cekDefaultActions" style="display:none;">
+                <div class="cek-action-hint"><i class="fas fa-info-circle"></i> Tinjau pengumpulan lalu pilih tindakan:</div>
+                <div class="cek-action-buttons">
+                    <button class="btn-cek-revisi" onclick="showCekRevisiForm()">
+                        <i class="fas fa-redo"></i> Revisi
+                    </button>
+                    <button class="btn-cek-nilai" onclick="showCekNilaiForm()">
+                        <i class="fas fa-check-circle"></i> Beri Penilaian
+                    </button>
+                </div>
             </div>
+
+            {{-- Revision form --}}
+            <div id="cekRevisiFormContainer" style="display:none;">
+                <div class="cek-form-title"><i class="fas fa-redo"></i> Kirim ke Revisi</div>
+                <form method="POST" id="cekRevisiForm" action="#">
+                    @csrf
+                    <input type="hidden" name="is_revision" value="1">
+                    <div style="margin-bottom:0.5rem;">
+                        <textarea name="feedback" class="form-control" rows="2"
+                            placeholder="Catatan revisi untuk peserta (opsional)..."
+                            id="cekRevisiTextarea" style="min-height:68px;"></textarea>
+                    </div>
+                    <div class="cek-form-actions">
+                        <button type="button" class="btn-action btn-outline btn-sm" onclick="cancelCekForm()">Batal</button>
+                        <button type="submit" class="btn-cek-revisi-submit">
+                            <i class="fas fa-paper-plane"></i> Kirim Revisi
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            {{-- Grading form --}}
+            <div id="cekNilaiFormContainer" style="display:none;">
+                <div class="cek-form-title"><i class="fas fa-star"></i> Beri Penilaian</div>
+                <form method="POST" id="cekNilaiForm" action="#">
+                    @csrf
+                    <div class="cek-nilai-row">
+                        <div style="width:110px; flex-shrink:0;">
+                            <label class="form-label" style="font-size:0.7rem; margin-bottom:0.3rem;">Nilai (0–100) <span class="required">*</span></label>
+                            <input type="number" name="grade" class="form-control" min="0" max="100" required
+                                placeholder="e.g. 85" id="cekNilaiInput"
+                                style="text-align:center; font-weight:700; font-family:'JetBrains Mono',monospace;">
+                        </div>
+                        <div style="flex:1;">
+                            <label class="form-label" style="font-size:0.7rem; margin-bottom:0.3rem;">Feedback</label>
+                            <input type="text" name="feedback" class="form-control"
+                                placeholder="Catatan atau komentar untuk peserta..."
+                                id="cekNilaiFeedback">
+                        </div>
+                    </div>
+                    <div class="cek-form-actions">
+                        <button type="button" class="btn-action btn-outline btn-sm" onclick="cancelCekForm()">Batal</button>
+                        <button type="submit" class="btn-cek-nilai-submit">
+                            <i class="fas fa-save"></i> Simpan Nilai
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            {{-- Already graded notice --}}
+            <div id="cekGradedNotice" style="display:none;">
+                <div class="cek-graded-notice">
+                    <i class="fas fa-check-circle"></i> Tugas ini sudah dinilai
+                </div>
+            </div>
+
+            {{-- No submission notice (can't act) --}}
+            <div id="cekWaitingNotice" style="display:none;">
+                <div class="cek-graded-notice" style="background:rgba(107,114,128,0.07); border-color:rgba(107,114,128,0.2); color:#6b7280;">
+                    <i class="fas fa-clock"></i> Menunggu pengumpulan dari peserta
+                </div>
+            </div>
+
         </div>
     </div>
 </div>
@@ -1979,6 +2396,8 @@ var taskDataStore = @php
                 'filePath' => $assignment->file_path ? asset('storage/' . $assignment->file_path) : '',
                 'submissionPath' => $hasSub && $latestSub && $latestSub->file_path ? asset('storage/' . $latestSub->file_path) : ($assignment->submission_file_path ? asset('storage/' . $assignment->submission_file_path) : ''),
                 'submittedAt' => $hasSub && $latestSub && $latestSub->submitted_at ? \Carbon\Carbon::parse($latestSub->submitted_at)->format('d M Y H:i') : '',
+                'nilaiUrl' => route('mentor.penugasan.nilai', $assignment->id),
+                'revisiUrl' => route('mentor.penugasan.revisi', $assignment->id),
                 'submissions' => $hasSub ? $assignment->submissions->sortBy('submitted_at')->map(function($sub, $index) {
                     return [
                         'file_path' => $sub->file_path ? asset('storage/' . $sub->file_path) : '',
@@ -2020,10 +2439,10 @@ function switchTab(tabName, sourceBtn = null) {
     }
 }
 
-// Aktifkan tab Penilaian otomatis setelah set revisi
+// Aktifkan tab Semua Tugas otomatis setelah set revisi
 document.addEventListener('DOMContentLoaded', function() {
     @if(session('revision_set_assignment_id'))
-        switchTab('grading');
+        switchTab('tasks');
     @endif
 });
 
@@ -2131,120 +2550,155 @@ if (createTaskForm && submitTaskBtn) {
     });
 }
 
-// Grade form loading state
-document.querySelectorAll('.grade-form').forEach(form => {
-    form.addEventListener('submit', function() {
-        const btn = this.querySelector('.grade-submit-btn');
-        const btnText = btn.querySelector('.btn-text');
-        const btnLoading = btn.querySelector('.btn-loading');
+// Current assignment ID being viewed in Cek Tugas popup
+var cekCurrentAssignmentId = null;
 
-        if (btnText && btnLoading) {
-            btnText.style.display = 'none';
-            btnLoading.style.display = 'inline-flex';
-            btn.disabled = true;
-        }
-    });
-});
-
-// Support 2 flows for revisi:
-// 1) Mentor isi feedback dulu lalu klik "Revisi" (feedback ikut tersimpan + status revisi)
-// 2) Mentor klik "Revisi" dulu lalu isi feedback dan klik "Simpan"
-function prepareRevisionSubmit(btnEl) {
-    try {
-        const row = btnEl.closest('tr');
-        const revisionForm = btnEl.closest('form');
-        if (!row || !revisionForm) return true;
-
-        const feedbackInput = row.querySelector('input[name="feedback"]');
-        const hiddenFeedback = revisionForm.querySelector('input[type="hidden"][name="feedback"]');
-
-        if (hiddenFeedback && feedbackInput) {
-            hiddenFeedback.value = feedbackInput.value || '';
-        }
-    } catch (e) {
-        // no-op
-    }
-    return true;
-}
-
-// View task detail (lookup from data store by assignment ID)
+// Cek Tugas popup
 function viewTaskDetail(assignmentId) {
     var data = taskDataStore[assignmentId];
     if (!data) { alert('Data tugas tidak ditemukan.'); return; }
 
-    document.getElementById('detailModalTitle').textContent = data.title;
-    document.getElementById('detailModalPeserta').textContent = 'Peserta: ' + data.peserta;
-    document.getElementById('detailType').textContent = data.type;
-    document.getElementById('detailDeadline').textContent = data.deadline;
-    document.getElementById('detailDescription').textContent = data.description;
+    cekCurrentAssignmentId = assignmentId;
 
-    // Presentation date
-    var presRow = document.getElementById('detailPresentationRow');
-    if (data.presentationDate) {
-        presRow.style.display = '';
-        document.getElementById('detailPresentation').textContent = data.presentationDate;
-    } else {
-        presRow.style.display = 'none';
-    }
+    // Title & peserta
+    document.getElementById('cekTaskTitle').textContent = data.title;
+    document.getElementById('cekTaskPeserta').textContent = data.peserta;
 
     // Status badge
     var statusMap = {
         'belum_dikerjakan': '<span class="badge badge-info"><i class="fas fa-hourglass-half"></i> Belum Dikerjakan</span>',
-        'sudah_submit': '<span class="badge badge-warning"><i class="fas fa-clock"></i> Menunggu Nilai</span>',
-        'sudah_dinilai': '<span class="badge badge-success"><i class="fas fa-check"></i> Dinilai</span>',
-        'revisi': '<span class="badge badge-danger"><i class="fas fa-redo"></i> Revisi</span>'
+        'sudah_submit':     '<span class="badge badge-warning"><i class="fas fa-clock"></i> Menunggu Nilai</span>',
+        'sudah_dinilai':    '<span class="badge badge-success"><i class="fas fa-check"></i> Dinilai</span>',
+        'revisi':           '<span class="badge badge-danger"><i class="fas fa-redo"></i> Revisi</span>'
     };
-    document.getElementById('detailStatus').innerHTML = statusMap[data.status] || data.status;
+    document.getElementById('cekStatusBadge').innerHTML = statusMap[data.status] || data.status;
 
-    // Grade
-    var gradeRow = document.getElementById('detailGradeRow');
-    if (data.grade) {
-        gradeRow.style.display = '';
-        document.getElementById('detailGrade').textContent = data.grade;
+    // Info chips
+    document.getElementById('cekType').textContent = data.type;
+    document.getElementById('cekDeadline').textContent = data.deadline;
+
+    var gradeChip = document.getElementById('cekGradeChip');
+    if (data.grade !== '' && data.grade !== null && data.grade !== undefined) {
+        gradeChip.style.display = '';
+        document.getElementById('cekGrade').textContent = data.grade;
     } else {
-        gradeRow.style.display = 'none';
+        gradeChip.style.display = 'none';
     }
 
-    // Feedback
-    var feedbackRow = document.getElementById('detailFeedbackRow');
-    if (data.feedback) {
-        feedbackRow.style.display = '';
-        document.getElementById('detailFeedback').textContent = data.feedback;
+    var presChip = document.getElementById('cekPresentationChip');
+    if (data.presentationDate) {
+        presChip.style.display = '';
+        document.getElementById('cekPresentation').textContent = data.presentationDate;
     } else {
-        feedbackRow.style.display = 'none';
+        presChip.style.display = 'none';
     }
 
-    // Files
-    var filesSection = document.getElementById('detailFilesSection');
-    var filesList = document.getElementById('detailFilesList');
-    filesList.innerHTML = '';
-    var hasFiles = false;
+    // Description
+    document.getElementById('cekDescription').textContent = data.description || 'Tidak ada deskripsi.';
 
-    // File tugas dari mentor
+    // Files — mentor file
+    var mentorFileEl  = document.getElementById('cekMentorFile');
+    var mentorLinkEl  = document.getElementById('cekMentorFileLink');
     if (data.filePath) {
-        hasFiles = true;
-        filesList.innerHTML += '<a href="' + data.filePath + '" target="_blank" class="btn-action btn-outline btn-sm"><i class="fas fa-download"></i> File Tugas</a>';
+        mentorFileEl.style.display = '';
+        mentorLinkEl.href = data.filePath;
+    } else {
+        mentorFileEl.style.display = 'none';
     }
 
-    // Semua submission peserta (pertama + revisi)
+    // Files — student submissions
+    var subListEl  = document.getElementById('cekSubmissionsList');
+    var noSubEl    = document.getElementById('cekNoSubmission');
+    subListEl.innerHTML = '';
+
+    var hasSubmissions = false;
     if (Array.isArray(data.submissions) && data.submissions.length > 0) {
-        hasFiles = true;
+        hasSubmissions = true;
+        noSubEl.style.display = 'none';
         data.submissions.forEach(function(sub, index) {
-            var label = index === 0 ? 'Kumpulan Pertama' : 'Revisi ' + index;
-            var timeInfo = sub.submitted_at ? ' (' + sub.submitted_at + ')' : '';
-            if (sub.file_path) {
-                filesList.innerHTML += '<a href="' + sub.file_path + '" target="_blank" class="btn-action btn-success btn-sm"><i class="fas fa-download"></i> ' + label + timeInfo + '</a>';
-            }
+            var isFirst  = index === 0;
+            var label    = isFirst ? 'Pengumpulan Pertama' : 'Revisi ' + index;
+            var tagClass = isFirst ? 'cek-file-tag-original' : 'cek-file-tag-revision';
+            var dlClass  = isFirst ? 'cek-file-download-original' : 'cek-file-download-revision';
+            var icon     = isFirst ? 'fa-upload' : 'fa-redo';
+            var html = '<div class="cek-file-submission">'
+                + '<div class="cek-file-submission-info">'
+                + '<span class="cek-file-tag ' + tagClass + '"><i class="fas ' + icon + '"></i> ' + label + '</span>'
+                + (sub.submitted_at ? '<span class="cek-file-submission-time"><i class="fas fa-clock"></i> ' + sub.submitted_at + '</span>' : '')
+                + '</div>'
+                + (sub.file_path ? '<a href="' + sub.file_path + '" target="_blank" class="cek-file-download ' + dlClass + '"><i class="fas fa-download"></i> Download</a>' : '')
+                + '</div>';
+            subListEl.innerHTML += html;
         });
     } else if (data.submissionPath) {
-        // Fallback ke struktur lama bila ada
-        hasFiles = true;
-        filesList.innerHTML += '<a href="' + data.submissionPath + '" target="_blank" class="btn-action btn-success btn-sm"><i class="fas fa-download"></i> File Submission' + (data.submittedAt ? ' (' + data.submittedAt + ')' : '') + '</a>';
+        hasSubmissions = true;
+        noSubEl.style.display = 'none';
+        var html = '<div class="cek-file-submission">'
+            + '<div class="cek-file-submission-info">'
+            + '<span class="cek-file-tag cek-file-tag-original"><i class="fas fa-upload"></i> Pengumpulan Pertama</span>'
+            + (data.submittedAt ? '<span class="cek-file-submission-time"><i class="fas fa-clock"></i> ' + data.submittedAt + '</span>' : '')
+            + '</div>'
+            + '<a href="' + data.submissionPath + '" target="_blank" class="cek-file-download cek-file-download-original"><i class="fas fa-download"></i> Download</a>'
+            + '</div>';
+        subListEl.innerHTML = html;
+    } else {
+        noSubEl.style.display = '';
     }
 
-    filesSection.style.display = hasFiles ? '' : 'none';
+    // Existing feedback
+    var feedbackSection = document.getElementById('cekExistingFeedbackSection');
+    if (data.feedback) {
+        feedbackSection.style.display = '';
+        document.getElementById('cekExistingFeedback').textContent = data.feedback;
+    } else {
+        feedbackSection.style.display = 'none';
+    }
+
+    // Footer logic
+    var isGraded    = data.status === 'sudah_dinilai';
+    var canAct      = hasSubmissions && !isGraded;
+
+    document.getElementById('cekDefaultActions').style.display         = canAct   ? '' : 'none';
+    document.getElementById('cekRevisiFormContainer').style.display    = 'none';
+    document.getElementById('cekNilaiFormContainer').style.display     = 'none';
+    document.getElementById('cekGradedNotice').style.display           = (isGraded && !canAct) ? '' : 'none';
+    document.getElementById('cekWaitingNotice').style.display          = (!hasSubmissions && !isGraded) ? '' : 'none';
+
+    // Set form URLs
+    if (data.revisiUrl) document.getElementById('cekRevisiForm').action = data.revisiUrl;
+    if (data.nilaiUrl)  document.getElementById('cekNilaiForm').action  = data.nilaiUrl;
+
+    // Reset form fields
+    document.getElementById('cekRevisiTextarea').value = '';
+    document.getElementById('cekNilaiInput').value     = '';
+    document.getElementById('cekNilaiFeedback').value  = '';
 
     openPopup('taskDetailPopup');
+}
+
+function showCekRevisiForm() {
+    document.getElementById('cekDefaultActions').style.display      = 'none';
+    document.getElementById('cekRevisiFormContainer').style.display = '';
+    document.getElementById('cekNilaiFormContainer').style.display  = 'none';
+    document.getElementById('cekRevisiTextarea').focus();
+}
+
+function showCekNilaiForm() {
+    document.getElementById('cekDefaultActions').style.display      = 'none';
+    document.getElementById('cekRevisiFormContainer').style.display = 'none';
+    document.getElementById('cekNilaiFormContainer').style.display  = '';
+    document.getElementById('cekNilaiInput').focus();
+}
+
+function cancelCekForm() {
+    var data = cekCurrentAssignmentId ? taskDataStore[cekCurrentAssignmentId] : null;
+    var hasSubmissions = data && ((Array.isArray(data.submissions) && data.submissions.length > 0) || !!data.submissionPath);
+    var isGraded = data && data.status === 'sudah_dinilai';
+    var canAct   = hasSubmissions && !isGraded;
+
+    document.getElementById('cekDefaultActions').style.display      = canAct ? '' : 'none';
+    document.getElementById('cekRevisiFormContainer').style.display = 'none';
+    document.getElementById('cekNilaiFormContainer').style.display  = 'none';
 }
 
 // Edit task
