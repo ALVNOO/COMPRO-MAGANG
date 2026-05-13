@@ -29,7 +29,7 @@
         <div class="navbar-container">
             <!-- Logo -->
             <a href="{{ route('home') }}" class="navbar-brand">
-                <img src="{{ asset('image/telkom-logo.png') }}"
+                <img src="{{ asset('image/logo_terbaru.png') }}"
                      alt="PT Telkom Indonesia"
                      class="navbar-logo"
                      onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
@@ -160,7 +160,7 @@
             <div class="footer-grid">
                 <!-- Brand -->
                 <div class="footer-brand">
-                    <img src="{{ asset('image/telkom-logo.png') }}" alt="Telkom" class="footer-logo" onerror="this.style.display='none'">
+                    <img src="{{ asset('image/logo_terbaru.png') }}" alt="Telkom" class="footer-logo" onerror="this.style.display='none'">
                     <p class="footer-tagline">Menghubungkan Indonesia, membangun masa depan digital bersama talenta muda berbakat.</p>
                 </div>
 

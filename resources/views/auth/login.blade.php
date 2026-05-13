@@ -55,7 +55,7 @@
             <div class="auth-form-wrapper">
                 <!-- Logo -->
                 <a href="{{ route('home') }}" class="auth-logo">
-                    <img src="{{ asset('image/telkom-logo.png') }}" alt="Telkom" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                    <img src="{{ asset('image/logo_terbaru.png') }}" alt="Telkom" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
                     <div class="auth-logo-fallback" style="display: none;">TELKOM</div>
                 </a>
 

@@ -62,7 +62,7 @@
             </div>
             <div class="about-profile-image">
                 <div class="profile-image-wrapper">
-                    <img src="{{ asset('image/telkom-logo.png') }}" alt="PT Telkom Indonesia" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                    <img src="{{ asset('image/logo_terbaru.png') }}" alt="PT Telkom Indonesia" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
                     <div class="profile-image-fallback">
                         <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
                             <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>

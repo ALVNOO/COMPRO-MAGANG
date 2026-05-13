@@ -64,7 +64,7 @@
         <aside class="w-[235px] p-6 bg-white border-r border-[#dbdbd7] flex flex-col min-h-screen shadow-xl relative z-10">
             <div class="flex flex-col items-center mb-8">
                 <div class="w-16 h-16 rounded-full bg-white shadow-lg flex items-center justify-center mb-2">
-                    <img src="/image/telkom-logo.png" alt="Telkom Logo" class="w-12 h-12 object-contain">
+                    <img src="{{ asset('image/logo_terbaru.png') }}" alt="Logo" class="w-12 h-12 object-contain">
                 </div>
                 <span class="text-[#B91C1C] text-xl font-bold leading-tight">Admin Panel</span>
             </div>

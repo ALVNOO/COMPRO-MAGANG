@@ -354,7 +354,7 @@
         <!-- Header -->
         <div class="auth-header">
             <div class="logo-container">
-                <img src="{{ asset('image/telkom-logo.png') }}" 
+                <img src="{{ asset('image/logo_terbaru.png') }}" 
                      alt="PT Telkom Indonesia" 
                      class="logo-img"
                      onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">

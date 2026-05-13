@@ -16,7 +16,7 @@
     <div class="sidebar" id="sidebar">
         <div class="sidebar-header">
             <div class="logo-container">
-                <img src="{{ asset('image/telkom.png') }}" alt="PT Telkom Indonesia" class="logo-img">
+                <img src="{{ asset('image/logo_terbaru.png') }}" alt="Logo" class="logo-img">
             </div>
             <div class="brand-text">Telkom Indonesia</div>
         </div>

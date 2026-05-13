@@ -93,7 +93,7 @@
     {{-- Logo Section --}}
     <div class="sidebar-header">
         <a href="{{ $role === 'admin' ? route('admin.dashboard') : ($role === 'mentor' ? route('mentor.dashboard') : route('dashboard')) }}" class="sidebar-logo">
-            <img src="{{ asset('images/telkom.png') }}" alt="Telkom" class="logo-image" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+            <img src="{{ asset('image/logo_terbaru.png') }}" alt="Logo" class="logo-image" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
             <div class="logo-fallback" style="display: none;">
                 <i class="fas fa-building"></i>
             </div>
