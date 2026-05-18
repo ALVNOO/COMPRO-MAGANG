@@ -19,64 +19,6 @@
    REAPPLY PAGE STYLES
    ============================================ */
 
-/* Hero Section */
-.reapply-hero {
-    background: linear-gradient(135deg, #EE2E24 0%, #C41E1A 50%, #9B1B1B 100%);
-    border-radius: 24px;
-    padding: 2.5rem;
-    margin-bottom: 2rem;
-    position: relative;
-    overflow: hidden;
-    color: white;
-    text-align: center;
-}
-
-.reapply-hero::before {
-    content: '';
-    position: absolute;
-    top: -50%;
-    right: -20%;
-    width: 60%;
-    height: 200%;
-    background: radial-gradient(ellipse, rgba(255,255,255,0.15) 0%, transparent 70%);
-    pointer-events: none;
-}
-
-.reapply-hero-content {
-    position: relative;
-    z-index: 1;
-}
-
-.hero-icon-wrap {
-    width: 80px;
-    height: 80px;
-    background: rgba(255, 255, 255, 0.2);
-    backdrop-filter: blur(10px);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 0 auto 1.25rem;
-    border: 4px solid rgba(255, 255, 255, 0.3);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
-}
-
-.hero-icon-wrap i {
-    font-size: 2rem;
-    color: white;
-}
-
-.reapply-hero h2 {
-    font-size: 1.75rem;
-    font-weight: 700;
-    margin-bottom: 0.35rem;
-}
-
-.reapply-hero .hero-subtitle {
-    font-size: 0.95rem;
-    opacity: 0.9;
-}
-
 /* Content Layout */
 .reapply-content {
     max-width: 820px;
@@ -398,36 +340,6 @@
     margin: 0;
 }
 
-/* Status Badge */
-.status-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.35rem;
-    padding: 0.35rem 0.85rem;
-    border-radius: 50px;
-    font-weight: 600;
-    font-size: 0.78rem;
-}
-
-.status-badge.rejected {
-    background: rgba(239, 68, 68, 0.12);
-    color: #dc2626;
-}
-
-.status-badge.accepted {
-    background: rgba(16, 185, 129, 0.15);
-    color: #059669;
-}
-
-.status-badge.finished {
-    background: rgba(59, 130, 246, 0.12);
-    color: #2563eb;
-}
-
-.status-badge.pending {
-    background: rgba(245, 158, 11, 0.15);
-    color: #d97706;
-}
 
 /* Alert Styling */
 .alert-modern {
@@ -463,23 +375,6 @@
 
 /* Responsive */
 @media (max-width: 768px) {
-    .reapply-hero {
-        padding: 2rem 1.5rem;
-    }
-
-    .reapply-hero h2 {
-        font-size: 1.35rem;
-    }
-
-    .hero-icon-wrap {
-        width: 64px;
-        height: 64px;
-    }
-
-    .hero-icon-wrap i {
-        font-size: 1.5rem;
-    }
-
     .user-info-grid,
     .date-grid,
     .prev-info-grid {
@@ -516,16 +411,12 @@
     </div>
 @endif
 
-{{-- Hero Section --}}
-<div class="reapply-hero">
-    <div class="reapply-hero-content">
-        <div class="hero-icon-wrap">
-            <i class="fas fa-redo-alt"></i>
-        </div>
-        <h2>Ajukan Ulang Magang</h2>
-        <p class="hero-subtitle">Formulir pengajuan ulang program magang PT Telkom Indonesia</p>
-    </div>
-</div>
+<x-dashboard.page-context-bar
+    title="Ajukan Ulang Magang"
+    description="Formulir pengajuan ulang program magang PT Telkom Indonesia"
+    icon="fas fa-redo-alt"
+    role="peserta"
+/>
 
 <div class="reapply-content">
     {{-- User Info Card --}}
@@ -669,23 +560,23 @@
     @if($latestApplication)
     <div class="glass-card">
         @php
-            $statusClass = 'default';
+            $statusClass = 'status-pending';
             $statusIcon = 'fas fa-clock';
             $statusLabel = ucfirst($latestApplication->status);
             $headerIconColor = 'amber';
 
             if($latestApplication->status == 'rejected') {
-                $statusClass = 'rejected';
+                $statusClass = 'status-rejected';
                 $statusIcon = 'fas fa-exclamation-triangle';
                 $statusLabel = 'Ditolak';
                 $headerIconColor = 'amber';
             } elseif($latestApplication->status == 'accepted') {
-                $statusClass = 'accepted';
+                $statusClass = 'status-accepted';
                 $statusIcon = 'fas fa-check-circle';
                 $statusLabel = 'Diterima';
                 $headerIconColor = 'green';
             } elseif($latestApplication->status == 'finished') {
-                $statusClass = 'finished';
+                $statusClass = 'status-finished';
                 $statusIcon = 'fas fa-trophy';
                 $statusLabel = 'Selesai';
                 $headerIconColor = 'blue';

@@ -42,6 +42,8 @@ class User extends Authenticatable
         "trusted_device_token",
         "trusted_device_expires_at",
         "device_fingerprint",
+        "two_factor_reset_token",
+        "two_factor_reset_token_expires_at",
     ];
 
     /**
@@ -66,6 +68,7 @@ class User extends Authenticatable
             "two_factor_last_used_at" => "datetime",
             "two_factor_attempts_reset_at" => "datetime",
             "trusted_device_expires_at" => "datetime",
+            "two_factor_reset_token_expires_at" => "datetime",
         ];
     }
 
@@ -204,6 +207,41 @@ class User extends Authenticatable
         $this->device_fingerprint = null;
 
         $this->save();
+    }
+
+    // ── 2FA Reset via Email ──────────────────────────────────────────────────
+
+    public function generateTwoFactorResetToken(): string
+    {
+        $token = Str::random(64);
+        $this->two_factor_reset_token = $token;
+        $this->two_factor_reset_token_expires_at = now()->addMinutes(15);
+        $this->save();
+        return $token;
+    }
+
+    public function isValidTwoFactorResetToken(string $token): bool
+    {
+        return $this->two_factor_reset_token === $token
+            && $this->two_factor_reset_token_expires_at !== null
+            && now()->lt($this->two_factor_reset_token_expires_at);
+    }
+
+    public function clearTwoFactorResetToken(): void
+    {
+        $this->two_factor_reset_token = null;
+        $this->two_factor_reset_token_expires_at = null;
+        $this->save();
+    }
+
+    // Returns true if a reset email was recently sent (< 5 min ago)
+    public function twoFactorResetEmailRecentlySent(): bool
+    {
+        if (! $this->two_factor_reset_token_expires_at) {
+            return false;
+        }
+        // Token expires in 15 min; if > 10 min remain it was sent < 5 min ago
+        return now()->lt($this->two_factor_reset_token_expires_at->subMinutes(10));
     }
 
     // Increment failed attempts

@@ -104,27 +104,6 @@
         </a>
     </div>
 
-    {{-- User Profile Section --}}
-    <div class="sidebar-profile">
-        <a href="{{ route('dashboard.profile') }}" class="profile-link">
-            <div class="profile-avatar">
-                @if($user->profile_picture)
-                    <img src="{{ asset('storage/' . $user->profile_picture) }}" alt="{{ $user->name }}">
-                @else
-                    {{ $initials }}
-                @endif
-            </div>
-            <div class="profile-info">
-                <h4 class="profile-name">{{ Str::limit($user->name ?? 'User', 18) }}</h4>
-                <span class="profile-badge {{ $config['badgeClass'] }}">
-                    <i class="fas {{ $config['icon'] }}"></i>
-                    {{ $config['badge'] }}
-                </span>
-            </div>
-            <span class="profile-edit-icon"><i class="fas fa-wrench"></i></span>
-        </a>
-    </div>
-
     {{-- Navigation --}}
     <nav class="sidebar-nav">
         <ul class="nav-list">
@@ -249,132 +228,6 @@
     opacity: 0;
     width: 0;
     overflow: hidden;
-}
-
-/* ----- Profile Section ----- */
-.sidebar-profile {
-    padding: 1rem 0.75rem;
-    border-bottom: 1px solid var(--color-gray-100);
-    flex-shrink: 0;
-}
-
-.profile-link {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    padding: 0.75rem;
-    border-radius: 12px;
-    text-decoration: none;
-    transition: background 0.2s;
-    position: relative;
-}
-
-.profile-link:hover {
-    background: var(--color-gray-50);
-}
-
-.profile-edit-icon {
-    position: absolute;
-    top: 6px;
-    right: 6px;
-    width: 22px;
-    height: 22px;
-    border-radius: 6px;
-    background: transparent;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: background 0.2s;
-}
-
-.profile-edit-icon i {
-    font-size: 0.6rem;
-    color: var(--color-gray-300);
-    transition: color 0.2s;
-}
-
-.profile-link:hover .profile-edit-icon {
-    background: var(--color-gray-100);
-}
-
-.profile-link:hover .profile-edit-icon i {
-    color: var(--color-gray-600);
-}
-
-.unified-sidebar.collapsed .profile-edit-icon {
-    display: none;
-}
-
-.profile-avatar {
-    width: 44px;
-    height: 44px;
-    border-radius: 12px;
-    background: var(--gradient-primary);
-    color: white;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 600;
-    font-size: 0.95rem;
-    flex-shrink: 0;
-    overflow: hidden;
-}
-
-.profile-avatar img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
-
-.profile-info {
-    overflow: hidden;
-    transition: opacity 0.2s, width 0.2s;
-}
-
-.unified-sidebar.collapsed .profile-info {
-    opacity: 0;
-    width: 0;
-}
-
-.profile-name {
-    font-size: 0.9rem;
-    font-weight: 600;
-    color: var(--color-gray-900);
-    margin: 0 0 0.25rem 0;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.profile-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.35rem;
-    padding: 0.2rem 0.6rem;
-    font-size: 0.7rem;
-    font-weight: 600;
-    border-radius: 20px;
-    text-transform: uppercase;
-    letter-spacing: 0.02em;
-}
-
-.profile-badge i {
-    font-size: 0.6rem;
-}
-
-.badge-participant {
-    background: rgba(59, 130, 246, 0.1);
-    color: #3B82F6;
-}
-
-.badge-admin {
-    background: rgba(139, 92, 246, 0.1);
-    color: #8B5CF6;
-}
-
-.badge-mentor {
-    background: rgba(16, 185, 129, 0.1);
-    color: #10B981;
 }
 
 /* ----- Navigation ----- */
@@ -504,15 +357,6 @@
 
 .unified-sidebar.collapsed .sidebar-logo {
     justify-content: center;
-}
-
-.unified-sidebar.collapsed .sidebar-profile {
-    padding: 1rem 0.5rem;
-}
-
-.unified-sidebar.collapsed .profile-link {
-    justify-content: center;
-    padding: 0.75rem 0.5rem;
 }
 
 .unified-sidebar.collapsed .sidebar-footer {

@@ -51,7 +51,9 @@ class AttendanceController extends Controller
     public function checkIn(Request $request)
     {
         $request->validate([
-            'photo' => 'required|image|mimes:jpeg,jpg,png|max:2048',
+            'photo'     => 'required|image|mimes:jpeg,jpg,png|max:2048',
+            'latitude'  => 'nullable|numeric|between:-90,90',
+            'longitude' => 'nullable|numeric|between:-180,180',
         ]);
 
         $user = Auth::user();
@@ -86,11 +88,13 @@ class AttendanceController extends Controller
 
         // Create attendance record
         $attendance = Attendance::create([
-            'user_id' => $user->id,
-            'date' => $today,
-            'status' => $status,
+            'user_id'   => $user->id,
+            'date'      => $today,
+            'status'    => $status,
             'check_in_time' => $checkInTime,
-            'photo_path' => $photoPath,
+            'photo_path'    => $photoPath,
+            'latitude'  => $request->filled('latitude')  ? (float) $request->latitude  : null,
+            'longitude' => $request->filled('longitude') ? (float) $request->longitude : null,
         ]);
 
         if ($request->expectsJson()) {

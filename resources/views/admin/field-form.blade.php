@@ -20,76 +20,6 @@
    FIELD FORM PAGE STYLES
    ============================================ */
 
-/* Hero Section */
-.admin-hero {
-    background: linear-gradient(135deg, #EE2E24 0%, #C41E1A 50%, #9B1B1B 100%);
-    border-radius: 24px;
-    padding: 2rem 2.5rem;
-    margin-bottom: 2rem;
-    position: relative;
-    overflow: hidden;
-    color: white;
-}
-
-.admin-hero::before {
-    content: '';
-    position: absolute;
-    top: -50%;
-    right: -20%;
-    width: 60%;
-    height: 200%;
-    background: radial-gradient(ellipse, rgba(255,255,255,0.15) 0%, transparent 70%);
-    pointer-events: none;
-}
-
-.hero-content {
-    position: relative;
-    z-index: 1;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 2rem;
-}
-
-.hero-text h1 {
-    font-size: 1.75rem;
-    font-weight: 700;
-    margin-bottom: 0.5rem;
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-}
-
-.hero-text p {
-    font-size: 1rem;
-    opacity: 0.9;
-    max-width: 500px;
-    margin: 0;
-}
-
-/* Back Button */
-.back-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 10px 20px;
-    background: rgba(255, 255, 255, 0.15);
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    border-radius: 12px;
-    color: white;
-    font-weight: 500;
-    font-size: 0.875rem;
-    text-decoration: none;
-    transition: all 0.3s ease;
-    backdrop-filter: blur(10px);
-}
-
-.back-btn:hover {
-    background: rgba(255, 255, 255, 0.25);
-    transform: translateY(-2px);
-    color: white;
-}
-
 /* Form Card */
 .form-card {
     background: rgba(255, 255, 255, 0.95);
@@ -422,21 +352,16 @@
 
 @section('content')
 
-{{-- Hero Section --}}
-<div class="admin-hero">
-    <div class="hero-content">
-        <div class="hero-text">
-            <h1>
-                <i class="fas fa-tags"></i>
-                {{ isset($field) ? 'Edit Bidang Peminatan' : 'Tambah Bidang Peminatan' }}
-            </h1>
-            <p>{{ isset($field) ? 'Perbarui informasi bidang peminatan yang sudah ada' : 'Tambahkan bidang peminatan baru untuk program magang' }}</p>
-        </div>
-        <a href="{{ route('admin.fields') }}" class="back-btn">
-            <i class="fas fa-arrow-left"></i> Kembali
-        </a>
-    </div>
-</div>
+<x-dashboard.page-context-bar
+    :title="isset($field) ? 'Edit Bidang Peminatan' : 'Tambah Bidang Peminatan'"
+    :description="isset($field) ? 'Perbarui informasi bidang peminatan yang sudah ada' : 'Tambahkan bidang peminatan baru untuk program magang'"
+    icon="fas fa-tags"
+    role="admin"
+>
+    <a href="{{ route('admin.fields') }}" class="ctx-btn-secondary">
+        <i class="fas fa-arrow-left"></i> Kembali
+    </a>
+</x-dashboard.page-context-bar>
 
 {{-- Form Card --}}
 <div class="form-card">

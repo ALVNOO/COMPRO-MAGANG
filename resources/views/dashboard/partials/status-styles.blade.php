@@ -988,6 +988,40 @@
     font-weight: 600;
 }
 
+/* Mentor contact action buttons */
+.sp-mentor-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 14px;
+    flex-wrap: wrap;
+}
+
+.sp-contact-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    border-radius: 10px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all .15s;
+    border: none;
+    cursor: pointer;
+}
+
+.sp-btn-wa {
+    background: #DCFCE7;
+    color: #16A34A;
+}
+.sp-btn-wa:hover { background: #BBF7D0; color: #15803D; }
+
+.sp-btn-email {
+    background: #DBEAFE;
+    color: #2563EB;
+}
+.sp-btn-email:hover { background: #BFDBFE; color: #1D4ED8; }
+
 /* ==========================================
    REJECTION CARD
    ========================================== */

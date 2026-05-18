@@ -26,88 +26,6 @@
    CERTIFICATES PAGE STYLES
    ============================================ */
 
-/* Hero Section */
-.page-hero {
-    background: linear-gradient(135deg, #EE2E24 0%, #C41E1A 50%, #9B1B1B 100%);
-    border-radius: 24px;
-    padding: 2rem 2.5rem;
-    margin-bottom: 2rem;
-    position: relative;
-    overflow: hidden;
-    color: white;
-}
-
-.page-hero::before {
-    content: '';
-    position: absolute;
-    top: -50%;
-    right: -20%;
-    width: 60%;
-    height: 200%;
-    background: radial-gradient(ellipse, rgba(255,255,255,0.15) 0%, transparent 70%);
-    pointer-events: none;
-}
-
-.hero-content {
-    position: relative;
-    z-index: 1;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 2rem;
-}
-
-.hero-text h1 {
-    font-size: 1.75rem;
-    font-weight: 700;
-    margin-bottom: 0.5rem;
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-}
-
-.hero-text p {
-    font-size: 1rem;
-    opacity: 0.9;
-    max-width: 500px;
-    margin: 0;
-}
-
-.hero-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.75rem;
-    padding: 0.75rem 1.25rem;
-    background: rgba(255,255,255,0.2);
-    backdrop-filter: blur(10px);
-    border-radius: 12px;
-    border: 1px solid rgba(255,255,255,0.3);
-}
-
-.hero-badge-icon {
-    width: 40px;
-    height: 40px;
-    border-radius: 10px;
-    background: rgba(255,255,255,0.2);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.25rem;
-}
-
-.hero-badge-text h4 {
-    font-size: 1.5rem;
-    font-weight: 700;
-    margin: 0;
-    line-height: 1.2;
-}
-
-.hero-badge-text p {
-    font-size: 0.8rem;
-    opacity: 0.9;
-    margin: 0;
-}
-
 /* Certificate Cards Grid */
 .cert-grid {
     display: grid;
@@ -457,20 +375,6 @@
 
 /* Responsive */
 @media (max-width: 768px) {
-    .page-hero {
-        padding: 1.5rem;
-    }
-
-    .hero-content {
-        flex-direction: column;
-        text-align: center;
-    }
-
-    .hero-text h1 {
-        font-size: 1.35rem;
-        justify-content: center;
-    }
-
     .cert-grid {
         grid-template-columns: 1fr;
     }
@@ -514,29 +418,12 @@
 </div>
 @endif
 
-{{-- Hero Section --}}
-<div class="page-hero">
-    <div class="hero-content">
-        <div class="hero-text">
-            <h1>
-                <i class="fas fa-award"></i>
-                Sertifikat & Surat Selesai
-            </h1>
-            <p>Sertifikat magang dan surat keterangan selesai magang (jika sudah diunggah admin)</p>
-        </div>
-        @if($eligible && $totalDocumentsShown > 0)
-        <div class="hero-badge">
-            <div class="hero-badge-icon">
-                <i class="fas fa-folder-open"></i>
-            </div>
-            <div class="hero-badge-text">
-                <h4>{{ $totalDocumentsShown }}</h4>
-                <p>Dokumen</p>
-            </div>
-        </div>
-        @endif
-    </div>
-</div>
+<x-dashboard.page-context-bar
+    title="Sertifikat & Surat Selesai"
+    description="Sertifikat magang dan surat keterangan selesai magang dari admin"
+    icon="fas fa-award"
+    role="peserta"
+/>
 
 @if(! $eligible)
 {{-- Belum periode unduh --}}

@@ -1,935 +1,771 @@
-{{--
-    MENTOR PROFIL PAGE
-    Profile and password management
-    Using unified layout with glassmorphism design
---}}
-
 @extends('layouts.dashboard-unified')
 
 @section('title', 'Profil Pembimbing')
 
 @php
-    $role = 'mentor';
-    $pageTitle = 'Profil Pembimbing';
-    $pageSubtitle = 'Kelola informasi profil dan keamanan akun';
+    $role     = 'mentor';
+    $names    = explode(' ', $user->name ?? 'Pembimbing');
+    $initials = strtoupper(substr($names[0], 0, 1)) . (isset($names[1]) ? strtoupper(substr($names[1], 0, 1)) : '');
 @endphp
 
 @push('styles')
 <style>
-/* ============================================
-   PROFIL PAGE STYLES
-   ============================================ */
+/* ── Profile Page ── */
+.profile-layout {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    gap: 1.5rem;
+    align-items: start;
+}
 
-/* Hero Section */
-.profile-hero {
-    background: linear-gradient(135deg, #EE2E24 0%, #C41E1A 50%, #9B1B1B 100%);
-    border-radius: 24px;
-    padding: 2.5rem;
-    margin-bottom: 2rem;
+/* Left column — photo card */
+.photo-card {
+    background: #fff;
+    border-radius: 16px;
+    border: 1px solid #E5E7EB;
+    overflow: hidden;
+}
+
+.photo-card-top {
+    background: linear-gradient(160deg, #EE2E24 0%, #9B1C1C 100%);
+    padding: 2rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
     position: relative;
     overflow: hidden;
-    color: white;
 }
 
-.profile-hero::before {
+.photo-card-top::before {
     content: '';
     position: absolute;
-    top: -50%;
-    right: -20%;
-    width: 60%;
-    height: 200%;
-    background: radial-gradient(ellipse, rgba(255,255,255,0.15) 0%, transparent 70%);
-    pointer-events: none;
+    top: -40%; right: -30%;
+    width: 80%; height: 80%;
+    background: radial-gradient(circle, rgba(255,255,255,.15) 0%, transparent 70%);
 }
 
-.hero-content {
-    position: relative;
-    z-index: 1;
-    display: flex;
-    align-items: center;
-    gap: 2rem;
-    flex-wrap: wrap;
-}
-
-.profile-avatar {
-    width: 120px;
-    height: 120px;
-    background: white;
-    border-radius: 24px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
-    position: relative;
-    flex-shrink: 0;
-}
-
-.profile-avatar i {
-    font-size: 3.5rem;
-    background: linear-gradient(135deg, #EE2E24 0%, #C41E1A 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-}
-
-.avatar-badge {
-    position: absolute;
-    bottom: -8px;
-    right: -8px;
-    width: 40px;
-    height: 40px;
-    background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+.avatar-ring {
+    width: 110px;
+    height: 110px;
     border-radius: 50%;
+    border: 3px solid rgba(255,255,255,.6);
+    background: rgba(255,255,255,.15);
     display: flex;
     align-items: center;
     justify-content: center;
-    border: 3px solid white;
-    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #fff;
+    overflow: hidden;
+    position: relative;
+    z-index: 1;
+    margin-bottom: .875rem;
 }
 
-.avatar-badge i {
-    font-size: 1rem;
-    color: white;
-    -webkit-text-fill-color: white;
+.avatar-ring img { width: 100%; height: 100%; object-fit: cover; }
+
+.photo-name {
+    font-size: .9375rem;
+    font-weight: 700;
+    color: #fff;
+    line-height: 1.3;
+    margin-bottom: .4rem;
+    position: relative; z-index: 1;
 }
 
-.profile-info {
-    flex: 1;
-}
-
-.role-badge {
+.photo-role {
     display: inline-flex;
     align-items: center;
-    gap: 0.5rem;
-    background: rgba(255, 255, 255, 0.2);
-    backdrop-filter: blur(10px);
-    padding: 0.5rem 1rem;
-    border-radius: 50px;
-    font-size: 0.875rem;
-    font-weight: 600;
-    margin-bottom: 0.75rem;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-}
-
-.profile-name {
-    font-size: 2rem;
-    font-weight: 800;
-    margin: 0 0 1rem 0;
-    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
-}
-
-.profile-meta {
-    display: flex;
-    gap: 1rem;
-    flex-wrap: wrap;
-}
-
-.meta-item {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    background: rgba(255, 255, 255, 0.15);
-    backdrop-filter: blur(10px);
-    padding: 0.5rem 1rem;
-    border-radius: 12px;
-    font-size: 0.9rem;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-}
-
-/* Stats Grid */
-.stats-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: 1.25rem;
-    margin-bottom: 2rem;
-}
-
-.stat-card {
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(20px);
-    border-radius: 16px;
-    padding: 1.5rem;
-    border: 1px solid rgba(0, 0, 0, 0.06);
-    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
-    transition: all 0.3s ease;
-}
-
-.stat-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.1);
-}
-
-.stat-icon {
-    width: 56px;
-    height: 56px;
-    border-radius: 14px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.5rem;
-    margin-bottom: 1rem;
-}
-
-.stat-icon.purple {
-    background: linear-gradient(135deg, #8B5CF6 0%, #7C3AED 100%);
-    color: white;
-}
-
-.stat-icon.red {
-    background: linear-gradient(135deg, #EE2E24 0%, #C41E1A 100%);
-    color: white;
-}
-
-.stat-icon.green {
-    background: linear-gradient(135deg, #10B981 0%, #059669 100%);
-    color: white;
-}
-
-.stat-icon.yellow {
-    background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
-    color: white;
-}
-
-.stat-label {
-    font-size: 0.75rem;
-    font-weight: 600;
-    color: #6b7280;
+    padding: .2rem .65rem;
+    background: rgba(255,255,255,.2);
+    border: 1px solid rgba(255,255,255,.35);
+    border-radius: 9999px;
+    font-size: .68rem;
+    font-weight: 700;
+    color: #fff;
+    letter-spacing: .04em;
     text-transform: uppercase;
-    letter-spacing: 0.05em;
-    margin-bottom: 0.375rem;
+    position: relative; z-index: 1;
 }
 
-.stat-value {
-    font-size: 1.25rem;
-    font-weight: 700;
-    color: #1f2937;
-    word-break: break-word;
-}
-
-/* Info Cards Grid */
-.info-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-    gap: 1.5rem;
-    margin-bottom: 2rem;
-}
-
-.info-card {
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(20px);
-    border-radius: 20px;
-    border: 1px solid rgba(0, 0, 0, 0.06);
-    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
-    overflow: hidden;
-}
-
-.info-card-header {
-    background: linear-gradient(135deg, #EE2E24 0%, #C41E1A 100%);
-    padding: 1.5rem;
-    position: relative;
-    overflow: hidden;
-}
-
-.info-card-header::before {
-    content: '';
-    position: absolute;
-    top: -50%;
-    right: -20%;
-    width: 60%;
-    height: 200%;
-    background: radial-gradient(ellipse, rgba(255,255,255,0.1) 0%, transparent 70%);
-    pointer-events: none;
-}
-
-.header-icon {
-    width: 50px;
-    height: 50px;
-    background: rgba(255, 255, 255, 0.2);
-    backdrop-filter: blur(10px);
-    border-radius: 14px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-bottom: 0.75rem;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    position: relative;
-    z-index: 1;
-}
-
-.header-icon i {
-    font-size: 1.5rem;
-    color: white;
-}
-
-.info-card-header h3 {
-    font-size: 1.25rem;
-    font-weight: 700;
-    color: white;
-    margin: 0;
-    position: relative;
-    z-index: 1;
-}
-
-.info-card-body {
-    padding: 1.75rem;
-}
-
-.info-list {
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
-}
-
-.info-item {
-    display: flex;
-    align-items: flex-start;
-    gap: 1rem;
-}
-
-.info-item-icon {
-    width: 44px;
-    height: 44px;
-    border-radius: 12px;
-    background: linear-gradient(135deg, rgba(238, 46, 36, 0.1) 0%, rgba(196, 30, 26, 0.1) 100%);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #EE2E24;
-    font-size: 1.1rem;
-    flex-shrink: 0;
-}
-
-.info-item-content {
-    flex: 1;
-}
-
-.info-item-label {
-    font-size: 0.75rem;
-    font-weight: 600;
-    color: #6b7280;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    margin-bottom: 0.25rem;
-}
-
-.info-item-value {
-    font-size: 1rem;
-    font-weight: 600;
-    color: #1f2937;
-}
-
-/* Password Section */
-.password-card {
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(20px);
-    border-radius: 20px;
-    border: 1px solid rgba(0, 0, 0, 0.06);
-    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
-    overflow: hidden;
-}
-
-.password-header {
-    background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
-    padding: 2rem;
-    display: flex;
-    align-items: center;
-    gap: 1.5rem;
-    position: relative;
-    overflow: hidden;
-}
-
-.password-header::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: repeating-linear-gradient(45deg, transparent, transparent 35px, rgba(255,255,255,.02) 35px, rgba(255,255,255,.02) 70px);
-    pointer-events: none;
-}
-
-.password-icon {
-    width: 64px;
-    height: 64px;
-    background: linear-gradient(135deg, #EE2E24 0%, #C41E1A 100%);
-    border-radius: 16px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 10px 25px rgba(238, 46, 36, 0.3);
-    position: relative;
-    z-index: 1;
-    flex-shrink: 0;
-}
-
-.password-icon i {
-    font-size: 1.75rem;
-    color: white;
-}
-
-.password-header-text {
-    position: relative;
-    z-index: 1;
-}
-
-.password-header-text h2 {
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: white;
-    margin: 0 0 0.375rem 0;
-}
-
-.password-header-text p {
-    font-size: 0.9rem;
-    color: rgba(255, 255, 255, 0.7);
-    margin: 0;
-}
-
-.password-body {
-    padding: 2rem;
-}
-
-/* Alerts */
-.alert-custom {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
+.photo-card-actions {
     padding: 1rem 1.25rem;
-    border-radius: 12px;
-    margin-bottom: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: .625rem;
+}
+
+.btn-photo-upload {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: .5rem;
+    padding: .625rem;
+    background: #EE2E24;
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    font-size: .8rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background .15s;
+    width: 100%;
+}
+
+.btn-photo-upload:hover { background: #C41E1A; }
+
+.btn-photo-remove {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: .5rem;
+    padding: .55rem;
+    background: #fff;
+    color: #6B7280;
+    border: 1px solid #E5E7EB;
+    border-radius: 10px;
+    font-size: .78rem;
     font-weight: 500;
+    cursor: pointer;
+    transition: all .15s;
+    width: 100%;
 }
 
-.alert-success {
-    background: rgba(16, 185, 129, 0.1);
-    border: 1px solid rgba(16, 185, 129, 0.2);
-    color: #059669;
+.btn-photo-remove:hover { background: #FEF2F2; color: #DC2626; border-color: #FCA5A5; }
+
+.photo-hint {
+    font-size: .7rem;
+    color: #9CA3AF;
+    text-align: center;
+    padding: 0 1.25rem .75rem;
+    line-height: 1.4;
 }
 
-.alert-danger {
-    background: rgba(239, 68, 68, 0.1);
-    border: 1px solid rgba(239, 68, 68, 0.2);
-    color: #DC2626;
+/* Right column — info cards */
+.info-card {
+    background: #fff;
+    border-radius: 16px;
+    border: 1px solid #E5E7EB;
+    overflow: hidden;
+    margin-bottom: 1.25rem;
 }
 
-.alert-custom i {
-    font-size: 1.25rem;
+.info-card:last-child { margin-bottom: 0; }
+
+.card-head {
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid #F3F4F6;
+}
+
+.card-head-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    background: rgba(238,46,36,.08);
+    color: #EE2E24;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: .9rem;
     flex-shrink: 0;
 }
 
-.alert-custom ul {
+.card-head-icon.dark {
+    background: #F3F4F6;
+    color: #374151;
+}
+
+.card-head-title {
+    font-size: .9rem;
+    font-weight: 700;
+    color: #111827;
     margin: 0;
-    padding-left: 1.25rem;
 }
 
-/* Form Elements */
-.form-grid {
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
+.card-head-sub {
+    font-size: .75rem;
+    color: #9CA3AF;
+    margin: .1rem 0 0;
 }
 
-.form-row {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 1.5rem;
-}
+.card-body { padding: 1.5rem; }
 
-.form-group {
-    display: flex;
-    flex-direction: column;
-}
-
-.form-label {
+/* Read-only info rows */
+.ro-row {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
-    font-size: 0.875rem;
+    gap: 1rem;
+    padding: .75rem 0;
+    border-bottom: 1px solid #F9FAFB;
+}
+
+.ro-row:last-child { border-bottom: none; padding-bottom: 0; }
+.ro-row:first-child { padding-top: 0; }
+
+.ro-icon {
+    width: 34px;
+    height: 34px;
+    border-radius: 8px;
+    background: #F9FAFB;
+    border: 1px solid #E5E7EB;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #6B7280;
+    font-size: .8rem;
+    flex-shrink: 0;
+}
+
+.ro-label {
+    font-size: .7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    color: #9CA3AF;
+    margin-bottom: .15rem;
+}
+
+.ro-value {
+    font-size: .875rem;
+    font-weight: 600;
+    color: #111827;
+}
+
+/* Form */
+.form-field { margin-bottom: 1.125rem; }
+.form-field:last-of-type { margin-bottom: 0; }
+
+.f-label {
+    font-size: .8rem;
     font-weight: 600;
     color: #374151;
-    margin-bottom: 0.75rem;
+    margin-bottom: .45rem;
+    display: block;
 }
 
-.form-label .label-icon {
-    width: 28px;
-    height: 28px;
-    background: linear-gradient(135deg, #EE2E24 0%, #C41E1A 100%);
-    border-radius: 6px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    font-size: 0.75rem;
-}
+.f-wrap { position: relative; }
 
-.form-input-wrapper {
-    position: relative;
-}
-
-.form-input {
+.f-input {
     width: 100%;
-    padding: 0.875rem 1rem;
-    padding-left: 3rem;
-    border: 2px solid #e5e7eb;
+    padding: .75rem 1rem .75rem 2.75rem;
+    border: 1.5px solid #E5E7EB;
     border-radius: 10px;
-    font-size: 0.9375rem;
-    transition: all 0.2s ease;
-    background: #f9fafb;
+    font-size: .875rem;
+    background: #F9FAFB;
+    color: #111827;
+    transition: all .18s;
+    box-sizing: border-box;
 }
 
-.form-input:focus {
+.f-input:focus {
     outline: none;
     border-color: #EE2E24;
-    background: white;
-    box-shadow: 0 0 0 3px rgba(238, 46, 36, 0.1);
+    background: #fff;
+    box-shadow: 0 0 0 3px rgba(238,46,36,.07);
 }
 
-.form-input.is-invalid {
-    border-color: #EF4444;
-    background: #FEF2F2;
-}
+.f-input.is-invalid { border-color: #EF4444; background: #FEF2F2; }
 
-.input-icon {
+.f-icon {
     position: absolute;
-    left: 1rem;
+    left: .9rem;
     top: 50%;
     transform: translateY(-50%);
-    color: #9ca3af;
-    font-size: 1rem;
+    color: #9CA3AF;
+    font-size: .85rem;
 }
 
-.form-input:focus ~ .input-icon {
-    color: #EE2E24;
-}
+.f-error { font-size: .76rem; color: #DC2626; margin-top: .3rem; }
 
-.invalid-feedback {
-    color: #DC2626;
-    font-size: 0.8rem;
-    margin-top: 0.375rem;
-}
-
-/* Form Actions */
-.form-actions {
-    display: flex;
-    justify-content: flex-end;
+.btn-save {
+    display: inline-flex;
+    align-items: center;
+    gap: .45rem;
+    padding: .65rem 1.5rem;
+    background: #EE2E24;
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    font-size: .85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background .15s;
     margin-top: 1rem;
 }
 
-.btn-submit {
-    display: inline-flex;
+.btn-save:hover { background: #C41E1A; }
+
+/* Security action links */
+.sec-links { display: flex; gap: .875rem; flex-wrap: wrap; }
+
+.sec-link {
+    display: flex;
     align-items: center;
-    gap: 0.5rem;
-    padding: 1rem 2rem;
-    background: linear-gradient(135deg, #EE2E24 0%, #C41E1A 100%);
-    color: white;
-    border: none;
+    gap: .6rem;
+    padding: .75rem 1.125rem;
+    border: 1.5px solid #E5E7EB;
     border-radius: 12px;
+    text-decoration: none;
+    color: #374151;
+    font-size: .85rem;
     font-weight: 600;
-    font-size: 1rem;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    box-shadow: 0 4px 12px rgba(238, 46, 36, 0.3);
+    transition: all .15s;
+    flex: 1;
+    min-width: 160px;
 }
 
-.btn-submit:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 24px rgba(238, 46, 36, 0.4);
+.sec-link i { font-size: .9rem; color: #9CA3AF; }
+.sec-link:hover { border-color: #EE2E24; color: #EE2E24; background: #FEF2F2; }
+.sec-link:hover i { color: #EE2E24; }
+
+@media (max-width: 860px) {
+    .profile-layout { grid-template-columns: 1fr; }
 }
 
-/* Responsive */
-@media (max-width: 1024px) {
-    .info-grid {
-        grid-template-columns: 1fr;
-    }
+@media (max-width: 600px) {
+    .mentor-contact-grid { grid-template-columns: 1fr !important; }
 }
 
-@media (max-width: 768px) {
-    .profile-hero {
-        padding: 1.75rem;
-    }
-
-    .hero-content {
-        flex-direction: column;
-        text-align: center;
-    }
-
-    .profile-avatar {
-        width: 100px;
-        height: 100px;
-    }
-
-    .profile-avatar i {
-        font-size: 2.5rem;
-    }
-
-    .profile-name {
-        font-size: 1.5rem;
-    }
-
-    .profile-meta {
-        justify-content: center;
-    }
-
-    .stats-grid {
-        grid-template-columns: repeat(2, 1fr);
-    }
-
-    .info-grid {
-        grid-template-columns: 1fr;
-    }
-
-    .password-header {
-        flex-direction: column;
-        text-align: center;
-        padding: 1.5rem;
-    }
-
-    .form-row {
-        grid-template-columns: 1fr;
-    }
-
-    .form-actions {
-        justify-content: stretch;
-    }
-
-    .btn-submit {
-        width: 100%;
-        justify-content: center;
-    }
+/* ── Crop Dialog ── */
+.crop-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,.55); backdrop-filter: blur(3px);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 9999; padding: 1rem;
+    opacity: 0; visibility: hidden;
+    transition: opacity .25s, visibility .25s;
 }
+.crop-overlay.show { opacity: 1; visibility: visible; }
+.crop-dialog {
+    background: #fff; border-radius: 16px;
+    width: 100%; max-width: 620px; max-height: 90vh; overflow: hidden;
+    transform: scale(.94) translateY(12px);
+    transition: transform .25s cubic-bezier(.4,0,.2,1);
+    box-shadow: 0 20px 50px rgba(0,0,0,.18);
+}
+.crop-overlay.show .crop-dialog { transform: scale(1) translateY(0); }
+.crop-dialog-head {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 1.125rem 1.5rem; border-bottom: 1px solid #F3F4F6;
+}
+.crop-dialog-head h3 { font-size: .95rem; font-weight: 700; color: #111827; margin: 0; }
+.crop-close {
+    width: 36px; height: 36px; display: flex; align-items: center; justify-content: center;
+    background: #F3F4F6; border: none; border-radius: 8px;
+    cursor: pointer; color: #6B7280; font-size: .85rem; transition: all .15s;
+}
+.crop-close:hover { background: #E5E7EB; color: #111827; }
+.crop-dialog-body {
+    display: flex; gap: 1.25rem; padding: 1.25rem 1.5rem; background: #F9FAFB;
+    overflow-y: auto; max-height: calc(90vh - 130px);
+}
+.crop-canvas-wrap { flex: 1; border-radius: 10px; overflow: hidden; background: #E5E7EB; max-height: 340px; }
+.crop-canvas-wrap img { display: block; max-width: 100%; }
+.crop-preview-col {
+    display: flex; flex-direction: column; align-items: center; gap: .625rem;
+    background: #fff; border-radius: 10px; padding: 1rem;
+    border: 1px solid #E5E7EB; flex-shrink: 0;
+}
+.crop-preview-label { font-size: .65rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: #9CA3AF; }
+.crop-preview-circle {
+    width: 96px; height: 96px; border-radius: 50%; overflow: hidden;
+    border: 3px solid #fff; box-shadow: 0 2px 10px rgba(0,0,0,.1); background: #F3F4F6;
+}
+.crop-dialog-foot {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: .875rem 1.5rem; border-top: 1px solid #F3F4F6; background: #fff;
+}
+.crop-tools { display: flex; gap: .375rem; }
+.crop-tool {
+    width: 36px; height: 36px; display: flex; align-items: center; justify-content: center;
+    background: #F9FAFB; border: 1px solid #E5E7EB; border-radius: 8px;
+    cursor: pointer; color: #6B7280; font-size: .82rem; transition: all .15s;
+}
+.crop-tool:hover { border-color: #EE2E24; color: #EE2E24; background: #FEF2F2; }
+.crop-actions { display: flex; gap: .5rem; }
+.crop-btn-cancel {
+    padding: .55rem 1rem; background: #fff; border: 1.5px solid #E5E7EB;
+    border-radius: 8px; font-size: .8rem; font-weight: 600; color: #374151; cursor: pointer; transition: background .15s;
+}
+.crop-btn-cancel:hover { background: #F3F4F6; }
+.crop-btn-apply {
+    display: inline-flex; align-items: center; gap: .35rem;
+    padding: .55rem 1.125rem; background: #EE2E24; border: none;
+    border-radius: 8px; font-size: .8rem; font-weight: 600; color: #fff; cursor: pointer; transition: background .15s;
+}
+.crop-btn-apply:hover { background: #C41E1A; }
+.crop-btn-apply:disabled { opacity: .65; cursor: not-allowed; }
+.cropper-view-box, .cropper-face { border-radius: 50%; }
+.cropper-view-box { outline: 2px solid #EE2E24; outline-offset: -2px; }
+.cropper-modal { background: rgba(0,0,0,.3) !important; opacity: 1 !important; }
+.cropper-bg { background-image: none !important; }
+.cropper-dashed { border-color: rgba(255,255,255,.4); }
+.cropper-center { opacity: 0; }
+.cropper-point { background: #EE2E24; width: 9px; height: 9px; border-radius: 50%; }
+.cropper-line { background: #EE2E24; opacity: .2; }
 </style>
 @endpush
 
 @section('content')
 
-{{-- Profile Hero --}}
-<div class="profile-hero">
-    <div class="hero-content">
-        <div class="profile-avatar">
-            <i class="fas fa-user-tie"></i>
-            <div class="avatar-badge">
-                <i class="fas fa-check"></i>
+<x-dashboard.page-context-bar
+    title="Profil Pembimbing"
+    description="Kelola foto, informasi kontak, dan keamanan akun"
+    icon="fas fa-user-tie"
+    role="mentor"
+/>
+
+@if(session('photo_success'))
+    <div class="alert alert-compact alert-success" style="margin-bottom:1rem;">
+        <div class="alert-icon-box"><i class="fas fa-check"></i></div>
+        <div class="alert-content"><div class="alert-title">{{ session('photo_success') }}</div></div>
+    </div>
+@endif
+
+<div class="profile-layout">
+
+    {{-- Left: Photo Card --}}
+    <div class="photo-card">
+        <div class="photo-card-top">
+            <div class="avatar-ring">
+                @if($user->profile_picture)
+                    <img src="{{ asset('storage/' . $user->profile_picture) }}" alt="{{ $user->name }}">
+                @else
+                    {{ $initials }}
+                @endif
             </div>
+            <div class="photo-name">{{ $user->name }}</div>
+            <span class="photo-role">Pembimbing</span>
         </div>
-        <div class="profile-info">
-            <div class="role-badge">
-                <i class="fas fa-shield-alt"></i>
-                <span>Pembimbing Lapangan</span>
+
+        <div class="photo-card-actions">
+            <input type="file" id="photoInput" accept="image/jpg,image/jpeg,image/png" style="display:none;">
+            <button type="button" class="btn-photo-upload" onclick="document.getElementById('photoInput').click()">
+                <i class="fas fa-camera"></i>
+                {{ $user->profile_picture ? 'Ganti Foto' : 'Unggah Foto' }}
+            </button>
+            @if($user->profile_picture)
+            <button type="button" class="btn-photo-remove" id="btnRemovePhoto">
+                <i class="fas fa-trash-alt"></i> Hapus Foto
+            </button>
+            @endif
+        </div>
+        <p class="photo-hint">JPG, JPEG, atau PNG · Maks. 2 MB</p>
+    </div>
+
+    {{-- Right column --}}
+    <div>
+
+        {{-- Informasi Pembimbing (read-only) --}}
+        <div class="info-card">
+            <div class="card-head">
+                <div class="card-head-icon"><i class="fas fa-user-tie"></i></div>
+                <div>
+                    <div class="card-head-title">Informasi Pembimbing</div>
+                    <div class="card-head-sub">Data akun tidak dapat diubah langsung</div>
+                </div>
             </div>
-            <h1 class="profile-name">{{ $divisionMentor ? $divisionMentor->mentor_name : ($user->name ?? 'Pembimbing Lapangan') }}</h1>
-            <div class="profile-meta">
-                <div class="meta-item">
-                    <i class="fas fa-envelope"></i>
-                    <span>{{ $user->email ?? '-' }}</span>
+            <div class="card-body">
+                <div class="ro-row">
+                    <div class="ro-icon"><i class="fas fa-user"></i></div>
+                    <div>
+                        <div class="ro-label">Nama Lengkap</div>
+                        <div class="ro-value">{{ $divisionMentor ? $divisionMentor->mentor_name : ($user->name ?? '-') }}</div>
+                    </div>
+                </div>
+                <div class="ro-row">
+                    <div class="ro-icon"><i class="fas fa-envelope"></i></div>
+                    <div>
+                        <div class="ro-label">Email</div>
+                        <div class="ro-value">{{ $user->email ?? '-' }}</div>
+                    </div>
+                </div>
+                <div class="ro-row">
+                    <div class="ro-icon"><i class="fas fa-id-badge"></i></div>
+                    <div>
+                        <div class="ro-label">NIK</div>
+                        <div class="ro-value">{{ $divisionMentor ? $divisionMentor->nik_number : ($user->username ?? '-') }}</div>
+                    </div>
+                </div>
+                <div class="ro-row">
+                    <div class="ro-icon"><i class="fas fa-phone"></i></div>
+                    <div>
+                        <div class="ro-label">No. HP</div>
+                        <div class="ro-value">{{ $user->phone ?? '-' }}</div>
+                    </div>
                 </div>
                 @if($divisionAdmin)
-                    <div class="meta-item">
-                        <i class="fas fa-building"></i>
-                        <span>{{ $divisionAdmin->division_name }}</span>
+                <div class="ro-row">
+                    <div class="ro-icon"><i class="fas fa-building"></i></div>
+                    <div>
+                        <div class="ro-label">Divisi</div>
+                        <div class="ro-value">{{ $divisionAdmin->division_name }}</div>
+                    </div>
+                </div>
+                @endif
+                <div class="ro-row">
+                    <div class="ro-icon"><i class="fas fa-briefcase"></i></div>
+                    <div>
+                        <div class="ro-label">Jabatan</div>
+                        <div class="ro-value">Pembimbing Lapangan</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {{-- Edit Kontak --}}
+        <div class="info-card">
+            <div class="card-head">
+                <div class="card-head-icon"><i class="fab fa-whatsapp"></i></div>
+                <div>
+                    <div class="card-head-title">Edit Kontak</div>
+                    <div class="card-head-sub">Ditampilkan kepada peserta bimbingan Anda</div>
+                </div>
+            </div>
+            <div class="card-body">
+                @if(session('biodata_success'))
+                    <div class="alert alert-compact alert-success" style="margin-bottom:1rem;">
+                        <div class="alert-icon-box"><i class="fas fa-check"></i></div>
+                        <div class="alert-content"><div class="alert-title">{{ session('biodata_success') }}</div></div>
                     </div>
                 @endif
-                <div class="meta-item">
-                    <i class="fas fa-check-circle"></i>
-                    <span>Aktif</span>
-                </div>
+                @if($errors->biodata->any())
+                    <div class="alert alert-compact alert-danger" style="margin-bottom:1rem;">
+                        <div class="alert-icon-box"><i class="fas fa-times"></i></div>
+                        <div class="alert-content"><div class="alert-title">{{ $errors->biodata->first() }}</div></div>
+                    </div>
+                @endif
+                <form method="POST" action="{{ route('mentor.profil.biodata') }}">
+                    @csrf
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;" class="mentor-contact-grid">
+                        <div class="form-field" style="margin-bottom:0;">
+                            <label class="f-label">Nomor HP / WhatsApp</label>
+                            <div class="f-wrap">
+                                <input type="text" name="phone"
+                                       class="f-input @if($errors->biodata->has('phone')) is-invalid @endif"
+                                       value="{{ old('phone', $user->phone) }}" placeholder="08xxxxxxxxxx">
+                                <i class="fas fa-phone f-icon"></i>
+                            </div>
+                            @if($errors->biodata->has('phone'))<div class="f-error">{{ $errors->biodata->first('phone') }}</div>@endif
+                        </div>
+                        <div class="form-field" style="margin-bottom:0;">
+                            <label class="f-label">Email</label>
+                            <div class="f-wrap">
+                                <input type="email" name="email"
+                                       class="f-input @if($errors->biodata->has('email')) is-invalid @endif"
+                                       value="{{ old('email', $user->email) }}" placeholder="email@contoh.com" required>
+                                <i class="fas fa-envelope f-icon"></i>
+                            </div>
+                            @if($errors->biodata->has('email'))<div class="f-error">{{ $errors->biodata->first('email') }}</div>@endif
+                        </div>
+                    </div>
+                    <button type="submit" class="btn-save"><i class="fas fa-check"></i> Simpan</button>
+                </form>
             </div>
         </div>
-    </div>
-</div>
 
-{{-- Stats Grid --}}
-<div class="stats-grid">
-    <div class="stat-card">
-        <div class="stat-icon purple">
-            <i class="fas fa-id-card"></i>
-        </div>
-        <div class="stat-label">Nomor Induk Karyawan</div>
-        <div class="stat-value">{{ $divisionMentor ? $divisionMentor->nik_number : ($user->username ?? '-') }}</div>
-    </div>
-    <div class="stat-card">
-        <div class="stat-icon red">
-            <i class="fas fa-sitemap"></i>
-        </div>
-        <div class="stat-label">Divisi Penempatan</div>
-        <div class="stat-value">{{ $divisionAdmin ? $divisionAdmin->division_name : '-' }}</div>
-    </div>
-    <div class="stat-card">
-        <div class="stat-icon green">
-            <i class="fas fa-briefcase"></i>
-        </div>
-        <div class="stat-label">Posisi Jabatan</div>
-        <div class="stat-value">Pembimbing Lapangan</div>
-    </div>
-    <div class="stat-card">
-        <div class="stat-icon yellow">
-            <i class="fas fa-building"></i>
-        </div>
-        <div class="stat-label">Perusahaan</div>
-        <div class="stat-value">PT Telkom Indonesia</div>
-    </div>
-</div>
-
-{{-- Info Cards Grid --}}
-<div class="info-grid">
-    <div class="info-card">
-        <div class="info-card-header">
-            <div class="header-icon">
-                <i class="fas fa-user-circle"></i>
-            </div>
-            <h3>Informasi Personal</h3>
-        </div>
-        <div class="info-card-body">
-            <div class="info-list">
-                <div class="info-item">
-                    <div class="info-item-icon">
-                        <i class="fas fa-user"></i>
-                    </div>
-                    <div class="info-item-content">
-                        <div class="info-item-label">Nama Lengkap</div>
-                        <div class="info-item-value">{{ $divisionMentor ? $divisionMentor->mentor_name : ($user->name ?? '-') }}</div>
-                    </div>
-                </div>
-                <div class="info-item">
-                    <div class="info-item-icon">
-                        <i class="fas fa-id-badge"></i>
-                    </div>
-                    <div class="info-item-content">
-                        <div class="info-item-label">NIK</div>
-                        <div class="info-item-value">{{ $divisionMentor ? $divisionMentor->nik_number : ($user->username ?? '-') }}</div>
-                    </div>
-                </div>
-                <div class="info-item">
-                    <div class="info-item-icon">
-                        <i class="fas fa-envelope"></i>
-                    </div>
-                    <div class="info-item-content">
-                        <div class="info-item-label">Email Address</div>
-                        <div class="info-item-value">{{ $user->email ?? '-' }}</div>
-                    </div>
+        {{-- Peserta Bimbingan --}}
+        @if(isset($mentorParticipants))
+        <div class="info-card">
+            <div class="card-head">
+                <div class="card-head-icon"><i class="fas fa-users"></i></div>
+                <div>
+                    <div class="card-head-title">Peserta Bimbingan</div>
+                    <div class="card-head-sub">Daftar peserta magang aktif</div>
                 </div>
             </div>
-        </div>
-    </div>
-
-    <div class="info-card">
-        <div class="info-card-header">
-            <div class="header-icon">
-                <i class="fas fa-building"></i>
-            </div>
-            <h3>Informasi Perusahaan</h3>
-        </div>
-        <div class="info-card-body">
-            <div class="info-list">
-                <div class="info-item">
-                    <div class="info-item-icon">
-                        <i class="fas fa-building"></i>
+            <div class="card-body">
+                @if($mentorParticipants->isNotEmpty())
+                    @foreach($mentorParticipants as $mp)
+                    <div class="ro-row">
+                        <div class="ro-icon"><i class="fas fa-user-graduate"></i></div>
+                        <div>
+                            <div class="ro-label">{{ $mp->user->nim ?? '-' }}</div>
+                            <div class="ro-value">{{ $mp->user->name }}</div>
+                        </div>
                     </div>
-                    <div class="info-item-content">
-                        <div class="info-item-label">Nama Perusahaan</div>
-                        <div class="info-item-value">PT Telkom Indonesia</div>
-                    </div>
-                </div>
-                <div class="info-item">
-                    <div class="info-item-icon">
-                        <i class="fas fa-sitemap"></i>
-                    </div>
-                    <div class="info-item-content">
-                        <div class="info-item-label">Divisi</div>
-                        <div class="info-item-value">{{ $divisionAdmin ? $divisionAdmin->division_name : '-' }}</div>
-                    </div>
-                </div>
-                <div class="info-item">
-                    <div class="info-item-icon">
-                        <i class="fas fa-user-tie"></i>
-                    </div>
-                    <div class="info-item-content">
-                        <div class="info-item-label">Jabatan</div>
-                        <div class="info-item-value">Pembimbing Lapangan</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-{{-- Biodata Edit Section --}}
-<div class="password-card" style="margin-bottom: 2rem;">
-    <div class="password-header" style="background: linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%);">
-        <div class="password-icon" style="background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%); box-shadow: 0 10px 25px rgba(37, 99, 235, 0.3);">
-            <i class="fas fa-address-card"></i>
-        </div>
-        <div class="password-header-text">
-            <h2>Edit Biodata Kontak</h2>
-            <p>Informasi kontak ini akan ditampilkan kepada peserta magang yang Anda bimbing</p>
-        </div>
-    </div>
-    <div class="password-body">
-        @if(session('biodata_success'))
-            <div class="alert-custom alert-success">
-                <i class="fas fa-check-circle"></i>
-                <span>{{ session('biodata_success') }}</span>
-            </div>
-        @endif
-
-        @if($errors->biodata->any())
-            <div class="alert-custom alert-danger">
-                <i class="fas fa-exclamation-triangle"></i>
-                <ul>
-                    @foreach($errors->biodata->all() as $error)
-                        <li>{{ $error }}</li>
                     @endforeach
-                </ul>
+                @else
+                    <div style="text-align:center;padding:1.25rem 0;color:#9CA3AF;">
+                        <i class="fas fa-inbox" style="font-size:1.5rem;display:block;margin-bottom:.5rem;"></i>
+                        Belum ada peserta bimbingan
+                    </div>
+                @endif
             </div>
+        </div>
         @endif
 
-        <form method="POST" action="{{ route('mentor.profil.biodata') }}">
-            @csrf
-            <div class="form-grid">
-                <div class="form-row">
-                    <div class="form-group">
-                        <label class="form-label">
-                            <span class="label-icon" style="background: linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%);"><i class="fas fa-phone"></i></span>
-                            <span>No. Telepon</span>
-                        </label>
-                        <div class="form-input-wrapper">
-                            <input type="text"
-                                   name="phone"
-                                   class="form-input @if($errors->biodata->has('phone')) is-invalid @endif"
-                                   placeholder="Contoh: 081234567890"
-                                   value="{{ old('phone', $user->phone) }}">
-                            <i class="fas fa-phone input-icon"></i>
-                        </div>
-                        @if($errors->biodata->has('phone'))
-                            <div class="invalid-feedback">{{ $errors->biodata->first('phone') }}</div>
-                        @endif
-                    </div>
-
-                    <div class="form-group">
-                        <label class="form-label">
-                            <span class="label-icon" style="background: linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%);"><i class="fas fa-envelope"></i></span>
-                            <span>Email</span>
-                        </label>
-                        <div class="form-input-wrapper">
-                            <input type="email"
-                                   name="email"
-                                   class="form-input @if($errors->biodata->has('email')) is-invalid @endif"
-                                   placeholder="Contoh: nama@email.com"
-                                   value="{{ old('email', $user->email) }}">
-                            <i class="fas fa-envelope input-icon"></i>
-                        </div>
-                        @if($errors->biodata->has('email'))
-                            <div class="invalid-feedback">{{ $errors->biodata->first('email') }}</div>
-                        @endif
-                    </div>
-                </div>
-
-                <div class="form-actions">
-                    <button type="submit" class="btn-submit" style="background: linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%); box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);">
-                        <i class="fas fa-save"></i>
-                        <span>Simpan Biodata</span>
-                    </button>
+        {{-- Keamanan Akun --}}
+        <div class="info-card">
+            <div class="card-head">
+                <div class="card-head-icon dark"><i class="fas fa-shield-halved"></i></div>
+                <div>
+                    <div class="card-head-title">Keamanan Akun</div>
+                    <div class="card-head-sub">Password dan autentikasi dua faktor</div>
                 </div>
             </div>
-        </form>
-    </div>
+            <div class="card-body">
+                <div class="sec-links">
+                    <a href="{{ route('password.change') }}" class="sec-link">
+                        <i class="fas fa-lock"></i>
+                        <div>
+                            <div style="font-size:.85rem;font-weight:600;">Ganti Password</div>
+                            <div style="font-size:.72rem;color:#9CA3AF;font-weight:400;margin-top:.1rem;">Ubah kata sandi akun</div>
+                        </div>
+                    </a>
+                    <a href="{{ route('2fa.setup') }}" class="sec-link">
+                        <i class="fas fa-mobile-screen"></i>
+                        <div>
+                            <div style="font-size:.85rem;font-weight:600;">Autentikasi 2FA</div>
+                            <div style="font-size:.72rem;color:#9CA3AF;font-weight:400;margin-top:.1rem;">Kelola Google Authenticator</div>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+    </div>{{-- end right column --}}
 </div>
 
-{{-- Password Section --}}
-<div class="password-card">
-    <div class="password-header">
-        <div class="password-icon">
-            <i class="fas fa-shield-alt"></i>
+{{-- Crop Dialog --}}
+<div class="crop-overlay" id="cropOverlay">
+    <div class="crop-dialog">
+        <div class="crop-dialog-head">
+            <h3>Sesuaikan Foto Profil</h3>
+            <button type="button" class="crop-close" id="cropClose"><i class="fas fa-times"></i></button>
         </div>
-        <div class="password-header-text">
-            <h2>Keamanan & Password</h2>
-            <p>Kelola keamanan akun Anda dengan mengubah password secara berkala</p>
+        <div class="crop-dialog-body">
+            <div class="crop-canvas-wrap">
+                <img id="cropImage" src="" alt="crop">
+            </div>
+            <div class="crop-preview-col">
+                <div class="crop-preview-label">Preview</div>
+                <div class="crop-preview-circle" id="cropPreviewCircle"></div>
+            </div>
         </div>
-    </div>
-    <div class="password-body">
-        @if(session('success'))
-            <div class="alert-custom alert-success">
-                <i class="fas fa-check-circle"></i>
-                <span>{{ session('success') }}</span>
+        <div class="crop-dialog-foot">
+            <div class="crop-tools">
+                <button type="button" class="crop-tool" data-action="rotate-left" title="Putar kiri"><i class="fas fa-rotate-left"></i></button>
+                <button type="button" class="crop-tool" data-action="rotate-right" title="Putar kanan"><i class="fas fa-rotate-right"></i></button>
+                <button type="button" class="crop-tool" data-action="zoom-in" title="Perbesar"><i class="fas fa-magnifying-glass-plus"></i></button>
+                <button type="button" class="crop-tool" data-action="zoom-out" title="Perkecil"><i class="fas fa-magnifying-glass-minus"></i></button>
+                <button type="button" class="crop-tool" data-action="reset" title="Reset"><i class="fas fa-arrows-rotate"></i></button>
             </div>
-        @endif
-
-        @if($errors->any())
-            <div class="alert-custom alert-danger">
-                <i class="fas fa-exclamation-triangle"></i>
-                <ul>
-                    @foreach($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
-                </ul>
+            <div class="crop-actions">
+                <button type="button" class="crop-btn-cancel" id="cropCancel">Batal</button>
+                <button type="button" class="crop-btn-apply" id="cropApply"><i class="fas fa-check"></i> Terapkan</button>
             </div>
-        @endif
-
-        <form method="POST" action="{{ route('password.update') }}">
-            @csrf
-            <div class="form-grid">
-                <div class="form-group">
-                    <label class="form-label">
-                        <span class="label-icon"><i class="fas fa-lock"></i></span>
-                        <span>Password Saat Ini</span>
-                    </label>
-                    <div class="form-input-wrapper">
-                        <input type="password"
-                               name="current_password"
-                               class="form-input @error('current_password') is-invalid @enderror"
-                               placeholder="Masukkan password lama Anda"
-                               required>
-                        <i class="fas fa-lock input-icon"></i>
-                    </div>
-                    @error('current_password')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
-                </div>
-
-                <div class="form-row">
-                    <div class="form-group">
-                        <label class="form-label">
-                            <span class="label-icon"><i class="fas fa-key"></i></span>
-                            <span>Password Baru</span>
-                        </label>
-                        <div class="form-input-wrapper">
-                            <input type="password"
-                                   name="new_password"
-                                   class="form-input @error('new_password') is-invalid @enderror"
-                                   placeholder="Buat password baru"
-                                   required>
-                            <i class="fas fa-key input-icon"></i>
-                        </div>
-                        @error('new_password')
-                            <div class="invalid-feedback">{{ $message }}</div>
-                        @enderror
-                    </div>
-
-                    <div class="form-group">
-                        <label class="form-label">
-                            <span class="label-icon"><i class="fas fa-check-double"></i></span>
-                            <span>Konfirmasi Password</span>
-                        </label>
-                        <div class="form-input-wrapper">
-                            <input type="password"
-                                   name="new_password_confirmation"
-                                   class="form-input"
-                                   placeholder="Ulangi password baru"
-                                   required>
-                            <i class="fas fa-check-double input-icon"></i>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="form-actions">
-                    <button type="submit" class="btn-submit">
-                        <i class="fas fa-save"></i>
-                        <span>Perbarui Password</span>
-                    </button>
-                </div>
-            </div>
-        </form>
+        </div>
     </div>
 </div>
 
 @endsection
+
+@push('scripts')
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css">
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const photoInput = document.getElementById('photoInput');
+    const btnRemove  = document.getElementById('btnRemovePhoto');
+    const overlay    = document.getElementById('cropOverlay');
+    const cropImg    = document.getElementById('cropImage');
+    const closeBtn   = document.getElementById('cropClose');
+    const cancelBtn  = document.getElementById('cropCancel');
+    const applyBtn   = document.getElementById('cropApply');
+    let cropper = null;
+
+    photoInput.addEventListener('change', function () {
+        const file = this.files[0];
+        if (!file) return;
+        if (!['image/jpeg','image/jpg','image/png'].includes(file.type)) {
+            alert('Format harus JPG atau PNG.'); this.value = ''; return;
+        }
+        if (file.size > 2 * 1024 * 1024) {
+            alert('Ukuran maksimal 2 MB.'); this.value = ''; return;
+        }
+        const reader = new FileReader();
+        reader.onload = function (e) {
+            cropImg.src = e.target.result;
+            overlay.classList.add('show');
+            document.body.style.overflow = 'hidden';
+            cropImg.onload = function () {
+                if (cropper) cropper.destroy();
+                cropper = new Cropper(cropImg, {
+                    aspectRatio: 1, viewMode: 1, dragMode: 'move',
+                    autoCropArea: 0.85, restore: false, guides: true,
+                    center: true, highlight: false, background: false,
+                    cropBoxMovable: true, cropBoxResizable: true,
+                    toggleDragModeOnDblclick: false,
+                    preview: '#cropPreviewCircle',
+                });
+            };
+        };
+        reader.readAsDataURL(file);
+        this.value = '';
+    });
+
+    function closeDialog() {
+        overlay.classList.remove('show');
+        document.body.style.overflow = '';
+        if (cropper) { cropper.destroy(); cropper = null; }
+        cropImg.src = '';
+    }
+
+    closeBtn.addEventListener('click', closeDialog);
+    cancelBtn.addEventListener('click', closeDialog);
+    overlay.addEventListener('click', function (e) { if (e.target === overlay) closeDialog(); });
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeDialog(); });
+
+    document.querySelectorAll('.crop-tool[data-action]').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            if (!cropper) return;
+            const a = this.dataset.action;
+            if (a === 'rotate-left')  cropper.rotate(-90);
+            if (a === 'rotate-right') cropper.rotate(90);
+            if (a === 'zoom-in')      cropper.zoom(.1);
+            if (a === 'zoom-out')     cropper.zoom(-.1);
+            if (a === 'reset')        cropper.reset();
+        });
+    });
+
+    applyBtn.addEventListener('click', function () {
+        if (!cropper) return;
+        applyBtn.disabled = true;
+        applyBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Memproses...';
+        cropper.getCroppedCanvas({ width: 400, height: 400 }).toBlob(function (blob) {
+            const file = new File([blob], 'profile.jpg', { type: 'image/jpeg' });
+            const fd = new FormData();
+            fd.append('profile_picture', file);
+            fd.append('_token', '{{ csrf_token() }}');
+            fetch('{{ route("profile.picture") }}', {
+                method: 'POST', body: fd,
+                headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' }
+            })
+            .then(r => r.json())
+            .then(d => { if (d.success) location.reload(); else { alert(d.message || 'Gagal.'); applyBtn.disabled = false; applyBtn.innerHTML = '<i class="fas fa-check"></i> Terapkan'; }})
+            .catch(() => { alert('Terjadi kesalahan.'); applyBtn.disabled = false; applyBtn.innerHTML = '<i class="fas fa-check"></i> Terapkan'; });
+            closeDialog();
+        }, 'image/jpeg', 0.9);
+    });
+
+    if (btnRemove) {
+        btnRemove.addEventListener('click', function () {
+            if (!confirm('Hapus foto profil?')) return;
+            btnRemove.disabled = true;
+            fetch('{{ route("profile.picture.remove") }}', {
+                method: 'DELETE',
+                headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' }
+            })
+            .then(r => r.json())
+            .then(d => { if (d.success) location.reload(); else { alert(d.message || 'Gagal.'); btnRemove.disabled = false; }})
+            .catch(() => { alert('Terjadi kesalahan.'); btnRemove.disabled = false; });
+        });
+    }
+});
+</script>
+@endpush

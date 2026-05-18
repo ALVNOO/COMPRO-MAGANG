@@ -21,105 +21,6 @@
    REPORTS PAGE STYLES
    ============================================ */
 
-/* Hero Section */
-.admin-hero {
-    background: linear-gradient(135deg, #EE2E24 0%, #C41E1A 50%, #9B1B1B 100%);
-    border-radius: 24px;
-    padding: 2rem 2.5rem;
-    margin-bottom: 2rem;
-    position: relative;
-    overflow: hidden;
-    color: white;
-}
-
-.admin-hero::before {
-    content: '';
-    position: absolute;
-    top: -50%;
-    right: -20%;
-    width: 60%;
-    height: 200%;
-    background: radial-gradient(ellipse, rgba(255,255,255,0.15) 0%, transparent 70%);
-    pointer-events: none;
-}
-
-.hero-content {
-    position: relative;
-    z-index: 1;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 2rem;
-}
-
-.hero-text h1 {
-    font-size: 1.75rem;
-    font-weight: 700;
-    margin-bottom: 0.5rem;
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-}
-
-.hero-text p {
-    font-size: 1rem;
-    opacity: 0.9;
-    max-width: 500px;
-    margin: 0;
-}
-
-/* Hero Export Buttons */
-.hero-actions {
-    display: flex;
-    gap: 12px;
-}
-
-.hero-export-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 12px 20px;
-    border-radius: 12px;
-    font-weight: 600;
-    font-size: 0.875rem;
-    transition: all 0.3s ease;
-    border: none;
-    cursor: pointer;
-    text-decoration: none;
-}
-
-.hero-export-btn.pdf {
-    background: rgba(255, 255, 255, 0.2);
-    color: white;
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255,255,255,0.3);
-}
-
-.hero-export-btn.pdf:hover {
-    background: rgba(255, 255, 255, 0.3);
-    transform: translateY(-2px);
-}
-
-.hero-export-btn.excel {
-    background: rgba(34, 197, 94, 0.9);
-    color: white;
-}
-
-.hero-export-btn.excel:hover {
-    background: rgba(34, 197, 94, 1);
-    transform: translateY(-2px);
-}
-
-.hero-export-btn.manual {
-    background: rgba(59, 130, 246, 0.9);
-    color: white;
-}
-
-.hero-export-btn.manual:hover {
-    background: rgba(59, 130, 246, 1);
-    transform: translateY(-2px);
-}
-
 /* Filter Card */
 .filter-card {
     background: rgba(255, 255, 255, 0.95);
@@ -231,89 +132,6 @@
     background: #1d4ed8;
 }
 
-/* Table Card */
-.table-card {
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(20px);
-    border-radius: 20px;
-    border: 1px solid rgba(0, 0, 0, 0.06);
-    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
-    overflow: hidden;
-}
-
-.table-header {
-    padding: 1.25rem 1.5rem;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    background: linear-gradient(135deg, rgba(238, 46, 36, 0.03) 0%, rgba(255, 255, 255, 0) 100%);
-}
-
-.table-header h3 {
-    font-size: 1.1rem;
-    font-weight: 600;
-    color: #1f2937;
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    margin: 0;
-}
-
-.table-header h3 i {
-    color: #EE2E24;
-}
-
-.table-content {
-    padding: 0;
-}
-
-.table-responsive {
-    overflow-x: auto;
-}
-
-/* Admin Table */
-.admin-table {
-    width: 100%;
-    border-collapse: collapse;
-}
-
-.admin-table thead {
-    background: linear-gradient(135deg, rgba(238, 46, 36, 0.05) 0%, rgba(238, 46, 36, 0.02) 100%);
-}
-
-.admin-table th {
-    padding: 1rem;
-    text-align: left;
-    font-size: 0.75rem;
-    font-weight: 600;
-    color: #6b7280;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
-    white-space: nowrap;
-}
-
-.admin-table td {
-    padding: 1rem;
-    font-size: 0.875rem;
-    color: #374151;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.04);
-    vertical-align: middle;
-}
-
-.admin-table tbody tr {
-    transition: all 0.2s ease;
-}
-
-.admin-table tbody tr:hover {
-    background: rgba(238, 46, 36, 0.02);
-}
-
-.admin-table tbody tr:last-child td {
-    border-bottom: none;
-}
-
 /* Empty State */
 .empty-state {
     text-align: center;
@@ -387,26 +205,24 @@
 
 @section('content')
 
-{{-- Hero Section --}}
-<div class="admin-hero">
-    <div class="hero-content">
-        <div class="hero-text">
-            <h1><i class="fas fa-chart-bar"></i> Laporan Peserta Magang</h1>
-            <p>Generate dan export laporan peserta magang berdasarkan periode</p>
-        </div>
-        <div class="hero-actions">
-            <button id="btn-toggle-manual-form" class="hero-export-btn manual" type="button">
-                <i class="fas fa-plus-circle"></i> Tambah Data Manual
-            </button>
-            <button id="btn-export-pdf" class="hero-export-btn pdf">
-                <i class="fas fa-file-pdf"></i> Export PDF
-            </button>
-            <button id="btn-export-excel" class="hero-export-btn excel">
-                <i class="fas fa-file-excel"></i> Export Excel
-            </button>
-        </div>
+<x-dashboard.page-context-bar
+    title="Laporan Peserta Magang"
+    description="Generate dan export laporan peserta magang berdasarkan periode"
+    icon="fas fa-chart-bar"
+    role="admin"
+>
+    <div style="display:flex;gap:.5rem;flex-wrap:wrap;">
+        <button id="btn-toggle-manual-form" class="ctx-btn-secondary" type="button">
+            <i class="fas fa-plus-circle"></i> Tambah Manual
+        </button>
+        <button id="btn-export-pdf" class="ctx-cta" style="background:linear-gradient(135deg,#DC2626,#B91C1C);">
+            <i class="fas fa-file-pdf"></i> Export PDF
+        </button>
+        <button id="btn-export-excel" class="ctx-cta" style="background:linear-gradient(135deg,#059669,#047857);">
+            <i class="fas fa-file-excel"></i> Export Excel
+        </button>
     </div>
-</div>
+</x-dashboard.page-context-bar>
 
 {{-- Filter Card --}}
 <div class="filter-card">

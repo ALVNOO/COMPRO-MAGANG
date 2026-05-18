@@ -12,6 +12,13 @@
 @endpush
 
 @section('content')
+<x-dashboard.page-context-bar
+    title="Status Pengajuan Magang"
+    description="Pantau perkembangan pengajuan magang Anda di PT Telkom Indonesia"
+    icon="fas fa-hourglass-half"
+    role="peserta"
+/>
+
 <div class="sp">
     @if($application)
         @php
@@ -276,15 +283,33 @@
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
                                 <span><strong>Divisi:</strong> {{ $application->divisionMentor->division->division_name ?? '-' }}</span>
                             </div>
-                            <div class="sp-mentor-detail">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
-                                <span><strong>Telepon:</strong> {{ $mentorUser && $mentorUser->phone ? $mentorUser->phone : 'Belum tersedia' }}</span>
-                            </div>
-                            <div class="sp-mentor-detail">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
-                                <span><strong>Email:</strong> {{ $mentorUser && $mentorUser->email ? $mentorUser->email : 'Belum tersedia' }}</span>
-                            </div>
                         </div>
+                        {{-- Contact Action Buttons --}}
+                        @if($mentorUser && ($mentorUser->phone || $mentorUser->email))
+                        <div class="sp-mentor-actions">
+                            @if($mentorUser->phone)
+                                @php
+                                    $mWaNum  = preg_replace('/^0/', '62', preg_replace('/[^0-9]/', '', $mentorUser->phone));
+                                    $mWaText = urlencode('Halo Pak/Bu ' . $application->divisionMentor->mentor_name . ', saya ' . $user->name . ' ingin bertanya mengenai kegiatan magang.');
+                                @endphp
+                                <a href="https://wa.me/{{ $mWaNum }}?text={{ $mWaText }}"
+                                   target="_blank" rel="noopener"
+                                   class="sp-contact-btn sp-btn-wa">
+                                    <i class="fab fa-whatsapp"></i> WhatsApp
+                                </a>
+                            @endif
+                            @if($mentorUser->email)
+                                <a href="mailto:{{ $mentorUser->email }}"
+                                   class="sp-contact-btn sp-btn-email">
+                                    <i class="fas fa-envelope"></i> Email
+                                </a>
+                            @endif
+                        </div>
+                        @elseif(!$mentorUser || (!$mentorUser->phone && !$mentorUser->email))
+                        <div class="sp-mentor-actions">
+                            <span style="font-size:0.8rem;color:#9ca3af;"><i class="fas fa-info-circle"></i> Mentor belum mengisi kontak</span>
+                        </div>
+                        @endif
                     </div>
                 </div>
             </div>

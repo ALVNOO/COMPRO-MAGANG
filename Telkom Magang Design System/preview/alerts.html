@@ -1,0 +1,151 @@
+<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="_card.css">
+<style>
+  body { background: #F9FAFB; }
+  .card-frame { gap: 20px; padding: 24px 28px; }
+  .group-label { font-size: 11px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: #9CA3AF; margin-bottom: 4px; }
+
+  /* ---- Inline Alert ---- */
+  .alert {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    padding: 14px 18px;
+    background: #fff;
+    border-radius: 14px;
+    border-left: 4px solid transparent;
+    box-shadow: 0 1px 3px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04);
+  }
+  .alert-icon-box {
+    flex-shrink: 0;
+    width: 36px; height: 36px;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px;
+  }
+  .alert-content { flex: 1; min-width: 0; padding-top: 2px; }
+  .alert-title   { font-size: 14px; font-weight: 600; color: #231F20; line-height: 1.375; margin-bottom: 2px; }
+  .alert-message { font-size: 14px; color: #6B7280; line-height: 1.5; }
+  .alert-dismiss { flex-shrink: 0; background: none; border: none; color: #C7C8CA; cursor: pointer; padding: 0; font-size: 16px; line-height: 1; margin-top: 2px; transition: color .15s; }
+  .alert-dismiss:hover { color: #6B7280; }
+
+  .alert-success { border-left-color: #059669; }
+  .alert-success .alert-icon-box { background: #D1FAE5; color: #059669; }
+
+  .alert-warning { border-left-color: #D97706; }
+  .alert-warning .alert-icon-box { background: #FEF3C7; color: #D97706; }
+
+  .alert-danger  { border-left-color: #DC2626; }
+  .alert-danger  .alert-icon-box { background: #FEE2E2; color: #DC2626; }
+
+  .alert-info    { border-left-color: #0891B2; }
+  .alert-info    .alert-icon-box { background: #CFFAFE; color: #0891B2; }
+
+  /* ---- Toast (flash messages) ---- */
+  .toast { display: flex; align-items: flex-start; gap: 14px; padding: 14px 18px; background: #fff; border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,.15); border-left: 4px solid; max-width: 100%; }
+  .toast .ic-box { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 16px; }
+  .toast .body { flex: 1; min-width: 0; }
+  .toast .ttl { font-size: 14px; font-weight: 600; color: #231F20; line-height: 1.35; }
+  .toast .msg { font-size: 13px; color: #6B7280; margin-top: 2px; line-height: 1.5; }
+  .toast .x { background: none; border: none; color: #C7C8CA; font-size: 18px; cursor: pointer; padding: 0 0 0 8px; line-height: 1; flex-shrink: 0; }
+  .t-success { border-left-color: #059669; }
+  .t-success .ic-box { background: #D1FAE5; color: #059669; }
+  .t-warning { border-left-color: #D97706; }
+  .t-warning .ic-box { background: #FEF3C7; color: #D97706; }
+  .t-danger  { border-left-color: #DC2626; }
+  .t-danger  .ic-box { background: #FEE2E2; color: #DC2626; }
+  .t-info    { border-left-color: #0891B2; }
+  .t-info    .ic-box { background: #CFFAFE; color: #0891B2; }
+</style>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body><div class="card-frame">
+
+  <div class="group-label">Inline Alert · with title</div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+    <div class="alert alert-success">
+      <div class="alert-icon-box"><i class="fas fa-check"></i></div>
+      <div class="alert-content">
+        <div class="alert-title">Pengajuan berhasil dikirim</div>
+        <div class="alert-message">Anda akan menerima notifikasi setelah ditinjau mentor.</div>
+      </div>
+      <button class="alert-dismiss">&times;</button>
+    </div>
+    <div class="alert alert-warning">
+      <div class="alert-icon-box"><i class="fas fa-exclamation"></i></div>
+      <div class="alert-content">
+        <div class="alert-title">Dokumen belum lengkap</div>
+        <div class="alert-message">Unggah CV dan surat motivasi untuk melanjutkan.</div>
+      </div>
+      <button class="alert-dismiss">&times;</button>
+    </div>
+    <div class="alert alert-danger">
+      <div class="alert-icon-box"><i class="fas fa-times"></i></div>
+      <div class="alert-content">
+        <div class="alert-title">Kode 2FA salah</div>
+        <div class="alert-message">Periksa Google Authenticator dan coba lagi.</div>
+      </div>
+      <button class="alert-dismiss">&times;</button>
+    </div>
+    <div class="alert alert-info">
+      <div class="alert-icon-box"><i class="fas fa-info"></i></div>
+      <div class="alert-content">
+        <div class="alert-title">Periode penerimaan aktif</div>
+        <div class="alert-message">Pendaftaran ditutup pada 31 Desember 2026.</div>
+      </div>
+      <button class="alert-dismiss">&times;</button>
+    </div>
+  </div>
+
+  <div class="group-label" style="margin-top:8px">Inline Alert · message only (no title)</div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+    <div class="alert alert-success">
+      <div class="alert-icon-box"><i class="fas fa-check"></i></div>
+      <div class="alert-content">
+        <div class="alert-message">Logbook hari ini telah tersimpan.</div>
+      </div>
+    </div>
+    <div class="alert alert-info">
+      <div class="alert-icon-box"><i class="fas fa-info"></i></div>
+      <div class="alert-content">
+        <div class="alert-message">Cek email untuk konfirmasi pendaftaran.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="group-label" style="margin-top:8px">Toast · flash messages (auto-hide 5s)</div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+    <div class="toast t-success">
+      <div class="ic-box"><i class="fas fa-check"></i></div>
+      <div class="body">
+        <div class="ttl">Pengajuan berhasil dikirim</div>
+        <div class="msg">Anda akan menerima notifikasi setelah ditinjau mentor.</div>
+      </div>
+      <button class="x">&times;</button>
+    </div>
+    <div class="toast t-warning">
+      <div class="ic-box"><i class="fas fa-exclamation-triangle"></i></div>
+      <div class="body">
+        <div class="ttl">Dokumen belum lengkap</div>
+        <div class="msg">Unggah CV dan surat motivasi untuk melanjutkan.</div>
+      </div>
+      <button class="x">&times;</button>
+    </div>
+    <div class="toast t-danger">
+      <div class="ic-box"><i class="fas fa-times"></i></div>
+      <div class="body">
+        <div class="ttl">Kode 2FA salah</div>
+        <div class="msg">Periksa Google Authenticator dan coba lagi.</div>
+      </div>
+      <button class="x">&times;</button>
+    </div>
+    <div class="toast t-info">
+      <div class="ic-box"><i class="fas fa-info"></i></div>
+      <div class="body">
+        <div class="ttl">Periode penerimaan aktif</div>
+        <div class="msg">Pendaftaran ditutup pada 31 Desember 2026.</div>
+      </div>
+      <button class="x">&times;</button>
+    </div>
+  </div>
+
+</div></body></html>

@@ -48,54 +48,6 @@
 
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
 
-/* Hero Section */
-.mentor-hero {
-    background: linear-gradient(135deg, #EE2E24 0%, #C41E1A 50%, #9B1B1B 100%);
-    border-radius: 24px;
-    padding: 2rem 2.5rem;
-    margin-bottom: 2rem;
-    position: relative;
-    overflow: hidden;
-    color: white;
-}
-
-.mentor-hero::before {
-    content: '';
-    position: absolute;
-    top: -50%;
-    right: -20%;
-    width: 60%;
-    height: 200%;
-    background: radial-gradient(ellipse, rgba(255,255,255,0.15) 0%, transparent 70%);
-    pointer-events: none;
-}
-
-.hero-content {
-    position: relative;
-    z-index: 1;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 1.5rem;
-}
-
-.hero-text h1 {
-    font-size: 1.75rem;
-    font-weight: 700;
-    margin-bottom: 0.5rem;
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-}
-
-.hero-text p {
-    font-size: 1rem;
-    opacity: 0.9;
-    max-width: 500px;
-    margin: 0;
-}
-
 /* Stats Grid */
 .stats-grid {
     display: grid;
@@ -104,66 +56,33 @@
     margin-bottom: 2rem;
 }
 
-.stat-card {
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(20px);
-    border-radius: 16px;
-    padding: 1.5rem;
-    border: 1px solid rgba(0, 0, 0, 0.06);
-    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
-    display: flex;
-    align-items: center;
+/* Detail Tugas — 2-column grid */
+.detail-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
     gap: 1rem;
-    transition: all 0.3s ease;
 }
 
-.stat-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+.detail-grid-full {
+    grid-column: span 2;
 }
 
-.stat-icon {
-    width: 52px;
-    height: 52px;
-    border-radius: 14px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.25rem;
+.form-label-opt {
+    color: #9CA3AF;
+    font-weight: 400;
+    font-size: .85em;
+    margin-left: .25rem;
 }
 
-.stat-icon.purple {
-    background: linear-gradient(135deg, #8B5CF6 0%, #7C3AED 100%);
-    color: white;
+@media (max-width: 640px) {
+    .detail-grid {
+        grid-template-columns: 1fr;
+    }
+    .detail-grid-full {
+        grid-column: span 1;
+    }
 }
 
-.stat-icon.green {
-    background: linear-gradient(135deg, #10B981 0%, #059669 100%);
-    color: white;
-}
-
-.stat-icon.yellow {
-    background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
-    color: white;
-}
-
-.stat-icon.red {
-    background: linear-gradient(135deg, #EE2E24 0%, #C41E1A 100%);
-    color: white;
-}
-
-.stat-info h3 {
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: #1f2937;
-    margin: 0;
-}
-
-.stat-info p {
-    font-size: 0.875rem;
-    color: #6b7280;
-    margin: 0;
-}
 
 /* Tabs Navigation */
 .tabs-card {
@@ -295,6 +214,25 @@
     flex: 1;
     min-width: 0;
 }
+
+/* WA inline button */
+.wa-inline-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+    border-radius: 6px;
+    background: #DCFCE7;
+    color: #16A34A;
+    font-size: 14px;
+    text-decoration: none;
+    transition: background .15s;
+    vertical-align: middle;
+    margin-left: 6px;
+    flex-shrink: 0;
+}
+.wa-inline-btn:hover { background: #BBF7D0; color: #15803D; }
 
 .participant-name {
     font-weight: 600;
@@ -583,162 +521,170 @@ textarea.form-control {
     transform: none;
 }
 
-/* Table Card */
-.table-card {
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(20px);
-    border-radius: 20px;
-    border: 1px solid rgba(0, 0, 0, 0.06);
-    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
-    overflow: hidden;
-}
-
-.table-header {
-    padding: 1.25rem 1.5rem;
-    background: linear-gradient(135deg, rgba(238, 46, 36, 0.03) 0%, rgba(255, 255, 255, 0) 100%);
-    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+/* ── Filter bar — Semua Tugas ── */
+.st-filter-bar {
     display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 1rem;
+    align-items: flex-end;
+    gap: .75rem;
     flex-wrap: wrap;
+    padding: 1.125rem 1.5rem;
+    border-bottom: 1px solid #E5E7EB;
+    background: #fff;
 }
 
-.table-title {
+.st-filter-item {
     display: flex;
-    align-items: center;
-    gap: 0.75rem;
-}
-
-.table-title i {
-    color: #EE2E24;
-    font-size: 1.1rem;
-}
-
-.table-title h3 {
-    font-size: 1.1rem;
-    font-weight: 600;
-    color: #1f2937;
-    margin: 0;
-}
-
-/* Filters */
-.filter-bar {
-    padding: 1.25rem 1.5rem;
-    background: #f9fafb;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
-    display: flex;
-    gap: 1rem;
-    flex-wrap: wrap;
-}
-
-.filter-group {
+    flex-direction: column;
+    gap: .3rem;
     flex: 1;
-    min-width: 180px;
+    min-width: 160px;
 }
 
-.filter-group label {
-    display: block;
-    font-size: 0.75rem;
-    font-weight: 600;
-    color: #6b7280;
-    margin-bottom: 0.375rem;
+.st-filter-label {
+    font-size: .7rem;
+    font-weight: 700;
+    color: #9CA3AF;
     text-transform: uppercase;
-    letter-spacing: 0.05em;
+    letter-spacing: .05em;
 }
 
-.filter-group select {
-    width: 100%;
-    padding: 0.625rem 1rem;
-    border: 1px solid #e5e7eb;
+.st-filter-select {
+    padding: .5rem .875rem;
+    border: 1.5px solid #E5E7EB;
     border-radius: 8px;
-    font-size: 0.875rem;
-    background: white;
+    font-size: .8rem;
+    color: #374151;
+    background: #fff;
+    cursor: pointer;
+    transition: border-color .15s;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%239CA3AF' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right .75rem center;
+    padding-right: 2.25rem;
 }
 
-.filter-group select:focus {
+.st-filter-select:focus {
     outline: none;
     border-color: #EE2E24;
 }
 
-/* Data Table */
-.data-table {
+.st-filter-right {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    margin-left: auto;
+    padding-bottom: .05rem;
+}
+
+/* ── Table — Semua Tugas ── */
+.st-table {
     width: 100%;
     border-collapse: collapse;
 }
 
-.data-table thead {
-    background: #f9fafb;
+.st-table thead {
+    background: #F9FAFB;
+    border-bottom: 1px solid #E5E7EB;
 }
 
-.data-table th {
-    padding: 1rem 1.25rem;
-    text-align: left;
-    font-size: 0.75rem;
-    font-weight: 600;
-    color: #6b7280;
+.st-table th {
+    padding: .75rem 1rem;
+    font-size: .7rem;
+    font-weight: 700;
+    color: #9CA3AF;
     text-transform: uppercase;
-    letter-spacing: 0.05em;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
-}
-
-.data-table td {
-    padding: 1rem 1.25rem;
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-    font-size: 0.875rem;
-    color: #1f2937;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.04);
-    vertical-align: middle;
-}
-
-.data-table tbody tr {
-    transition: background 0.2s;
-}
-
-.data-table tbody tr:hover {
-    background: rgba(238, 46, 36, 0.02);
-}
-
-.data-table tbody tr:last-child td {
-    border-bottom: none;
-}
-
-/* Badges */
-.badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.375rem;
-    padding: 0.375rem 0.75rem;
-    border-radius: 8px;
-    font-size: 0.8125rem;
-    font-weight: 500;
+    letter-spacing: .05em;
+    text-align: left;
     white-space: nowrap;
 }
 
-.badge-primary {
-    background: rgba(238, 46, 36, 0.1);
-    color: #EE2E24;
+.st-table th.center,
+.st-table td.center { text-align: center; }
+
+.st-table td {
+    padding: .875rem 1rem;
+    font-size: .875rem;
+    color: #374151;
+    border-bottom: 1px solid #F3F4F6;
+    vertical-align: middle;
 }
 
-.badge-success {
-    background: rgba(16, 185, 129, 0.1);
-    color: #059669;
+.st-table tbody tr:last-child td { border-bottom: none; }
+.st-table tbody tr:hover { background: #FAFAFA; }
+
+/* Peserta cell */
+.st-p-cell { display: flex; align-items: center; gap: .65rem; }
+
+.st-avatar {
+    width: 32px; height: 32px;
+    border-radius: 8px;
+    background: linear-gradient(135deg, #EE2E24, #C41E1A);
+    color: #fff;
+    font-size: .65rem;
+    font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
 }
 
-.badge-warning {
-    background: rgba(245, 158, 11, 0.1);
-    color: #D97706;
+.st-p-name { font-size: .8rem; font-weight: 600; color: #111827; }
+.st-p-nim  { font-size: .7rem; color: #9CA3AF; margin-top: .05rem; }
+
+/* Judul + submission info */
+.st-title { font-size: .8rem; font-weight: 600; color: #111827; }
+.st-sub-info {
+    display: flex; align-items: center; gap: .25rem;
+    font-size: .7rem; color: #9CA3AF; margin-top: .2rem;
 }
 
-.badge-danger {
-    background: rgba(239, 68, 68, 0.1);
-    color: #DC2626;
+/* Deadline */
+.st-deadline { font-size: .8rem; color: #374151; }
+.st-overdue  {
+    display: inline-flex; align-items: center; gap: .25rem;
+    font-size: .7rem; color: #DC2626; font-weight: 600; margin-top: .2rem;
 }
 
-.badge-info {
-    background: rgba(59, 130, 246, 0.1);
-    color: #2563EB;
+
+/* Nilai chip */
+.st-nilai {
+    display: inline-flex; align-items: center; justify-content: center;
+    min-width: 42px;
+    padding: .25rem .6rem;
+    border-radius: 8px;
+    font-family: ui-monospace, monospace;
+    font-size: .875rem; font-weight: 700;
 }
+.st-nilai.high   { background: #DCFCE7; color: #15803D; }
+.st-nilai.mid    { background: #FEF3C7; color: #B45309; }
+.st-nilai.low    { background: #FEE2E2; color: #B91C1C; }
+.st-nilai.none   { color: #D1D5DB; }
+
+/* Action inline */
+.st-actions { display: flex; align-items: center; gap: .4rem; }
+
+.st-btn-cek {
+    display: inline-flex; align-items: center; gap: .3rem;
+    padding: .38rem .8rem;
+    background: #EE2E24;
+    color: #fff;
+    border: none; border-radius: 7px;
+    font-size: .75rem; font-weight: 600;
+    cursor: pointer; white-space: nowrap;
+    transition: background .15s;
+}
+.st-btn-cek:hover { background: #C41E1A; }
+
+.st-btn-icon {
+    width: 30px; height: 30px;
+    display: inline-flex; align-items: center; justify-content: center;
+    border-radius: 7px; border: 1.5px solid #E5E7EB;
+    background: #fff; cursor: pointer;
+    font-size: .75rem; color: #6B7280;
+    transition: all .15s;
+}
+.st-btn-icon:hover { border-color: #EE2E24; color: #EE2E24; }
+.st-btn-icon.del:hover { border-color: #DC2626; color: #DC2626; background: #FEF2F2; }
+
 
 /* Action Buttons */
 .btn-action {
@@ -1157,90 +1103,97 @@ input[type="date"] {
 /* ── Cek Tugas Popup ──────────────────────────────── */
 .cek-popup-wrap {
     background: #fff;
-    border-radius: 16px;
+    border-radius: 20px;
     width: 100%;
-    max-width: 720px;
-    max-height: 88vh;
+    max-width: 680px;
+    max-height: 90vh;
     overflow: hidden;
-    box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+    box-shadow: 0 32px 80px rgba(0,0,0,0.18), 0 0 0 1px rgba(0,0,0,0.04);
     animation: popupSlideIn 0.25s ease;
     display: flex;
     flex-direction: column;
 }
 
+/* ── Header ── */
 .cek-popup-header {
-    background: linear-gradient(135deg, #EE2E24 0%, #C41E1A 60%, #8B1A1A 100%);
-    color: white;
-    padding: 1.375rem 1.5rem;
-    position: relative;
+    background: #fff;
+    border-top: 4px solid #EE2E24;
+    border-bottom: 1px solid #f3f4f6;
+    padding: 1.125rem 1.375rem 1rem;
     flex-shrink: 0;
 }
 
-.cek-popup-header-inner {
+.cek-popup-top-row {
     display: flex;
     align-items: flex-start;
-    gap: 0.875rem;
-    padding-right: 2.5rem;
+    gap: 0.75rem;
+    margin-bottom: 0.5rem;
 }
 
 .cek-popup-icon {
-    width: 44px;
-    height: 44px;
-    background: rgba(255,255,255,0.15);
-    border-radius: 11px;
+    width: 38px;
+    height: 38px;
+    background: rgba(238,46,36,0.08);
+    border-radius: 10px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.15rem;
+    font-size: 0.95rem;
+    color: #EE2E24;
     flex-shrink: 0;
+    margin-top: 1px;
 }
 
 .cek-popup-title {
-    font-size: 1.05rem;
+    flex: 1;
+    font-size: 0.9375rem;
     font-weight: 700;
-    margin: 0 0 0.25rem;
-    line-height: 1.3;
-    color: white;
-}
-
-.cek-popup-peserta {
-    font-size: 0.825rem;
-    opacity: 0.85;
     margin: 0;
-    display: flex;
-    align-items: center;
-    gap: 0.3rem;
+    line-height: 1.35;
+    color: #111827;
+    min-width: 0;
 }
 
-.cek-popup-header .cek-close-btn {
-    position: absolute;
-    top: 0.875rem;
-    right: 0.875rem;
-    background: rgba(255,255,255,0.12);
+.cek-close-btn {
+    width: 28px;
+    height: 28px;
+    background: #f3f4f6;
     border: none;
-    color: rgba(255,255,255,0.8);
-    border-radius: 8px;
-    width: 30px;
-    height: 30px;
+    color: #6b7280;
+    border-radius: 7px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.1rem;
+    font-size: 1rem;
     cursor: pointer;
     transition: all 0.15s;
-    line-height: 1;
+    flex-shrink: 0;
 }
 
-.cek-popup-header .cek-close-btn:hover {
-    background: rgba(255,255,255,0.22);
-    color: white;
+.cek-close-btn:hover { background: #e5e7eb; color: #111827; }
+
+.cek-popup-meta-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding-left: calc(38px + 0.75rem);
+    flex-wrap: wrap;
 }
 
-/* Info chips */
+.cek-popup-peserta {
+    font-size: 0.8rem;
+    color: #6b7280;
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    margin: 0;
+}
+
+/* ── Info chips strip ── */
 .cek-info-chips {
     display: flex;
-    gap: 0;
-    border-bottom: 1px solid rgba(0,0,0,0.06);
+    border-bottom: 1px solid #f3f4f6;
+    background: #f9fafb;
     flex-shrink: 0;
 }
 
@@ -1248,73 +1201,90 @@ input[type="date"] {
     flex: 1;
     display: flex;
     flex-direction: column;
-    gap: 0.2rem;
+    gap: 0.25rem;
     padding: 0.75rem 1.125rem;
-    border-right: 1px solid rgba(0,0,0,0.06);
+    border-right: 1px solid #f3f4f6;
 }
 
 .cek-chip:last-child { border-right: none; }
 
 .cek-chip-label {
-    font-size: 0.68rem;
-    font-weight: 600;
+    font-size: 0.625rem;
+    font-weight: 700;
     color: #9ca3af;
     text-transform: uppercase;
-    letter-spacing: 0.06em;
+    letter-spacing: 0.08em;
     display: flex;
     align-items: center;
-    gap: 0.3rem;
+    gap: 0.25rem;
 }
 
-.cek-chip-label i { color: #EE2E24; }
+.cek-chip-label i { font-size: 0.6rem; color: #d1d5db; }
 
 .cek-chip-value {
     font-size: 0.875rem;
     font-weight: 600;
-    color: #1f2937;
+    color: #111827;
+    line-height: 1.2;
 }
 
 .cek-grade-value {
-    font-size: 1.2rem;
+    font-size: 1.05rem;
     color: #059669;
     font-family: 'JetBrains Mono', monospace;
 }
 
-/* Body */
+/* ── Scrollable body ── */
 .cek-popup-body {
     flex: 1;
     overflow-y: auto;
-    padding: 1.125rem 1.5rem;
+    padding: 1rem 1.125rem;
     min-height: 0;
+    background: #f4f6f8;
+    display: flex;
+    flex-direction: column;
+    gap: 0.625rem;
 }
 
-.cek-section { margin-bottom: 1.125rem; }
-.cek-section:last-child { margin-bottom: 0; }
+/* Section card */
+.cek-section {
+    background: #fff;
+    border-radius: 12px;
+    border: 1px solid #f0f0f0;
+    overflow: hidden;
+}
 
 .cek-section-header {
-    font-size: 0.7rem;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.5rem 0.875rem;
+    background: #fafafa;
+    border-bottom: 1px solid #f0f0f0;
+    font-size: 0.65rem;
     font-weight: 700;
     color: #6b7280;
     text-transform: uppercase;
-    letter-spacing: 0.07em;
-    margin-bottom: 0.5rem;
-    display: flex;
-    align-items: center;
-    gap: 0.35rem;
+    letter-spacing: 0.08em;
 }
 
-.cek-section-header i { color: #EE2E24; }
+.cek-section-header i { color: #EE2E24; font-size: 0.65rem; }
+
+.cek-section-body {
+    padding: 0.75rem 0.875rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.375rem;
+}
 
 .cek-desc-content {
-    background: #f9fafb;
-    border-radius: 10px;
-    padding: 0.75rem 0.875rem;
     font-size: 0.875rem;
     color: #374151;
     line-height: 1.7;
     white-space: pre-wrap;
-    max-height: 100px;
+    max-height: 110px;
     overflow-y: auto;
+    margin: 0;
 }
 
 /* File rows */
@@ -1322,46 +1292,47 @@ input[type="date"] {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0.625rem 0.875rem;
-    background: rgba(59,130,246,0.05);
-    border: 1px solid rgba(59,130,246,0.2);
-    border-radius: 9px;
-    margin-bottom: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    background: rgba(59,130,246,0.04);
+    border: 1px solid rgba(59,130,246,0.12);
+    border-radius: 8px;
 }
 
 .cek-file-submission {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0.625rem 0.875rem;
-    border-radius: 9px;
-    margin-bottom: 0.4rem;
-    border: 1px solid rgba(0,0,0,0.07);
-    background: white;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid #f0f0f0;
+    border-radius: 8px;
+    background: #fafafa;
+    transition: border-color 0.12s, background 0.12s;
 }
+
+.cek-file-submission:hover { border-color: #e5e7eb; background: #f3f4f6; }
 
 .cek-file-submission-info {
     display: flex;
     flex-direction: column;
-    gap: 0.2rem;
+    gap: 0.15rem;
 }
 
 .cek-file-tag {
     display: inline-flex;
     align-items: center;
     gap: 0.3rem;
-    font-size: 0.775rem;
+    font-size: 0.72rem;
     font-weight: 600;
-    padding: 0.2rem 0.6rem;
-    border-radius: 6px;
+    padding: 0.15rem 0.5rem;
+    border-radius: 5px;
 }
 
-.cek-file-tag-mentor  { background: rgba(59,130,246,0.1); color: #2563EB; }
-.cek-file-tag-original{ background: rgba(16,185,129,0.1); color: #059669; }
-.cek-file-tag-revision{ background: rgba(245,158,11,0.1); color: #D97706; }
+.cek-file-tag-mentor  { background: rgba(59,130,246,0.08); color: #2563EB; }
+.cek-file-tag-original{ background: rgba(16,185,129,0.08); color: #059669; }
+.cek-file-tag-revision{ background: rgba(245,158,11,0.08); color: #D97706; }
 
 .cek-file-submission-time {
-    font-size: 0.72rem;
+    font-size: 0.7rem;
     color: #9ca3af;
     display: flex;
     align-items: center;
@@ -1372,80 +1343,69 @@ input[type="date"] {
     display: inline-flex;
     align-items: center;
     gap: 0.3rem;
-    padding: 0.35rem 0.75rem;
+    padding: 0.3rem 0.7rem;
     border-radius: 7px;
-    font-size: 0.775rem;
+    font-size: 0.75rem;
     font-weight: 500;
     text-decoration: none;
-    transition: all 0.18s;
+    transition: all 0.15s;
     white-space: nowrap;
-    background: white;
+    background: #fff;
     color: #374151;
     border: 1.5px solid #e5e7eb;
 }
 
-.cek-file-download:hover { border-color: #6b7280; color: #111827; }
+.cek-file-download:hover { border-color: #9ca3af; color: #111827; }
 
-.cek-file-download-original {
-    background: rgba(16,185,129,0.07);
-    color: #059669;
-    border-color: rgba(16,185,129,0.3);
-}
-.cek-file-download-original:hover { background: rgba(16,185,129,0.14); color: #047857; border-color: #059669; }
+.cek-file-download-original { background: rgba(16,185,129,0.05); color: #059669; border-color: rgba(16,185,129,0.2); }
+.cek-file-download-original:hover { background: rgba(16,185,129,0.1); color: #047857; border-color: #059669; }
 
-.cek-file-download-revision {
-    background: rgba(245,158,11,0.07);
-    color: #D97706;
-    border-color: rgba(245,158,11,0.3);
-}
-.cek-file-download-revision:hover { background: rgba(245,158,11,0.14); color: #B45309; border-color: #D97706; }
+.cek-file-download-revision { background: rgba(245,158,11,0.05); color: #D97706; border-color: rgba(245,158,11,0.2); }
+.cek-file-download-revision:hover { background: rgba(245,158,11,0.1); color: #B45309; border-color: #D97706; }
 
 .cek-no-submission {
-    padding: 0.875rem 1rem;
+    padding: 1.25rem;
     text-align: center;
     color: #9ca3af;
-    font-size: 0.85rem;
-    background: #f9fafb;
-    border-radius: 9px;
+    font-size: 0.84rem;
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 0.5rem;
+    flex-direction: column;
 }
 
+.cek-no-submission i { font-size: 1.5rem; color: #d1d5db; }
+
 .cek-feedback-box {
-    background: #f9fafb;
-    border-left: 3px solid #EE2E24;
-    padding: 0.75rem 0.875rem;
-    border-radius: 0 9px 9px 0;
     font-size: 0.875rem;
     color: #374151;
     line-height: 1.65;
+    padding-left: 0.75rem;
+    border-left: 3px solid #EE2E24;
 }
 
-/* Footer */
+/* ── Footer ── */
 .cek-popup-footer {
-    border-top: 1px solid rgba(0,0,0,0.06);
-    padding: 0.875rem 1.5rem;
-    background: #f9fafb;
-    border-radius: 0 0 16px 16px;
+    border-top: 1px solid #f3f4f6;
+    padding: 0.875rem 1.375rem;
+    background: #fff;
+    border-radius: 0 0 20px 20px;
     flex-shrink: 0;
 }
 
 .cek-action-hint {
-    font-size: 0.775rem;
-    color: #6b7280;
+    font-size: 0.75rem;
+    color: #9ca3af;
     margin-bottom: 0.625rem;
     display: flex;
     align-items: center;
     gap: 0.35rem;
 }
 
-.cek-action-hint i { color: #3B82F6; }
-
 .cek-action-buttons {
     display: flex;
-    gap: 0.75rem;
+    gap: 0.625rem;
 }
 
 .btn-cek-revisi {
@@ -1453,12 +1413,12 @@ input[type="date"] {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 0.5rem;
-    padding: 0.7rem 1.25rem;
-    background: white;
-    color: #D97706;
-    border: 2px solid #D97706;
-    border-radius: 9px;
+    gap: 0.45rem;
+    padding: 0.625rem 1.25rem;
+    background: #FFFBEB;
+    color: #B45309;
+    border: 1.5px solid #FDE68A;
+    border-radius: 10px;
     font-size: 0.875rem;
     font-weight: 600;
     cursor: pointer;
@@ -1466,9 +1426,9 @@ input[type="date"] {
 }
 
 .btn-cek-revisi:hover {
-    background: rgba(245,158,11,0.07);
+    background: #FEF3C7;
+    border-color: #F59E0B;
     transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(245,158,11,0.2);
 }
 
 .btn-cek-nilai {
@@ -1476,34 +1436,31 @@ input[type="date"] {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 0.5rem;
-    padding: 0.7rem 1.25rem;
+    gap: 0.45rem;
+    padding: 0.625rem 1.25rem;
     background: linear-gradient(135deg, #10B981 0%, #059669 100%);
     color: white;
-    border: 2px solid transparent;
-    border-radius: 9px;
+    border: 1.5px solid transparent;
+    border-radius: 10px;
     font-size: 0.875rem;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.2s;
+    box-shadow: 0 2px 8px rgba(16,185,129,0.22);
 }
 
 .btn-cek-nilai:hover {
     transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(16,185,129,0.3);
+    box-shadow: 0 4px 14px rgba(16,185,129,0.35);
 }
 
-.cek-form-title {
-    font-size: 0.825rem;
-    font-weight: 700;
-    color: #1f2937;
-    margin-bottom: 0.625rem;
-    display: flex;
-    align-items: center;
-    gap: 0.4rem;
+.cek-form-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 0.375rem;
+    display: block;
 }
-
-.cek-form-title i { color: #EE2E24; }
 
 .cek-nilai-row {
     display: flex;
@@ -1513,7 +1470,7 @@ input[type="date"] {
 
 .cek-form-actions {
     display: flex;
-    gap: 0.625rem;
+    gap: 0.5rem;
     justify-content: flex-end;
     margin-top: 0.625rem;
 }
@@ -1522,7 +1479,7 @@ input[type="date"] {
     display: inline-flex;
     align-items: center;
     gap: 0.35rem;
-    padding: 0.5rem 1.125rem;
+    padding: 0.5rem 1rem;
     background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
     color: white;
     border: none;
@@ -1531,14 +1488,15 @@ input[type="date"] {
     font-weight: 600;
     cursor: pointer;
     transition: all 0.2s;
+    box-shadow: 0 2px 6px rgba(245,158,11,0.2);
 }
-.btn-cek-revisi-submit:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(245,158,11,0.3); }
+.btn-cek-revisi-submit:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(245,158,11,0.35); }
 
 .btn-cek-nilai-submit {
     display: inline-flex;
     align-items: center;
     gap: 0.35rem;
-    padding: 0.5rem 1.125rem;
+    padding: 0.5rem 1rem;
     background: linear-gradient(135deg, #10B981 0%, #059669 100%);
     color: white;
     border: none;
@@ -1547,20 +1505,21 @@ input[type="date"] {
     font-weight: 600;
     cursor: pointer;
     transition: all 0.2s;
+    box-shadow: 0 2px 6px rgba(16,185,129,0.2);
 }
-.btn-cek-nilai-submit:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(16,185,129,0.3); }
+.btn-cek-nilai-submit:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(16,185,129,0.35); }
 
 .cek-graded-notice {
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 0.5rem;
-    padding: 0.7rem;
-    background: rgba(16,185,129,0.08);
-    border: 1px solid rgba(16,185,129,0.2);
-    border-radius: 9px;
+    padding: 0.75rem 1rem;
+    background: rgba(16,185,129,0.05);
+    border: 1px solid rgba(16,185,129,0.15);
+    border-radius: 10px;
     color: #059669;
-    font-size: 0.85rem;
+    font-size: 0.875rem;
     font-weight: 500;
 }
 
@@ -1644,15 +1603,12 @@ input[type="date"] {
 
 @section('content')
 
-{{-- Hero Section --}}
-<div class="mentor-hero">
-    <div class="hero-content">
-        <div class="hero-text">
-            <h1><i class="fas fa-tasks"></i> Penugasan & Penilaian</h1>
-            <p>Kelola tugas dan berikan penilaian untuk peserta magang di divisi Anda</p>
-        </div>
-    </div>
-</div>
+<x-dashboard.page-context-bar
+    title="Penugasan & Penilaian"
+    description="Kelola tugas dan berikan penilaian untuk peserta magang di divisi Anda"
+    icon="fas fa-tasks"
+    role="pembimbing"
+/>
 
 @if($participants->isEmpty())
     {{-- Empty State --}}
@@ -1666,40 +1622,48 @@ input[type="date"] {
 @else
     {{-- Statistics Grid --}}
     <div class="stats-grid">
-        <div class="stat-card">
-            <div class="stat-icon purple">
-                <i class="fas fa-users"></i>
-            </div>
-            <div class="stat-info">
-                <h3>{{ $activeParticipants }}</h3>
-                <p>Peserta Aktif</p>
-            </div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-icon green">
-                <i class="fas fa-clipboard-list"></i>
-            </div>
-            <div class="stat-info">
-                <h3>{{ $totalTasks }}</h3>
-                <p>Total Tugas</p>
+        <div class="stat-card stat-card-primary">
+            <div class="stat-card-header">
+                <div class="stat-meta">
+                    <div class="stat-value">{{ $activeParticipants }}</div>
+                    <div class="stat-label">Peserta Aktif</div>
+                </div>
+                <div class="stat-icon stat-icon-primary">
+                    <i class="fas fa-users"></i>
+                </div>
             </div>
         </div>
-        <div class="stat-card">
-            <div class="stat-icon yellow">
-                <i class="fas fa-clock"></i>
-            </div>
-            <div class="stat-info">
-                <h3>{{ $pendingGrading }}</h3>
-                <p>Menunggu Dinilai</p>
+        <div class="stat-card stat-card-info">
+            <div class="stat-card-header">
+                <div class="stat-meta">
+                    <div class="stat-value">{{ $totalTasks }}</div>
+                    <div class="stat-label">Total Tugas</div>
+                </div>
+                <div class="stat-icon stat-icon-info">
+                    <i class="fas fa-clipboard-list"></i>
+                </div>
             </div>
         </div>
-        <div class="stat-card">
-            <div class="stat-icon red">
-                <i class="fas fa-check-circle"></i>
+        <div class="stat-card stat-card-warning">
+            <div class="stat-card-header">
+                <div class="stat-meta">
+                    <div class="stat-value">{{ $pendingGrading }}</div>
+                    <div class="stat-label">Menunggu Dinilai</div>
+                </div>
+                <div class="stat-icon stat-icon-warning">
+                    <i class="fas fa-clock"></i>
+                </div>
             </div>
-            <div class="stat-info">
-                <h3>{{ $completedTasks }}</h3>
-                <p>Sudah Dinilai</p>
+        </div>
+        <div class="stat-card stat-card-success">
+            <div class="stat-card-header">
+                <div class="stat-meta">
+                    <div class="stat-value">{{ $completedTasks }}</div>
+                    <div class="stat-label">Sudah Dinilai</div>
+                </div>
+                <div class="stat-icon stat-icon-success">
+                    <i class="fas fa-check-circle"></i>
+                </div>
             </div>
         </div>
     </div>
@@ -1763,6 +1727,18 @@ input[type="date"] {
                                     <span class="badge-not-started">
                                         <i class="fas fa-clock"></i> Belum Mulai
                                     </span>
+                                @endif
+                                @if($participant->user->phone)
+                                    @php
+                                        $pWaNum  = preg_replace('/^0/', '62', preg_replace('/[^0-9]/', '', $participant->user->phone));
+                                        $pWaText = urlencode('Halo ' . $participant->user->name . ', saya ingin menghubungi Anda terkait kegiatan magang.');
+                                    @endphp
+                                    <a href="https://wa.me/{{ $pWaNum }}?text={{ $pWaText }}"
+                                       target="_blank" rel="noopener"
+                                       class="wa-inline-btn" title="WhatsApp"
+                                       onclick="event.stopPropagation()">
+                                        <i class="fab fa-whatsapp"></i>
+                                    </a>
                                 @endif
                             </h3>
                             <p class="participant-nim">{{ $participant->user->nim ?? '-' }}</p>
@@ -1861,43 +1837,43 @@ input[type="date"] {
                             <p class="form-section-subtitle">Isi informasi detail tugas yang akan diberikan</p>
                         </div>
                     </div>
-                    <div class="row g-3">
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label class="form-label">Jenis Tugas <span class="required">*</span></label>
-                                <select name="assignment_type" class="form-select" id="assignmentType" required>
-                                    <option value="">Pilih Jenis Tugas</option>
-                                    <option value="tugas_harian">Tugas Harian</option>
-                                    <option value="tugas_proyek">Tugas Proyek</option>
-                                </select>
-                            </div>
+
+                    <div class="detail-grid">
+                        {{-- Row 1: Jenis Tugas | Judul Tugas --}}
+                        <div class="form-group">
+                            <label class="form-label">Jenis Tugas <span class="required">*</span></label>
+                            <select name="assignment_type" class="form-select" id="assignmentType" required>
+                                <option value="">Pilih Jenis Tugas</option>
+                                <option value="tugas_harian">Tugas Harian</option>
+                                <option value="tugas_proyek">Tugas Proyek</option>
+                            </select>
                         </div>
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label class="form-label">Judul Tugas <span class="required">*</span></label>
-                                <input type="text" name="title" class="form-control" placeholder="Masukkan judul tugas..." required>
-                            </div>
+                        <div class="form-group">
+                            <label class="form-label">Judul Tugas <span class="required">*</span></label>
+                            <input type="text" name="title" class="form-control" placeholder="Masukkan judul tugas..." required>
                         </div>
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label class="form-label">Deadline <span class="required">*</span></label>
-                                <input type="date" name="deadline" class="form-control" required>
-                            </div>
+
+                        {{-- Row 2: Deadline | File Tugas --}}
+                        <div class="form-group">
+                            <label class="form-label">Deadline <span class="required">*</span></label>
+                            <input type="date" name="deadline" class="form-control" required>
                         </div>
-                        <div class="col-md-6" id="presentationDateGroup" style="display: none;">
-                            <div class="form-group">
+                        <div class="form-group">
+                            <label class="form-label">File Tugas <span class="form-label-opt">(Opsional)</span></label>
+                            <input type="file" name="file_path" class="form-control">
+                        </div>
+
+                        {{-- Row 3: Tanggal Presentasi (full width, conditional) --}}
+                        <div class="detail-grid-full" id="presentationDateGroup" style="display: none;">
+                            <div class="form-group" style="margin-bottom:0;">
                                 <label class="form-label">Tanggal Presentasi</label>
                                 <input type="date" name="presentation_date" class="form-control" id="presentationDate">
                             </div>
                         </div>
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label class="form-label">File Tugas <span style="color: #6b7280; font-weight: 400;">(Opsional)</span></label>
-                                <input type="file" name="file_path" class="form-control">
-                            </div>
-                        </div>
-                        <div class="col-12">
-                            <div class="form-group" style="margin-bottom: 0;">
+
+                        {{-- Row 4: Deskripsi (full width) --}}
+                        <div class="detail-grid-full">
+                            <div class="form-group" style="margin-bottom:0;">
                                 <label class="form-label">Deskripsi Tugas</label>
                                 <textarea name="description" class="form-control" rows="4" placeholder="Jelaskan detail tugas, instruksi pengerjaan, atau kriteria penilaian..."></textarea>
                             </div>
@@ -1922,28 +1898,42 @@ input[type="date"] {
 
     {{-- Tab: Semua Tugas --}}
     <div id="tab-tasks" class="tab-content">
+        @php
+            $totalTugasCount = $participants->sum(fn($p) => $p->user->assignments->count());
+        @endphp
         <div class="table-card">
-            <div class="filter-bar">
-                <div class="filter-group">
-                    <label>Filter Peserta</label>
-                    <select id="filterPeserta" onchange="filterTasks()">
+
+            {{-- Header --}}
+            <div class="table-header">
+                <div class="table-title">
+                    <i class="fas fa-list-check"></i>
+                    <span>Daftar Semua Tugas</span>
+                </div>
+                <span class="badge badge-gray">{{ $totalTugasCount }} Tugas</span>
+            </div>
+
+            {{-- Filter bar --}}
+            <div class="st-filter-bar">
+                <div class="st-filter-item">
+                    <span class="st-filter-label">Peserta</span>
+                    <select id="filterPeserta" onchange="filterTasks()" class="st-filter-select">
                         <option value="">Semua Peserta</option>
                         @foreach($participants as $participant)
                             <option value="{{ $participant->user->id }}">{{ $participant->user->name ?? '-' }}</option>
                         @endforeach
                     </select>
                 </div>
-                <div class="filter-group">
-                    <label>Filter Jenis</label>
-                    <select id="filterJenis" onchange="filterTasks()">
+                <div class="st-filter-item">
+                    <span class="st-filter-label">Jenis</span>
+                    <select id="filterJenis" onchange="filterTasks()" class="st-filter-select">
                         <option value="">Semua Jenis</option>
                         <option value="tugas_harian">Tugas Harian</option>
                         <option value="tugas_proyek">Tugas Proyek</option>
                     </select>
                 </div>
-                <div class="filter-group">
-                    <label>Filter Status</label>
-                    <select id="filterStatus" onchange="filterTasks()">
+                <div class="st-filter-item">
+                    <span class="st-filter-label">Status</span>
+                    <select id="filterStatus" onchange="filterTasks()" class="st-filter-select">
                         <option value="">Semua Status</option>
                         <option value="belum_dikerjakan">Belum Dikerjakan</option>
                         <option value="sudah_submit">Sudah Submit</option>
@@ -1953,112 +1943,148 @@ input[type="date"] {
                 </div>
             </div>
 
-            <table class="data-table">
-                <thead>
-                    <tr>
-                        <th style="width: 50px;">#</th>
-                        <th>Peserta</th>
-                        <th>Judul Tugas</th>
-                        <th style="width: 120px;">Jenis</th>
-                        <th style="width: 120px;">Deadline</th>
-                        <th style="width: 140px;">Status</th>
-                        <th style="width: 80px;">Nilai</th>
-                        <th style="width: 160px;">Aksi</th>
-                    </tr>
-                </thead>
-                <tbody id="taskTableBody">
-                    @php $no = 1; @endphp
-                    @foreach($participants as $participant)
-                        @foreach($participant->user->assignments as $assignment)
+            {{-- Table --}}
+            <div class="overflow-x-auto">
+                <table class="st-table">
+                    <thead>
+                        <tr>
+                            <th style="width:44px;" class="center">No</th>
+                            <th style="min-width:160px;">Peserta</th>
+                            <th>Judul Tugas</th>
+                            <th style="width:100px;" class="center">Jenis</th>
+                            <th style="width:110px;" class="center">Deadline</th>
+                            <th style="width:130px;" class="center">Status</th>
+                            <th style="width:70px;" class="center">Nilai</th>
+                            <th style="width:130px;" class="center">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="taskTableBody">
+                        @php $no = 1; @endphp
+                        @foreach($participants as $participant)
                             @php
-                                $hasSubmissions = $assignment->submissions && $assignment->submissions->count() > 0;
-                                $latestSubmission = $hasSubmissions ? $assignment->submissions->sortByDesc('submitted_at')->first() : null;
-
-                                $status = 'belum_dikerjakan';
-                                if ((int) $assignment->is_revision === 1) {
-                                    $status = 'revisi';
-                                } elseif ($assignment->grade !== null) {
-                                    $status = 'sudah_dinilai';
-                                } elseif ($hasSubmissions || $assignment->submission_file_path) {
-                                    $status = 'sudah_submit';
-                                }
+                                $nameParts = explode(' ', $participant->user->name ?? 'U');
+                                $initials = strtoupper(substr($nameParts[0], 0, 1))
+                                          . (isset($nameParts[1]) ? strtoupper(substr($nameParts[1], 0, 1)) : '');
                             @endphp
-                            <tr class="task-row"
-                                data-peserta="{{ $participant->user->id }}"
-                                data-jenis="{{ $assignment->assignment_type }}"
-                                data-status="{{ $status }}">
-                                <td>{{ $no++ }}</td>
-                                <td>{{ $participant->user->name ?? '-' }}</td>
-                                <td>
-                                    {{ $assignment->title ?? '-' }}
-                                    @if($hasSubmissions)
-                                        <div class="submission-info">
-                                            <i class="fas fa-upload"></i>
-                                            {{ $latestSubmission->submitted_at ? \Carbon\Carbon::parse($latestSubmission->submitted_at)->format('d/m/Y H:i') : '' }}
+                            @foreach($participant->user->assignments as $assignment)
+                                @php
+                                    $hasSubmissions   = $assignment->submissions && $assignment->submissions->count() > 0;
+                                    $latestSubmission = $hasSubmissions ? $assignment->submissions->sortByDesc('submitted_at')->first() : null;
+
+                                    $status = 'belum_dikerjakan';
+                                    if ((int) $assignment->is_revision === 1) {
+                                        $status = 'revisi';
+                                    } elseif ($assignment->grade !== null) {
+                                        $status = 'sudah_dinilai';
+                                    } elseif ($hasSubmissions || $assignment->submission_file_path) {
+                                        $status = 'sudah_submit';
+                                    }
+
+                                    $grade = $assignment->grade;
+                                    $nilaiClass = 'none';
+                                    if ($grade !== null) {
+                                        $nilaiClass = $grade >= 80 ? 'high' : ($grade >= 60 ? 'mid' : 'low');
+                                    }
+                                @endphp
+                                <tr class="task-row"
+                                    data-peserta="{{ $participant->user->id }}"
+                                    data-jenis="{{ $assignment->assignment_type }}"
+                                    data-status="{{ $status }}">
+
+                                    {{-- No --}}
+                                    <td class="center" style="color:#9CA3AF;font-size:.8rem;">{{ $no++ }}</td>
+
+                                    {{-- Peserta --}}
+                                    <td>
+                                        <div class="st-p-cell">
+                                            <div class="st-avatar">{{ $initials }}</div>
+                                            <div>
+                                                <div class="st-p-name">{{ $participant->user->name ?? '-' }}</div>
+                                                <div class="st-p-nim">{{ $participant->user->nim ?? '—' }}</div>
+                                            </div>
                                         </div>
-                                    @endif
-                                </td>
-                                <td>
-                                    @if($assignment->assignment_type === 'tugas_harian')
-                                        <span class="badge badge-primary"><i class="fas fa-calendar-day"></i> Harian</span>
-                                    @else
-                                        <span class="badge badge-warning"><i class="fas fa-project-diagram"></i> Proyek</span>
-                                    @endif
-                                </td>
-                                <td>
-                                    {{ $assignment->deadline ? \Carbon\Carbon::parse($assignment->deadline)->format('d/m/Y') : '-' }}
-                                    @if($assignment->deadline)
-                                        @php
-                                            $deadline = \Carbon\Carbon::parse($assignment->deadline);
-                                            $isOverdue = $deadline->lt(now()) && $status === 'belum_dikerjakan';
-                                        @endphp
-                                        @if($isOverdue)
-                                            <div class="deadline-overdue">
-                                                <i class="fas fa-exclamation-triangle"></i> Terlambat
+                                    </td>
+
+                                    {{-- Judul --}}
+                                    <td>
+                                        <div class="st-title">{{ $assignment->title ?? '-' }}</div>
+                                        @if($hasSubmissions)
+                                            <div class="st-sub-info">
+                                                <i class="fas fa-upload"></i>
+                                                {{ $latestSubmission->submitted_at ? \Carbon\Carbon::parse($latestSubmission->submitted_at)->format('d/m/Y H:i') : '' }}
                                             </div>
                                         @endif
-                                    @endif
-                                </td>
-                                <td>
-                                    @if($status === 'revisi')
-                                        <span class="badge badge-danger"><i class="fas fa-redo"></i> Revisi</span>
-                                    @elseif($status === 'sudah_dinilai')
-                                        <span class="badge badge-success"><i class="fas fa-check"></i> Dinilai</span>
-                                    @elseif($status === 'sudah_submit')
-                                        <span class="badge badge-warning"><i class="fas fa-clock"></i> Menunggu Nilai</span>
-                                    @else
-                                        <span class="badge badge-info"><i class="fas fa-hourglass-half"></i> Belum Dikerjakan</span>
-                                    @endif
-                                </td>
-                                <td>
-                                    @if($assignment->grade !== null)
-                                        <span class="grade-display">{{ $assignment->grade }}</span>
-                                    @else
-                                        <span style="color: #9ca3af;">-</span>
-                                    @endif
-                                </td>
-                                <td>
-                                    <div class="action-cell">
-                                        <button class="btn-cek-tugas" onclick="viewTaskDetail({{ $assignment->id }})">
-                                            <i class="fas fa-folder-open"></i> Cek Tugas
-                                        </button>
-                                        <div class="action-sub-row">
-                                            <button class="btn-action btn-outline btn-sm" title="Edit Tugas"
-                                                onclick="editTask({{ $assignment->id }})">
-                                                <i class="fas fa-edit"></i>
+                                    </td>
+
+                                    {{-- Jenis --}}
+                                    <td class="center">
+                                        @if($assignment->assignment_type === 'tugas_harian')
+                                            <span class="badge badge-info"><i class="fas fa-calendar-day"></i> Harian</span>
+                                        @else
+                                            <span class="badge badge-warning"><i class="fas fa-diagram-project"></i> Proyek</span>
+                                        @endif
+                                    </td>
+
+                                    {{-- Deadline --}}
+                                    <td class="center">
+                                        <div class="st-deadline">
+                                            {{ $assignment->deadline ? \Carbon\Carbon::parse($assignment->deadline)->format('d/m/Y') : '—' }}
+                                        </div>
+                                        @if($assignment->deadline)
+                                            @php
+                                                $dl = \Carbon\Carbon::parse($assignment->deadline);
+                                                $isOverdue = $dl->lt(now()) && $status === 'belum_dikerjakan';
+                                            @endphp
+                                            @if($isOverdue)
+                                                <div class="st-overdue">
+                                                    <i class="fas fa-circle-exclamation"></i> Terlambat
+                                                </div>
+                                            @endif
+                                        @endif
+                                    </td>
+
+                                    {{-- Status --}}
+                                    <td class="center">
+                                        @if($status === 'revisi')
+                                            <span class="status-badge status-revision_required"><i class="fas fa-rotate-left"></i> Revisi</span>
+                                        @elseif($status === 'sudah_dinilai')
+                                            <span class="status-badge status-graded"><i class="fas fa-check"></i> Dinilai</span>
+                                        @elseif($status === 'sudah_submit')
+                                            <span class="status-badge status-submitted"><i class="fas fa-clock"></i> Menunggu</span>
+                                        @else
+                                            <span class="status-badge status-none"><i class="fas fa-minus"></i> Belum</span>
+                                        @endif
+                                    </td>
+
+                                    {{-- Nilai --}}
+                                    <td class="center">
+                                        @if($grade !== null)
+                                            <span class="st-nilai {{ $nilaiClass }}">{{ $grade }}</span>
+                                        @else
+                                            <span class="st-nilai none">—</span>
+                                        @endif
+                                    </td>
+
+                                    {{-- Aksi --}}
+                                    <td class="center">
+                                        <div class="st-actions" style="justify-content:center;">
+                                            <button class="st-btn-cek" onclick="viewTaskDetail({{ $assignment->id }})">
+                                                <i class="fas fa-folder-open"></i> Cek
                                             </button>
-                                            <button class="btn-action btn-outline btn-sm btn-delete" title="Hapus Tugas"
-                                                onclick="confirmDeleteTask({{ $assignment->id }})">
-                                                <i class="fas fa-trash-alt"></i>
+                                            <button class="st-btn-icon" title="Edit" onclick="editTask({{ $assignment->id }})">
+                                                <i class="fas fa-pen"></i>
+                                            </button>
+                                            <button class="st-btn-icon del" title="Hapus" onclick="confirmDeleteTask({{ $assignment->id }})">
+                                                <i class="fas fa-trash"></i>
                                             </button>
                                         </div>
-                                    </div>
-                                </td>
-                            </tr>
+                                    </td>
+                                </tr>
+                            @endforeach
                         @endforeach
-                    @endforeach
-                </tbody>
-            </table>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 
@@ -2085,20 +2111,23 @@ input[type="date"] {
 <div class="popup-overlay" id="taskDetailPopup">
     <div class="cek-popup-wrap">
 
-        {{-- Header --}}
+        {{-- Header: row 1 = icon + title + close; row 2 = peserta + badge --}}
         <div class="cek-popup-header">
-            <div class="cek-popup-header-inner">
+            <div class="cek-popup-top-row">
                 <div class="cek-popup-icon"><i class="fas fa-folder-open"></i></div>
-                <div style="flex:1; min-width:0;">
-                    <h5 class="cek-popup-title" id="cekTaskTitle">Cek Tugas</h5>
-                    <p class="cek-popup-peserta"><i class="fas fa-user-graduate"></i> <span id="cekTaskPeserta"></span></p>
-                </div>
+                <h5 class="cek-popup-title" id="cekTaskTitle">Cek Tugas</h5>
+                <button class="cek-close-btn" onclick="closePopup('taskDetailPopup')">&times;</button>
+            </div>
+            <div class="cek-popup-meta-row">
+                <span class="cek-popup-peserta">
+                    <i class="fas fa-user-graduate" style="color:#EE2E24; font-size:.65rem;"></i>
+                    <span id="cekTaskPeserta"></span>
+                </span>
                 <span id="cekStatusBadge"></span>
             </div>
-            <button class="cek-close-btn" onclick="closePopup('taskDetailPopup')">&times;</button>
         </div>
 
-        {{-- Info chips --}}
+        {{-- Info chips strip --}}
         <div class="cek-info-chips">
             <div class="cek-chip">
                 <span class="cek-chip-label"><i class="fas fa-tag"></i> Jenis</span>
@@ -2118,53 +2147,67 @@ input[type="date"] {
             </div>
         </div>
 
-        {{-- Scrollable body --}}
+        {{-- Scrollable body — card sections --}}
         <div class="cek-popup-body">
 
-            {{-- Description --}}
+            {{-- Deskripsi card --}}
             <div class="cek-section">
-                <div class="cek-section-header"><i class="fas fa-align-left"></i> Deskripsi Tugas</div>
-                <div class="cek-desc-content" id="cekDescription">-</div>
+                <div class="cek-section-header">
+                    <i class="fas fa-align-left"></i> Deskripsi Tugas
+                </div>
+                <div class="cek-section-body">
+                    <p class="cek-desc-content" id="cekDescription">-</p>
+                </div>
             </div>
 
-            {{-- Files --}}
+            {{-- File & Pengumpulan card --}}
             <div class="cek-section" id="cekFilesSection">
-                <div class="cek-section-header"><i class="fas fa-paperclip"></i> File & Pengumpulan</div>
-
-                {{-- Mentor file --}}
-                <div class="cek-file-mentor" id="cekMentorFile" style="display:none;">
-                    <div class="cek-file-tag cek-file-tag-mentor"><i class="fas fa-file-alt"></i> File Tugas (dari mentor)</div>
-                    <a id="cekMentorFileLink" href="#" target="_blank" class="cek-file-download">
-                        <i class="fas fa-download"></i> Download
-                    </a>
+                <div class="cek-section-header">
+                    <i class="fas fa-paperclip"></i> File &amp; Pengumpulan
                 </div>
-
-                {{-- Student submissions --}}
-                <div id="cekSubmissionsList"></div>
-
-                {{-- No submission notice --}}
-                <div class="cek-no-submission" id="cekNoSubmission" style="display:none;">
-                    <i class="fas fa-inbox"></i> Belum ada pengumpulan dari peserta
+                <div class="cek-section-body">
+                    {{-- Mentor file --}}
+                    <div class="cek-file-mentor" id="cekMentorFile" style="display:none;">
+                        <div class="cek-file-tag cek-file-tag-mentor">
+                            <i class="fas fa-file-alt"></i> File dari Mentor
+                        </div>
+                        <a id="cekMentorFileLink" href="#" target="_blank" class="cek-file-download">
+                            <i class="fas fa-download"></i> Download
+                        </a>
+                    </div>
+                    {{-- Student submissions (JS-populated) --}}
+                    <div id="cekSubmissionsList"></div>
+                    {{-- Empty state --}}
+                    <div class="cek-no-submission" id="cekNoSubmission" style="display:none;">
+                        <i class="fas fa-inbox"></i>
+                        <span>Belum ada pengumpulan dari peserta</span>
+                    </div>
                 </div>
             </div>
 
-            {{-- Existing feedback --}}
+            {{-- Feedback card --}}
             <div class="cek-section" id="cekExistingFeedbackSection" style="display:none;">
-                <div class="cek-section-header"><i class="fas fa-comment-alt"></i> Feedback Sebelumnya</div>
-                <div class="cek-feedback-box" id="cekExistingFeedback"></div>
+                <div class="cek-section-header">
+                    <i class="fas fa-comment-alt"></i> Feedback Sebelumnya
+                </div>
+                <div class="cek-section-body">
+                    <p class="cek-feedback-box" id="cekExistingFeedback"></p>
+                </div>
             </div>
 
         </div>
 
-        {{-- Action Footer --}}
+        {{-- Footer --}}
         <div class="cek-popup-footer">
 
-            {{-- Default: 2 action buttons --}}
+            {{-- Default: choose action --}}
             <div id="cekDefaultActions" style="display:none;">
-                <div class="cek-action-hint"><i class="fas fa-info-circle"></i> Tinjau pengumpulan lalu pilih tindakan:</div>
+                <div class="cek-action-hint">
+                    <i class="fas fa-circle-info"></i> Tinjau pengumpulan lalu pilih tindakan
+                </div>
                 <div class="cek-action-buttons">
                     <button class="btn-cek-revisi" onclick="showCekRevisiForm()">
-                        <i class="fas fa-redo"></i> Revisi
+                        <i class="fas fa-rotate-left"></i> Kirim Revisi
                     </button>
                     <button class="btn-cek-nilai" onclick="showCekNilaiForm()">
                         <i class="fas fa-check-circle"></i> Beri Penilaian
@@ -2174,17 +2217,20 @@ input[type="date"] {
 
             {{-- Revision form --}}
             <div id="cekRevisiFormContainer" style="display:none;">
-                <div class="cek-form-title"><i class="fas fa-redo"></i> Kirim ke Revisi</div>
                 <form method="POST" id="cekRevisiForm" action="#">
                     @csrf
                     <input type="hidden" name="is_revision" value="1">
-                    <div style="margin-bottom:0.5rem;">
-                        <textarea name="feedback" class="form-control" rows="2"
-                            placeholder="Catatan revisi untuk peserta (opsional)..."
-                            id="cekRevisiTextarea" style="min-height:68px;"></textarea>
-                    </div>
+                    <label class="cek-form-label">
+                        <i class="fas fa-rotate-left" style="color:#D97706;"></i> Catatan Revisi
+                        <span style="color:#9ca3af; font-weight:400;"> — opsional</span>
+                    </label>
+                    <textarea name="feedback" class="form-control" rows="2"
+                        placeholder="Tuliskan catatan revisi untuk peserta..."
+                        id="cekRevisiTextarea" style="min-height:64px; font-size:.875rem; resize:vertical;"></textarea>
                     <div class="cek-form-actions">
-                        <button type="button" class="btn-action btn-outline btn-sm" onclick="cancelCekForm()">Batal</button>
+                        <button type="button" class="btn-action btn-outline btn-sm" onclick="cancelCekForm()">
+                            Batal
+                        </button>
                         <button type="submit" class="btn-cek-revisi-submit">
                             <i class="fas fa-paper-plane"></i> Kirim Revisi
                         </button>
@@ -2194,25 +2240,29 @@ input[type="date"] {
 
             {{-- Grading form --}}
             <div id="cekNilaiFormContainer" style="display:none;">
-                <div class="cek-form-title"><i class="fas fa-star"></i> Beri Penilaian</div>
                 <form method="POST" id="cekNilaiForm" action="#">
                     @csrf
                     <div class="cek-nilai-row">
-                        <div style="width:110px; flex-shrink:0;">
-                            <label class="form-label" style="font-size:0.7rem; margin-bottom:0.3rem;">Nilai (0–100) <span class="required">*</span></label>
+                        <div style="width:115px; flex-shrink:0;">
+                            <label class="cek-form-label">Nilai (0–100) <span class="required">*</span></label>
                             <input type="number" name="grade" class="form-control" min="0" max="100" required
-                                placeholder="e.g. 85" id="cekNilaiInput"
-                                style="text-align:center; font-weight:700; font-family:'JetBrains Mono',monospace;">
+                                placeholder="85" id="cekNilaiInput"
+                                style="text-align:center; font-weight:700; font-family:'JetBrains Mono',monospace; font-size:.9rem;">
                         </div>
                         <div style="flex:1;">
-                            <label class="form-label" style="font-size:0.7rem; margin-bottom:0.3rem;">Feedback</label>
+                            <label class="cek-form-label">
+                                Feedback
+                                <span style="color:#9ca3af; font-weight:400;">(opsional)</span>
+                            </label>
                             <input type="text" name="feedback" class="form-control"
                                 placeholder="Catatan atau komentar untuk peserta..."
-                                id="cekNilaiFeedback">
+                                id="cekNilaiFeedback" style="font-size:.875rem;">
                         </div>
                     </div>
                     <div class="cek-form-actions">
-                        <button type="button" class="btn-action btn-outline btn-sm" onclick="cancelCekForm()">Batal</button>
+                        <button type="button" class="btn-action btn-outline btn-sm" onclick="cancelCekForm()">
+                            Batal
+                        </button>
                         <button type="submit" class="btn-cek-nilai-submit">
                             <i class="fas fa-save"></i> Simpan Nilai
                         </button>
@@ -2220,16 +2270,16 @@ input[type="date"] {
                 </form>
             </div>
 
-            {{-- Already graded notice --}}
+            {{-- Already graded --}}
             <div id="cekGradedNotice" style="display:none;">
                 <div class="cek-graded-notice">
                     <i class="fas fa-check-circle"></i> Tugas ini sudah dinilai
                 </div>
             </div>
 
-            {{-- No submission notice (can't act) --}}
+            {{-- Waiting for submission --}}
             <div id="cekWaitingNotice" style="display:none;">
-                <div class="cek-graded-notice" style="background:rgba(107,114,128,0.07); border-color:rgba(107,114,128,0.2); color:#6b7280;">
+                <div class="cek-graded-notice" style="background:rgba(107,114,128,0.05); border-color:rgba(107,114,128,0.15); color:#6b7280;">
                     <i class="fas fa-clock"></i> Menunggu pengumpulan dari peserta
                 </div>
             </div>

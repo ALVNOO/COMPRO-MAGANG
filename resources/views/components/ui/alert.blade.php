@@ -1,45 +1,56 @@
 @props([
-    'type' => 'info',
-    'title' => null,
+    'type'        => 'info',
+    'variant'     => null,       {{-- null | 'compact' | 'filled' | 'banner' --}}
+    'title'       => null,
     'dismissible' => false,
-    'icon' => null
+    'icon'        => null,
 ])
 
 @php
     $types = [
         'success' => 'alert-success',
         'warning' => 'alert-warning',
-        'danger' => 'alert-danger',
-        'error' => 'alert-danger',
-        'info' => 'alert-info',
+        'danger'  => 'alert-danger',
+        'error'   => 'alert-danger',
+        'info'    => 'alert-info',
     ];
 
     $icons = [
-        'success' => 'fas fa-check-circle',
-        'warning' => 'fas fa-exclamation-triangle',
-        'danger' => 'fas fa-times-circle',
-        'error' => 'fas fa-times-circle',
-        'info' => 'fas fa-info-circle',
+        'success' => 'fas fa-check',
+        'warning' => 'fas fa-exclamation',
+        'danger'  => 'fas fa-times',
+        'error'   => 'fas fa-times',
+        'info'    => 'fas fa-info',
     ];
 
-    $alertClass = 'alert ' . ($types[$type] ?? $types['info']);
-    $iconClass = $icon ?? ($icons[$type] ?? $icons['info']);
+    $typeKey   = array_key_exists($type, $types) ? $type : 'info';
+    $typeClass = $types[$typeKey];
+    $iconClass = $icon ?? $icons[$typeKey];
+
+    $variantClass = match($variant) {
+        'compact' => 'alert-compact',
+        'filled'  => 'alert-filled alert-filled-' . ($typeKey === 'error' ? 'danger' : $typeKey),
+        'banner'  => 'alert-banner',
+        default   => '',
+    };
+
+    $alertClass = trim('alert ' . $typeClass . ($variantClass ? ' ' . $variantClass : ''));
 @endphp
 
 <div {{ $attributes->merge(['class' => $alertClass]) }} role="alert">
-    <div class="alert-icon">
+    <div class="alert-icon-box">
         <i class="{{ $iconClass }}"></i>
     </div>
     <div class="alert-content">
         @if($title)
             <div class="alert-title">{{ $title }}</div>
         @endif
-        <div class="alert-message">
-            {{ $slot }}
-        </div>
+        @if($slot->isNotEmpty())
+            <div class="alert-message">{{ $slot }}</div>
+        @endif
     </div>
     @if($dismissible)
-        <button type="button" class="btn-ghost btn-icon" onclick="this.parentElement.remove()">
+        <button type="button" class="alert-dismiss" onclick="this.closest('[role=alert]').remove()" aria-label="Tutup">
             <i class="fas fa-times"></i>
         </button>
     @endif

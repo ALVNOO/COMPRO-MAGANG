@@ -24,74 +24,6 @@
    FIELDS PAGE STYLES
    ============================================ */
 
-/* Hero Section */
-.admin-hero {
-    background: linear-gradient(135deg, #EE2E24 0%, #C41E1A 50%, #9B1B1B 100%);
-    border-radius: 24px;
-    padding: 2rem 2.5rem;
-    margin-bottom: 2rem;
-    position: relative;
-    overflow: hidden;
-    color: white;
-}
-
-.admin-hero::before {
-    content: '';
-    position: absolute;
-    top: -50%;
-    right: -20%;
-    width: 60%;
-    height: 200%;
-    background: radial-gradient(ellipse, rgba(255,255,255,0.15) 0%, transparent 70%);
-    pointer-events: none;
-}
-
-.hero-content {
-    position: relative;
-    z-index: 1;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 2rem;
-}
-
-.hero-text h1 {
-    font-size: 1.75rem;
-    font-weight: 700;
-    margin-bottom: 0.5rem;
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-}
-
-.hero-text p {
-    font-size: 1rem;
-    opacity: 0.9;
-    max-width: 500px;
-    margin: 0;
-}
-
-.hero-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.75rem 1.5rem;
-    background: rgba(255,255,255,0.2);
-    backdrop-filter: blur(10px);
-    border-radius: 12px;
-    border: 1px solid rgba(255,255,255,0.3);
-    color: white;
-    font-weight: 500;
-    text-decoration: none;
-    transition: all 0.3s ease;
-}
-
-.hero-btn:hover {
-    background: rgba(255,255,255,0.3);
-    transform: translateY(-2px);
-    color: white;
-}
-
 /* Stats Grid */
 .stats-grid {
     display: grid;
@@ -100,53 +32,6 @@
     margin-bottom: 2rem;
 }
 
-.stat-card {
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(20px);
-    border-radius: 16px;
-    padding: 1.25rem;
-    border: 1px solid rgba(0, 0, 0, 0.06);
-    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    transition: all 0.3s ease;
-}
-
-.stat-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-}
-
-.stat-icon {
-    width: 48px;
-    height: 48px;
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.25rem;
-    flex-shrink: 0;
-}
-
-.stat-icon.total { background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); color: white; }
-.stat-icon.active { background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%); color: white; }
-.stat-icon.divisions { background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: white; }
-.stat-icon.positions { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white; }
-
-.stat-content h3 {
-    font-size: 1.5rem;
-    font-weight: 700;
-    margin: 0;
-    color: #1f2937;
-    line-height: 1.2;
-}
-
-.stat-content p {
-    font-size: 0.8rem;
-    color: #6b7280;
-    margin: 0;
-}
 
 /* Filter Bar */
 .filter-bar {
@@ -437,57 +322,6 @@
     color: white;
 }
 
-/* Toast Notification */
-.toast-container {
-    position: fixed;
-    top: 1.5rem;
-    right: 1.5rem;
-    z-index: 1100;
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-}
-
-.toast {
-    padding: 1rem 1.5rem;
-    border-radius: 12px;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    animation: slideIn 0.3s ease;
-    max-width: 400px;
-}
-
-.toast.success {
-    background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
-    color: white;
-}
-
-.toast-close {
-    margin-left: auto;
-    background: rgba(255, 255, 255, 0.2);
-    border: none;
-    border-radius: 6px;
-    width: 24px;
-    height: 24px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    color: white;
-}
-
-@keyframes slideIn {
-    from {
-        opacity: 0;
-        transform: translateX(100%);
-    }
-    to {
-        opacity: 1;
-        transform: translateX(0);
-    }
-}
 
 /* Responsive */
 @media (max-width: 1024px) {
@@ -524,37 +358,39 @@
 
 @section('content')
 <div class="fields-page" x-data="fieldsManager()">
-    {{-- Hero Section --}}
-    <div class="admin-hero">
-        <div class="hero-content">
-            <div class="hero-text">
-                <h1><i class="fas fa-tags"></i> Bidang Peminatan</h1>
-                <p>Kelola bidang peminatan untuk program magang</p>
-            </div>
-            <a href="{{ route('admin.fields.create') }}" class="hero-btn">
-                <i class="fas fa-plus"></i> Tambah Bidang
-            </a>
-        </div>
-    </div>
+    <x-dashboard.page-context-bar
+        title="Bidang Peminatan"
+        description="Kelola bidang peminatan untuk program magang"
+        icon="fas fa-tags"
+        role="admin"
+    >
+        <a href="{{ route('admin.fields.create') }}" class="ctx-cta">
+            <i class="fas fa-plus"></i> Tambah Bidang
+        </a>
+    </x-dashboard.page-context-bar>
 
     {{-- Stats Grid --}}
     <div class="stats-grid">
-        <div class="stat-card">
-            <div class="stat-icon total">
-                <i class="fas fa-tags"></i>
-            </div>
-            <div class="stat-content">
-                <h3>{{ $totalFields }}</h3>
-                <p>Total Bidang</p>
+        <div class="stat-card stat-card-primary">
+            <div class="stat-card-header">
+                <div class="stat-meta">
+                    <div class="stat-value">{{ $totalFields }}</div>
+                    <div class="stat-label">Total Bidang</div>
+                </div>
+                <div class="stat-icon stat-icon-primary">
+                    <i class="fas fa-tags"></i>
+                </div>
             </div>
         </div>
-        <div class="stat-card">
-            <div class="stat-icon active">
-                <i class="fas fa-check-circle"></i>
-            </div>
-            <div class="stat-content">
-                <h3>{{ $activeFields }}</h3>
-                <p>Bidang Aktif</p>
+        <div class="stat-card stat-card-success">
+            <div class="stat-card-header">
+                <div class="stat-meta">
+                    <div class="stat-value">{{ $activeFields }}</div>
+                    <div class="stat-label">Bidang Aktif</div>
+                </div>
+                <div class="stat-icon stat-icon-success">
+                    <i class="fas fa-check-circle"></i>
+                </div>
             </div>
         </div>
     </div>
@@ -640,12 +476,10 @@
     {{-- Toast Notifications --}}
     <div class="toast-container">
         @if(session('success'))
-        <div class="toast success" x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 5000)">
-            <i class="fas fa-check-circle"></i>
-            <span>{{ session('success') }}</span>
-            <button class="toast-close" @click="show = false">
-                <i class="fas fa-times"></i>
-            </button>
+        <div class="toast toast-success" x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 5000)">
+            <div class="toast-icon-box"><i class="fas fa-check"></i></div>
+            <div class="toast-body"><div class="toast-title">{{ session('success') }}</div></div>
+            <button class="toast-close" @click="show = false"><i class="fas fa-times"></i></button>
         </div>
         @endif
     </div>

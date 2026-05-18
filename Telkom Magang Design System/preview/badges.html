@@ -1,0 +1,108 @@
+<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="_card.css">
+<style>
+  body { background: #fff; }
+  .card-frame { padding: 22px 28px; gap: 18px; }
+  .row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .label { font-size: 11px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: #9CA3AF; min-width: 110px; }
+
+  /* All tinted badges use dark text for WCAG AAA contrast (accessibility / color-blind safe).
+     Semantic meaning comes from background tint + the colored dot/icon — not from text hue. */
+  .b { display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px; font-size: 12px; font-weight: 600; border-radius: 9999px; line-height: 1.3; font-family: var(--font-sans); color: #1F2937; }
+  .b-primary { background: rgba(238,46,36,.12); }
+  .b-success { background: #D1FAE5; }
+  .b-warning { background: #FEF3C7; }
+  .b-danger  { background: #FEE2E2; }
+  .b-info    { background: #CFFAFE; }
+  .b-gray    { background: #E5E7EB; }
+
+  /* Sizes */
+  .b-sm { padding: 2px 8px;  font-size: 11px; }
+  .b-md { padding: 4px 12px; font-size: 12px; }
+  .b-lg { padding: 6px 14px; font-size: 13px; }
+
+  /* Solid variant — white text on saturated bg (high contrast) */
+  .b.solid { color: #fff; }
+  .b.solid.b-primary { background: #EE2E24; }
+  .b.solid.b-success { background: #059669; }
+  .b.solid.b-warning { background: #D97706; }
+  .b.solid.b-danger  { background: #DC2626; }
+  .b.solid.b-info    { background: #0891B2; }
+  .b.solid.b-gray    { background: #4B5563; }
+
+  /* Dot/icon — the COLORED indicator that carries semantic meaning */
+  .b .pin { width: 7px; height: 7px; border-radius: 50%; }
+  .b-primary .pin, .b-primary i.sem { color: #C41E1A; background: #C41E1A; }
+  .b-success .pin, .b-success i.sem { color: #047857; background: #047857; }
+  .b-warning .pin, .b-warning i.sem { color: #B45309; background: #B45309; }
+  .b-danger  .pin, .b-danger  i.sem { color: #B91C1C; background: #B91C1C; }
+  .b-info    .pin, .b-info    i.sem { color: #0E7490; background: #0E7490; }
+  .b-gray    .pin, .b-gray    i.sem { color: #4B5563; background: #4B5563; }
+  /* Reset background on icons (only color should apply) */
+  .b i.sem { background: transparent; }
+
+  /* Counter — solid filled */
+  .count { display: inline-flex; align-items: center; justify-content: center; min-width: 20px; height: 20px; padding: 0 6px; background: #EE2E24; color: #fff; font-size: 11px; font-weight: 700; border-radius: 9999px; font-family: var(--font-sans); }
+  .count.gray { background: #E5E7EB; color: #1F2937; }
+  .count.success { background: #059669; }
+  .ctx { display: inline-flex; align-items: center; gap: 8px; color: #231F20; font-size: 14px; font-weight: 500; }
+
+  .note { font-size: 11px; color: #6B7280; font-style: italic; margin-top: -8px; }
+</style></head>
+<body><div class="card-frame">
+
+  <div class="row">
+    <span class="label">Tinted</span>
+    <span class="b b-primary">Primary</span>
+    <span class="b b-success">Success</span>
+    <span class="b b-warning">Warning</span>
+    <span class="b b-danger">Danger</span>
+    <span class="b b-info">Info</span>
+    <span class="b b-gray">Default</span>
+  </div>
+  <div class="note" style="margin-left:118px">Text #1F2937 on every tint · WCAG AAA contrast · color-blind safe</div>
+
+  <div class="row">
+    <span class="label">Solid</span>
+    <span class="b solid b-primary">Primary</span>
+    <span class="b solid b-success">Success</span>
+    <span class="b solid b-warning">Warning</span>
+    <span class="b solid b-danger">Danger</span>
+    <span class="b solid b-info">Info</span>
+    <span class="b solid b-gray">Default</span>
+  </div>
+
+  <div class="row">
+    <span class="label">Dot prefix</span>
+    <span class="b b-primary"><span class="pin"></span>Aktif</span>
+    <span class="b b-success"><span class="pin"></span>Disetujui</span>
+    <span class="b b-warning"><span class="pin"></span>Ditinjau</span>
+    <span class="b b-danger"><span class="pin"></span>Ditolak</span>
+    <span class="b b-info"><span class="pin"></span>Pengumuman</span>
+    <span class="b b-gray"><span class="pin"></span>Arsip</span>
+  </div>
+  <div class="note" style="margin-left:118px">Dot carries the semantic color so meaning isn't hue-dependent</div>
+
+  <div class="row">
+    <span class="label">With icon</span>
+    <span class="b b-success"><i class="fas fa-check sem"></i>Lulus seleksi</span>
+    <span class="b b-warning"><i class="fas fa-clock sem"></i>Menunggu konfirmasi</span>
+    <span class="b b-info"><i class="fas fa-star sem"></i>Prioritas</span>
+    <span class="b b-primary"><i class="fas fa-bolt sem"></i>Baru</span>
+  </div>
+
+  <div class="row">
+    <span class="label">Sizes</span>
+    <span class="b b-primary b-sm">Small</span>
+    <span class="b b-primary b-md">Medium</span>
+    <span class="b b-primary b-lg">Large</span>
+    <span class="mono" style="margin-left:6px">11 · 12 · 13 px</span>
+  </div>
+
+  <div class="row">
+    <span class="label">Counter</span>
+    <span class="ctx">Notifikasi <span class="count">12</span></span>
+    <span class="ctx" style="margin-left:18px">Menunggu <span class="count gray">3</span></span>
+    <span class="ctx" style="margin-left:18px">Disetujui <span class="count success">38</span></span>
+  </div>
+
+</div></body></html>

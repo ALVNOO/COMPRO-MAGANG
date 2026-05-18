@@ -30,54 +30,6 @@
    SERTIFIKAT PAGE STYLES
    ============================================ */
 
-/* Hero Section */
-.mentor-hero {
-    background: linear-gradient(135deg, #EE2E24 0%, #C41E1A 50%, #9B1B1B 100%);
-    border-radius: 24px;
-    padding: 2rem 2.5rem;
-    margin-bottom: 2rem;
-    position: relative;
-    overflow: hidden;
-    color: white;
-}
-
-.mentor-hero::before {
-    content: '';
-    position: absolute;
-    top: -50%;
-    right: -20%;
-    width: 60%;
-    height: 200%;
-    background: radial-gradient(ellipse, rgba(255,255,255,0.15) 0%, transparent 70%);
-    pointer-events: none;
-}
-
-.hero-content {
-    position: relative;
-    z-index: 1;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 1.5rem;
-}
-
-.hero-text h1 {
-    font-size: 1.75rem;
-    font-weight: 700;
-    margin-bottom: 0.5rem;
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-}
-
-.hero-text p {
-    font-size: 1rem;
-    opacity: 0.9;
-    max-width: 500px;
-    margin: 0;
-}
-
 /* Stats Grid */
 .stats-grid {
     display: grid;
@@ -86,133 +38,6 @@
     margin-bottom: 2rem;
 }
 
-.stat-card {
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(20px);
-    border-radius: 16px;
-    padding: 1.5rem;
-    border: 1px solid rgba(0, 0, 0, 0.06);
-    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    transition: all 0.3s ease;
-}
-
-.stat-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-}
-
-.stat-icon {
-    width: 52px;
-    height: 52px;
-    border-radius: 14px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.25rem;
-}
-
-.stat-icon.purple {
-    background: linear-gradient(135deg, #8B5CF6 0%, #7C3AED 100%);
-    color: white;
-}
-
-.stat-icon.green {
-    background: linear-gradient(135deg, #10B981 0%, #059669 100%);
-    color: white;
-}
-
-.stat-icon.yellow {
-    background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
-    color: white;
-}
-
-.stat-info h3 {
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: #1f2937;
-    margin: 0;
-}
-
-.stat-info p {
-    font-size: 0.875rem;
-    color: #6b7280;
-    margin: 0;
-}
-
-/* Table Card */
-.table-card {
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(20px);
-    border-radius: 20px;
-    border: 1px solid rgba(0, 0, 0, 0.06);
-    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
-    overflow: hidden;
-}
-
-.table-header {
-    padding: 1.25rem 1.5rem;
-    background: linear-gradient(135deg, rgba(238, 46, 36, 0.03) 0%, rgba(255, 255, 255, 0) 100%);
-    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-}
-
-.table-header i {
-    color: #EE2E24;
-    font-size: 1.1rem;
-}
-
-.table-header h3 {
-    font-size: 1.1rem;
-    font-weight: 600;
-    color: #1f2937;
-    margin: 0;
-}
-
-/* Data Table */
-.data-table {
-    width: 100%;
-    border-collapse: collapse;
-}
-
-.data-table thead {
-    background: #f9fafb;
-}
-
-.data-table th {
-    padding: 1rem 1.25rem;
-    text-align: left;
-    font-size: 0.75rem;
-    font-weight: 600;
-    color: #6b7280;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
-}
-
-.data-table td {
-    padding: 1rem 1.25rem;
-    font-size: 0.9rem;
-    color: #1f2937;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.04);
-    vertical-align: middle;
-}
-
-.data-table tbody tr {
-    transition: background 0.2s;
-}
-
-.data-table tbody tr:hover {
-    background: rgba(238, 46, 36, 0.02);
-}
-
-.data-table tbody tr:last-child td {
-    border-bottom: none;
-}
 
 /* Participant Info */
 .participant-name {
@@ -366,43 +191,46 @@
 
 @section('content')
 
-{{-- Hero Section --}}
-<div class="mentor-hero">
-    <div class="hero-content">
-        <div class="hero-text">
-            <h1><i class="fas fa-certificate"></i> Sertifikat Peserta</h1>
-            <p>Kelola dan kirimkan sertifikat untuk peserta magang yang telah menyelesaikan program</p>
-        </div>
-    </div>
-</div>
+<x-dashboard.page-context-bar
+    title="Sertifikat Peserta"
+    description="Kelola dan kirimkan sertifikat untuk peserta magang yang telah menyelesaikan program"
+    icon="fas fa-certificate"
+    role="pembimbing"
+/>
 
 {{-- Statistics Grid --}}
 <div class="stats-grid">
-    <div class="stat-card">
-        <div class="stat-icon purple">
-            <i class="fas fa-users"></i>
-        </div>
-        <div class="stat-info">
-            <h3>{{ $totalParticipants }}</h3>
-            <p>Total Peserta</p>
-        </div>
-    </div>
-    <div class="stat-card">
-        <div class="stat-icon green">
-            <i class="fas fa-check-circle"></i>
-        </div>
-        <div class="stat-info">
-            <h3>{{ $certificateCount }}</h3>
-            <p>Sertifikat Terkirim</p>
+    <div class="stat-card stat-card-primary">
+        <div class="stat-card-header">
+            <div class="stat-meta">
+                <div class="stat-value">{{ $totalParticipants }}</div>
+                <div class="stat-label">Total Peserta</div>
+            </div>
+            <div class="stat-icon stat-icon-primary">
+                <i class="fas fa-users"></i>
+            </div>
         </div>
     </div>
-    <div class="stat-card">
-        <div class="stat-icon yellow">
-            <i class="fas fa-clock"></i>
+    <div class="stat-card stat-card-success">
+        <div class="stat-card-header">
+            <div class="stat-meta">
+                <div class="stat-value">{{ $certificateCount }}</div>
+                <div class="stat-label">Sertifikat Terkirim</div>
+            </div>
+            <div class="stat-icon stat-icon-success">
+                <i class="fas fa-check-circle"></i>
+            </div>
         </div>
-        <div class="stat-info">
-            <h3>{{ $pendingCount > 0 ? $pendingCount : 0 }}</h3>
-            <p>Menunggu Sertifikat</p>
+    </div>
+    <div class="stat-card stat-card-warning">
+        <div class="stat-card-header">
+            <div class="stat-meta">
+                <div class="stat-value">{{ $pendingCount > 0 ? $pendingCount : 0 }}</div>
+                <div class="stat-label">Menunggu Sertifikat</div>
+            </div>
+            <div class="stat-icon stat-icon-warning">
+                <i class="fas fa-clock"></i>
+            </div>
         </div>
     </div>
 </div>

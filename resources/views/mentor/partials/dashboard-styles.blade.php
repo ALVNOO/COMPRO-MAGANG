@@ -156,18 +156,7 @@
         50% { transform: scale(1.2); opacity: 0.8; }
     }
 
-    .hero-grid {
-        position: absolute;
-        top: 0; left: 0; right: 0; bottom: 0;
-        background-image:
-            linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px);
-        background-size: 30px 30px;
-        pointer-events: none;
-        opacity: 0.5;
-    }
-
-    .hero-shape {
+.hero-shape {
         position: absolute;
         pointer-events: none;
         opacity: 0.1;

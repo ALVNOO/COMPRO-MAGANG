@@ -15,6 +15,8 @@ class Attendance extends Model
         'status',
         'check_in_time',
         'photo_path',
+        'latitude',
+        'longitude',
         'absence_reason',
         'absence_proof_path',
     ];
@@ -22,6 +24,8 @@ class Attendance extends Model
     protected $casts = [
         'date' => 'date',
         'check_in_time' => 'datetime',
+        'latitude' => 'decimal:7',
+        'longitude' => 'decimal:7',
     ];
 
     /**

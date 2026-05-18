@@ -1,0 +1,66 @@
+<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="_card.css">
+<style>
+  body { background: #F9FAFB; }
+  .card-frame { padding: 24px 28px; gap: 20px; align-items: center; }
+  .lane { display: flex; align-items: flex-end; gap: 28px; }
+  .item { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+  .meta { font-family: var(--font-mono); font-size: 11px; color: #6B7280; text-align: center; line-height: 1.4; }
+  .meta strong { display: block; color: #231F20; font-size: 12px; font-weight: 700; font-family: var(--font-sans); }
+
+  /* Buttons — all carry the signature colored shadow so they read clearly as buttons */
+  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; background: linear-gradient(135deg,#EE2E24,#C41E1A); color: #fff; border: none; cursor: pointer; font-family: var(--font-sans); font-weight: 600; border-radius: 12px; box-shadow: 0 4px 14px rgba(238,46,36,.25); transition: all .2s cubic-bezier(.4,0,.2,1); }
+  .btn-sm { padding: 8px 16px;  font-size: 12px; }
+  .btn-md { padding: 12px 24px; font-size: 14px; }
+  .btn-lg { padding: 16px 32px; font-size: 16px; }
+  .btn-icon { padding: 0; width: 40px; height: 40px; border-radius: 12px; }
+
+  /* States */
+  .btn.hover { transform: translateY(-2px); box-shadow: 0 10px 25px rgba(238,46,36,.3); background: linear-gradient(135deg,#FF4D45,#EE2E24); }
+  .btn.focus { outline: 3px solid rgba(238,46,36,.3); outline-offset: 2px; }
+  .btn.disabled { opacity: .5; cursor: not-allowed; box-shadow: none; }
+</style></head>
+<body><div class="card-frame">
+
+  <!-- Sizes -->
+  <div class="lane">
+    <div class="item">
+      <button class="btn btn-sm"><i class="fas fa-plus"></i>Tambah</button>
+      <div class="meta"><strong>Small</strong>btn-sm · 32 h · 12 px</div>
+    </div>
+    <div class="item">
+      <button class="btn btn-md"><i class="fas fa-plus"></i>Tambah Peserta</button>
+      <div class="meta"><strong>Medium</strong>btn-md · 44 h · 14 px · default</div>
+    </div>
+    <div class="item">
+      <button class="btn btn-lg"><i class="fas fa-plus"></i>Tambah Peserta</button>
+      <div class="meta"><strong>Large</strong>btn-lg · 56 h · 16 px</div>
+    </div>
+    <div class="item">
+      <button class="btn btn-icon"><i class="fas fa-bell"></i></button>
+      <div class="meta"><strong>Icon</strong>btn-icon · 40 × 40</div>
+    </div>
+  </div>
+
+  <div style="width:100%;height:1px;background:#E5E7EB"></div>
+
+  <!-- States — to make absolutely clear these are buttons -->
+  <div class="lane" style="gap:36px">
+    <div class="item">
+      <button class="btn btn-md"><i class="fas fa-check"></i>Setujui</button>
+      <div class="meta"><strong>Resting</strong>0 4px 14px / .25</div>
+    </div>
+    <div class="item">
+      <button class="btn btn-md hover"><i class="fas fa-check"></i>Setujui</button>
+      <div class="meta"><strong>Hover</strong>-2 Y · 0 10px 25px / .3</div>
+    </div>
+    <div class="item">
+      <button class="btn btn-md focus"><i class="fas fa-check"></i>Setujui</button>
+      <div class="meta"><strong>Focus</strong>3 px focus ring</div>
+    </div>
+    <div class="item">
+      <button class="btn btn-md disabled"><i class="fas fa-check"></i>Setujui</button>
+      <div class="meta"><strong>Disabled</strong>opacity .5 · no shadow</div>
+    </div>
+  </div>
+
+</div></body></html>

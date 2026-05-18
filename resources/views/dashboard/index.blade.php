@@ -56,104 +56,6 @@
    PARTICIPANT DASHBOARD STYLES
    ============================================ */
 
-/* Hero Section */
-.dashboard-hero {
-    background: linear-gradient(135deg, var(--color-primary) 0%, #C41E1A 50%, #8B1A18 100%);
-    border-radius: 24px;
-    padding: 2rem 2.5rem;
-    margin-bottom: 2rem;
-    position: relative;
-    overflow: hidden;
-    color: white;
-}
-
-.dashboard-hero::before {
-    content: '';
-    position: absolute;
-    top: -50%;
-    right: -20%;
-    width: 60%;
-    height: 200%;
-    background: radial-gradient(ellipse, rgba(255,255,255,0.1) 0%, transparent 70%);
-    pointer-events: none;
-}
-
-.dashboard-hero::after {
-    content: '';
-    position: absolute;
-    bottom: -30%;
-    left: -10%;
-    width: 40%;
-    height: 150%;
-    background: radial-gradient(ellipse, rgba(0,0,0,0.1) 0%, transparent 60%);
-    pointer-events: none;
-}
-
-.hero-content {
-    position: relative;
-    z-index: 1;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 2rem;
-}
-
-.hero-text h1 {
-    font-size: 1.75rem;
-    font-weight: 700;
-    margin-bottom: 0.5rem;
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-}
-
-.wave-emoji {
-    display: inline-block;
-    animation: waveHand 2s ease-in-out infinite;
-    transform-origin: 70% 70%;
-}
-
-@keyframes waveHand {
-    0%, 100% { transform: rotate(0deg); }
-    25% { transform: rotate(20deg); }
-    50% { transform: rotate(-10deg); }
-    75% { transform: rotate(20deg); }
-}
-
-.hero-text p {
-    font-size: 1rem;
-    opacity: 0.9;
-    max-width: 500px;
-}
-
-.hero-stats {
-    display: flex;
-    gap: 1.5rem;
-}
-
-.hero-stat {
-    text-align: center;
-    padding: 1rem 1.5rem;
-    background: rgba(255,255,255,0.15);
-    backdrop-filter: blur(10px);
-    border-radius: 16px;
-    border: 1px solid rgba(255,255,255,0.2);
-    min-width: 100px;
-}
-
-.hero-stat-value {
-    font-size: 1.75rem;
-    font-weight: 700;
-    line-height: 1.2;
-}
-
-.hero-stat-label {
-    font-size: 0.75rem;
-    opacity: 0.85;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-}
-
 /* Progress Banner */
 .progress-banner {
     background: rgba(255, 255, 255, 0.9);
@@ -612,39 +514,14 @@
 @endpush
 
 @section('content')
-{{-- Hero Section --}}
-<div class="dashboard-hero">
-    <div class="hero-content">
-        <div class="hero-text">
-            <h1>
-                {{ $greeting }}, {{ explode(' ', $user->name)[0] }}!
-                <span class="wave-emoji">👋</span>
-            </h1>
-            <p>
-                @if($application)
-                    Selamat menjalani program magang di <strong>{{ $application->divisionAdmin->division_name ?? $application->divisi->name ?? 'Telkom Indonesia' }}</strong>.
-                    Tetap semangat dan raih pengalaman terbaikmu!
-                @else
-                    Selamat datang di dashboard peserta magang Telkom Indonesia.
-                @endif
-            </p>
-        </div>
-        <div class="hero-stats">
-            <div class="hero-stat">
-                <div class="hero-stat-value">{{ $daysRemaining }}</div>
-                <div class="hero-stat-label">Hari Tersisa</div>
-            </div>
-            <div class="hero-stat">
-                <div class="hero-stat-value">{{ $completionRate }}%</div>
-                <div class="hero-stat-label">Tugas Selesai</div>
-            </div>
-            <div class="hero-stat">
-                <div class="hero-stat-value">{{ $attendanceRate }}%</div>
-                <div class="hero-stat-label">Kehadiran</div>
-            </div>
-        </div>
-    </div>
-</div>
+<x-dashboard.page-context-bar
+    :title="$greeting . ', ' . explode(' ', $user->name)[0] . '!'"
+    :description="$application
+        ? 'Magang di ' . ($application->divisionAdmin->division_name ?? $application->divisi->name ?? 'Telkom Indonesia') . '. Tetap semangat!'
+        : 'Selamat datang di dashboard peserta magang Telkom Indonesia.'"
+    icon="fas fa-gauge"
+    role="peserta"
+/>
 
 {{-- Progress Banner --}}
 @if($application)
@@ -757,7 +634,7 @@
                     @endphp
                     <div class="task-item {{ $statusClass }}">
                         <div class="task-header">
-                            <h6 class="task-title">{{ Str::limit($assignment->description, 45) }}</h6>
+                            <h6 class="task-title">{{ Str::limit($assignment->title, 45) }}</h6>
                             @if($isCompleted)
                                 <span class="task-badge success">
                                     <i class="fas fa-check"></i> Selesai

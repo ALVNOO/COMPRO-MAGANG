@@ -1,0 +1,27 @@
+<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="_card.css">
+<style>
+  .sb{display:inline-flex;align-items:center;gap:6px;padding:5px 12px;font-size:12px;font-weight:600;border-radius:9999px}
+  .sb-pending{background:#FEF3C7;color:#B45309}
+  .sb-accepted{background:#D1FAE5;color:#047857}
+  .sb-rejected{background:#FEE2E2;color:#B91C1C}
+  .sb-active{background:rgba(238,46,36,.1);color:#C41E1A}
+  .sb-finished{background:#E5E7EB;color:#4B5563}
+  .sb-present{background:#D1FAE5;color:#047857}
+  .sb-late{background:#FEF3C7;color:#B45309}
+  .sb-leave{background:#CFFAFE;color:#0E7490}
+</style></head>
+<body><div class="card-frame" style="gap:14px;justify-content:center">
+  <div class="row" style="gap:8px"><div style="width:140px;font-size:12px;color:#6B7280">Application status</div>
+    <span class="sb sb-pending"><i class="fas fa-clock"></i>Menunggu</span>
+    <span class="sb sb-accepted"><i class="fas fa-check"></i>Diterima</span>
+    <span class="sb sb-rejected"><i class="fas fa-times"></i>Ditolak</span>
+    <span class="sb sb-active"><i class="fas fa-play"></i>Aktif</span>
+    <span class="sb sb-finished"><i class="fas fa-flag-checkered"></i>Selesai</span>
+  </div>
+  <div class="row" style="gap:8px"><div style="width:140px;font-size:12px;color:#6B7280">Attendance status</div>
+    <span class="sb sb-present"><i class="fas fa-check-circle"></i>Hadir</span>
+    <span class="sb sb-late"><i class="fas fa-clock"></i>Terlambat</span>
+    <span class="sb sb-rejected"><i class="fas fa-times-circle"></i>Tidak Hadir</span>
+    <span class="sb sb-leave"><i class="fas fa-file-alt"></i>Izin</span>
+  </div>
+</div></body></html>

@@ -176,6 +176,138 @@ class MentorDashboardController extends Controller
             $completionDistributionData = ['labels' => $distLabels, 'data' => $distData];
         }
 
+        // ── Shared: participant user IDs ──
+        $participantUserIds = $divisionMentor
+            ? \App\Models\InternshipApplication::where('division_mentor_id', $divisionMentor->id)
+                ->where('status', 'accepted')->pluck('user_id')
+            : collect();
+
+        $assignmentIds = $participantUserIds->isNotEmpty()
+            ? \App\Models\Assignment::whereIn('user_id', $participantUserIds)->pluck('id')
+            : collect();
+
+        // ── Today's Focus: tidak hadir + belum logbook + presentasi mendatang ──
+        $noLogbookToday = collect();
+        if ($participantUserIds->isNotEmpty()) {
+            $logbookTodayIds = \App\Models\Logbook::whereDate('date', today())
+                ->whereIn('user_id', $participantUserIds)->pluck('user_id');
+            $noLogbookToday = collect(\App\Models\InternshipApplication::with('user')
+                ->where('division_mentor_id', $divisionMentor->id)
+                ->where('status', 'accepted')
+                ->whereNotIn('user_id', $logbookTodayIds)
+                ->get()->map(fn($app) => [
+                    'name'  => $app->user->name ?? '-',
+                    'photo' => $app->user->profile_picture ?? null,
+                ])->all());
+        }
+
+        $upcomingPresentations = $divisionMentor
+            ? \App\Models\Assignment::whereHas('user.internshipApplications', function ($q) use ($divisionMentor) {
+                $q->where('division_mentor_id', $divisionMentor->id)->where('status', 'accepted');
+            })->where('assignment_type', 'tugas_proyek')
+              ->whereNotNull('presentation_date')
+              ->whereBetween('presentation_date', [now()->startOfDay(), now()->addDays(7)->endOfDay()])
+              ->with('user')->orderBy('presentation_date')->limit(8)->get()
+            : collect();
+
+        // ── Activity Feed: logbook + submission campuran ──
+        $activityFeed = collect();
+        if ($participantUserIds->isNotEmpty()) {
+            $logbookItems = collect(\App\Models\Logbook::whereIn('user_id', $participantUserIds)
+                ->where('date', '>=', now()->subDays(7))->with('user')
+                ->orderByDesc('date')->limit(10)->get()
+                ->map(fn($l) => [
+                    'type'       => 'logbook',
+                    'name'       => $l->user->name ?? '-',
+                    'desc'       => 'Submit logbook harian',
+                    'time'       => \Carbon\Carbon::parse($l->date)->startOfDay(),
+                    'time_human' => \Carbon\Carbon::parse($l->date)->diffForHumans(),
+                ])->all());
+
+            $submissionItems = collect(\App\Models\AssignmentSubmission::whereIn('user_id', $participantUserIds)
+                ->where('submitted_at', '>=', now()->subDays(7))
+                ->with(['user', 'assignment'])->orderByDesc('submitted_at')->limit(10)->get()
+                ->map(fn($s) => [
+                    'type'       => 'submission',
+                    'name'       => $s->user->name ?? '-',
+                    'desc'       => 'Mengumpulkan: ' . \Illuminate\Support\Str::limit($s->assignment->title ?? '-', 40),
+                    'time'       => \Carbon\Carbon::parse($s->submitted_at),
+                    'time_human' => \Carbon\Carbon::parse($s->submitted_at)->diffForHumans(),
+                ])->all());
+
+            $activityFeed = $logbookItems->merge($submissionItems)
+                ->sortByDesc('time')->take(15)->values();
+        }
+
+        // ── Grafik: Aktivitas harian 7 hari ──
+        $activityTrend = collect();
+
+        for ($i = 6; $i >= 0; $i--) {
+            $date     = now()->subDays($i)->toDateString();
+            $dayLabel = now()->subDays($i)->locale('id')->isoFormat('ddd D/M');
+
+            $logCount = $participantUserIds->isNotEmpty()
+                ? \App\Models\Logbook::whereDate('date', $date)
+                    ->whereIn('user_id', $participantUserIds)->count()
+                : 0;
+
+            $subCount = $assignmentIds->isNotEmpty()
+                ? \Illuminate\Support\Facades\DB::table('assignment_submissions')
+                    ->whereDate('submitted_at', $date)
+                    ->whereIn('assignment_id', $assignmentIds)->count()
+                : 0;
+
+            $activityTrend->push([
+                'label'   => $dayLabel,
+                'logbook' => $logCount,
+                'tugas'   => $subCount,
+            ]);
+        }
+
+        // Antrian penilaian: tugas yang sudah dikumpulkan tapi belum dinilai
+        $pendingGradeList = $divisionMentor
+            ? \App\Models\Assignment::whereHas('user.internshipApplications', function ($q) use ($divisionMentor) {
+                $q->where('division_mentor_id', $divisionMentor->id)->where('status', 'accepted');
+            })
+                ->whereNotNull('submission_file_path')
+                ->whereNull('grade')
+                ->with('user')
+                ->orderByDesc('updated_at')
+                ->limit(10)
+                ->get()
+            : collect();
+
+        // Overview per peserta: nama, progress tugas, status kehadiran hari ini
+        $participantOverview = collect();
+        if ($divisionMentor) {
+            $acceptedApps = \App\Models\InternshipApplication::with('user')
+                ->where('division_mentor_id', $divisionMentor->id)
+                ->where('status', 'accepted')
+                ->get();
+
+            $participantOverview = collect($acceptedApps->map(function ($app) use ($todayAttendance) {
+                $assignments = $app->user->assignments ?? collect();
+                $total     = $assignments->count();
+                $completed = $assignments->whereNotNull('grade')->count();
+                $pending   = $assignments->whereNotNull('submission_file_path')->whereNull('grade')->count();
+                $pct       = $total > 0 ? round(($completed / $total) * 100) : 0;
+
+                $todayAtt  = $todayAttendance->firstWhere('user_id', $app->user_id);
+                $attStatus = $todayAtt ? $todayAtt->status : 'Belum';
+
+                return [
+                    'name'       => $app->user->name ?? '-',
+                    'total'      => $total,
+                    'completed'  => $completed,
+                    'pending'    => $pending,
+                    'pct'        => $pct,
+                    'att_status' => $attStatus,
+                    'start_date' => $app->start_date,
+                    'end_date'   => $app->end_date,
+                ];
+            })->all());
+        }
+
         return view('mentor.dashboard', [
             // Existing statistics
             'pendingApplications' => $pendingApplications,
@@ -184,15 +316,24 @@ class MentorDashboardController extends Controller
             'pengajuanBaru' => $pengajuanBaru,
             'tugasBaruDiupload' => $tugasBaruDiupload,
 
-            // New comprehensive statistics
+            // Comprehensive statistics
             'totalAssignments' => $totalAssignments,
             'completedAssignments' => $completedAssignments,
             'averageGrade' => round($averageGrade ?? 0, 1),
             'completionRate' => $completionRate,
             'recentSubmissions' => $recentSubmissions,
             'attendanceStats' => $attendanceStats,
+            'todayAttendance' => $todayAttendance->load('user'),
 
-            // New chart data
+            // Dashboard sections
+            'pendingGradeList'      => $pendingGradeList,
+            'participantOverview'   => $participantOverview,
+            'noLogbookToday'        => $noLogbookToday,
+            'upcomingPresentations' => $upcomingPresentations,
+            'activityFeed'          => $activityFeed,
+            'activityTrend'         => $activityTrend,
+
+            // Chart data (kept for compatibility)
             'participantCompletionData' => $participantCompletionData,
             'completionDistributionData' => $completionDistributionData,
         ]);

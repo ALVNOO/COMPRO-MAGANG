@@ -1,0 +1,65 @@
+<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="_card.css">
+<style>
+  body { background: #fff; }
+  .card-frame { padding: 22px 28px; gap: 22px; }
+  .row { display: flex; align-items: center; gap: 28px; }
+  .label { font-size: 11px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: #9CA3AF; min-width: 110px; }
+  .av { display: inline-flex; align-items: center; justify-content: center; border-radius: 9999px; color: #fff; font-weight: 600; font-family: var(--font-sans); flex-shrink: 0; position: relative; }
+  .av.grad { background: linear-gradient(135deg, #EE2E24, #C41E1A); }
+  .av.gray { background: #E5E7EB; color: #4B5563; }
+  .av.dark { background: linear-gradient(135deg, #374151, #1F2937); }
+  .av.gold { background: linear-gradient(135deg, #D97706, #B45309); }
+  .av.tealgrad { background: linear-gradient(135deg, #0891B2, #0E7490); }
+  .dot { position: absolute; bottom: 0; right: 0; border-radius: 50%; border: 2px solid #fff; }
+  .dot-online  { background: #059669; }
+  .dot-busy    { background: #DC2626; }
+  .dot-offline { background: #9CA3AF; }
+  .stack { display: flex; }
+  .stack .av { box-shadow: 0 0 0 2px #fff; }
+  .stack .av + .av { margin-left: -10px; }
+  .stack .more { background: #F3F4F6; color: #4B5563; }
+</style></head>
+<body><div class="card-frame">
+
+  <div class="row">
+    <div class="label">Sizes</div>
+    <div class="av grad" style="width:24px;height:24px;font-size:10px">AF</div>
+    <div class="av grad" style="width:32px;height:32px;font-size:12px">SN</div>
+    <div class="av grad" style="width:40px;height:40px;font-size:14px">BS</div>
+    <div class="av grad" style="width:48px;height:48px;font-size:17px">DK</div>
+    <div class="av grad" style="width:64px;height:64px;font-size:22px">RP</div>
+    <div class="av grad" style="width:80px;height:80px;font-size:28px">MH</div>
+    <span class="mono" style="margin-left:6px">24 · 32 · 40 · 48 · 64 · 80</span>
+  </div>
+
+  <div class="row">
+    <div class="label">Initials tones</div>
+    <div class="av grad"     style="width:44px;height:44px;font-size:15px">AF</div>
+    <div class="av dark"     style="width:44px;height:44px;font-size:15px">SN</div>
+    <div class="av gold"     style="width:44px;height:44px;font-size:15px">BS</div>
+    <div class="av tealgrad" style="width:44px;height:44px;font-size:15px">DK</div>
+    <div class="av gray"     style="width:44px;height:44px;font-size:15px">RP</div>
+    <span class="mono" style="margin-left:6px">red (default) · dark · gold · teal · gray</span>
+  </div>
+
+  <div class="row">
+    <div class="label">Presence</div>
+    <div class="av grad" style="width:44px;height:44px;font-size:15px">AF<span class="dot dot-online"  style="width:12px;height:12px"></span></div>
+    <div class="av grad" style="width:44px;height:44px;font-size:15px">SN<span class="dot dot-busy"    style="width:12px;height:12px"></span></div>
+    <div class="av grad" style="width:44px;height:44px;font-size:15px">BS<span class="dot dot-offline" style="width:12px;height:12px"></span></div>
+    <span class="mono" style="margin-left:6px">online · busy · offline</span>
+  </div>
+
+  <div class="row">
+    <div class="label">Group · stack</div>
+    <div class="stack">
+      <div class="av grad"     style="width:36px;height:36px;font-size:13px">AF</div>
+      <div class="av dark"     style="width:36px;height:36px;font-size:13px">SN</div>
+      <div class="av gold"     style="width:36px;height:36px;font-size:13px">BS</div>
+      <div class="av tealgrad" style="width:36px;height:36px;font-size:13px">DK</div>
+      <div class="av more"     style="width:36px;height:36px;font-size:12px">+8</div>
+    </div>
+    <div style="margin-left:24px;font-size:13px;color:#4B5563">12 peserta · Divisi Network Operations</div>
+  </div>
+
+</div></body></html>

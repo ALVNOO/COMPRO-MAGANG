@@ -1,0 +1,50 @@
+/* Preview-card chrome: minimal, used by all preview/*.html */
+@import url("../colors_and_type.css");
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: #fff;
+  font-family: var(--font-sans);
+  color: var(--fg-1);
+}
+
+.card-frame {
+  padding: 20px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-height: 100vh;
+  box-sizing: border-box;
+}
+
+.row {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+/* color swatch */
+.sw {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--fg-3);
+  font-family: var(--font-mono);
+}
+.sw .chip {
+  width: 100%;
+  height: 56px;
+  border-radius: 10px;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+}
+.sw .name {
+  color: var(--fg-1);
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.mono { font-family: var(--font-mono); font-size: 12px; color: var(--fg-3); }

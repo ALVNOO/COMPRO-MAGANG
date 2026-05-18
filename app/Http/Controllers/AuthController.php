@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\User;
+use App\Mail\TwoFactorResetMail;
 use App\Models\InternshipApplication;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use PragmaRX\Google2FA\Google2FA;
 
@@ -377,11 +379,58 @@ class AuthController extends Controller
     }
 
     /**
+     * Show the 2FA reset request page.
+     */
+    public function show2faResetRequest()
+    {
+        return view('auth.2fa-reset-request');
+    }
+
+    /**
+     * Send a 2FA reset link to the user's email.
+     */
+    public function send2faResetEmail(Request $request)
+    {
+        $user = Auth::user();
+
+        if ($user->twoFactorResetEmailRecentlySent()) {
+            return back()->with('error', 'Email reset sudah dikirim. Tunggu beberapa menit sebelum mengirim ulang.');
+        }
+
+        $token = $user->generateTwoFactorResetToken();
+
+        Mail::to($user->email)->send(new TwoFactorResetMail($user, $token));
+
+        return view('auth.2fa-reset-sent', ['email' => $user->email]);
+    }
+
+    /**
+     * Confirm 2FA reset via token from email link.
+     */
+    public function reset2faByToken(Request $request, string $token)
+    {
+        $user = Auth::user();
+
+        if (! $user->isValidTwoFactorResetToken($token)) {
+            return redirect()->route('2fa.reset')
+                ->with('error', 'Link reset tidak valid atau sudah kedaluwarsa. Silakan kirim ulang.');
+        }
+
+        // Clear token, reset 2FA, generate fresh secret
+        $user->clearTwoFactorResetToken();
+        $user->resetTwoFactor();
+        $user->generateTwoFactorSecret();
+
+        return redirect()->route('2fa.setup')
+            ->with('success', 'Reset 2FA berhasil! Silakan scan QR code baru dengan aplikasi authenticator Anda.');
+    }
+
+    /**
      * Show the form for changing password.
      */
     public function showChangePasswordForm()
     {
-        return view("auth.change-password");
+        return view("auth.change-password", ['user' => Auth::user()]);
     }
 
     /**

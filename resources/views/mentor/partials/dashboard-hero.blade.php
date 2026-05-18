@@ -5,8 +5,7 @@
 
 <div class="hero-section">
     {{-- Decorative Shapes --}}
-    <div class="hero-grid"></div>
-    <div class="hero-shape hero-shape-1"></div>
+<div class="hero-shape hero-shape-1"></div>
     <div class="hero-shape hero-shape-2"></div>
     <div class="hero-shape hero-shape-3"></div>
 

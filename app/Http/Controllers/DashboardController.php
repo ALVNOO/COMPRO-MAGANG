@@ -177,18 +177,25 @@ class DashboardController extends Controller
 
         // Ambil pengajuan terbaru yang statusnya pending/accepted/finished
         $application = $user->internshipApplications()
-            ->with('divisi.subDirektorat.direktorat')
+            ->with('divisi.subDirektorat.direktorat', 'divisionMentor')
             ->whereIn('status', ['pending', 'accepted', 'finished'])
             ->latest()
             ->first();
         if (! $application) {
             $application = $user->internshipApplications()
-                ->with('divisi.subDirektorat.direktorat')
+                ->with('divisi.subDirektorat.direktorat', 'divisionMentor')
                 ->latest()
                 ->first();
         }
 
-        return view('dashboard.assignments', compact('user', 'assignments', 'application'));
+        $mentorUser = null;
+        if ($application && $application->divisionMentor) {
+            $mentorUser = \App\Models\User::where('username', $application->divisionMentor->nik_number)
+                ->where('role', 'pembimbing')
+                ->first();
+        }
+
+        return view('dashboard.assignments', compact('user', 'assignments', 'application', 'mentorUser'));
     }
 
     /**

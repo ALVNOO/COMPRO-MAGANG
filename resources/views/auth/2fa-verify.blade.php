@@ -186,6 +186,19 @@
 
 
 
+                <!-- Can't access authenticator -->
+                <div style="text-align:center; margin:16px 0 4px;">
+                    <a href="{{ route('2fa.reset') }}" style="font-size:13px; color:#6B7280; text-decoration:none; display:inline-flex; align-items:center; gap:6px; transition:color .15s;"
+                       onmouseover="this.style.color='#EE2E24'" onmouseout="this.style.color='#6B7280'">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"/>
+                            <line x1="12" y1="8" x2="12" y2="12"/>
+                            <line x1="12" y1="16" x2="12.01" y2="16"/>
+                        </svg>
+                        Tidak bisa akses aplikasi authenticator?
+                    </a>
+                </div>
+
                 <!-- Cancel Action -->
                 <form id="logout-form" action="{{ route('logout') }}" method="POST">
                     @csrf

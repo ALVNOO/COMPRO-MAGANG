@@ -1,0 +1,104 @@
+<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="_card.css">
+<style>
+  body { background: #fff; }
+  .card-frame { padding: 22px 26px; gap: 18px; display: grid; grid-template-columns: 1fr 1fr; align-content: start; column-gap: 22px; row-gap: 16px; }
+  .field { display: flex; flex-direction: column; gap: 6px; }
+  .lbl { font-size: 13px; font-weight: 500; color: #374151; display: flex; align-items: center; gap: 4px; }
+  .lbl .req { color: #DC2626; }
+  .state { font-family: var(--font-mono); font-size: 10px; color: #9CA3AF; margin-left: auto; text-transform: uppercase; letter-spacing: .06em; }
+  .hint, .err { font-size: 12px; }
+  .hint { color: #9CA3AF; }
+  .err  { color: #DC2626; }
+
+  .input { width: 100%; padding: 10px 14px; font-size: 14px; font-family: inherit; color: #231F20; background: #fff; border: 1px solid #D1D5DB; border-radius: 12px; outline: none; box-sizing: border-box; transition: all .15s ease; }
+  .input::placeholder { color: #9CA3AF; }
+  .input.focused { border-color: #EE2E24; box-shadow: 0 0 0 3px rgba(238,46,36,.1); }
+  .input.invalid { border-color: #DC2626; box-shadow: 0 0 0 3px #FEE2E2; }
+  .input.disabled { background: #F3F4F6; color: #9CA3AF; cursor: not-allowed; }
+
+  .iw { position: relative; }
+  .iw > .lead { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: #9CA3AF; font-size: 14px; }
+  .iw > .trail { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); color: #9CA3AF; cursor: pointer; }
+  .iw input.has-lead  { padding-left: 40px; }
+  .iw input.has-trail { padding-right: 40px; }
+
+  /* Prepend/append group */
+  .group { display: flex; }
+  .group .input { border-radius: 0; }
+  .group .input:first-child { border-radius: 12px 0 0 12px; }
+  .group .input:last-child  { border-radius: 0 12px 12px 0; border-left: none; }
+  .group .addon { padding: 10px 14px; background: #F3F4F6; border: 1px solid #D1D5DB; color: #6B7280; font-size: 14px; display: flex; align-items: center; }
+  .group .addon:first-child { border-radius: 12px 0 0 12px; border-right: none; }
+  .group .addon:last-child  { border-radius: 0 12px 12px 0; border-left: none; }
+
+  .row-2 { grid-column: 1 / -1; display: grid; grid-template-columns: 1fr 1fr; gap: 22px; }
+
+  /* Custom select chevron */
+  .select { appearance: none; -webkit-appearance: none; background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%239CA3AF' stroke-width='2.5'><polyline points='6 9 12 15 18 9'/></svg>"); background-repeat: no-repeat; background-position: right 14px center; padding-right: 38px; }
+
+  textarea.input { resize: vertical; min-height: 70px; font-family: inherit; line-height: 1.5; }
+</style></head>
+<body><div class="card-frame">
+
+  <div class="field">
+    <div class="lbl">Default<span class="state">resting</span></div>
+    <input class="input" placeholder="Masukkan nama lengkap">
+  </div>
+
+  <div class="field">
+    <div class="lbl">Focused<span class="state">focus ring</span></div>
+    <input class="input focused" value="Adi Firmansyah">
+  </div>
+
+  <div class="field">
+    <div class="lbl">With icon<span class="state">prefix icon</span></div>
+    <div class="iw">
+      <i class="fas fa-envelope lead"></i>
+      <input class="input has-lead" value="adi@telkom.co.id" type="email">
+    </div>
+  </div>
+
+  <div class="field">
+    <div class="lbl">Password<span class="state">toggle</span></div>
+    <div class="iw">
+      <i class="fas fa-lock lead"></i>
+      <input class="input has-lead has-trail" type="password" value="••••••••••">
+      <i class="fas fa-eye trail"></i>
+    </div>
+  </div>
+
+  <div class="field">
+    <div class="lbl">NIK <span class="req">*</span><span class="state">invalid</span></div>
+    <input class="input invalid" value="1234567">
+    <div class="err">NIK harus 16 digit angka.</div>
+  </div>
+
+  <div class="field">
+    <div class="lbl">NIM<span class="state">disabled</span></div>
+    <input class="input disabled" value="D121191024" disabled>
+    <div class="hint">NIM diambil otomatis dari profil universitas.</div>
+  </div>
+
+  <div class="field">
+    <div class="lbl">Nomor HP<span class="state">prepend</span></div>
+    <div class="group">
+      <span class="addon">+62</span>
+      <input class="input" value="812 3456 7890">
+    </div>
+  </div>
+
+  <div class="field">
+    <div class="lbl">Divisi tujuan<span class="state">select</span></div>
+    <select class="input select">
+      <option>Network Operations</option>
+      <option>Digital Service</option>
+      <option>Customer Care</option>
+    </select>
+  </div>
+
+  <div class="field" style="grid-column:1 / -1">
+    <div class="lbl">Motivasi magang<span class="state">textarea</span></div>
+    <textarea class="input" placeholder="Ceritakan motivasi Anda mengikuti program magang di PT Telkom Indonesia."></textarea>
+  </div>
+
+</div></body></html>

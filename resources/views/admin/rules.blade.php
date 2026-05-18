@@ -20,49 +20,6 @@
    RULES PAGE STYLES
    ============================================ */
 
-/* Hero Section */
-.admin-hero {
-    background: linear-gradient(135deg, #EE2E24 0%, #C41E1A 50%, #9B1B1B 100%);
-    border-radius: 24px;
-    padding: 2rem 2.5rem;
-    margin-bottom: 2rem;
-    position: relative;
-    overflow: hidden;
-    color: white;
-}
-
-.admin-hero::before {
-    content: '';
-    position: absolute;
-    top: -50%;
-    right: -20%;
-    width: 60%;
-    height: 200%;
-    background: radial-gradient(ellipse, rgba(255,255,255,0.15) 0%, transparent 70%);
-    pointer-events: none;
-}
-
-.hero-content {
-    position: relative;
-    z-index: 1;
-}
-
-.hero-text h1 {
-    font-size: 1.75rem;
-    font-weight: 700;
-    margin-bottom: 0.5rem;
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-}
-
-.hero-text p {
-    font-size: 1rem;
-    opacity: 0.9;
-    max-width: 500px;
-    margin: 0;
-}
-
 /* Alert Styles */
 .alert-success {
     display: flex;
@@ -278,21 +235,18 @@
 
 @section('content')
 
-{{-- Hero Section --}}
-<div class="admin-hero">
-    <div class="hero-content">
-        <div class="hero-text">
-            <h1><i class="fas fa-gavel"></i> Edit Peraturan</h1>
-            <p>Kelola peraturan dan ketentuan yang berlaku untuk peserta program magang</p>
-        </div>
-    </div>
-</div>
+<x-dashboard.page-context-bar
+    title="Peraturan & Ketentuan"
+    description="Kelola peraturan dan ketentuan yang berlaku untuk peserta program magang"
+    icon="fas fa-gavel"
+    role="admin"
+/>
 
 {{-- Success Message --}}
 @if(session('success'))
-    <div class="alert-success">
-        <i class="fas fa-check-circle"></i>
-        {{ session('success') }}
+    <div class="alert alert-compact alert-success">
+        <div class="alert-icon-box"><i class="fas fa-check"></i></div>
+        <div class="alert-content"><div class="alert-title">{{ session('success') }}</div></div>
     </div>
 @endif
 

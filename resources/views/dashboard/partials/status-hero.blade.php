@@ -9,7 +9,6 @@
 --}}
 
 <div class="hero-section">
-    <div class="hero-grid-pattern"></div>
     <div class="hero-content">
         <div class="hero-user">
             <div class="hero-avatar-wrapper">

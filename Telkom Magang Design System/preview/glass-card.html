@@ -1,0 +1,112 @@
+<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="_card.css">
+<style>
+  body { background: #F9FAFB; overflow: hidden; }
+  .card-frame { padding: 18px; gap: 12px; position: relative; }
+
+  /* Floating orb background — context for the glass effect to react to */
+  .bg { position: absolute; inset: 0; overflow: hidden; pointer-events: none; z-index: 0; }
+  .orb { position: absolute; border-radius: 50%; filter: blur(70px); opacity: .55; }
+  .o1 { width: 320px; height: 320px; background: linear-gradient(135deg, #EE2E24, #FF6B6B); top: -100px; left: -80px; }
+  .o2 { width: 280px; height: 280px; background: linear-gradient(135deg, #3B82F6, #93C5FD); bottom: -80px; right: -40px; }
+  .o3 { width: 220px; height: 220px; background: linear-gradient(135deg, #10B981, #6EE7B7); top: 30%; right: 25%; opacity: .35; }
+  .grid { position: absolute; inset: 0; background-image: linear-gradient(rgba(0,0,0,.03) 1px, transparent 1px), linear-gradient(90deg, rgba(0,0,0,.03) 1px, transparent 1px); background-size: 36px 36px; }
+
+  .stack { position: relative; z-index: 1; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; align-items: start; }
+
+  /* The glass card */
+  .glass { background: rgba(255, 255, 255, 0.85); -webkit-backdrop-filter: blur(20px); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.5); border-radius: 20px; box-shadow: 0 4px 24px rgba(0,0,0,.06), inset 0 1px 0 rgba(255,255,255,.8); overflow: hidden; }
+  .h { display: flex; align-items: center; gap: 12px; padding: 14px 18px; background: rgba(255,255,255,.5); border-bottom: 1px solid rgba(0,0,0,.05); }
+  .ic { width: 38px; height: 38px; border-radius: 11px; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 15px; flex-shrink: 0; }
+  .ic-red    { background: linear-gradient(135deg, #EE2E24, #FF6B6B); box-shadow: 0 4px 12px rgba(238,46,36,.25); }
+  .ic-green  { background: linear-gradient(135deg, #059669, #10B981); box-shadow: 0 4px 12px rgba(5,150,105,.25); }
+  .ic-blue   { background: linear-gradient(135deg, #0891B2, #06B6D4); box-shadow: 0 4px 12px rgba(8,145,178,.25); }
+  .ic-purple { background: linear-gradient(135deg, #6366F1, #818CF8); box-shadow: 0 4px 12px rgba(99,102,241,.25); }
+  .ttl { font-size: 14px; font-weight: 700; color: #231F20; line-height: 1.3; }
+  .sub { font-size: 11px; color: #6B7280; margin-top: 1px; }
+  .b { padding: 16px 18px; }
+
+  /* KPI variant — big numbers */
+  .kpi { display: flex; align-items: flex-end; justify-content: space-between; }
+  .kpi .val { font-size: 32px; font-weight: 800; color: #231F20; line-height: 1; letter-spacing: -.02em; }
+  .kpi .lbl { font-size: 12px; color: #6B7280; margin-top: 4px; }
+  .kpi .trend { display: inline-flex; align-items: center; gap: 4px; padding: 3px 9px; border-radius: 9999px; background: #D1FAE5; color: #047857; font-size: 11px; font-weight: 700; }
+
+  /* Mini bar chart */
+  .bars { display: flex; align-items: flex-end; gap: 7px; height: 56px; padding-top: 4px; }
+  .bars span { flex: 1; background: linear-gradient(180deg, #EE2E24, #C41E1A); border-radius: 4px 4px 0 0; opacity: .85; }
+
+  /* Activity list */
+  .item { display: flex; align-items: center; gap: 10px; padding: 7px 0; }
+  .item + .item { border-top: 1px solid rgba(0,0,0,.05); }
+  .item .pic { width: 28px; height: 28px; border-radius: 9999px; background: linear-gradient(135deg, #EE2E24, #C41E1A); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; flex-shrink: 0; }
+  .item .txt { font-size: 12px; color: #231F20; line-height: 1.35; flex: 1; }
+  .item .time { font-size: 10px; color: #9CA3AF; }
+
+  /* Compact stat row */
+  .mini { display: flex; align-items: center; gap: 10px; padding: 8px 0; }
+  .mini + .mini { border-top: 1px solid rgba(0,0,0,.05); }
+  .mini .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .mini .nm { font-size: 12px; color: #4B5563; flex: 1; }
+  .mini .ct { font-size: 13px; font-weight: 700; color: #231F20; font-family: var(--font-mono); }
+</style></head>
+<body>
+  <div class="bg">
+    <div class="orb o1"></div>
+    <div class="orb o2"></div>
+    <div class="orb o3"></div>
+    <div class="grid"></div>
+  </div>
+
+  <div class="card-frame">
+    <div class="stack">
+
+      <!-- KPI glass card -->
+      <div class="glass">
+        <div class="h">
+          <div class="ic ic-red"><i class="fas fa-users"></i></div>
+          <div><div class="ttl">Total Peserta</div><div class="sub">Bulan ini</div></div>
+        </div>
+        <div class="b">
+          <div class="kpi">
+            <div><div class="val">142</div><div class="lbl">+12 minggu ini</div></div>
+            <div class="trend"><i class="fas fa-arrow-up"></i>9.2%</div>
+          </div>
+          <div class="bars" style="margin-top:10px">
+            <span style="height:30%"></span><span style="height:45%"></span><span style="height:38%"></span>
+            <span style="height:60%"></span><span style="height:52%"></span><span style="height:75%"></span>
+            <span style="height:88%"></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Distribution glass card -->
+      <div class="glass">
+        <div class="h">
+          <div class="ic ic-blue"><i class="fas fa-sitemap"></i></div>
+          <div><div class="ttl">Distribusi Divisi</div><div class="sub">5 divisi teratas</div></div>
+        </div>
+        <div class="b" style="padding-top:8px;padding-bottom:8px">
+          <div class="mini"><div class="dot" style="background:#EE2E24"></div><div class="nm">Network Operations</div><div class="ct">38</div></div>
+          <div class="mini"><div class="dot" style="background:#0891B2"></div><div class="nm">Digital Service</div><div class="ct">29</div></div>
+          <div class="mini"><div class="dot" style="background:#059669"></div><div class="nm">Customer Care</div><div class="ct">24</div></div>
+          <div class="mini"><div class="dot" style="background:#D97706"></div><div class="nm">IT Infrastructure</div><div class="ct">18</div></div>
+          <div class="mini"><div class="dot" style="background:#6366F1"></div><div class="nm">Marketing Comm.</div><div class="ct">12</div></div>
+        </div>
+      </div>
+
+      <!-- Activity glass card -->
+      <div class="glass" style="grid-column: 1 / -1">
+        <div class="h">
+          <div class="ic ic-purple"><i class="fas fa-history"></i></div>
+          <div><div class="ttl">Aktivitas Terkini</div><div class="sub">Tindakan dalam 1 jam terakhir</div></div>
+        </div>
+        <div class="b" style="padding-top:6px;padding-bottom:6px">
+          <div class="item"><div class="pic">SN</div><div class="txt">Siti Nurhaliza disetujui untuk divisi <strong>Digital Service</strong></div><div class="time">5 mnt</div></div>
+          <div class="item"><div class="pic" style="background:linear-gradient(135deg,#374151,#1F2937)">DK</div><div class="txt">Dewi Kartika mengunggah logbook minggu ke-3</div><div class="time">32 mnt</div></div>
+          <div class="item"><div class="pic" style="background:linear-gradient(135deg,#D97706,#B45309)">AF</div><div class="txt">Pengajuan baru dari Ahmad Fauzi Rahman</div><div class="time">1 jam</div></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</body></html>

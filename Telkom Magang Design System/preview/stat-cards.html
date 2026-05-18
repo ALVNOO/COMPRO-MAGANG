@@ -1,0 +1,166 @@
+<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="_card.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+  body { background: #F9FAFB; }
+  .card-frame { gap: 20px; padding: 24px 28px; }
+  .group-label { font-size: 11px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: #9CA3AF; margin-bottom: 4px; }
+
+  /* ---- Stat Card ---- */
+  .stat-card {
+    background: #fff;
+    border-radius: 16px;
+    padding: 22px 22px 18px;
+    border: 1px solid #E5E7EB;
+    box-shadow: 0 1px 3px rgba(0,0,0,.06);
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    transition: box-shadow .2s ease, transform .2s ease;
+  }
+  .stat-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,.10); }
+
+  /* accent bar */
+  .stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+  }
+  .sc-primary::before { background: linear-gradient(135deg, #EE2E24 0%, #C41E1A 100%); }
+  .sc-success::before { background: linear-gradient(135deg, #059669 0%, #047857 100%); }
+  .sc-warning::before { background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%); }
+  .sc-info::before    { background: linear-gradient(135deg, #0891B2 0%, #0E7490 100%); }
+
+  /* header */
+  .sc-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+  .sc-meta   { flex: 1; min-width: 0; }
+  .sc-value  { font-size: 30px; font-weight: 700; color: #231F20; line-height: 1.25; letter-spacing: -.02em; margin-bottom: 4px; }
+  .sc-label  { font-size: 14px; color: #9CA3AF; font-weight: 500; line-height: 1.375; }
+
+  /* icon */
+  .sc-icon { flex-shrink: 0; width: 44px; height: 44px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 17px; }
+  .ic-primary { background: rgba(238,46,36,.1);  color: #EE2E24; }
+  .ic-success { background: #D1FAE5; color: #059669; }
+  .ic-warning { background: #FEF3C7; color: #D97706; }
+  .ic-info    { background: #CFFAFE; color: #0891B2; }
+
+  /* trend */
+  .sc-trend { display: flex; align-items: center; gap: 8px; font-size: 13px; padding-top: 12px; border-top: 1px solid #F3F4F6; }
+  .sc-trend-badge { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 999px; font-size: 12px; font-weight: 600; }
+  .trend-up   .sc-trend-badge { background: #D1FAE5; color: #059669; }
+  .trend-down .sc-trend-badge { background: #FEE2E2; color: #DC2626; }
+  .trend-flat .sc-trend-badge { background: #F3F4F6; color: #6B7280; }
+  .sc-trend-context { color: #C7C8CA; font-size: 12px; }
+</style>
+</head>
+<body><div class="card-frame">
+
+  <div class="group-label">Stat Cards · with trend</div>
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px">
+
+    <div class="stat-card sc-primary">
+      <div class="sc-header">
+        <div class="sc-meta">
+          <div class="sc-value">142</div>
+          <div class="sc-label">Total Peserta</div>
+        </div>
+        <div class="sc-icon ic-primary"><i class="fas fa-users"></i></div>
+      </div>
+      <div class="sc-trend trend-up">
+        <span class="sc-trend-badge"><i class="fas fa-arrow-up"></i> +12</span>
+        <span class="sc-trend-context">minggu ini</span>
+      </div>
+    </div>
+
+    <div class="stat-card sc-success">
+      <div class="sc-header">
+        <div class="sc-meta">
+          <div class="sc-value">38</div>
+          <div class="sc-label">Pengajuan Diterima</div>
+        </div>
+        <div class="sc-icon ic-success"><i class="fas fa-check-circle"></i></div>
+      </div>
+      <div class="sc-trend trend-up">
+        <span class="sc-trend-badge"><i class="fas fa-arrow-up"></i> +5</span>
+        <span class="sc-trend-context">hari ini</span>
+      </div>
+    </div>
+
+    <div class="stat-card sc-warning">
+      <div class="sc-header">
+        <div class="sc-meta">
+          <div class="sc-value">17</div>
+          <div class="sc-label">Menunggu Tinjauan</div>
+        </div>
+        <div class="sc-icon ic-warning"><i class="fas fa-clock"></i></div>
+      </div>
+      <div class="sc-trend trend-down">
+        <span class="sc-trend-badge"><i class="fas fa-arrow-down"></i> -3</span>
+        <span class="sc-trend-context">dari kemarin</span>
+      </div>
+    </div>
+
+    <div class="stat-card sc-info">
+      <div class="sc-header">
+        <div class="sc-meta">
+          <div class="sc-value">94%</div>
+          <div class="sc-label">Tingkat Kehadiran</div>
+        </div>
+        <div class="sc-icon ic-info"><i class="fas fa-chart-line"></i></div>
+      </div>
+      <div class="sc-trend trend-flat">
+        <span class="sc-trend-badge"><i class="fas fa-minus"></i> 0%</span>
+        <span class="sc-trend-context">vs bulan lalu</span>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="group-label" style="margin-top:8px">Stat Cards · no trend</div>
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px">
+
+    <div class="stat-card sc-primary">
+      <div class="sc-header">
+        <div class="sc-meta">
+          <div class="sc-value">24</div>
+          <div class="sc-label">Divisi Aktif</div>
+        </div>
+        <div class="sc-icon ic-primary"><i class="fas fa-sitemap"></i></div>
+      </div>
+    </div>
+
+    <div class="stat-card sc-success">
+      <div class="sc-header">
+        <div class="sc-meta">
+          <div class="sc-value">7</div>
+          <div class="sc-label">Sertifikat Diterbitkan</div>
+        </div>
+        <div class="sc-icon ic-success"><i class="fas fa-certificate"></i></div>
+      </div>
+    </div>
+
+    <div class="stat-card sc-warning">
+      <div class="sc-header">
+        <div class="sc-meta">
+          <div class="sc-value">3</div>
+          <div class="sc-label">Tugas Belum Dinilai</div>
+        </div>
+        <div class="sc-icon ic-warning"><i class="fas fa-tasks"></i></div>
+      </div>
+    </div>
+
+    <div class="stat-card sc-info">
+      <div class="sc-header">
+        <div class="sc-meta">
+          <div class="sc-value">12</div>
+          <div class="sc-label">Mentor Aktif</div>
+        </div>
+        <div class="sc-icon ic-info"><i class="fas fa-user-tie"></i></div>
+      </div>
+    </div>
+
+  </div>
+
+</div></body></html>

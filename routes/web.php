@@ -53,6 +53,11 @@ Route::middleware(['auth', 'throttle:2fa'])->group(function () {
         AuthController::class,
         'clearTrustedDevice',
     ])->name('2fa.clear-trusted');
+
+    // 2FA reset via email
+    Route::get('/2fa/reset', [AuthController::class, 'show2faResetRequest'])->name('2fa.reset');
+    Route::post('/2fa/reset', [AuthController::class, 'send2faResetEmail'])->name('2fa.reset.send');
+    Route::get('/2fa/reset/{token}', [AuthController::class, 'reset2faByToken'])->name('2fa.reset.confirm');
 });
 
 // Internship routes
@@ -640,4 +645,22 @@ Route::middleware(['auth', 'throttle:global'])
             AdminLegacyDivisionController::class,
             'deleteDivisi',
         ])->name('divisi.delete');
+
+        // Admin Profile
+        Route::get('/profile', [
+            AdminDashboardController::class,
+            'profile',
+        ])->name('profile');
+        Route::post('/profile/biodata', [
+            AdminDashboardController::class,
+            'updateBiodata',
+        ])->name('profile.biodata');
+        Route::post('/profile/picture', [
+            AdminDashboardController::class,
+            'uploadProfilePicture',
+        ])->name('profile.picture');
+        Route::delete('/profile/picture', [
+            AdminDashboardController::class,
+            'removeProfilePicture',
+        ])->name('profile.picture.remove');
     });

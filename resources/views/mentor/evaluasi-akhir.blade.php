@@ -15,132 +15,22 @@
 
 @push('styles')
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap');
-
 /* ── Variables & Base ───────────────────────────── */
 .eval-page {
-    --brand:        #EE2E24;
-    --brand-dark:   #B71C1C;
-    --text:         #1C1917;
-    --muted:        #78716C;
-    --border:       rgba(0,0,0,0.07);
-    --card-bg:      #FFFFFF;
-    font-family: 'DM Sans', system-ui, sans-serif;
+    --brand:      #EE2E24;
+    --brand-dark: #B71C1C;
+    --text:       #1C1917;
+    --muted:      #78716C;
+    --border:     rgba(0,0,0,0.07);
+    --card-bg:    #FFFFFF;
 }
 
-/* ── Hero ───────────────────────────────────────── */
-.eval-hero {
-    background: linear-gradient(130deg, #EE2E24 0%, #B71C1C 55%, #7F1D1D 100%);
-    border-radius: 22px;
-    padding: 2rem 2.5rem;
-    margin-bottom: 2rem;
-    color: #fff;
-    position: relative;
-    overflow: hidden;
-}
-
-.eval-hero::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background:
-        radial-gradient(ellipse 60% 80% at 100% 0%, rgba(255,255,255,0.13) 0%, transparent 60%),
-        radial-gradient(ellipse 40% 60% at 0% 100%, rgba(0,0,0,0.12) 0%, transparent 60%);
-    pointer-events: none;
-}
-
-/* Decorative watermark glyph */
-.eval-hero::after {
-    content: '\f15b';   /* fa-file */
-    font-family: 'Font Awesome 5 Free';
-    font-weight: 900;
-    position: absolute;
-    right: 2.5rem;
-    bottom: -1rem;
-    font-size: 8rem;
-    color: rgba(255,255,255,0.06);
-    pointer-events: none;
-    line-height: 1;
-}
-
-.eval-hero-inner {
-    position: relative;
-    z-index: 1;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 1.5rem;
-}
-
-.eval-hero-text h1 {
-    font-family: 'Playfair Display', Georgia, serif;
-    font-size: 1.9rem;
-    font-weight: 700;
-    margin: 0 0 0.4rem;
-    letter-spacing: -0.015em;
-    line-height: 1.15;
-}
-
-.eval-hero-text p {
-    font-size: 0.875rem;
-    opacity: 0.8;
-    margin: 0;
-    max-width: 400px;
-    line-height: 1.5;
-}
-
-/* Stat pills */
-.eval-stats {
-    display: flex;
-    gap: 0.5rem;
-    flex-wrap: wrap;
-}
-
-.eval-stat-pill {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 0.75rem 1.375rem;
-    background: rgba(255,255,255,0.12);
-    border: 1px solid rgba(255,255,255,0.18);
-    border-radius: 14px;
-    min-width: 82px;
-    backdrop-filter: blur(8px);
-    transition: background 0.2s;
-}
-
-.eval-stat-pill:hover {
-    background: rgba(255,255,255,0.18);
-}
-
-.eval-stat-pill .num {
-    font-size: 1.75rem;
-    font-weight: 700;
-    line-height: 1;
-    font-variant-numeric: tabular-nums;
-    letter-spacing: -0.02em;
-}
-
-.eval-stat-pill .lbl {
-    font-size: 0.68rem;
-    opacity: 0.72;
-    margin-top: 0.3rem;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    white-space: nowrap;
-    font-weight: 500;
-}
-
-.eval-stat-pill.sp-green {
-    background: rgba(34,197,94,0.18);
-    border-color: rgba(34,197,94,0.3);
-}
-
-.eval-stat-pill.sp-dim {
-    background: rgba(0,0,0,0.14);
-    border-color: rgba(255,255,255,0.08);
+/* Stats Grid */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.25rem;
+    margin-bottom: 1.5rem;
 }
 
 /* ── Cards grid ─────────────────────────────────── */
@@ -343,42 +233,6 @@
     letter-spacing: 0.01em;
 }
 
-/* Status badge */
-.ev-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.3rem;
-    padding: 0.2rem 0.6rem;
-    border-radius: 6px;
-    font-size: 0.73rem;
-    font-weight: 600;
-    letter-spacing: 0.01em;
-}
-
-.ev-badge-accepted  { background: rgba(16,185,129,0.1);  color: #059669; }
-.ev-badge-finished  { background: rgba(59,130,246,0.1);  color: #2563EB; }
-
-/* Document source chip */
-.eval-source-chip {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.3rem;
-    padding: 0.175rem 0.55rem;
-    border-radius: 5px;
-    font-size: 0.7rem;
-    font-weight: 600;
-}
-
-.eval-source-chip.by-participant {
-    background: rgba(139,92,246,0.1);
-    color: #7C3AED;
-}
-
-.eval-source-chip.by-admin {
-    background: rgba(245,158,11,0.1);
-    color: #B45309;
-}
-
 /* Upload timestamp */
 .eval-uploaded-on {
     display: block;
@@ -405,7 +259,6 @@
     color: white;
     border: none;
     border-radius: 10px;
-    font-family: 'DM Sans', sans-serif;
     font-size: 0.85rem;
     font-weight: 600;
     text-decoration: none;
@@ -467,9 +320,8 @@
 }
 
 .eval-empty h3 {
-    font-family: 'Playfair Display', serif;
-    font-size: 1.4rem;
-    font-weight: 600;
+    font-size: 1.25rem;
+    font-weight: 700;
     color: var(--text);
     margin-bottom: 0.5rem;
 }
@@ -482,45 +334,61 @@
 
 /* ── Responsive ─────────────────────────────────── */
 @media (max-width: 768px) {
-    .eval-hero { padding: 1.5rem 1.25rem; }
-    .eval-hero-text h1 { font-size: 1.55rem; }
-    .eval-stats { width: 100%; }
-    .eval-stat-pill { flex: 1; padding: 0.625rem 0.75rem; }
-    .eval-grid { grid-template-columns: 1fr; }
+    .stats-grid { grid-template-columns: repeat(2, 1fr); }
+    .eval-grid  { grid-template-columns: 1fr; }
 }
 
 @media (max-width: 480px) {
-    .eval-hero-inner { flex-direction: column; align-items: flex-start; }
+    .stats-grid { grid-template-columns: 1fr; }
 }
 </style>
 @endpush
 
 @section('content')
+
+<x-dashboard.page-context-bar
+    title="Evaluasi Akhir Peserta"
+    description="Dokumen evaluasi akhir peserta bimbingan Anda. Hanya dapat dilihat dan diunduh."
+    icon="fas fa-file-signature"
+    role="pembimbing"
+/>
+
 <div class="eval-page">
 
-    {{-- ── Hero ── --}}
-    <div class="eval-hero">
-        <div class="eval-hero-inner">
-            <div class="eval-hero-text">
-                <h1><i class="fas fa-file-signature" style="font-size:1.3rem; margin-right:0.625rem; opacity:0.85;"></i>Evaluasi Akhir</h1>
-                <p>Dokumen evaluasi akhir peserta bimbingan Anda. Hanya dapat dilihat dan diunduh, tidak dapat diunggah dari sini.</p>
-            </div>
-            @if($totalCount > 0)
-            <div class="eval-stats">
-                <div class="eval-stat-pill">
-                    <span class="num">{{ $totalCount }}</span>
-                    <span class="lbl">Total Peserta</span>
+    {{-- Stats --}}
+    <div class="stats-grid">
+        <div class="stat-card stat-card-primary">
+            <div class="stat-card-header">
+                <div class="stat-meta">
+                    <div class="stat-value">{{ $totalCount }}</div>
+                    <div class="stat-label">Total Peserta</div>
                 </div>
-                <div class="eval-stat-pill sp-green">
-                    <span class="num">{{ $hasDocCount }}</span>
-                    <span class="lbl">Ada Dokumen</span>
-                </div>
-                <div class="eval-stat-pill sp-dim">
-                    <span class="num">{{ $pendingCount }}</span>
-                    <span class="lbl">Belum Ada</span>
+                <div class="stat-icon stat-icon-primary">
+                    <i class="fas fa-users"></i>
                 </div>
             </div>
-            @endif
+        </div>
+        <div class="stat-card stat-card-success">
+            <div class="stat-card-header">
+                <div class="stat-meta">
+                    <div class="stat-value">{{ $hasDocCount }}</div>
+                    <div class="stat-label">Ada Dokumen</div>
+                </div>
+                <div class="stat-icon stat-icon-success">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+            </div>
+        </div>
+        <div class="stat-card stat-card-warning">
+            <div class="stat-card-header">
+                <div class="stat-meta">
+                    <div class="stat-value">{{ $pendingCount }}</div>
+                    <div class="stat-label">Belum Ada</div>
+                </div>
+                <div class="stat-icon stat-icon-warning">
+                    <i class="fas fa-clock"></i>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -575,9 +443,9 @@
                         <div>
                             <span class="eval-row-lbl">Status Magang</span>
                             @if($app->status === 'accepted')
-                                <span class="ev-badge ev-badge-accepted"><i class="fas fa-circle" style="font-size:0.4rem;"></i> Aktif</span>
+                                <span class="badge badge-success"><i class="fas fa-play" style="font-size:0.5rem;"></i> Aktif</span>
                             @else
-                                <span class="ev-badge ev-badge-finished"><i class="fas fa-circle" style="font-size:0.4rem;"></i> Selesai</span>
+                                <span class="badge badge-info"><i class="fas fa-flag-checkered" style="font-size:0.5rem;"></i> Selesai</span>
                             @endif
                         </div>
                     </div>
@@ -605,12 +473,12 @@
                             @if($hasDoc)
                                 <div style="display:flex; align-items:center; gap:0.4rem; flex-wrap:wrap; margin-top:0.15rem;">
                                     @if($fromParticipant)
-                                        <span class="eval-source-chip by-participant">
-                                            <i class="fas fa-user" style="font-size:0.65rem;"></i> Peserta
+                                        <span class="badge badge-purple">
+                                            <i class="fas fa-user"></i> Peserta
                                         </span>
                                     @elseif($fromAdmin)
-                                        <span class="eval-source-chip by-admin">
-                                            <i class="fas fa-shield-alt" style="font-size:0.65rem;"></i> Admin
+                                        <span class="badge badge-warning">
+                                            <i class="fas fa-shield-alt"></i> Admin
                                         </span>
                                     @endif
                                     @if($uploadedAt)
