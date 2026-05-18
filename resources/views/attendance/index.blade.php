@@ -17,6 +17,9 @@
     $terlambatCount = $attendanceHistory->where('status', 'Terlambat')->count();
     $absenCount = $attendanceHistory->where('status', 'Absen')->count();
     $attendanceRate = $totalAttendance > 0 ? round((($hadirCount + $terlambatCount) / $totalAttendance) * 100) : 0;
+
+    $attBadgeMap = ['hadir' => 'badge-success', 'terlambat' => 'badge-warning', 'absen' => 'badge-danger'];
+    $attIconMap  = ['hadir' => 'fa-check-circle', 'terlambat' => 'fa-clock', 'absen' => 'fa-times-circle'];
 @endphp
 
 @push('styles')
@@ -24,101 +27,6 @@
 /* ============================================
    ATTENDANCE PAGE STYLES
    ============================================ */
-
-/* Hero Section */
-.page-hero {
-    background: linear-gradient(135deg, #EE2E24 0%, #C41E1A 50%, #9B1B1B 100%);
-    border-radius: 24px;
-    padding: 2rem 2.5rem;
-    margin-bottom: 2rem;
-    position: relative;
-    overflow: hidden;
-    color: white;
-    box-shadow: 0 8px 32px rgba(238, 46, 36, 0.2);
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-.page-hero:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 12px 40px rgba(238, 46, 36, 0.3);
-}
-
-.page-hero::before {
-    content: '';
-    position: absolute;
-    top: -50%;
-    right: -20%;
-    width: 60%;
-    height: 200%;
-    background: radial-gradient(ellipse, rgba(255,255,255,0.15) 0%, transparent 70%);
-    pointer-events: none;
-    animation: pulse-glow 3s ease-in-out infinite;
-}
-
-@keyframes pulse-glow {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.7; }
-}
-
-.hero-content {
-    position: relative;
-    z-index: 1;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 2rem;
-}
-
-.hero-text h1 {
-    font-size: 1.75rem;
-    font-weight: 700;
-    margin-bottom: 0.5rem;
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-}
-
-.hero-text p {
-    font-size: 1rem;
-    opacity: 0.9;
-    max-width: 500px;
-    margin: 0;
-}
-
-.hero-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.75rem;
-    padding: 0.75rem 1.25rem;
-    background: rgba(255,255,255,0.2);
-    backdrop-filter: blur(10px);
-    border-radius: 12px;
-    border: 1px solid rgba(255,255,255,0.3);
-}
-
-.hero-badge-icon {
-    width: 40px;
-    height: 40px;
-    border-radius: 10px;
-    background: rgba(255,255,255,0.2);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.25rem;
-}
-
-.hero-badge-text h4 {
-    font-size: 1.5rem;
-    font-weight: 700;
-    margin: 0;
-    line-height: 1.2;
-}
-
-.hero-badge-text p {
-    font-size: 0.8rem;
-    opacity: 0.9;
-    margin: 0;
-}
 
 /* Stats Grid */
 .stats-grid {
@@ -128,71 +36,6 @@
     margin-bottom: 2rem;
 }
 
-.stat-card {
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(20px);
-    border-radius: 16px;
-    padding: 1.25rem;
-    border: 1px solid rgba(0, 0, 0, 0.06);
-    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-    position: relative;
-    overflow: hidden;
-}
-
-.stat-card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
-    transition: left 0.5s;
-}
-
-.stat-card:hover::before {
-    left: 100%;
-}
-
-.stat-card:hover {
-    transform: translateY(-4px) scale(1.02);
-    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
-    border-color: rgba(238, 46, 36, 0.2);
-}
-
-.stat-icon {
-    width: 48px;
-    height: 48px;
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.25rem;
-    flex-shrink: 0;
-}
-
-.stat-icon.blue { background: linear-gradient(135deg, #3b82f6, #2563eb); color: white; }
-.stat-icon.green { background: linear-gradient(135deg, #22c55e, #16a34a); color: white; }
-.stat-icon.amber { background: linear-gradient(135deg, #f59e0b, #d97706); color: white; }
-.stat-icon.red { background: linear-gradient(135deg, #ef4444, #dc2626); color: white; }
-
-.stat-info h3 {
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: #1f2937;
-    margin: 0;
-    line-height: 1.2;
-}
-
-.stat-info p {
-    font-size: 0.8rem;
-    color: #6b7280;
-    margin: 0;
-}
 
 /* Today Card */
 .today-card {
@@ -240,29 +83,9 @@
 }
 
 .status-badge-large {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.75rem 1.5rem;
-    border-radius: 50px;
-    font-weight: 600;
     font-size: 1rem;
+    padding: 0.75rem 1.5rem;
     margin-bottom: 1rem;
-}
-
-.status-badge-large.hadir {
-    background: rgba(16, 185, 129, 0.15);
-    color: #059669;
-}
-
-.status-badge-large.terlambat {
-    background: rgba(245, 158, 11, 0.15);
-    color: #d97706;
-}
-
-.status-badge-large.absen {
-    background: rgba(239, 68, 68, 0.15);
-    color: #dc2626;
 }
 
 .checkin-time {
@@ -388,40 +211,6 @@
     transform: translateY(-1px) scale(1.02);
 }
 
-/* Table Card */
-.table-card {
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(20px);
-    border-radius: 20px;
-    border: 1px solid rgba(0, 0, 0, 0.06);
-    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
-    overflow: hidden;
-    transition: all 0.3s ease;
-    animation: slide-up 0.8s ease-out;
-}
-
-.table-card:hover {
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
-}
-
-.table-card-header {
-    padding: 1.25rem 1.5rem;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-}
-
-.table-card-header h3 {
-    font-size: 1rem;
-    font-weight: 600;
-    color: #1f2937;
-    margin: 0;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-
 .table-card-header .badge-count {
     background: rgba(238, 46, 36, 0.1);
     color: #EE2E24;
@@ -468,30 +257,6 @@
     border-bottom: none;
 }
 
-.status-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.35rem;
-    padding: 0.35rem 0.85rem;
-    border-radius: 50px;
-    font-size: 0.8rem;
-    font-weight: 600;
-}
-
-.status-badge.hadir {
-    background: rgba(16, 185, 129, 0.15);
-    color: #059669;
-}
-
-.status-badge.terlambat {
-    background: rgba(245, 158, 11, 0.15);
-    color: #d97706;
-}
-
-.status-badge.absen {
-    background: rgba(239, 68, 68, 0.15);
-    color: #dc2626;
-}
 
 .empty-state {
     text-align: center;
@@ -888,37 +653,9 @@
 }
 
 @media (max-width: 768px) {
-    .page-hero {
-        padding: 1.5rem;
-    }
-
-    .hero-content {
-        flex-direction: column;
-        text-align: center;
-    }
-
-    .hero-text h1 {
-        font-size: 1.35rem;
-        justify-content: center;
-    }
-
     .stats-grid {
         grid-template-columns: 1fr 1fr;
         gap: 0.75rem;
-    }
-
-    .stat-card {
-        padding: 1rem;
-    }
-
-    .stat-icon {
-        width: 40px;
-        height: 40px;
-        font-size: 1rem;
-    }
-
-    .stat-info h3 {
-        font-size: 1.25rem;
     }
 
     .attendance-type-selector {
@@ -945,69 +682,57 @@
 
 @section('content')
 
-{{-- Hero Section --}}
-<div class="page-hero">
-    <div class="hero-content">
-        <div class="hero-text">
-            @php
-                $hour = now()->hour;
-                $greeting = $hour < 11 ? 'Selamat Pagi' : ($hour < 15 ? 'Selamat Siang' : ($hour < 18 ? 'Selamat Sore' : 'Selamat Malam'));
-                $greetingIcon = $hour < 11 ? 'fa-sun' : ($hour < 15 ? 'fa-cloud-sun' : ($hour < 18 ? 'fa-cloud' : 'fa-moon'));
-            @endphp
-            <h1 class="animate-fade-in">
-                <i class="fas fa-calendar-check pulse-icon"></i>
-                {{ $greeting }}, {{ Auth::user()->name }}!
-            </h1>
-            <p class="animate-slide-up">Catat kehadiran harian Anda di PT Telkom Indonesia</p>
-        </div>
-        <div class="hero-badge animate-bounce-in">
-            <div class="hero-badge-icon">
-                <i class="fas {{ $greetingIcon }} rotating-slow"></i>
-            </div>
-            <div class="hero-badge-text">
-                <h4 class="time-display">{{ now()->format('H:i') }}</h4>
-                <p>{{ now()->locale('id')->isoFormat('dddd, D MMM Y') }}</p>
-            </div>
-        </div>
-    </div>
-</div>
+<x-dashboard.page-context-bar
+    title="Absensi Magang"
+    description="Catat kehadiran harian Anda di PT Telkom Indonesia"
+    icon="fas fa-calendar-check"
+    role="peserta"
+/>
 
 {{-- Stats Grid --}}
 <div class="stats-grid">
-    <div class="stat-card">
-        <div class="stat-icon blue">
-            <i class="fas fa-calendar-days"></i>
-        </div>
-        <div class="stat-info">
-            <h3>{{ $totalAttendance }}</h3>
-            <p>Total Kehadiran</p>
-        </div>
-    </div>
-    <div class="stat-card">
-        <div class="stat-icon green">
-            <i class="fas fa-check-circle"></i>
-        </div>
-        <div class="stat-info">
-            <h3>{{ $hadirCount }}</h3>
-            <p>Hadir Tepat Waktu</p>
+    <div class="stat-card stat-card-info">
+        <div class="stat-card-header">
+            <div class="stat-meta">
+                <div class="stat-value">{{ $totalAttendance }}</div>
+                <div class="stat-label">Total Kehadiran</div>
+            </div>
+            <div class="stat-icon stat-icon-info">
+                <i class="fas fa-calendar-days"></i>
+            </div>
         </div>
     </div>
-    <div class="stat-card">
-        <div class="stat-icon amber">
-            <i class="fas fa-clock"></i>
-        </div>
-        <div class="stat-info">
-            <h3>{{ $terlambatCount }}</h3>
-            <p>Terlambat</p>
+    <div class="stat-card stat-card-success">
+        <div class="stat-card-header">
+            <div class="stat-meta">
+                <div class="stat-value">{{ $hadirCount }}</div>
+                <div class="stat-label">Hadir Tepat Waktu</div>
+            </div>
+            <div class="stat-icon stat-icon-success">
+                <i class="fas fa-check-circle"></i>
+            </div>
         </div>
     </div>
-    <div class="stat-card">
-        <div class="stat-icon red">
-            <i class="fas fa-chart-line"></i>
+    <div class="stat-card stat-card-warning">
+        <div class="stat-card-header">
+            <div class="stat-meta">
+                <div class="stat-value">{{ $terlambatCount }}</div>
+                <div class="stat-label">Terlambat</div>
+            </div>
+            <div class="stat-icon stat-icon-warning">
+                <i class="fas fa-clock"></i>
+            </div>
         </div>
-        <div class="stat-info">
-            <h3>{{ $attendanceRate }}%</h3>
-            <p>Tingkat Kehadiran</p>
+    </div>
+    <div class="stat-card stat-card-primary">
+        <div class="stat-card-header">
+            <div class="stat-meta">
+                <div class="stat-value">{{ $attendanceRate }}%</div>
+                <div class="stat-label">Tingkat Kehadiran</div>
+            </div>
+            <div class="stat-icon stat-icon-primary">
+                <i class="fas fa-chart-line"></i>
+            </div>
         </div>
     </div>
 </div>
@@ -1026,14 +751,12 @@
     <div class="today-card-body">
         @if($todayAttendance)
             <div class="today-status">
-                <div class="status-badge-large {{ strtolower($todayAttendance->status) }}">
-                    @if(strtolower($todayAttendance->status) === 'hadir')
-                        <i class="fas fa-check-circle"></i>
-                    @elseif(strtolower($todayAttendance->status) === 'terlambat')
-                        <i class="fas fa-clock"></i>
-                    @else
-                        <i class="fas fa-times-circle"></i>
-                    @endif
+                @php
+                    $attBadge = $attBadgeMap[strtolower($todayAttendance->status)] ?? 'badge-danger';
+                    $attIcon  = $attIconMap[strtolower($todayAttendance->status)] ?? 'fa-times-circle';
+                @endphp
+                <div class="badge {{ $attBadge }} status-badge-large">
+                    <i class="fas {{ $attIcon }}"></i>
                     {{ $todayAttendance->status }}
                 </div>
 
@@ -1046,6 +769,16 @@
 
                 @if($todayAttendance->photo_path)
                     <img src="{{ Storage::url($todayAttendance->photo_path) }}" alt="Foto Check In" class="checkin-photo">
+                @endif
+
+                @if($todayAttendance->latitude && $todayAttendance->longitude)
+                    <div style="margin-top:.75rem;">
+                        <a href="https://www.google.com/maps?q={{ $todayAttendance->latitude }},{{ $todayAttendance->longitude }}"
+                           target="_blank" rel="noopener"
+                           style="display:inline-flex;align-items:center;gap:.4rem;padding:.45rem 1rem;background:rgba(59,130,246,.08);border:1px solid rgba(59,130,246,.25);border-radius:8px;font-size:.82rem;font-weight:600;color:#3b82f6;text-decoration:none;">
+                            <i class="fas fa-map-marker-alt"></i> Lihat Lokasi di Maps
+                        </a>
+                    </div>
                 @endif
 
                 @if($todayAttendance->absence_reason)
@@ -1085,10 +818,18 @@
                 <div id="checkinSection" class="attendance-form-section">
                     <form action="{{ route('attendance.check-in') }}" method="POST" enctype="multipart/form-data" id="checkInForm">
                         @csrf
+                        <input type="hidden" name="latitude"  id="latInput">
+                        <input type="hidden" name="longitude" id="lngInput">
                         <div class="form-content">
                             <label style="font-weight: 600; color: #374151; margin-bottom: 0.75rem; display: block; text-align: center;">
                                 <i class="fas fa-camera" style="color: #10B981;"></i> Ambil Foto Selfie
                             </label>
+
+                            {{-- Location status indicator --}}
+                            <div id="locationStatus" style="display:flex;align-items:center;gap:.5rem;justify-content:center;margin-bottom:.75rem;font-size:.82rem;color:#6b7280;">
+                                <i class="fas fa-circle-notch fa-spin" style="color:#3b82f6;"></i>
+                                <span id="locationText">Mendeteksi lokasi…</span>
+                            </div>
 
                             <video id="cameraPreview" autoplay playsinline style="display: none;"></video>
                             <img id="capturedPhoto" alt="Captured Photo">
@@ -1184,6 +925,7 @@
                         <th>Tanggal</th>
                         <th>Status</th>
                         <th>Waktu Check In</th>
+                        <th>Lokasi</th>
                         <th>Keterangan</th>
                     </tr>
                 </thead>
@@ -1194,20 +936,29 @@
                             <strong>{{ \Carbon\Carbon::parse($attendance->date)->locale('id')->isoFormat('D MMMM Y') }}</strong>
                         </td>
                         <td>
-                            <span class="status-badge {{ strtolower($attendance->status) }}">
-                                @if(strtolower($attendance->status) === 'hadir')
-                                    <i class="fas fa-check-circle"></i>
-                                @elseif(strtolower($attendance->status) === 'terlambat')
-                                    <i class="fas fa-clock"></i>
-                                @else
-                                    <i class="fas fa-times-circle"></i>
-                                @endif
+                            @php
+                                $histBadge = $attBadgeMap[strtolower($attendance->status)] ?? 'badge-danger';
+                                $histIcon = $attIconMap[strtolower($attendance->status)] ?? 'fa-times-circle';
+                            @endphp
+                            <span class="badge {{ $histBadge }}">
+                                <i class="fas {{ $histIcon }}"></i>
                                 {{ $attendance->status }}
                             </span>
                         </td>
                         <td>
                             @if($attendance->check_in_time)
                                 {{ \Carbon\Carbon::parse($attendance->check_in_time)->format('H:i:s') }}
+                            @else
+                                <span style="color: #9ca3af;">-</span>
+                            @endif
+                        </td>
+                        <td>
+                            @if($attendance->latitude && $attendance->longitude)
+                                <a href="https://www.google.com/maps?q={{ $attendance->latitude }},{{ $attendance->longitude }}"
+                                   target="_blank" rel="noopener"
+                                   style="display:inline-flex;align-items:center;gap:.3rem;font-size:.8rem;color:#3b82f6;font-weight:600;text-decoration:none;">
+                                    <i class="fas fa-map-marker-alt"></i> Maps
+                                </a>
                             @else
                                 <span style="color: #9ca3af;">-</span>
                             @endif
@@ -1240,6 +991,40 @@
 
 @push('scripts')
 <script>
+    // ── Geolocation ──
+    (function() {
+        const latInput  = document.getElementById('latInput');
+        const lngInput  = document.getElementById('lngInput');
+        const locStatus = document.getElementById('locationStatus');
+        const locText   = document.getElementById('locationText');
+        if (!latInput || !locStatus) return;
+
+        function setStatus(icon, color, text) {
+            locStatus.innerHTML = `<i class="${icon}" style="color:${color};"></i><span>${text}</span>`;
+        }
+
+        if (!navigator.geolocation) {
+            setStatus('fas fa-map-marker-alt', '#9ca3af', 'Lokasi tidak didukung browser ini');
+            return;
+        }
+
+        navigator.geolocation.getCurrentPosition(
+            function(pos) {
+                latInput.value = pos.coords.latitude;
+                lngInput.value = pos.coords.longitude;
+                setStatus('fas fa-map-marker-alt', '#10B981', 'Lokasi terdeteksi ✓');
+            },
+            function(err) {
+                if (err.code === 1) {
+                    setStatus('fas fa-map-marker-slash', '#f59e0b', 'Izin lokasi ditolak — absensi tetap dapat dilakukan');
+                } else {
+                    setStatus('fas fa-map-marker-alt', '#9ca3af', 'Lokasi tidak dapat dideteksi');
+                }
+            },
+            { timeout: 10000, maximumAge: 60000 }
+        );
+    })();
+
     // Type Selection
     const selectCheckinBtn = document.getElementById('selectCheckinBtn');
     const selectAbsentBtn = document.getElementById('selectAbsentBtn');

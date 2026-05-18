@@ -1,1153 +1,362 @@
-{{--
-    MENTOR DASHBOARD
-    Main dashboard for field mentors - Redesigned with Unified Layout System
-
-    Required variables:
-    - $tugasBaruDiupload: New assignments uploaded
-    - $activeParticipants: Active participants count
-    - $totalAssignments: Total assignments
-    - $completedAssignments: Completed assignments
-    - $assignmentsToGrade: Assignments pending grading
-    - $averageGrade: Average grade
-    - $completionRate: Completion rate percentage
-    - $attendanceStats: Array with 'present', 'late', 'absent' keys
-    - $recentSubmissions: Recent submissions collection
-    - $participantCompletionData: Data for bar chart
-    - $completionDistributionData: Data for doughnut chart
---}}
-
 @extends('layouts.dashboard-unified')
-
 @section('title', 'Dashboard Pembimbing Lapangan')
-@section('page-title', 'Dashboard Pembimbing')
-@section('breadcrumb', 'Dashboard')
-
-@php
-    $role = 'mentor';
-@endphp
+@php $role = 'mentor'; @endphp
 
 @push('styles')
 <style>
-/* ============================================
-   MENTOR DASHBOARD STYLES
-   ============================================ */
+/* Stats */
+.stats-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:1.5rem; margin-bottom:2rem; }
+@media(max-width:1200px){.stats-grid{grid-template-columns:repeat(2,1fr);}}
+@media(max-width:640px) {.stats-grid{grid-template-columns:1fr;}}
 
-/* Hero Section */
-.mentor-hero {
-    background: linear-gradient(135deg, #EF4444 0%, #DC2626 50%, #B91C1C 100%);
-    border-radius: 24px;
-    padding: 2.5rem;
-    color: white;
-    position: relative;
-    overflow: hidden;
-    margin-bottom: 2rem;
+/* Today's Focus panels */
+.focus-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:1.25rem; margin-bottom:2rem; }
+@media(max-width:1024px){.focus-grid{grid-template-columns:1fr 1fr;}}
+@media(max-width:640px) {.focus-grid{grid-template-columns:1fr;}}
+
+.focus-panel {
+    background:rgba(255,255,255,0.9);
+    backdrop-filter:blur(20px);
+    border-radius:16px;
+    padding:1.25rem 1.5rem;
+    border:1px solid rgba(0,0,0,0.05);
+    box-shadow:0 4px 20px rgba(0,0,0,0.04);
 }
 
-.mentor-hero::before {
-    content: '';
-    position: absolute;
-    top: -50%;
-    right: -50%;
-    width: 100%;
-    height: 200%;
-    background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 60%);
-    animation: heroGlow 15s ease-in-out infinite;
+.focus-panel-head {
+    display:flex; align-items:center; gap:.6rem;
+    margin-bottom:.9rem;
+    padding-bottom:.75rem;
+    border-bottom:1px solid var(--color-gray-100);
 }
 
-.mentor-hero::after {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: 100%;
-    background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
-    pointer-events: none;
-    opacity: 0.4;
+.focus-panel-icon {
+    width:32px; height:32px; border-radius:9px;
+    display:flex; align-items:center; justify-content:center;
+    font-size:.82rem; color:white; flex-shrink:0;
 }
+.focus-panel-icon.red    { background:linear-gradient(135deg,#EF4444,#F87171); }
+.focus-panel-icon.amber  { background:linear-gradient(135deg,#F59E0B,#FBBF24); }
+.focus-panel-icon.blue   { background:linear-gradient(135deg,#3B82F6,#60A5FA); }
 
-@keyframes heroGlow {
-    0%, 100% { transform: scale(1) rotate(0deg); }
-    50% { transform: scale(1.1) rotate(10deg); }
+.focus-panel-title { font-size:.875rem; font-weight:700; color:var(--color-gray-700); }
+.focus-panel-count { margin-left:auto; font-size:.8rem; font-weight:700; padding:2px 9px; border-radius:100px; }
+.focus-count-red   { background:#FEE2E2; color:#1A1A1A; }
+.focus-count-amber { background:#FEF3C7; color:#1A1A1A; }
+.focus-count-blue  { background:#DBEAFE; color:#1A1A1A; }
+
+.focus-list { display:flex; flex-direction:column; gap:5px; max-height:130px; overflow-y:auto; }
+.focus-list-item {
+    display:flex; align-items:center; gap:7px;
+    font-size:.8rem; color:var(--color-gray-600); padding:4px 0;
 }
-
-.hero-content {
-    position: relative;
-    z-index: 2;
-    display: grid;
-    grid-template-columns: 1fr auto;
-    gap: 2rem;
-    align-items: center;
+.focus-av {
+    width:24px; height:24px; border-radius:6px;
+    background:linear-gradient(135deg,#EE2E24,#C41E3A);
+    color:white; font-size:.6rem; font-weight:700;
+    display:flex; align-items:center; justify-content:center; flex-shrink:0;
 }
-
-.hero-text h1 {
-    font-size: 2rem;
-    font-weight: 700;
-    margin-bottom: 0.5rem;
+.focus-photo {
+    width:24px; height:24px; border-radius:6px;
+    object-fit:cover; flex-shrink:0;
 }
+.focus-empty { font-size:.8rem; color:var(--color-gray-400); text-align:center; padding:.6rem 0; }
 
-.hero-text p {
-    font-size: 1.1rem;
-    opacity: 0.9;
-    margin-bottom: 1rem;
-}
+.pres-item { flex-direction:column; align-items:flex-start; gap:2px; }
+.pres-badge { padding:1px 7px; border-radius:100px; font-size:.68rem; font-weight:700; }
+.pres-soon   { background:#FEE2E2; color:#1A1A1A; }
+.pres-coming { background:#FEF3C7; color:#1A1A1A; }
+.pres-meta   { font-size:.73rem; color:var(--color-gray-400); }
 
-.hero-date {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    font-size: 0.95rem;
-    opacity: 0.85;
-}
-
-.hero-date i {
-    font-size: 1.1rem;
-}
-
-.hero-illustration {
-    width: 150px;
-    height: 150px;
-    background: rgba(255, 255, 255, 0.15);
-    border-radius: 20px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 4rem;
-    backdrop-filter: blur(10px);
-    animation: float 6s ease-in-out infinite;
-}
-
-@keyframes float {
-    0%, 100% { transform: translateY(0) rotate(0deg); }
-    50% { transform: translateY(-10px) rotate(3deg); }
-}
-
-/* Alert Banner */
-.alert-banner {
-    background: linear-gradient(135deg, rgba(245, 158, 11, 0.1) 0%, rgba(251, 191, 36, 0.1) 100%);
-    border: 1px solid rgba(245, 158, 11, 0.3);
-    border-left: 4px solid #F59E0B;
-    border-radius: 12px;
-    padding: 1rem 1.5rem;
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    margin-bottom: 2rem;
-    animation: slideDown 0.5s ease-out;
-}
-
-@keyframes slideDown {
-    from { opacity: 0; transform: translateY(-10px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-.alert-icon {
-    width: 40px;
-    height: 40px;
-    background: linear-gradient(135deg, #F59E0B, #D97706);
-    border-radius: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    font-size: 1.1rem;
-}
-
-.alert-content {
-    flex: 1;
-}
-
-.alert-content h4 {
-    font-size: 0.95rem;
-    font-weight: 600;
-    color: #92400E;
-    margin: 0 0 0.25rem 0;
-}
-
-.alert-content p {
-    font-size: 0.85rem;
-    color: #A16207;
-    margin: 0;
-}
-
-.alert-action {
-    padding: 0.5rem 1rem;
-    background: #F59E0B;
-    color: white;
-    text-decoration: none;
-    border-radius: 8px;
-    font-size: 0.85rem;
-    font-weight: 500;
-    transition: all 0.2s;
-}
-
-.alert-action:hover {
-    background: #D97706;
-    transform: translateY(-2px);
-}
-
-/* Stats Grid */
-.stats-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 1.25rem;
-    margin-bottom: 2rem;
-}
-
-@media (max-width: 1200px) {
-    .stats-grid {
-        grid-template-columns: repeat(2, 1fr);
-    }
-}
-
-@media (max-width: 576px) {
-    .stats-grid {
-        grid-template-columns: 1fr;
-    }
-}
-
-.stat-card {
-    background: rgba(255, 255, 255, 0.8);
-    backdrop-filter: blur(20px);
-    border: 1px solid rgba(255, 255, 255, 0.5);
-    border-radius: 16px;
-    padding: 1.5rem;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    position: relative;
-    overflow: hidden;
-}
-
-.stat-card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 4px;
-    border-radius: 16px 16px 0 0;
-}
-
-.stat-card.green::before { background: linear-gradient(90deg, #10B981, #34D399); }
-.stat-card.blue::before { background: linear-gradient(90deg, #3B82F6, #60A5FA); }
-.stat-card.amber::before { background: linear-gradient(90deg, #F59E0B, #FBBF24); }
-.stat-card.purple::before { background: linear-gradient(90deg, #8B5CF6, #A78BFA); }
-.stat-card.cyan::before { background: linear-gradient(90deg, #06B6D4, #22D3EE); }
-.stat-card.red::before { background: linear-gradient(90deg, #EF4444, #F87171); }
-
-.stat-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-}
-
-.stat-card.has-pending {
-    animation: attentionPulse 2s ease-in-out infinite;
-}
-
-@keyframes attentionPulse {
-    0%, 100% { box-shadow: 0 4px 12px rgba(245, 158, 11, 0.2); }
-    50% { box-shadow: 0 4px 20px rgba(245, 158, 11, 0.4); }
-}
-
-.stat-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 0.75rem;
-}
-
-.stat-icon {
-    width: 44px;
-    height: 44px;
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.25rem;
-}
-
-.stat-icon.green { background: rgba(16, 185, 129, 0.15); color: #059669; }
-.stat-icon.blue { background: rgba(59, 130, 246, 0.15); color: #2563EB; }
-.stat-icon.amber { background: rgba(245, 158, 11, 0.15); color: #D97706; }
-.stat-icon.purple { background: rgba(139, 92, 246, 0.15); color: #7C3AED; }
-.stat-icon.cyan { background: rgba(6, 182, 212, 0.15); color: #0891B2; }
-.stat-icon.red { background: rgba(239, 68, 68, 0.15); color: #DC2626; }
-
-.stat-label {
-    font-size: 0.75rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    padding: 0.25rem 0.5rem;
-    border-radius: 4px;
-    background: var(--color-gray-100);
-    color: var(--color-gray-600);
-}
-
-.stat-value {
-    font-size: 2rem;
-    font-weight: 700;
-    color: var(--color-gray-900);
-    line-height: 1.2;
-}
-
-.stat-desc {
-    font-size: 0.85rem;
-    color: var(--color-gray-500);
-    margin-top: 0.25rem;
-}
-
-/* Quick Actions */
-.quick-actions {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 1rem;
-    margin-bottom: 2rem;
-}
-
-@media (max-width: 768px) {
-    .quick-actions {
-        grid-template-columns: 1fr;
-    }
-}
-
-.quick-action-btn {
-    background: rgba(255, 255, 255, 0.9);
-    backdrop-filter: blur(20px);
-    border: 1px solid rgba(255, 255, 255, 0.5);
-    border-radius: 16px;
-    padding: 1.5rem;
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    text-decoration: none;
-    color: var(--color-gray-900);
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.quick-action-btn:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
-    background: white;
-}
-
-.quick-action-icon {
-    width: 50px;
-    height: 50px;
-    border-radius: 14px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.25rem;
-    flex-shrink: 0;
-}
-
-.quick-action-icon.green { background: linear-gradient(135deg, #10B981, #059669); color: white; }
-.quick-action-icon.blue { background: linear-gradient(135deg, #3B82F6, #2563EB); color: white; }
-.quick-action-icon.purple { background: linear-gradient(135deg, #8B5CF6, #7C3AED); color: white; }
-.quick-action-icon.amber { background: linear-gradient(135deg, #F59E0B, #D97706); color: white; }
-
-.quick-action-content h4 {
-    font-size: 0.95rem;
-    font-weight: 600;
-    margin: 0 0 0.25rem 0;
-}
-
-.quick-action-content p {
-    font-size: 0.8rem;
-    color: var(--color-gray-500);
-    margin: 0;
-}
-
-/* Charts Section */
-.charts-section {
-    display: grid;
-    grid-template-columns: 1.5fr 1fr;
-    gap: 1.5rem;
-    margin-bottom: 2rem;
-}
-
-@media (max-width: 1024px) {
-    .charts-section {
-        grid-template-columns: 1fr;
-    }
-}
+/* Charts area */
+.charts-grid { display:grid; grid-template-columns:1.5fr 1fr; gap:1.5rem; margin-bottom:2rem; }
+@media(max-width:1024px){.charts-grid{grid-template-columns:1fr;}}
 
 .chart-card {
-    background: rgba(255, 255, 255, 0.9);
-    backdrop-filter: blur(20px);
-    border: 1px solid rgba(255, 255, 255, 0.5);
-    border-radius: 20px;
-    padding: 1.5rem;
-    transition: all 0.3s;
+    background:rgba(255,255,255,0.9); backdrop-filter:blur(20px);
+    border-radius:20px; padding:1.5rem;
+    border:1px solid rgba(0,0,0,0.05); box-shadow:0 4px 24px rgba(0,0,0,0.05);
 }
-
-.chart-card:hover {
-    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.08);
-}
+.chart-card.no-pad { padding:0; overflow:hidden; }
 
 .chart-header {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    margin-bottom: 1.5rem;
-    padding-bottom: 1rem;
-    border-bottom: 1px solid var(--color-gray-100);
+    display:flex; justify-content:space-between; align-items:center;
+    margin-bottom:1.25rem; padding-bottom:1rem;
+    border-bottom:1px solid var(--color-gray-100);
 }
-
-.chart-icon {
-    width: 44px;
-    height: 44px;
-    background: linear-gradient(135deg, #10B981, #059669);
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    font-size: 1.1rem;
-}
+.chart-card.no-pad .chart-header { margin:0; padding:1.25rem 1.5rem; border-bottom:1px solid var(--color-gray-100); }
 
 .chart-title {
-    font-size: 1rem;
-    font-weight: 600;
-    color: var(--color-gray-900);
-    margin: 0;
+    display:flex; align-items:center; gap:.7rem;
+    font-size:1rem; font-weight:600; color:var(--color-gray-800); margin:0;
+}
+.chart-title-icon {
+    width:34px; height:34px; border-radius:9px;
+    display:flex; align-items:center; justify-content:center;
+    color:white; font-size:.82rem; flex-shrink:0;
+}
+.chart-title-icon.green  { background:linear-gradient(135deg,#10B981,#34D399); }
+.chart-title-icon.purple { background:linear-gradient(135deg,#8B5CF6,#A78BFA); }
+.chart-title-icon.blue   { background:linear-gradient(135deg,#3B82F6,#60A5FA); }
+.chart-title-icon.amber  { background:linear-gradient(135deg,#F59E0B,#FBBF24); }
+
+.chart-container { position:relative; height:260px; }
+
+.chart-legend { display:flex; gap:12px; flex-wrap:wrap; margin-top:10px; }
+.chart-legend-item { display:flex; align-items:center; gap:5px; font-size:.72rem; color:var(--color-gray-500); font-weight:500; }
+.chart-legend-dot  { width:10px; height:10px; border-radius:3px; }
+
+/* Grading queue table */
+.grade-btn {
+    display:inline-flex; align-items:center; gap:4px;
+    padding:4px 10px; border-radius:8px;
+    background:linear-gradient(135deg,#EE2E24,#C41E3A);
+    color:white; font-size:.72rem; font-weight:600;
+    text-decoration:none; transition:opacity .2s;
+    white-space:nowrap;
+}
+.grade-btn:hover { opacity:.85; color:white; }
+
+.participant-av {
+    width:32px; height:32px; border-radius:8px;
+    background:linear-gradient(135deg,#EE2E24,#C41E3A);
+    color:white; font-size:.68rem; font-weight:700;
+    display:flex; align-items:center; justify-content:center; flex-shrink:0;
 }
 
-.chart-body {
-    position: relative;
-    min-height: 280px;
+.view-all-link {
+    display:flex; align-items:center; gap:.5rem;
+    font-size:.82rem; font-weight:500; color:var(--color-primary);
+    text-decoration:none; transition:gap .2s;
 }
+.view-all-link:hover { gap:.75rem; }
 
-.chart-loading {
-    position: absolute;
-    inset: 0;
-    display: none;
-    align-items: center;
-    justify-content: center;
-    background: rgba(255, 255, 255, 0.9);
-    z-index: 10;
+/* Grading queue scrollable body */
+.grade-queue-body { max-height:320px; overflow-y:auto; }
+.grade-queue-row {
+    display:flex; align-items:center; gap:.75rem;
+    padding:.6rem 1.5rem; border-bottom:1px solid rgba(0,0,0,0.04);
+    transition:background .15s;
 }
-
-.chart-loading.active {
-    display: flex;
-}
-
-.chart-loading-spinner {
-    width: 40px;
-    height: 40px;
-    border: 3px solid var(--color-gray-200);
-    border-top-color: #10B981;
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-    to { transform: rotate(360deg); }
-}
-
-/* Activity Section */
-.activity-section {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 1.5rem;
-    margin-bottom: 2rem;
-}
-
-@media (max-width: 1024px) {
-    .activity-section {
-        grid-template-columns: 1fr;
-    }
-}
-
-.activity-card {
-    background: rgba(255, 255, 255, 0.9);
-    backdrop-filter: blur(20px);
-    border: 1px solid rgba(255, 255, 255, 0.5);
-    border-radius: 20px;
-    padding: 1.5rem;
-}
-
-.activity-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 1.5rem;
-    padding-bottom: 1rem;
-    border-bottom: 1px solid var(--color-gray-100);
-}
-
-.activity-header-left {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-}
-
-.activity-header-icon {
-    width: 44px;
-    height: 44px;
-    background: linear-gradient(135deg, #10B981, #059669);
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    font-size: 1.1rem;
-}
-
-.activity-header-title h4 {
-    font-size: 1rem;
-    font-weight: 600;
-    color: var(--color-gray-900);
-    margin: 0 0 0.15rem 0;
-}
-
-.activity-header-title p {
-    font-size: 0.8rem;
-    color: var(--color-gray-500);
-    margin: 0;
-}
-
-.live-indicator {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.35rem 0.75rem;
-    background: rgba(16, 185, 129, 0.1);
-    border-radius: 20px;
-}
-
-.live-dot {
-    width: 8px;
-    height: 8px;
-    background: #10B981;
-    border-radius: 50%;
-    animation: livePulse 2s ease-in-out infinite;
-}
-
-@keyframes livePulse {
-    0%, 100% { opacity: 1; transform: scale(1); }
-    50% { opacity: 0.5; transform: scale(1.2); }
-}
-
-.live-text {
-    font-size: 0.75rem;
-    font-weight: 600;
-    color: #059669;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-}
-
-.activity-body {
-    max-height: 400px;
-    overflow-y: auto;
-}
-
-.activity-body::-webkit-scrollbar {
-    width: 4px;
-}
-
-.activity-body::-webkit-scrollbar-thumb {
-    background: var(--color-gray-300);
-    border-radius: 4px;
-}
-
-.activity-item {
-    display: flex;
-    align-items: flex-start;
-    gap: 1rem;
-    padding: 1rem;
-    border-radius: 12px;
-    margin-bottom: 0.5rem;
-    transition: all 0.2s;
-}
-
-.activity-item:hover {
-    background: var(--color-gray-50);
-}
-
-.activity-item.new {
-    background: linear-gradient(135deg, rgba(16, 185, 129, 0.08), rgba(16, 185, 129, 0.02));
-    border-left: 3px solid #10B981;
-}
-
-.activity-avatar {
-    width: 40px;
-    height: 40px;
-    background: var(--color-gray-100);
-    border-radius: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--color-gray-500);
-    font-size: 1rem;
-    flex-shrink: 0;
-}
-
-.activity-content {
-    flex: 1;
-    min-width: 0;
-}
-
-.activity-name {
-    font-size: 0.9rem;
-    font-weight: 600;
-    color: var(--color-gray-900);
-    margin: 0 0 0.25rem 0;
-}
-
-.activity-desc {
-    font-size: 0.85rem;
-    color: var(--color-gray-600);
-    margin: 0 0 0.25rem 0;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.activity-time {
-    font-size: 0.75rem;
-    color: var(--color-gray-400);
-    display: flex;
-    align-items: center;
-    gap: 0.35rem;
-}
-
-.activity-time i {
-    font-size: 0.7rem;
-}
-
-.activity-badge {
-    padding: 0.25rem 0.6rem;
-    font-size: 0.7rem;
-    font-weight: 600;
-    border-radius: 6px;
-    white-space: nowrap;
-}
-
-.activity-badge.graded {
-    background: rgba(16, 185, 129, 0.1);
-    color: #059669;
-}
-
-.activity-badge.pending {
-    background: rgba(245, 158, 11, 0.1);
-    color: #D97706;
-}
-
-.activity-empty {
-    text-align: center;
-    padding: 2rem;
-}
-
-.activity-empty-icon {
-    width: 60px;
-    height: 60px;
-    margin: 0 auto 1rem;
-    background: var(--color-gray-100);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--color-gray-400);
-    font-size: 1.5rem;
-}
-
-.activity-empty p {
-    color: var(--color-gray-500);
-    font-size: 0.9rem;
-    margin: 0;
-}
-
-/* Attendance Card */
-.attendance-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 1rem;
-}
-
-.attendance-item {
-    text-align: center;
-    padding: 1rem;
-    border-radius: 12px;
-    background: var(--color-gray-50);
-}
-
-.attendance-item.present { background: rgba(16, 185, 129, 0.1); }
-.attendance-item.late { background: rgba(245, 158, 11, 0.1); }
-.attendance-item.absent { background: rgba(239, 68, 68, 0.1); }
-
-.attendance-value {
-    font-size: 1.75rem;
-    font-weight: 700;
-    margin-bottom: 0.25rem;
-}
-
-.attendance-item.present .attendance-value { color: #059669; }
-.attendance-item.late .attendance-value { color: #D97706; }
-.attendance-item.absent .attendance-value { color: #DC2626; }
-
-.attendance-label {
-    font-size: 0.8rem;
-    color: var(--color-gray-600);
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-    .mentor-hero {
-        padding: 1.5rem;
-    }
-
-    .hero-content {
-        grid-template-columns: 1fr;
-        text-align: center;
-    }
-
-    .hero-text h1 {
-        font-size: 1.5rem;
-    }
-
-    .hero-illustration {
-        display: none;
-    }
-
-    .stats-grid {
-        grid-template-columns: repeat(2, 1fr);
-    }
-
-    .charts-section,
-    .activity-section {
-        grid-template-columns: 1fr;
-    }
-}
+.grade-queue-row:last-child { border-bottom:none; }
+.grade-queue-row:hover { background:rgba(0,0,0,0.02); }
+.grade-queue-info { flex:1; min-width:0; }
+.grade-queue-title { font-size:.8rem; font-weight:600; color:var(--color-gray-700); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.grade-queue-meta  { font-size:.72rem; color:var(--color-gray-400); }
 </style>
 @endpush
 
 @section('content')
-{{-- Hero Section --}}
-<div class="mentor-hero" data-aos="fade-down">
-    <div class="hero-content">
-        <div class="hero-text">
-            <h1>Selamat Datang, {{ Auth::user()->name }}!</h1>
-            <p>Panel Pembimbing Lapangan - PT Telkom Indonesia</p>
-            <div class="hero-date">
-                <i class="fas fa-calendar-alt"></i>
-                <span>{{ \Carbon\Carbon::now()->locale('id')->isoFormat('dddd, D MMMM YYYY') }}</span>
-            </div>
-        </div>
-        <div class="hero-illustration">
-            <i class="fas fa-chalkboard-teacher"></i>
-        </div>
-    </div>
+
+<x-dashboard.page-context-bar
+    title="Dashboard Pembimbing"
+    description="Monitor kehadiran & aktivitas harian peserta magang"
+    icon="fas fa-chalkboard-teacher"
+    role="pembimbing"
+/>
+
+{{-- ── Stat Cards ── --}}
+<div class="stats-grid">
+    @include('components.dashboard.stat-card', ['value'=>$activeParticipants??0,             'label'=>'Peserta Aktif',   'icon'=>'fa-users',           'color'=>'success','link'=>route('mentor.penugasan')])
+    @include('components.dashboard.stat-card', ['value'=>$totalAssignments??0,               'label'=>'Total Tugas',     'icon'=>'fa-clipboard-list',  'color'=>'info',   'link'=>route('mentor.penugasan')])
+    @include('components.dashboard.stat-card', ['value'=>$attendanceStats['present']??0,     'label'=>'Hadir Hari Ini',  'icon'=>'fa-calendar-check',  'color'=>'primary'])
+    @include('components.dashboard.stat-card', ['value'=>$assignmentsToGrade??0,             'label'=>'Perlu Dinilai',   'icon'=>'fa-clock',           'color'=>'warning','link'=>route('mentor.penugasan')])
 </div>
 
-{{-- Alert Notification (if there are assignments to grade) --}}
-@if($assignmentsToGrade > 0)
-<div class="alert-banner" data-aos="fade-up">
-    <div class="alert-icon">
-        <i class="fas fa-clipboard-check"></i>
-    </div>
-    <div class="alert-content">
-        <h4>Ada {{ $assignmentsToGrade }} Tugas Menunggu Penilaian!</h4>
-        <p>Segera berikan penilaian untuk submission tugas dari peserta magang.</p>
-    </div>
-    <a href="{{ route('mentor.penugasan') }}" class="alert-action">
-        <i class="fas fa-arrow-right"></i> Lihat Tugas
-    </a>
-</div>
-@endif
+{{-- ── Today's Focus ── --}}
+<div class="focus-grid">
 
-{{-- Stats Grid --}}
-<div class="stats-grid" data-aos="fade-up" data-aos-delay="100">
-    {{-- Active Participants --}}
-    <div class="stat-card green">
-        <div class="stat-header">
-            <div class="stat-icon green">
-                <i class="fas fa-users"></i>
-            </div>
-            <span class="stat-label">Aktif</span>
+    {{-- Tidak Hadir --}}
+    @php
+        $absentList = $participantOverview->filter(fn($p) => $p['att_status'] === 'Absen');
+        $tidakHadir = $absentList->pluck('name');
+    @endphp
+    <div class="focus-panel">
+        <div class="focus-panel-head">
+            <div class="focus-panel-icon red"><i class="fas fa-times"></i></div>
+            <span class="focus-panel-title">Tidak Hadir Hari Ini</span>
+            <span class="focus-panel-count focus-count-red">{{ $tidakHadir->count() }}</span>
         </div>
-        <div class="stat-value" data-count="{{ $activeParticipants }}">{{ $activeParticipants }}</div>
-        <div class="stat-desc">Peserta Aktif</div>
-    </div>
-
-    {{-- Total Assignments --}}
-    <div class="stat-card blue">
-        <div class="stat-header">
-            <div class="stat-icon blue">
-                <i class="fas fa-clipboard-list"></i>
-            </div>
-            <span class="stat-label">Total</span>
-        </div>
-        <div class="stat-value" data-count="{{ $totalAssignments }}">{{ $totalAssignments }}</div>
-        <div class="stat-desc">Total Tugas</div>
-    </div>
-
-    {{-- Completed Assignments --}}
-    <div class="stat-card green">
-        <div class="stat-header">
-            <div class="stat-icon green">
-                <i class="fas fa-check-circle"></i>
-            </div>
-            <span class="stat-label">Selesai</span>
-        </div>
-        <div class="stat-value" data-count="{{ $completedAssignments }}">{{ $completedAssignments }}</div>
-        <div class="stat-desc">Tugas Selesai</div>
-    </div>
-
-    {{-- Assignments to Grade --}}
-    <div class="stat-card amber {{ $assignmentsToGrade > 0 ? 'has-pending' : '' }}">
-        <div class="stat-header">
-            <div class="stat-icon amber">
-                <i class="fas fa-hourglass-half"></i>
-            </div>
-            <span class="stat-label">Pending</span>
-        </div>
-        <div class="stat-value" data-count="{{ $assignmentsToGrade }}">{{ $assignmentsToGrade }}</div>
-        <div class="stat-desc">Perlu Dinilai</div>
-    </div>
-</div>
-
-{{-- Quick Actions --}}
-<div class="quick-actions" data-aos="fade-up" data-aos-delay="200">
-    <a href="{{ route('mentor.penugasan') }}" class="quick-action-btn">
-        <div class="quick-action-icon green">
-            <i class="fas fa-tasks"></i>
-        </div>
-        <div class="quick-action-content">
-            <h4>Kelola Penugasan</h4>
-            <p>Buat dan nilai tugas peserta</p>
-        </div>
-    </a>
-
-    <a href="{{ route('mentor.absensi') }}" class="quick-action-btn">
-        <div class="quick-action-icon blue">
-            <i class="fas fa-calendar-check"></i>
-        </div>
-        <div class="quick-action-content">
-            <h4>Monitor Absensi</h4>
-            <p>Pantau kehadiran harian</p>
-        </div>
-    </a>
-
-    <a href="{{ route('mentor.logbook') }}" class="quick-action-btn">
-        <div class="quick-action-icon purple">
-            <i class="fas fa-book-open"></i>
-        </div>
-        <div class="quick-action-content">
-            <h4>Review Logbook</h4>
-            <p>Lihat aktivitas harian peserta</p>
-        </div>
-    </a>
-</div>
-
-{{-- Charts Section --}}
-<div class="charts-section" data-aos="fade-up" data-aos-delay="300">
-    {{-- Participant Completion Bar Chart --}}
-    <div class="chart-card">
-        <div class="chart-header">
-            <div class="chart-icon">
-                <i class="fas fa-chart-bar"></i>
-            </div>
-            <h5 class="chart-title">Persentase Penyelesaian Tugas per Peserta</h5>
-        </div>
-        <div class="chart-body">
-            <div class="chart-loading active">
-                <div class="chart-loading-spinner"></div>
-            </div>
-            <canvas id="participantCompletionChart"></canvas>
-        </div>
-    </div>
-
-    {{-- Completion Distribution Doughnut Chart --}}
-    <div class="chart-card">
-        <div class="chart-header">
-            <div class="chart-icon">
-                <i class="fas fa-chart-pie"></i>
-            </div>
-            <h5 class="chart-title">Distribusi Penyelesaian</h5>
-        </div>
-        <div class="chart-body">
-            <div class="chart-loading active">
-                <div class="chart-loading-spinner"></div>
-            </div>
-            <canvas id="completionDistributionChart"></canvas>
-        </div>
-    </div>
-</div>
-
-{{-- Activity Section --}}
-<div class="activity-section" data-aos="fade-up" data-aos-delay="400">
-    {{-- Recent Submissions --}}
-    <div class="activity-card">
-        <div class="activity-header">
-            <div class="activity-header-left">
-                <div class="activity-header-icon">
-                    <i class="fas fa-clock"></i>
-                </div>
-                <div class="activity-header-title">
-                    <h4>Aktivitas Terbaru</h4>
-                    <p>7 hari terakhir</p>
-                </div>
-            </div>
-            <div class="live-indicator">
-                <span class="live-dot"></span>
-                <span class="live-text">Live</span>
-            </div>
-        </div>
-        <div class="activity-body">
-            @if($recentSubmissions->isEmpty())
-                <div class="activity-empty">
-                    <div class="activity-empty-icon">
-                        <i class="fas fa-inbox"></i>
-                    </div>
-                    <p>Belum ada aktivitas dalam 7 hari terakhir</p>
-                </div>
-            @else
-                @foreach($recentSubmissions as $index => $submission)
-                    @php
-                        $latestSubmission = $submission->submissions->first();
-                        $submittedAt = $latestSubmission ? $latestSubmission->submitted_at : null;
-                        $isNew = $submittedAt && \Carbon\Carbon::parse($submittedAt)->diffInHours(now()) < 6;
-                    @endphp
-                    <div class="activity-item {{ $isNew ? 'new' : '' }}">
-                        <div class="activity-avatar">
-                            <i class="fas fa-upload"></i>
-                        </div>
-                        <div class="activity-content">
-                            <h6 class="activity-name">{{ $submission->user->name }}</h6>
-                            <p class="activity-desc">Mengumpulkan: {{ $submission->title }}</p>
-                            <span class="activity-time">
-                                <i class="fas fa-clock"></i>
-                                {{ $submittedAt ? \Carbon\Carbon::parse($submittedAt)->diffForHumans() : '-' }}
-                            </span>
-                        </div>
-                        @if($submission->grade)
-                            <span class="activity-badge graded">{{ $submission->grade }}</span>
-                        @else
-                            <span class="activity-badge pending">Belum Dinilai</span>
-                        @endif
+        @if($tidakHadir->isEmpty())
+            <p class="focus-empty"><i class="fas fa-check-circle" style="color:#10B981;margin-right:4px;"></i>Semua hadir</p>
+        @else
+            <div class="focus-list">
+                @foreach($tidakHadir as $name)
+                    <div class="focus-list-item">
+                        <div class="focus-av">{{ strtoupper(substr($name,0,1)) }}</div>
+                        {{ $name }}
                     </div>
                 @endforeach
-            @endif
-        </div>
+            </div>
+        @endif
     </div>
 
-    {{-- Attendance Summary --}}
-    <div class="activity-card">
-        <div class="activity-header">
-            <div class="activity-header-left">
-                <div class="activity-header-icon" style="background: linear-gradient(135deg, #3B82F6, #2563EB);">
-                    <i class="fas fa-calendar-check"></i>
-                </div>
-                <div class="activity-header-title">
-                    <h4>Ringkasan Kehadiran</h4>
-                    <p>Hari ini</p>
-                </div>
-            </div>
+    {{-- Belum Submit Logbook (with profile photo) --}}
+    <div class="focus-panel">
+        <div class="focus-panel-head">
+            <div class="focus-panel-icon amber"><i class="fas fa-book"></i></div>
+            <span class="focus-panel-title">Belum Submit Logbook</span>
+            <span class="focus-panel-count focus-count-amber">{{ $noLogbookToday->count() }}</span>
         </div>
-        <div class="activity-body" style="padding-top: 1rem;">
-            <div class="attendance-grid">
-                <div class="attendance-item present">
-                    <div class="attendance-value">{{ $attendanceStats['present'] ?? 0 }}</div>
-                    <div class="attendance-label">Hadir</div>
-                </div>
-                <div class="attendance-item late">
-                    <div class="attendance-value">{{ $attendanceStats['late'] ?? 0 }}</div>
-                    <div class="attendance-label">Terlambat</div>
-                </div>
-                <div class="attendance-item absent">
-                    <div class="attendance-value">{{ $attendanceStats['absent'] ?? 0 }}</div>
-                    <div class="attendance-label">Tidak Hadir</div>
-                </div>
+        @if($noLogbookToday->isEmpty())
+            <p class="focus-empty"><i class="fas fa-check-circle" style="color:#10B981;margin-right:4px;"></i>Semua sudah submit</p>
+        @else
+            <div class="focus-list">
+                @foreach($noLogbookToday as $person)
+                    <div class="focus-list-item">
+                        @if(!empty($person['photo']))
+                            <img src="{{ Storage::url($person['photo']) }}"
+                                 class="focus-photo"
+                                 alt="{{ $person['name'] }}"
+                                 onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+                            <div class="focus-av" style="background:linear-gradient(135deg,#F59E0B,#D97706);display:none;">{{ strtoupper(substr($person['name'],0,1)) }}</div>
+                        @else
+                            <div class="focus-av" style="background:linear-gradient(135deg,#F59E0B,#D97706);">{{ strtoupper(substr($person['name'],0,1)) }}</div>
+                        @endif
+                        {{ $person['name'] }}
+                    </div>
+                @endforeach
             </div>
-
-            <div style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid var(--color-gray-100);">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
-                    <span style="font-size: 0.85rem; color: var(--color-gray-600);">Tingkat Kehadiran</span>
-                    @php
-                        $totalToday = ($attendanceStats['present'] ?? 0) + ($attendanceStats['late'] ?? 0) + ($attendanceStats['absent'] ?? 0);
-                        $attendanceRate = $totalToday > 0 ? (($attendanceStats['present'] ?? 0) / $totalToday) * 100 : 0;
-                    @endphp
-                    <span style="font-size: 0.9rem; font-weight: 600; color: #059669;">{{ number_format($attendanceRate, 0) }}%</span>
-                </div>
-                <div style="height: 8px; background: var(--color-gray-100); border-radius: 4px; overflow: hidden;">
-                    <div style="height: 100%; width: {{ $attendanceRate }}%; background: linear-gradient(90deg, #10B981, #059669); border-radius: 4px; transition: width 1s ease-out;"></div>
-                </div>
-            </div>
-        </div>
+        @endif
     </div>
+
+    {{-- Presentasi Mendatang (7 hari) --}}
+    <div class="focus-panel">
+        <div class="focus-panel-head">
+            <div class="focus-panel-icon blue"><i class="fas fa-chalkboard"></i></div>
+            <span class="focus-panel-title">Presentasi Mendatang</span>
+            <span class="focus-panel-count focus-count-blue">{{ $upcomingPresentations->count() }}</span>
+        </div>
+        @if($upcomingPresentations->isEmpty())
+            <p class="focus-empty">Tidak ada jadwal presentasi dalam 7 hari</p>
+        @else
+            <div class="focus-list">
+                @foreach($upcomingPresentations->take(4) as $pres)
+                    @php $daysLeft = (int) now()->startOfDay()->diffInDays(\Carbon\Carbon::parse($pres->presentation_date)->startOfDay(), false); @endphp
+                    <div class="focus-list-item pres-item">
+                        <div style="display:flex;align-items:center;gap:6px;width:100%;">
+                            <span class="pres-badge {{ $daysLeft <= 1 ? 'pres-soon' : 'pres-coming' }}">
+                                {{ $daysLeft <= 0 ? 'Hari ini' : ($daysLeft == 1 ? 'Besok' : $daysLeft.' hari') }}
+                            </span>
+                            <span style="font-size:.78rem;font-weight:600;color:var(--color-gray-700);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
+                                {{ Str::limit($pres->title, 28) }}
+                            </span>
+                        </div>
+                        <span class="pres-meta" style="padding-left:2px;">{{ Str::limit($pres->user->name ?? '-', 25) }}</span>
+                    </div>
+                @endforeach
+            </div>
+        @endif
+    </div>
+
 </div>
+
+{{-- ── Charts: Antrian Penilaian (left) + Aktivitas Harian (right) ── --}}
+<div class="charts-grid">
+
+    {{-- Antrian Penilaian (table, replaces attendance chart) --}}
+    <div class="chart-card no-pad">
+        <div class="chart-header">
+            <h5 class="chart-title">
+                <div class="chart-title-icon amber"><i class="fas fa-clock"></i></div>
+                Antrian Penilaian
+                @if(($assignmentsToGrade ?? 0) > 0)
+                    <span style="background:#FEF3C7;color:#1A1A1A;font-size:.68rem;font-weight:700;padding:2px 8px;border-radius:100px;margin-left:4px;">{{ $assignmentsToGrade }}</span>
+                @endif
+            </h5>
+            <a href="{{ route('mentor.penugasan') }}" class="view-all-link" style="font-size:.75rem;">
+                Semua <i class="fas fa-arrow-right"></i>
+            </a>
+        </div>
+
+        @if($pendingGradeList->isEmpty())
+            <div style="text-align:center;padding:3rem 1rem;color:var(--color-gray-400);">
+                <i class="fas fa-check-circle" style="font-size:2rem;color:#10B981;display:block;margin-bottom:.4rem;"></i>
+                <p style="font-size:.82rem;margin:0;">Semua tugas sudah dinilai.</p>
+            </div>
+        @else
+            <div class="grade-queue-body">
+                @foreach($pendingGradeList as $assignment)
+                    @php $ini = collect(explode(' ', $assignment->user->name ?? 'U'))->take(2)->map(fn($w) => strtoupper($w[0]))->implode(''); @endphp
+                    <div class="grade-queue-row">
+                        <div class="participant-av">{{ $ini }}</div>
+                        <div class="grade-queue-info">
+                            <div class="grade-queue-title">{{ Str::limit($assignment->title, 35) }}</div>
+                            <div class="grade-queue-meta">{{ Str::limit($assignment->user->name ?? '-', 22) }} &middot; {{ $assignment->updated_at?->diffForHumans() ?? '—' }}</div>
+                        </div>
+                        <a href="{{ route('mentor.penugasan') }}" class="grade-btn">
+                            <i class="fas fa-pen"></i> Nilai
+                        </a>
+                    </div>
+                @endforeach
+            </div>
+        @endif
+    </div>
+
+    {{-- Aktivitas Harian 7 Hari (dual line) --}}
+    <div class="chart-card">
+        <div class="chart-header">
+            <h5 class="chart-title">
+                <div class="chart-title-icon purple"><i class="fas fa-pen-to-square"></i></div>
+                Aktivitas Harian 7 Hari
+            </h5>
+        </div>
+        <div class="chart-container"><canvas id="activityTrendChart"></canvas></div>
+        <div class="chart-legend">
+            <div class="chart-legend-item"><div class="chart-legend-dot" style="background:#8B5CF6;"></div>Logbook</div>
+            <div class="chart-legend-item"><div class="chart-legend-dot" style="background:#3B82F6;"></div>Kumpul Tugas</div>
+        </div>
+    </div>
+
+</div>
+
 @endsection
 
 @push('scripts')
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Chart.js default styling
-    Chart.defaults.font.family = "'Inter', 'Segoe UI', sans-serif";
+    Chart.defaults.font.family = "'Inter','Segoe UI',sans-serif";
     Chart.defaults.color = '#64748B';
 
-    // Participant Completion Bar Chart
-    const participantData = @json($participantCompletionData ?? []);
-    const completionCtx = document.getElementById('participantCompletionChart');
+    const actData = @json($activityTrend);
+    const labels  = actData.map(d => d.label);
 
-    if (completionCtx && participantData.labels && participantData.labels.length > 0) {
-        setTimeout(() => {
-            new Chart(completionCtx, {
-                type: 'bar',
-                data: {
-                    labels: participantData.labels,
-                    datasets: [{
-                        label: 'Penyelesaian (%)',
-                        data: participantData.data,
-                        backgroundColor: function(context) {
-                            const chart = context.chart;
-                            const {ctx, chartArea} = chart;
-                            if (!chartArea) return '#10B981';
-                            const gradient = ctx.createLinearGradient(0, chartArea.bottom, 0, chartArea.top);
-                            gradient.addColorStop(0, 'rgba(16, 185, 129, 0.6)');
-                            gradient.addColorStop(1, 'rgba(16, 185, 129, 1)');
-                            return gradient;
-                        },
-                        borderRadius: 8,
-                        borderSkipped: false,
-                        barPercentage: 0.6,
-                    }]
+    new Chart(document.getElementById('activityTrendChart'), {
+        type: 'line',
+        data: {
+            labels,
+            datasets: [
+                {
+                    label:'Logbook', data:actData.map(d=>d.logbook),
+                    borderColor:'#8B5CF6', backgroundColor:'rgba(139,92,246,.12)',
+                    tension:.4, fill:true, borderWidth:2.5,
+                    pointBackgroundColor:'#8B5CF6', pointBorderColor:'#fff', pointBorderWidth:2, pointRadius:4,
                 },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { display: false },
-                        tooltip: {
-                            backgroundColor: '#1F2937',
-                            titleColor: '#F9FAFB',
-                            bodyColor: '#E5E7EB',
-                            padding: 12,
-                            cornerRadius: 8,
-                            callbacks: {
-                                label: function(context) {
-                                    return context.raw + '% selesai';
-                                }
-                            }
-                        }
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            max: 100,
-                            grid: {
-                                color: 'rgba(0, 0, 0, 0.05)',
-                                drawBorder: false
-                            },
-                            ticks: {
-                                callback: function(value) {
-                                    return value + '%';
-                                }
-                            }
-                        },
-                        x: {
-                            grid: { display: false }
-                        }
-                    }
-                }
-            });
-
-            completionCtx.closest('.chart-card').querySelector('.chart-loading').classList.remove('active');
-        }, 500);
-    } else if (completionCtx) {
-        completionCtx.closest('.chart-card').querySelector('.chart-loading').classList.remove('active');
-        completionCtx.parentElement.innerHTML = '<div style="text-align:center; padding:2rem; color:#64748B;"><i class="fas fa-chart-bar" style="font-size:2rem; margin-bottom:1rem; display:block; opacity:0.3;"></i>Belum ada data</div>';
-    }
-
-    // Completion Distribution Doughnut Chart
-    const distributionData = @json($completionDistributionData ?? []);
-    const distributionCtx = document.getElementById('completionDistributionChart');
-
-    if (distributionCtx && distributionData.labels && distributionData.labels.length > 0) {
-        setTimeout(() => {
-            new Chart(distributionCtx, {
-                type: 'doughnut',
-                data: {
-                    labels: distributionData.labels,
-                    datasets: [{
-                        data: distributionData.data,
-                        backgroundColor: [
-                            '#10B981',
-                            '#3B82F6',
-                            '#F59E0B',
-                            '#EF4444'
-                        ],
-                        borderWidth: 0,
-                        spacing: 4
-                    }]
+                {
+                    label:'Kumpul Tugas', data:actData.map(d=>d.tugas),
+                    borderColor:'#3B82F6', backgroundColor:'rgba(59,130,246,.08)',
+                    tension:.4, fill:true, borderWidth:2.5,
+                    pointBackgroundColor:'#3B82F6', pointBorderColor:'#fff', pointBorderWidth:2, pointRadius:4,
                 },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    cutout: '65%',
-                    plugins: {
-                        legend: {
-                            position: 'bottom',
-                            labels: {
-                                padding: 20,
-                                usePointStyle: true,
-                                pointStyle: 'circle'
-                            }
-                        },
-                        tooltip: {
-                            backgroundColor: '#1F2937',
-                            titleColor: '#F9FAFB',
-                            bodyColor: '#E5E7EB',
-                            padding: 12,
-                            cornerRadius: 8
-                        }
-                    }
+            ]
+        },
+        options: {
+            responsive:true, maintainAspectRatio:false,
+            animation:{duration:900,easing:'easeOutQuart'},
+            plugins:{
+                legend:{display:false},
+                tooltip:{
+                    backgroundColor:'rgba(15,23,42,.95)',padding:12,cornerRadius:10,
+                    callbacks:{label:ctx=>`${ctx.dataset.label}: ${ctx.raw}`}
                 }
-            });
-
-            distributionCtx.closest('.chart-card').querySelector('.chart-loading').classList.remove('active');
-        }, 700);
-    } else if (distributionCtx) {
-        distributionCtx.closest('.chart-card').querySelector('.chart-loading').classList.remove('active');
-        distributionCtx.parentElement.innerHTML = '<div style="text-align:center; padding:2rem; color:#64748B;"><i class="fas fa-chart-pie" style="font-size:2rem; margin-bottom:1rem; display:block; opacity:0.3;"></i>Belum ada data</div>';
-    }
-
-    // Animate stat values
-    const statValues = document.querySelectorAll('.stat-value[data-count]');
-    const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                const el = entry.target;
-                const target = parseFloat(el.dataset.count);
-                const isDecimal = target % 1 !== 0;
-
-                let current = 0;
-                const duration = 1500;
-                const startTime = performance.now();
-
-                const animate = (currentTime) => {
-                    const elapsed = currentTime - startTime;
-                    const progress = Math.min(elapsed / duration, 1);
-                    const easeOut = 1 - Math.pow(1 - progress, 3);
-
-                    current = target * easeOut;
-                    el.textContent = isDecimal ? current.toFixed(1) : Math.floor(current);
-
-                    if (progress < 1) {
-                        requestAnimationFrame(animate);
-                    } else {
-                        el.textContent = isDecimal ? target.toFixed(1) : target;
-                    }
-                };
-
-                requestAnimationFrame(animate);
-                observer.unobserve(el);
+            },
+            scales:{
+                x:{grid:{display:false},ticks:{font:{size:10}}},
+                y:{beginAtZero:true,ticks:{stepSize:1,precision:0,font:{size:10}},grid:{color:'rgba(0,0,0,.04)',drawBorder:false}}
             }
-        });
-    }, { threshold: 0.5 });
-
-    statValues.forEach(el => observer.observe(el));
+        }
+    });
 });
 </script>
 @endpush

@@ -20,87 +20,6 @@
    ADMIN DASHBOARD STYLES
    ============================================ */
 
-/* Hero Section - Telkom Red Theme */
-.admin-hero {
-    background: linear-gradient(135deg, #EE2E24 0%, #C41E1A 50%, #9B1B1B 100%);
-    border-radius: 24px;
-    padding: 2rem 2.5rem;
-    margin-bottom: 2rem;
-    position: relative;
-    overflow: hidden;
-    color: white;
-}
-
-.admin-hero::before {
-    content: '';
-    position: absolute;
-    top: -50%;
-    right: -20%;
-    width: 60%;
-    height: 200%;
-    background: radial-gradient(ellipse, rgba(255,255,255,0.15) 0%, transparent 70%);
-    pointer-events: none;
-}
-
-.hero-content {
-    position: relative;
-    z-index: 1;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 2rem;
-}
-
-.hero-text h1 {
-    font-size: 1.75rem;
-    font-weight: 700;
-    margin-bottom: 0.5rem;
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-}
-
-.hero-text p {
-    font-size: 1rem;
-    opacity: 0.9;
-    max-width: 500px;
-}
-
-.hero-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.75rem 1.25rem;
-    background: rgba(255,255,255,0.2);
-    backdrop-filter: blur(10px);
-    border-radius: 12px;
-    border: 1px solid rgba(255,255,255,0.3);
-}
-
-.hero-badge-icon {
-    width: 40px;
-    height: 40px;
-    background: rgba(255,255,255,0.25);
-    border-radius: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.25rem;
-}
-
-.hero-badge-text h4 {
-    font-size: 1.5rem;
-    font-weight: 700;
-    margin: 0;
-    line-height: 1.2;
-}
-
-.hero-badge-text p {
-    font-size: 0.75rem;
-    margin: 0;
-    opacity: 0.85;
-}
-
 /* Stats Grid */
 .stats-grid {
     display: grid;
@@ -183,86 +102,6 @@
     height: 280px;
 }
 
-/* Quick Actions */
-.quick-actions-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 1rem;
-    margin-bottom: 2rem;
-}
-
-@media (max-width: 1024px) {
-    .quick-actions-grid {
-        grid-template-columns: repeat(2, 1fr);
-    }
-}
-
-@media (max-width: 640px) {
-    .quick-actions-grid {
-        grid-template-columns: 1fr;
-    }
-}
-
-.quick-action-card {
-    background: rgba(255, 255, 255, 0.9);
-    backdrop-filter: blur(20px);
-    border-radius: 16px;
-    padding: 1.25rem;
-    border: 1px solid rgba(0, 0, 0, 0.05);
-    text-decoration: none;
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    transition: all 0.3s ease;
-}
-
-.quick-action-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
-}
-
-.quick-action-icon {
-    width: 48px;
-    height: 48px;
-    border-radius: 14px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.25rem;
-    color: white;
-    position: relative;
-}
-
-.quick-action-icon .badge-count {
-    position: absolute;
-    top: -4px;
-    right: -4px;
-    width: 20px;
-    height: 20px;
-    background: #EF4444;
-    color: white;
-    font-size: 0.7rem;
-    font-weight: 600;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border: 2px solid white;
-}
-
-.quick-action-text h4 {
-    font-size: 0.95rem;
-    font-weight: 600;
-    color: var(--color-gray-800);
-    margin: 0 0 0.25rem 0;
-}
-
-.quick-action-text p {
-    font-size: 0.8rem;
-    color: var(--color-gray-500);
-    margin: 0;
-}
-
 /* Activity & Recent Table */
 .content-grid-2 {
     display: grid;
@@ -342,33 +181,6 @@
     color: var(--color-gray-500);
 }
 
-/* Recent Table */
-.table-card {
-    background: rgba(255, 255, 255, 0.9);
-    backdrop-filter: blur(20px);
-    border-radius: 20px;
-    border: 1px solid rgba(0, 0, 0, 0.05);
-    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.05);
-    overflow: hidden;
-}
-
-.table-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 1.25rem 1.5rem;
-    border-bottom: 1px solid var(--color-gray-100);
-}
-
-.table-title {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    font-size: 1.1rem;
-    font-weight: 600;
-    color: var(--color-gray-800);
-}
-
 .view-all-link {
     display: flex;
     align-items: center;
@@ -382,62 +194,6 @@
 
 .view-all-link:hover {
     gap: 0.75rem;
-}
-
-.admin-table {
-    width: 100%;
-    border-collapse: collapse;
-}
-
-.admin-table th {
-    background: var(--color-gray-50);
-    padding: 0.875rem 1rem;
-    text-align: left;
-    font-size: 0.8rem;
-    font-weight: 600;
-    color: var(--color-gray-600);
-    text-transform: uppercase;
-    letter-spacing: 0.03em;
-}
-
-.admin-table td {
-    padding: 1rem;
-    border-bottom: 1px solid var(--color-gray-100);
-    font-size: 0.875rem;
-    color: var(--color-gray-700);
-}
-
-.admin-table tbody tr:hover {
-    background: var(--color-gray-50);
-}
-
-.admin-table tbody tr:last-child td {
-    border-bottom: none;
-}
-
-.status-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.35rem;
-    padding: 0.35rem 0.75rem;
-    font-size: 0.75rem;
-    font-weight: 600;
-    border-radius: 20px;
-}
-
-.status-badge.pending {
-    background: rgba(245, 158, 11, 0.1);
-    color: #F59E0B;
-}
-
-.status-badge.accepted {
-    background: rgba(16, 185, 129, 0.1);
-    color: #10B981;
-}
-
-.status-badge.rejected {
-    background: rgba(239, 68, 68, 0.1);
-    color: #EF4444;
 }
 
 /* Division Chart */
@@ -476,6 +232,20 @@
     margin: 0;
 }
 
+/* Recent apps table: header semua tengah, isi kolom Nama kiri & bisa wrap */
+#recentAppsTable thead th {
+    text-align: center !important;
+}
+#recentAppsTable tbody td {
+    text-align: center !important;
+}
+#recentAppsTable tbody td:first-child {
+    text-align: left !important;
+    white-space: normal;
+    word-break: break-word;
+    min-width: 120px;
+}
+
 /* Responsive Hero */
 @media (max-width: 900px) {
     .hero-content {
@@ -499,31 +269,12 @@
 @endpush
 
 @section('content')
-{{-- Hero Section --}}
-<div class="admin-hero">
-    <div class="hero-content">
-        <div class="hero-text">
-            <h1>
-                <i class="fas fa-shield-halved"></i>
-                Panel Administrator
-            </h1>
-            <p>
-                Kelola seluruh aktivitas magang, pantau pengajuan, dan awasi perkembangan peserta di Telkom Indonesia.
-            </p>
-        </div>
-        @if(isset($todayRegistrations) && $todayRegistrations > 0)
-        <div class="hero-badge">
-            <div class="hero-badge-icon">
-                <i class="fas fa-user-plus"></i>
-            </div>
-            <div class="hero-badge-text">
-                <h4>{{ $todayRegistrations }}</h4>
-                <p>Pendaftar Hari Ini</p>
-            </div>
-        </div>
-        @endif
-    </div>
-</div>
+<x-dashboard.page-context-bar
+    title="Dashboard Admin"
+    description="Kelola seluruh aktivitas magang dan pantau perkembangan peserta"
+    icon="fas fa-gauge-high"
+    role="admin"
+/>
 
 {{-- Stats Grid --}}
 <div class="stats-grid">
@@ -560,52 +311,6 @@
     ])
 </div>
 
-{{-- Quick Actions --}}
-<div class="quick-actions-grid">
-    <a href="{{ route('admin.applications') }}" class="quick-action-card">
-        <div class="quick-action-icon" style="background: linear-gradient(135deg, #F59E0B, #FBBF24);">
-            <i class="fas fa-inbox"></i>
-            @if(isset($pendingCount) && $pendingCount > 0)
-                <span class="badge-count">{{ $pendingCount > 9 ? '9+' : $pendingCount }}</span>
-            @endif
-        </div>
-        <div class="quick-action-text">
-            <h4>Pengajuan Magang</h4>
-            <p>Review pendaftaran baru</p>
-        </div>
-    </a>
-
-    <a href="{{ route('admin.participants') }}" class="quick-action-card">
-        <div class="quick-action-icon" style="background: linear-gradient(135deg, #10B981, #34D399);">
-            <i class="fas fa-users"></i>
-        </div>
-        <div class="quick-action-text">
-            <h4>Daftar Peserta</h4>
-            <p>Kelola peserta magang</p>
-        </div>
-    </a>
-
-    <a href="{{ route('admin.mentors') }}" class="quick-action-card">
-        <div class="quick-action-icon" style="background: linear-gradient(135deg, #3B82F6, #60A5FA);">
-            <i class="fas fa-user-tie"></i>
-        </div>
-        <div class="quick-action-text">
-            <h4>Monitoring Mentor</h4>
-            <p>Pantau pembimbing</p>
-        </div>
-    </a>
-
-    <a href="{{ route('admin.reports') }}" class="quick-action-card">
-        <div class="quick-action-icon" style="background: linear-gradient(135deg, #8B5CF6, #A78BFA);">
-            <i class="fas fa-chart-line"></i>
-        </div>
-        <div class="quick-action-text">
-            <h4>Laporan</h4>
-            <p>Lihat statistik lengkap</p>
-        </div>
-    </a>
-</div>
-
 {{-- Recent Applications Table (Full Width) --}}
 <div class="table-card" style="margin-bottom: 2rem;">
     <div class="table-header">
@@ -619,12 +324,12 @@
             Lihat Semua <i class="fas fa-arrow-right"></i>
         </a>
     </div>
-    <table class="admin-table">
+    <table class="admin-table" id="recentAppsTable">
         <thead>
             <tr>
                 <th>Nama</th>
                 <th>Institusi</th>
-                <th>Divisi</th>
+                <th>Bidang / Divisi</th>
                 <th>Status</th>
                 <th>Tanggal</th>
             </tr>
@@ -634,12 +339,12 @@
                 @foreach($recentApplications->take(5) as $app)
                     <tr>
                         <td>
-                            <strong>{{ Str::limit($app->user->name ?? 'N/A', 20) }}</strong>
+                            <strong>{{ $app->user->name ?? 'N/A' }}</strong>
                         </td>
-                        <td>{{ Str::limit($app->user->institution ?? '-', 25) }}</td>
-                        <td>{{ Str::limit($app->division->name ?? '-', 20) }}</td>
+                        <td>{{ Str::limit($app->user->university ?? '-', 25) }}</td>
+                        <td>{{ Str::limit($app->divisionAdmin->division_name ?? $app->fieldOfInterest->name ?? $app->divisi->name ?? '-', 20) }}</td>
                         <td>
-                            <span class="status-badge {{ $app->status }}">
+                            <span class="status-badge status-{{ $app->status }}">
                                 @if($app->status === 'pending')
                                     <i class="fas fa-clock"></i> Pending
                                 @elseif($app->status === 'accepted')
@@ -684,18 +389,18 @@
         </div>
     </div>
 
-    {{-- Applications Over Time --}}
+    {{-- Active Participants per Division --}}
     <div class="chart-card">
         <div class="chart-header">
             <div class="chart-title">
-                <div class="chart-title-icon blue">
-                    <i class="fas fa-chart-line"></i>
+                <div class="chart-title-icon green">
+                    <i class="fas fa-building-user"></i>
                 </div>
-                <span>Trend Pengajuan</span>
+                <span>Peserta Aktif per Divisi</span>
             </div>
         </div>
         <div class="chart-container">
-            <canvas id="trendChart"></canvas>
+            <canvas id="divisionChart"></canvas>
         </div>
     </div>
 </div>
@@ -747,47 +452,53 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Trend Chart
-    const trendCtx = document.getElementById('trendChart');
-    if (trendCtx) {
-        const trendData = @json($applicationsOverTime ?? []);
-        const labels = trendData.map(d => d.month || d.label || '');
-        const values = trendData.map(d => d.count || d.value || 0);
+    // Division Bar Chart
+    const divisionCtx = document.getElementById('divisionChart');
+    if (divisionCtx) {
+        const divData = @json($activePerDivision ?? []);
+        const divLabels = divData.map(d => d.name);
+        const divValues = divData.map(d => d.count);
 
-        new Chart(trendCtx, {
-            type: 'line',
+        new Chart(divisionCtx, {
+            type: 'bar',
             data: {
-                labels: labels,
+                labels: divLabels,
                 datasets: [{
-                    label: 'Pengajuan',
-                    data: values,
-                    borderColor: '#3B82F6',
-                    backgroundColor: 'rgba(59, 130, 246, 0.1)',
-                    tension: 0.4,
-                    fill: true,
-                    borderWidth: 3,
-                    pointBackgroundColor: '#3B82F6',
-                    pointBorderColor: '#fff',
-                    pointBorderWidth: 2,
-                    pointRadius: 4,
-                    pointHoverRadius: 6
+                    label: 'Peserta Aktif',
+                    data: divValues,
+                    backgroundColor: 'rgba(16, 185, 129, 0.8)',
+                    hoverBackgroundColor: '#10B981',
+                    borderRadius: 8,
+                    borderSkipped: false,
                 }]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
                 plugins: {
-                    legend: { display: false }
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: ctx => ` ${ctx.parsed.y} peserta aktif`
+                        }
+                    }
                 },
                 scales: {
                     y: {
                         beginAtZero: true,
-                        grid: { color: 'rgba(0,0,0,0.04)' },
-                        ticks: { font: { size: 11 } }
+                        ticks: { precision: 0, font: { size: 11 } },
+                        grid: { color: 'rgba(0,0,0,0.04)' }
                     },
                     x: {
                         grid: { display: false },
-                        ticks: { font: { size: 11 } }
+                        ticks: {
+                            font: { size: 10 },
+                            maxRotation: 30,
+                            callback: function(val, idx) {
+                                const label = divLabels[idx] || '';
+                                return label.length > 14 ? label.slice(0, 13) + '…' : label;
+                            }
+                        }
                     }
                 }
             }

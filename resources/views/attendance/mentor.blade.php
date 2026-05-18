@@ -44,21 +44,17 @@
         font-size: 0.65rem;
     }
 
-    /* Compact badges */
-    .status-badge {
-        padding: 0.3rem 0.6rem !important;
-        border-radius: 6px !important;
-        font-weight: 600;
-        font-size: 0.75rem !important;
-        white-space: nowrap;
-        display: inline-block;
-    }
-
     /* Compact participant info */
     .participant-avatar-sm {
         width:38px;
         height:38px;
         font-size: 1rem;
+        overflow: hidden;
+    }
+    .participant-avatar-sm img {
+        width: 100%; height: 100%;
+        object-fit: cover;
+        border-radius: 50%;
     }
 
     /* Ensure cards don't overflow */
@@ -118,10 +114,10 @@
                             </label>
                             <input type="date" name="date" id="filterDate" class="form-control" value="{{ $filterDate ?? today()->toDateString() }}" max="{{ today()->toDateString() }}" style="border-radius: 8px; border: 1.5px solid #EE2E24; font-size: 0.9rem; padding: 0.5rem 0.75rem;">
                         </div>
-                        <div class="col-md-2 col-sm-6">
-                            <button type="submit" id="applyFilterBtn" class="btn w-100" style="background: linear-gradient(135deg, #EE2E24 0%, #F60000 100%); color: white; border-radius: 8px; font-weight: 600; padding: 0.5rem 0.75rem; font-size: 0.9rem;">
-                                <i class="fas fa-filter me-1"></i>Terapkan
-                            </button>
+                        <div class="col-auto">
+                            <a href="{{ route('mentor.absensi') }}" class="btn btn-outline-secondary" style="border-radius: 8px; font-size: 0.875rem; padding: 0.5rem 1rem;">
+                                <i class="fas fa-rotate-left me-1"></i> Reset
+                            </a>
                         </div>
                     </div>
                 </form>
@@ -222,7 +218,11 @@
                                     <td>
                                         <div class="d-flex align-items-center gap-2">
                                             <div class="participant-avatar-sm" style="border-radius: 50%; background: linear-gradient(135deg, #EE2E24 0%, #F60000 100%); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; flex-shrink: 0;">
-                                                {{ strtoupper(substr($participant['user']->name ?? 'U', 0, 1)) }}
+                                                @if($participant['user']->profile_picture)
+                                                    <img src="{{ asset('storage/' . $participant['user']->profile_picture) }}" alt="{{ $participant['user']->name ?? '' }}">
+                                                @else
+                                                    {{ strtoupper(substr($participant['user']->name ?? 'U', 0, 1)) }}
+                                                @endif
                                             </div>
                                             <div style="min-width: 0;">
                                                 <div style="font-weight: 600; color: #000; margin-bottom: 0.15rem; font-size: 0.9rem;">{{ $participant['user']->name ?? '-' }}</div>
@@ -235,21 +235,21 @@
                                     <td style="text-align: center;">
                                         @if($todayAttendance)
                                             @if($todayAttendance->status === 'Hadir')
-                                                <span class="badge status-badge" style="background: #198754; color: white;">
-                                                    <i class="fas fa-check-circle me-1"></i>Hadir
+                                                <span class="badge badge-success">
+                                                    <i class="fas fa-check-circle"></i> Hadir
                                                 </span>
                                             @elseif($todayAttendance->status === 'Terlambat')
-                                                <span class="badge status-badge" style="background: #ffc107; color: white;">
-                                                    <i class="fas fa-clock me-1"></i>Terlambat
+                                                <span class="badge badge-warning">
+                                                    <i class="fas fa-clock"></i> Terlambat
                                                 </span>
                                             @else
-                                                <span class="badge status-badge" style="background: #dc3545; color: white;">
-                                                    <i class="fas fa-times-circle me-1"></i>Absen
+                                                <span class="badge badge-danger">
+                                                    <i class="fas fa-times-circle"></i> Absen
                                                 </span>
                                             @endif
                                         @else
-                                            <span class="badge status-badge" style="background: #AAA5A6; color: white;">
-                                                <i class="fas fa-minus-circle me-1"></i>Belum
+                                            <span class="badge badge-gray">
+                                                <i class="fas fa-minus-circle"></i> Belum
                                             </span>
                                         @endif
                                     </td>
@@ -299,7 +299,7 @@
                                     <!-- Actions -->
                                     <td style="text-align: center;">
                                         @if($todayAttendance && $todayAttendance->photo_path)
-                                            <button onclick="showPhoto('{{ $participant['user']->name }}', '{{ asset('storage/' . $todayAttendance->photo_path) }}', '{{ $todayAttendance->status }}', '{{ \Carbon\Carbon::parse($todayAttendance->check_in_time)->format('H:i') }}', '{{ $todayAttendance->absence_reason ?? '' }}')" class="btn btn-sm" style="background: linear-gradient(135deg, #EE2E24 0%, #F60000 100%); color: white; border-radius: 6px; padding: 0.35rem 0.75rem; font-weight: 600; font-size: 0.8rem; white-space: nowrap;">
+                                            <button onclick="showPhoto('{{ addslashes($participant['user']->name) }}', '{{ asset('storage/' . $todayAttendance->photo_path) }}', '{{ $todayAttendance->status }}', '{{ \Carbon\Carbon::parse($todayAttendance->check_in_time)->format('H:i') }}', '{{ addslashes($todayAttendance->absence_reason ?? '') }}', {{ $todayAttendance->latitude ?? 'null' }}, {{ $todayAttendance->longitude ?? 'null' }})" class="btn btn-sm" style="background: linear-gradient(135deg, #EE2E24 0%, #F60000 100%); color: white; border-radius: 6px; padding: 0.35rem 0.75rem; font-weight: 600; font-size: 0.8rem; white-space: nowrap;">
                                                 <i class="fas fa-image me-1"></i>Foto
                                             </button>
                                         @else
@@ -343,6 +343,10 @@
                         <div class="mb-3">
                             <label style="color: #AAA5A6; font-size: 0.875rem; display: block; margin-bottom: 0.25rem;">Waktu Check-in</label>
                             <div style="font-weight: 600; color: #000;" id="modalTime"></div>
+                        </div>
+                        <div class="mb-3">
+                            <label style="color: #AAA5A6; font-size: 0.875rem; display: block; margin-bottom: 0.25rem;">Lokasi</label>
+                            <div style="color: #000;" id="modalLocation"></div>
                         </div>
                         <div class="mb-3">
                             <label style="color: #AAA5A6; font-size: 0.875rem; display: block; margin-bottom: 0.25rem;">Keterangan</label>
@@ -408,24 +412,12 @@ function closePhotoModal() {
 // Make it available globally immediately
 window.closePhotoModal = closePhotoModal;
 
-// Ensure filter form submits correctly - prevent loading animation from blocking GET form
+// Auto-submit filter form when date changes
 document.addEventListener('DOMContentLoaded', function() {
     const filterForm = document.getElementById('attendanceFilterForm');
-    const applyBtn = document.getElementById('applyFilterBtn');
-    
-    if (filterForm && applyBtn) {
-        // Override any loading animation for this specific button
-        applyBtn.addEventListener('click', function(e) {
-            // For GET forms, don't show loading animation and allow immediate submit
-            e.stopPropagation(); // Prevent other handlers
-            // Form will submit normally
-        }, true); // Use capture phase to run before other handlers
-        
-        // Ensure form submits
-        filterForm.addEventListener('submit', function(e) {
-            // Allow GET forms to submit normally
-            return true;
-        });
+    const dateInput  = document.getElementById('filterDate');
+    if (filterForm && dateInput) {
+        dateInput.addEventListener('change', () => filterForm.submit());
     }
 });
 
@@ -464,32 +456,44 @@ document.addEventListener('keydown', function(e) {
 
 // Define showPhoto function immediately so it's available for onclick handlers
 // This will be available as soon as the script loads
-window.showPhoto = function(name, photo, status, time, reason) {
-    const modalNameEl = document.getElementById('modalName');
-    const modalPhotoEl = document.getElementById('modalPhoto');
-    const modalTimeEl = document.getElementById('modalTime');
-    const modalReasonEl = document.getElementById('modalReason');
-    const modalStatusEl = document.getElementById('modalStatus');
-    const modalElement = document.getElementById('photoModal');
-    
+window.showPhoto = function(name, photo, status, time, reason, lat, lng) {
+    const modalNameEl     = document.getElementById('modalName');
+    const modalPhotoEl    = document.getElementById('modalPhoto');
+    const modalTimeEl     = document.getElementById('modalTime');
+    const modalReasonEl   = document.getElementById('modalReason');
+    const modalStatusEl   = document.getElementById('modalStatus');
+    const modalLocationEl = document.getElementById('modalLocation');
+    const modalElement    = document.getElementById('photoModal');
+
     if (!modalElement || !modalNameEl || !modalPhotoEl || !modalTimeEl || !modalReasonEl || !modalStatusEl) {
         console.error('Modal elements not found');
         return;
     }
-    
-    modalNameEl.textContent = name;
-    modalPhotoEl.src = photo;
-    modalTimeEl.textContent = time;
+
+    modalNameEl.textContent   = name;
+    modalPhotoEl.src          = photo;
+    modalTimeEl.textContent   = time;
     modalReasonEl.textContent = reason || '-';
+
+    if (modalLocationEl) {
+        if (lat && lng) {
+            modalLocationEl.innerHTML = `<a href="https://www.google.com/maps?q=${lat},${lng}" target="_blank" rel="noopener"
+                style="display:inline-flex;align-items:center;gap:.35rem;color:#3b82f6;font-weight:600;text-decoration:none;">
+                <i class="fas fa-map-marker-alt"></i> Buka di Google Maps
+            </a>`;
+        } else {
+            modalLocationEl.textContent = 'Tidak tersedia';
+        }
+    }
 
     // Set status badge
     let statusBadge = '';
     if(status === 'Hadir') {
-        statusBadge = '<span class="badge" style="background: #198754; color: white; padding: 0.5rem 1rem; border-radius: 8px;"><i class="fas fa-check-circle me-1"></i>Hadir</span>';
+        statusBadge = '<span class="badge badge-success"><i class="fas fa-check-circle"></i> Hadir</span>';
     } else if(status === 'Terlambat') {
-        statusBadge = '<span class="badge" style="background: #ffc107; color: white; padding: 0.5rem 1rem; border-radius: 8px;"><i class="fas fa-clock me-1"></i>Terlambat</span>';
+        statusBadge = '<span class="badge badge-warning"><i class="fas fa-clock"></i> Terlambat</span>';
     } else {
-        statusBadge = '<span class="badge" style="background: #dc3545; color: white; padding: 0.5rem 1rem; border-radius: 8px;"><i class="fas fa-times-circle me-1"></i>Absen</span>';
+        statusBadge = '<span class="badge badge-danger"><i class="fas fa-times-circle"></i> Absen</span>';
     }
     modalStatusEl.innerHTML = statusBadge;
 

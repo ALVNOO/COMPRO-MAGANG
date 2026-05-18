@@ -16,8 +16,7 @@
     // Count stats
     $totalCount = $applications->count();
     $pendingCount = $applications->where('status', 'pending')->count();
-    $acceptedCount = $applications->where('status', 'accepted')->count();
-    $rejectedCount = $applications->where('status', 'rejected')->count();
+
 @endphp
 
 @push('styles')
@@ -26,87 +25,8 @@
    APPLICATIONS PAGE STYLES
    ============================================ */
 
-/* Hero Section */
-.admin-hero {
-    background: linear-gradient(135deg, #EE2E24 0%, #C41E1A 50%, #9B1B1B 100%);
-    border-radius: 24px;
-    padding: 2rem 2.5rem;
-    margin-bottom: 2rem;
-    position: relative;
-    overflow: hidden;
-    color: white;
-}
-
-.admin-hero::before {
-    content: '';
-    position: absolute;
-    top: -50%;
-    right: -20%;
-    width: 60%;
-    height: 200%;
-    background: radial-gradient(ellipse, rgba(255,255,255,0.15) 0%, transparent 70%);
-    pointer-events: none;
-}
-
-.hero-content {
-    position: relative;
-    z-index: 1;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 2rem;
-}
-
-.hero-text h1 {
-    font-size: 1.75rem;
-    font-weight: 700;
-    margin-bottom: 0.5rem;
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-}
-
-.hero-text p {
-    font-size: 1rem;
-    opacity: 0.9;
-    max-width: 500px;
-    margin: 0;
-}
-
-.hero-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.75rem 1.25rem;
-    background: rgba(255,255,255,0.2);
-    backdrop-filter: blur(10px);
-    border-radius: 12px;
-    border: 1px solid rgba(255,255,255,0.3);
-}
-
-.hero-badge-icon {
-    width: 40px;
-    height: 40px;
-    background: rgba(255,255,255,0.25);
-    border-radius: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.25rem;
-}
-
-.hero-badge-text h4 {
-    font-size: 1.5rem;
-    font-weight: 700;
-    margin: 0;
-    line-height: 1.2;
-}
-
-.hero-badge-text p {
-    font-size: 0.75rem;
-    margin: 0;
-    opacity: 0.85;
-}
+#applicationsTable thead th:nth-child(2) { text-align: left; }
+#applicationsTable tbody td:nth-child(2) { text-align: left; }
 
 /* Stats Grid */
 .stats-grid {
@@ -187,113 +107,6 @@
 .filter-btn:hover {
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(238, 46, 36, 0.3);
-}
-
-/* Table Card */
-.table-card {
-    background: rgba(255, 255, 255, 0.9);
-    backdrop-filter: blur(20px);
-    border-radius: 20px;
-    border: 1px solid rgba(0, 0, 0, 0.05);
-    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.05);
-    overflow: hidden;
-}
-
-.table-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 1.25rem 1.5rem;
-    border-bottom: 1px solid var(--color-gray-100, #f3f4f6);
-}
-
-.table-title {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    font-size: 1.1rem;
-    font-weight: 600;
-    color: #1f2937;
-}
-
-.table-title-icon {
-    width: 40px;
-    height: 40px;
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    font-size: 1rem;
-    background: linear-gradient(135deg, #3B82F6, #60A5FA);
-}
-
-.table-count {
-    font-size: 0.85rem;
-    color: #6b7280;
-    font-weight: 400;
-}
-
-.admin-table {
-    width: 100%;
-    border-collapse: collapse;
-}
-
-.admin-table th {
-    background: #f9fafb;
-    padding: 0.875rem 1rem;
-    text-align: left;
-    font-size: 0.8rem;
-    font-weight: 600;
-    color: #6b7280;
-    text-transform: uppercase;
-    letter-spacing: 0.03em;
-}
-
-.admin-table td {
-    padding: 1rem;
-    border-bottom: 1px solid #f3f4f6;
-    font-size: 0.875rem;
-    color: #374151;
-}
-
-.admin-table tbody tr:hover {
-    background: #f9fafb;
-}
-
-.admin-table tbody tr:last-child td {
-    border-bottom: none;
-}
-
-/* Status Badge */
-.status-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.35rem;
-    padding: 0.35rem 0.75rem;
-    font-size: 0.75rem;
-    font-weight: 600;
-    border-radius: 20px;
-}
-
-.status-badge.pending {
-    background: rgba(245, 158, 11, 0.1);
-    color: #F59E0B;
-}
-
-.status-badge.accepted {
-    background: rgba(16, 185, 129, 0.1);
-    color: #10B981;
-}
-
-.status-badge.rejected {
-    background: rgba(217, 119, 6, 0.1);
-    color: #D97706;
-}
-
-.status-badge.finished {
-    background: rgba(59, 130, 246, 0.1);
-    color: #3B82F6;
 }
 
 /* Action Buttons */
@@ -765,11 +578,6 @@
     box-shadow: 0 0 0 3px rgba(217, 119, 6, 0.1);
 }
 
-/* Permanently rejected status badge */
-.status-badge.permanently_rejected {
-    background: rgba(127, 29, 29, 0.1);
-    color: #7f1d1d;
-}
 
 /* Tolak total btn */
 .btn-permanent-reject {
@@ -1039,29 +847,12 @@
 @endpush
 
 @section('content')
-{{-- Hero Section --}}
-<div class="admin-hero">
-    <div class="hero-content">
-        <div class="hero-text">
-            <h1>
-                <i class="fas fa-inbox"></i>
-                Pengajuan Magang
-            </h1>
-            <p>Review dan kelola pengajuan magang dari peserta</p>
-        </div>
-        @if($pendingCount > 0)
-        <div class="hero-badge">
-            <div class="hero-badge-icon">
-                <i class="fas fa-clock"></i>
-            </div>
-            <div class="hero-badge-text">
-                <h4>{{ $pendingCount }}</h4>
-                <p>Menunggu Review</p>
-            </div>
-        </div>
-        @endif
-    </div>
-</div>
+<x-dashboard.page-context-bar
+    title="Pengajuan Magang"
+    description="Review dan kelola pengajuan magang dari peserta"
+    icon="fas fa-inbox"
+    role="admin"
+/>
 
 {{-- Stats Grid --}}
 <div class="stats-grid">
@@ -1081,21 +872,6 @@
         'link' => '#'
     ])
 
-    @include('components.dashboard.stat-card', [
-        'value' => $acceptedCount,
-        'label' => 'Diterima',
-        'icon' => 'fa-check-circle',
-        'color' => 'success',
-        'link' => '#'
-    ])
-
-    @include('components.dashboard.stat-card', [
-        'value' => $rejectedCount,
-        'label' => 'Ditolak',
-        'icon' => 'fa-times-circle',
-        'color' => 'danger',
-        'link' => '#'
-    ])
 </div>
 
 {{-- Filter Bar --}}
@@ -1105,17 +881,11 @@
            placeholder="Cari nama, NIM, atau institusi..."
            class="filter-input"
            @input="filterTable()">
-    <select x-model="status" class="filter-select" @change="filterTable()">
-        <option value="">Semua Status</option>
-        <option value="pending">Pending</option>
-        <option value="accepted">Diterima</option>
-        <option value="rejected">Revisi</option>
-        <option value="permanently_rejected">Ditolak Permanen</option>
-        <option value="finished">Selesai</option>
-    </select>
-    <button type="button" class="filter-btn" @click="filterTable()">
-        <i class="fas fa-search"></i> Cari
-    </button>
+    <x-ui.chips>
+        <button type="button" class="chip" :class="{ active: status === '' }" @click="status = ''; filterTable()">Semua</button>
+        <button type="button" class="chip" :class="{ active: status === 'pending' }" @click="status = 'pending'; filterTable()">Pending</button>
+        <button type="button" class="chip" :class="{ active: status === 'rejected' }" @click="status = 'rejected'; filterTable()">Revisi</button>
+    </x-ui.chips>
 </div>
 
 {{-- Applications Table --}}
@@ -1141,7 +911,7 @@
             <thead>
                 <tr>
                     <th>No</th>
-                    <th>Nama Lengkap</th>
+                    <th style="text-align:left;">Nama Lengkap</th>
                     <th>Institusi</th>
                     <th>Bidang Peminatan</th>
                     <th>Tanggal</th>
@@ -1156,7 +926,7 @@
                     data-institution="{{ strtolower($app->user->university ?? '') }}"
                     data-status="{{ $app->status }}">
                     <td>{{ $loop->iteration }}</td>
-                    <td>
+                    <td style="text-align:left;">
                         <strong>{{ $app->user->name ?? '-' }}</strong>
                         <div style="font-size: 0.75rem; color: #6b7280;">{{ $app->user->nim ?? '-' }}</div>
                         @if($app->user && $app->user->internshipApplications()->where('status', 'rejected')->exists())
@@ -1169,7 +939,7 @@
                     <td>{{ $app->fieldOfInterest->name ?? '-' }}</td>
                     <td>{{ $app->created_at->format('d M Y') }}</td>
                     <td>
-                        <span class="status-badge {{ $app->status }}">
+                        <span class="status-badge status-{{ $app->status }}">
                             @if($app->status === 'pending')
                                 <i class="fas fa-clock"></i> Pending
                             @elseif($app->status === 'accepted')
@@ -1280,13 +1050,12 @@ const csrfToken = '{{ csrf_token() }}';
 <script>
 // Filter functionality
 function filterTable() {
-    const searchInput = document.querySelector('.filter-input');
-    const statusSelect = document.querySelector('.filter-select');
+    const filterBar = document.querySelector('.filter-bar');
+    const data = filterBar && filterBar._x_dataStack ? filterBar._x_dataStack[0] : null;
+    const search = (data ? data.search : document.querySelector('.filter-input')?.value ?? '').toLowerCase();
+    const status = data ? data.status : '';
+
     const rows = document.querySelectorAll('#applicationsTable tbody tr');
-
-    const search = searchInput.value.toLowerCase();
-    const status = statusSelect.value;
-
     rows.forEach(row => {
         const name = row.dataset.name || '';
         const nim = row.dataset.nim || '';
@@ -1321,7 +1090,7 @@ function openDetailModal(appId) {
             finished:             ['fa-check-double', 'Selesai'],
         };
         const [icon, label] = map[app.status] || ['fa-circle', app.status];
-        return `<span class="status-badge ${app.status}"><i class="fas ${icon}"></i> ${label}</span>`;
+        return `<span class="status-badge status-${app.status}"><i class="fas ${icon}"></i> ${label}</span>`;
     };
 
     // ── Documents chips

@@ -243,7 +243,7 @@ class InternshipApplicationService
      */
     public function getRecentPendingApplications(int $limit = 10): Collection
     {
-        return InternshipApplication::with(['user', 'divisi'])
+        return InternshipApplication::with(['user', 'divisi', 'divisionAdmin', 'divisionMentor', 'fieldOfInterest'])
             ->where('status', 'pending')
             ->orderByDesc('created_at')
             ->limit($limit)

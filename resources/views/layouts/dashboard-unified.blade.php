@@ -53,16 +53,28 @@
                         throw new Error('Network response was not ok');
                     }
                     const data = await response.json();
-                    this.notifications = data.notifications || [];
-                    this.allNotifications = this.notifications; // Initialize with recent
-                    this.unreadCount = data.unread_count || 0;
+                    let notifs = data.notifications || [];
+                    let count  = data.unread_count || 0;
+
+                    // Prepend any page-injected system alerts (e.g. pending assignments)
+                    const sysAlerts = window.__systemAlerts || [];
+                    if (sysAlerts.length > 0) {
+                        notifs = [...sysAlerts, ...notifs];
+                        count  += sysAlerts.length;
+                    }
+
+                    this.notifications    = notifs;
+                    this.allNotifications = notifs;
+                    this.unreadCount      = count;
                     this.loading = false;
                 } catch (error) {
                     console.error('Error loading notifications:', error);
                     this.loading = false;
-                    this.notifications = [];
-                    this.allNotifications = [];
-                    this.unreadCount = 0;
+                    // Still show system alerts even if API fails
+                    const sysAlerts = window.__systemAlerts || [];
+                    this.notifications    = sysAlerts;
+                    this.allNotifications = sysAlerts;
+                    this.unreadCount      = sysAlerts.length;
                 }
             },
 
@@ -321,38 +333,23 @@
             }
         }
 
-        /* Grid Pattern */
-        .grid-pattern {
-            position: absolute;
-            inset: 0;
-            background-image:
-                linear-gradient(rgba(0, 0, 0, 0.02) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(0, 0, 0, 0.02) 1px, transparent 1px);
-            background-size: 40px 40px;
-            animation: gridMove 30s linear infinite;
-        }
-
-        @keyframes gridMove {
-            0% { transform: translate(0, 0); }
-            100% { transform: translate(40px, 40px); }
-        }
 
         /* ============================================
            MAIN LAYOUT
            ============================================ */
 
         .dashboard-wrapper {
-            display: flex;
+            display: block;
             min-height: 100vh;
         }
 
         .dashboard-main {
-            flex: 1;
             margin-left: var(--sidebar-width);
             min-height: 100vh;
             display: flex;
             flex-direction: column;
             transition: margin-left var(--transition-spring);
+            overflow-x: hidden;
         }
 
         .dashboard-main.sidebar-collapsed {
@@ -407,62 +404,23 @@
             border-left-color: var(--color-success);
         }
 
-        .alert-success .alert-icon {
-            color: var(--color-success);
-        }
+        .alert-success .alert-icon-box { background: var(--color-success-light); color: var(--color-success); }
+        .alert-danger  .alert-icon-box { background: var(--color-danger-light);  color: var(--color-danger); }
+        .alert-warning .alert-icon-box { background: var(--color-warning-light); color: var(--color-warning); }
+        .alert-info    .alert-icon-box { background: var(--color-info-light);    color: var(--color-info); }
 
-        .alert-danger, .alert-error {
-            border-left-color: var(--color-danger);
-        }
-
-        .alert-danger .alert-icon, .alert-error .alert-icon {
-            color: var(--color-danger);
-        }
-
-        .alert-warning {
-            border-left-color: var(--color-warning);
-        }
-
-        .alert-warning .alert-icon {
-            color: var(--color-warning);
-        }
-
-        .alert-info {
-            border-left-color: var(--color-info);
-        }
-
-        .alert-info .alert-icon {
-            color: var(--color-info);
-        }
-
-        .alert-icon {
-            font-size: 1.25rem;
-            flex-shrink: 0;
-        }
-
-        .alert-content {
-            flex: 1;
+        .alert-title {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--color-gray-900);
+            margin-bottom: 2px;
         }
 
         .alert-message {
-            font-size: 0.9rem;
-            color: var(--color-gray-700);
-            line-height: 1.5;
-        }
-
-        .alert-close {
-            background: none;
-            border: none;
-            color: var(--color-gray-400);
-            cursor: pointer;
-            font-size: 1.25rem;
-            padding: 0;
-            line-height: 1;
-            transition: color 0.2s;
-        }
-
-        .alert-close:hover {
+            font-size: 0.875rem;
             color: var(--color-gray-600);
+            line-height: 1.5;
+            margin: 0;
         }
 
         /* ============================================
@@ -575,14 +533,15 @@
         }
 
         .btn-secondary {
-            background: var(--color-white);
-            color: var(--color-gray-700);
-            border: 1px solid var(--color-gray-300);
+            background: #fff;
+            color: #4B5563;
+            border: 1px solid #D1D5DB;
+            box-shadow: 0 1px 3px rgba(0,0,0,.1);
         }
 
         .btn-secondary:hover {
-            background: var(--color-gray-50);
-            border-color: var(--color-gray-400);
+            background: #F9FAFB;
+            border-color: #9CA3AF;
         }
 
         .btn-outline {
@@ -596,9 +555,50 @@
             color: white;
         }
 
+        .btn-danger {
+            background: #DC2626;
+            color: #fff;
+            border: none;
+        }
+
+        .btn-danger:hover {
+            background: #B91C1C;
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #16A34A, #15803D);
+            color: #fff;
+            border: none;
+        }
+
+        .btn-success:hover {
+            background: linear-gradient(135deg, #15803D, #166534);
+        }
+
+        .btn-warning {
+            background: #D97706;
+            color: #fff;
+            border: none;
+        }
+
+        .btn-warning:hover {
+            background: #B45309;
+        }
+
+        .btn-info {
+            background: #0284C7;
+            color: #fff;
+            border: none;
+        }
+
+        .btn-info:hover {
+            background: #0369A1;
+        }
+
         .btn-sm {
-            padding: 0.5rem 1rem;
-            font-size: 0.8rem;
+            padding: 0.45rem 0.9rem;
+            font-size: 0.78rem;
+            border-radius: 10px;
         }
 
         .btn-lg {
@@ -610,18 +610,82 @@
         .counter-value {
             transition: all 0.3s ease;
         }
+
+        /* ============================================
+           SKELETON LOADING
+           ============================================ */
+
+        @keyframes sk-pulse { 0%,100% { opacity:1; } 50% { opacity:.4; } }
+
+        .sk-block {
+            background: #F3F4F6;
+            border-radius: 8px;
+            animation: sk-pulse 1.5s ease-in-out infinite;
+        }
+
+        #page-skeleton {
+            position: absolute;
+            inset: 0;
+            z-index: 5;
+            background: var(--color-gray-50);
+            padding: 2rem;
+            pointer-events: none;
+            transition: opacity .3s ease;
+        }
+
+        #page-content {
+            opacity: 0;
+            transition: opacity .3s ease;
+        }
+
+        @media(max-width:1024px) {
+            #page-skeleton { padding: 1.5rem; padding-top: 1.5rem; }
+        }
+        @media(max-width:768px) {
+            #page-skeleton { padding: 1rem; padding-top: 1rem; }
+        }
+        @media(max-width:1200px) {
+            .sk-cards { grid-template-columns: repeat(2,1fr) !important; }
+        }
+        @media(max-width:640px) {
+            .sk-cards { grid-template-columns: 1fr !important; }
+            .sk-panels, .sk-bottom { grid-template-columns: 1fr !important; }
+        }
+
+        /* Navigation progress bar */
+        #nav-progress {
+            position: fixed;
+            top: 0; left: 0;
+            height: 3px;
+            width: 0%;
+            z-index: 9999;
+            opacity: 0;
+            background: linear-gradient(90deg, #EE2E24 0%, #FF6B6B 50%, #EE2E24 100%);
+            background-size: 200% 100%;
+            transition: width .4s ease, opacity .15s ease;
+        }
+        #nav-progress.loading {
+            opacity: 1;
+            animation: nav-shimmer 1.2s linear infinite;
+        }
+        @keyframes nav-shimmer {
+            0%   { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
     </style>
 
     @stack('styles')
 </head>
 <body>
+    {{-- Navigation progress bar --}}
+    <div id="nav-progress"></div>
+
     {{-- Background Effects --}}
     <div class="dashboard-bg">
         <div class="floating-orb orb-1"></div>
         <div class="floating-orb orb-2"></div>
         <div class="floating-orb orb-3"></div>
         <div class="floating-orb orb-4"></div>
-        <div class="grid-pattern"></div>
     </div>
 
     {{-- Dashboard Wrapper --}}
@@ -643,55 +707,60 @@
                 <div class="alert-container" id="alertContainer">
                     @if(session('success'))
                         <div class="alert alert-success">
-                            <i class="fas fa-check-circle alert-icon"></i>
+                            <div class="alert-icon-box"><i class="fas fa-check-circle"></i></div>
                             <div class="alert-content">
+                                <p class="alert-title">Berhasil</p>
                                 <p class="alert-message">{{ session('success') }}</p>
                             </div>
-                            <button class="alert-close" onclick="this.parentElement.remove()">&times;</button>
+                            <button class="alert-dismiss" onclick="this.closest('.alert').remove()" aria-label="Tutup">&times;</button>
                         </div>
                     @endif
 
                     @if(session('error'))
-                        <div class="alert alert-error">
-                            <i class="fas fa-exclamation-circle alert-icon"></i>
+                        <div class="alert alert-danger">
+                            <div class="alert-icon-box"><i class="fas fa-exclamation-circle"></i></div>
                             <div class="alert-content">
+                                <p class="alert-title">Error</p>
                                 <p class="alert-message">{{ session('error') }}</p>
                             </div>
-                            <button class="alert-close" onclick="this.parentElement.remove()">&times;</button>
+                            <button class="alert-dismiss" onclick="this.closest('.alert').remove()" aria-label="Tutup">&times;</button>
                         </div>
                     @endif
 
                     @if(session('warning'))
                         <div class="alert alert-warning">
-                            <i class="fas fa-exclamation-triangle alert-icon"></i>
+                            <div class="alert-icon-box"><i class="fas fa-exclamation-triangle"></i></div>
                             <div class="alert-content">
+                                <p class="alert-title">Perhatian</p>
                                 <p class="alert-message">{{ session('warning') }}</p>
                             </div>
-                            <button class="alert-close" onclick="this.parentElement.remove()">&times;</button>
+                            <button class="alert-dismiss" onclick="this.closest('.alert').remove()" aria-label="Tutup">&times;</button>
                         </div>
                     @endif
 
                     @if(session('info'))
                         <div class="alert alert-info">
-                            <i class="fas fa-info-circle alert-icon"></i>
+                            <div class="alert-icon-box"><i class="fas fa-info-circle"></i></div>
                             <div class="alert-content">
+                                <p class="alert-title">Info</p>
                                 <p class="alert-message">{{ session('info') }}</p>
                             </div>
-                            <button class="alert-close" onclick="this.parentElement.remove()">&times;</button>
+                            <button class="alert-dismiss" onclick="this.closest('.alert').remove()" aria-label="Tutup">&times;</button>
                         </div>
                     @endif
 
                     @if(isset($errors) && $errors->any())
                         <div class="alert alert-danger">
-                            <i class="fas fa-exclamation-circle alert-icon"></i>
+                            <div class="alert-icon-box"><i class="fas fa-exclamation-circle"></i></div>
                             <div class="alert-content">
-                                <ul class="alert-message" style="margin: 0; padding-left: 1rem;">
+                                <p class="alert-title">Terdapat Kesalahan</p>
+                                <ul class="alert-message" style="margin: 0.25rem 0 0; padding-left: 1.25rem;">
                                     @foreach($errors->all() as $error)
                                         <li>{{ $error }}</li>
                                     @endforeach
                                 </ul>
                             </div>
-                            <button class="alert-close" onclick="this.parentElement.remove()">&times;</button>
+                            <button class="alert-dismiss" onclick="this.closest('.alert').remove()" aria-label="Tutup">&times;</button>
                         </div>
                     @endif
                 </div>
@@ -699,13 +768,88 @@
 
             {{-- Page Content --}}
             <div class="dashboard-content">
-                @yield('content')
+
+                {{-- ── Skeleton overlay (visible until DOMContentLoaded + 150ms) ── --}}
+                <div id="page-skeleton" aria-hidden="true">
+                    {{-- Context bar --}}
+                    <div class="sk-block" style="height:88px;border-radius:20px;margin-bottom:2rem;animation-delay:0s;"></div>
+
+                    {{-- 4 stat cards --}}
+                    <div class="sk-cards" style="display:grid;grid-template-columns:repeat(4,1fr);gap:1.5rem;margin-bottom:2rem;">
+                        <div class="sk-block" style="height:96px;border-radius:20px;animation-delay:.08s;"></div>
+                        <div class="sk-block" style="height:96px;border-radius:20px;animation-delay:.16s;"></div>
+                        <div class="sk-block" style="height:96px;border-radius:20px;animation-delay:.24s;"></div>
+                        <div class="sk-block" style="height:96px;border-radius:20px;animation-delay:.32s;"></div>
+                    </div>
+
+                    {{-- 3 focus / detail panels --}}
+                    <div class="sk-panels" style="display:grid;grid-template-columns:repeat(3,1fr);gap:1.25rem;margin-bottom:2rem;">
+                        <div class="sk-block" style="height:168px;border-radius:16px;animation-delay:.1s;"></div>
+                        <div class="sk-block" style="height:168px;border-radius:16px;animation-delay:.18s;"></div>
+                        <div class="sk-block" style="height:168px;border-radius:16px;animation-delay:.26s;"></div>
+                    </div>
+
+                    {{-- Bottom: wide + narrow (chart / table area) --}}
+                    <div class="sk-bottom" style="display:grid;grid-template-columns:1.5fr 1fr;gap:1.5rem;">
+                        <div class="sk-block" style="height:320px;border-radius:20px;animation-delay:.14s;"></div>
+                        <div class="sk-block" style="height:320px;border-radius:20px;animation-delay:.22s;"></div>
+                    </div>
+                </div>
+
+                {{-- Real page content (revealed after skeleton hides) --}}
+                <div id="page-content">
+                    @yield('content')
+                </div>
+
             </div>
         </main>
     </div>
 
     {{-- Scripts --}}
     <script>
+        /* ── Skeleton: reveal content after DOM ready ── */
+        (function() {
+            var _navStart = Date.now();
+
+            document.addEventListener('DOMContentLoaded', function() {
+                var elapsed   = Date.now() - _navStart;
+                var minShow   = 150; // minimum ms skeleton is visible
+                var remaining = Math.max(0, minShow - elapsed);
+
+                setTimeout(function() {
+                    var sk      = document.getElementById('page-skeleton');
+                    var content = document.getElementById('page-content');
+
+                    if (sk) {
+                        sk.style.opacity = '0';
+                        setTimeout(function() { if (sk && sk.parentNode) sk.parentNode.removeChild(sk); }, 320);
+                    }
+                    if (content) content.style.opacity = '1';
+                }, remaining);
+            });
+
+            /* ── Navigation progress bar ── */
+            document.addEventListener('click', function(e) {
+                var a = e.target.closest('a[href]');
+                if (!a) return;
+                try {
+                    var href = a.getAttribute('href');
+                    if (!href || href.charAt(0) === '#') return;
+                    var url = new URL(a.href, location.href);
+                    if (url.hostname !== location.hostname) return;
+                    if (a.target && a.target !== '_self') return;
+                    if (a.hasAttribute('download')) return;
+                    if (url.pathname === location.pathname && url.hash) return;
+
+                    var bar = document.getElementById('nav-progress');
+                    if (bar) {
+                        bar.style.width = '72%';
+                        bar.classList.add('loading');
+                    }
+                } catch(err) {}
+            }, true);
+        })();
+
         document.addEventListener('DOMContentLoaded', function() {
             // Handle sidebar toggle
             window.addEventListener('sidebarToggle', function(e) {
@@ -781,6 +925,7 @@
         });
     </script>
 
+    <script>window.__systemAlerts = @json($systemAlertsData ?? []);</script>
     @stack('scripts')
 </body>
 </html>

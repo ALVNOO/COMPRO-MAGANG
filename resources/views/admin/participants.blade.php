@@ -50,88 +50,6 @@
    PARTICIPANTS PAGE STYLES
    ============================================ */
 
-/* Hero Section */
-.admin-hero {
-    background: linear-gradient(135deg, #EE2E24 0%, #C41E1A 50%, #9B1B1B 100%);
-    border-radius: 24px;
-    padding: 2rem 2.5rem;
-    margin-bottom: 2rem;
-    position: relative;
-    overflow: hidden;
-    color: white;
-}
-
-.admin-hero::before {
-    content: '';
-    position: absolute;
-    top: -50%;
-    right: -20%;
-    width: 60%;
-    height: 200%;
-    background: radial-gradient(ellipse, rgba(255,255,255,0.15) 0%, transparent 70%);
-    pointer-events: none;
-}
-
-.hero-content {
-    position: relative;
-    z-index: 1;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 2rem;
-}
-
-.hero-text h1 {
-    font-size: 1.75rem;
-    font-weight: 700;
-    margin-bottom: 0.5rem;
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-}
-
-.hero-text p {
-    font-size: 1rem;
-    opacity: 0.9;
-    max-width: 500px;
-    margin: 0;
-}
-
-.hero-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.75rem;
-    padding: 0.75rem 1.25rem;
-    background: rgba(255,255,255,0.2);
-    backdrop-filter: blur(10px);
-    border-radius: 12px;
-    border: 1px solid rgba(255,255,255,0.3);
-}
-
-.hero-badge-icon {
-    width: 40px;
-    height: 40px;
-    border-radius: 10px;
-    background: rgba(255,255,255,0.2);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.25rem;
-}
-
-.hero-badge-text h4 {
-    font-size: 1.5rem;
-    font-weight: 700;
-    margin: 0;
-    line-height: 1.2;
-}
-
-.hero-badge-text p {
-    font-size: 0.8rem;
-    opacity: 0.9;
-    margin: 0;
-}
-
 /* Stats Grid */
 .stats-grid {
     display: grid;
@@ -140,53 +58,6 @@
     margin-bottom: 2rem;
 }
 
-.stat-card {
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(20px);
-    border-radius: 16px;
-    padding: 1.25rem;
-    border: 1px solid rgba(0, 0, 0, 0.06);
-    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    transition: all 0.3s ease;
-}
-
-.stat-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-}
-
-.stat-icon {
-    width: 48px;
-    height: 48px;
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.25rem;
-    flex-shrink: 0;
-}
-
-.stat-icon.total { background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); color: white; }
-.stat-icon.active { background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%); color: white; }
-.stat-icon.completed { background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: white; }
-.stat-icon.incomplete { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white; }
-
-.stat-content h3 {
-    font-size: 1.5rem;
-    font-weight: 700;
-    margin: 0;
-    color: #1f2937;
-    line-height: 1.2;
-}
-
-.stat-content p {
-    font-size: 0.8rem;
-    color: #6b7280;
-    margin: 0;
-}
 
 /* Legend Box */
 .legend-box {
@@ -298,58 +169,9 @@
     box-shadow: 0 4px 12px rgba(238, 46, 36, 0.3);
 }
 
-/* Table Card */
-.table-card {
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(20px);
-    border-radius: 20px;
-    border: 1px solid rgba(0, 0, 0, 0.06);
-    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
-    overflow: hidden;
-}
-
-.table-header {
-    padding: 1.25rem 1.5rem;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    background: linear-gradient(135deg, rgba(238, 46, 36, 0.03) 0%, rgba(255, 255, 255, 0) 100%);
-}
-
-.table-title {
-    font-size: 1.1rem;
-    font-weight: 600;
-    color: #1f2937;
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-}
-
-.table-title i {
-    color: #EE2E24;
-}
-
 .participants-table {
     width: 100%;
     border-collapse: collapse;
-}
-
-.participants-table thead {
-    background: linear-gradient(135deg, rgba(238, 46, 36, 0.05) 0%, rgba(238, 46, 36, 0.02) 100%);
-}
-
-.participants-table th {
-    padding: 1rem 0.75rem;
-    text-align: center;
-    vertical-align: middle;
-    font-size: 0.75rem;
-    font-weight: 600;
-    color: #6b7280;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
-    white-space: nowrap;
 }
 
 /* Pastikan header tetap tengah meski ada stylesheet global (.table th, dll.) */
@@ -363,7 +185,7 @@ table.participants-table > thead > tr > th {
     color: #374151;
     border-bottom: 1px solid rgba(0, 0, 0, 0.04);
     vertical-align: middle;
-    text-align: left;
+    text-align: center;
 }
 
 /* No, Divisi, Periode, Status, Dokumen, Aksi: isi tengah; Peserta (kolom 2): tetap kiri */
@@ -434,31 +256,6 @@ table.participants-table > thead > tr > th {
     color: #374151;
 }
 
-/* Status Badge */
-.status-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.25rem;
-    padding: 0.25rem 0.5rem;
-    border-radius: 6px;
-    font-size: 0.7rem;
-    font-weight: 500;
-}
-
-.status-badge.active {
-    background: rgba(34, 197, 94, 0.1);
-    color: #16a34a;
-}
-
-.status-badge.completed {
-    background: rgba(59, 130, 246, 0.1);
-    color: #2563eb;
-}
-
-.status-badge.upcoming {
-    background: rgba(245, 158, 11, 0.1);
-    color: #d97706;
-}
 
 /* Document Status */
 .doc-status {
@@ -953,63 +750,57 @@ table.participants-table > thead > tr > th {
 
 @section('content')
 <div class="participants-page" x-data="participantsManager()">
-    {{-- Hero Section --}}
-    <div class="admin-hero">
-        <div class="hero-content">
-            <div class="hero-text">
-                <h1><i class="fas fa-users"></i> Daftar Peserta Magang</h1>
-                <p>Kelola data dan dokumen peserta magang yang sudah diterima</p>
-            </div>
-            @if($activeParticipants > 0)
-            <div class="hero-badge">
-                <div class="hero-badge-icon">
-                    <i class="fas fa-user-check"></i>
-                </div>
-                <div class="hero-badge-text">
-                    <h4>{{ $activeParticipants }}</h4>
-                    <p>Peserta Aktif</p>
-                </div>
-            </div>
-            @endif
-        </div>
-    </div>
+    <x-dashboard.page-context-bar
+        title="Daftar Peserta Magang"
+        description="Kelola data dan dokumen peserta magang yang sudah diterima"
+        icon="fas fa-users"
+        role="admin"
+    />
 
     {{-- Stats Grid --}}
     <div class="stats-grid">
-        <div class="stat-card">
-            <div class="stat-icon total">
-                <i class="fas fa-users"></i>
-            </div>
-            <div class="stat-content">
-                <h3>{{ $totalParticipants }}</h3>
-                <p>Total Peserta</p>
-            </div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-icon active">
-                <i class="fas fa-user-clock"></i>
-            </div>
-            <div class="stat-content">
-                <h3>{{ $activeParticipants }}</h3>
-                <p>Sedang Magang</p>
+        <div class="stat-card stat-card-primary">
+            <div class="stat-card-header">
+                <div class="stat-meta">
+                    <div class="stat-value">{{ $totalParticipants }}</div>
+                    <div class="stat-label">Total Peserta</div>
+                </div>
+                <div class="stat-icon stat-icon-primary">
+                    <i class="fas fa-users"></i>
+                </div>
             </div>
         </div>
-        <div class="stat-card">
-            <div class="stat-icon completed">
-                <i class="fas fa-user-graduate"></i>
-            </div>
-            <div class="stat-content">
-                <h3>{{ $completedParticipants }}</h3>
-                <p>Selesai Magang</p>
+        <div class="stat-card stat-card-success">
+            <div class="stat-card-header">
+                <div class="stat-meta">
+                    <div class="stat-value">{{ $activeParticipants }}</div>
+                    <div class="stat-label">Sedang Magang</div>
+                </div>
+                <div class="stat-icon stat-icon-success">
+                    <i class="fas fa-user-clock"></i>
+                </div>
             </div>
         </div>
-        <div class="stat-card">
-            <div class="stat-icon incomplete">
-                <i class="fas fa-file-circle-exclamation"></i>
+        <div class="stat-card stat-card-info">
+            <div class="stat-card-header">
+                <div class="stat-meta">
+                    <div class="stat-value">{{ $completedParticipants }}</div>
+                    <div class="stat-label">Selesai Magang</div>
+                </div>
+                <div class="stat-icon stat-icon-info">
+                    <i class="fas fa-user-graduate"></i>
+                </div>
             </div>
-            <div class="stat-content">
-                <h3>{{ $incompleteDocuments }}</h3>
-                <p>Dokumen Belum Lengkap</p>
+        </div>
+        <div class="stat-card stat-card-warning">
+            <div class="stat-card-header">
+                <div class="stat-meta">
+                    <div class="stat-value">{{ $incompleteDocuments }}</div>
+                    <div class="stat-label">Dokumen Belum Lengkap</div>
+                </div>
+                <div class="stat-icon stat-icon-warning">
+                    <i class="fas fa-file-circle-exclamation"></i>
+                </div>
             </div>
         </div>
     </div>
@@ -1044,12 +835,12 @@ table.participants-table > thead > tr > th {
             x-model="searchQuery"
             @input="filterTable()"
         >
-        <select class="filter-select" x-model="statusFilter" @change="filterTable()">
-            <option value="">Semua Status</option>
-            <option value="active">Sedang Magang</option>
-            <option value="completed">Selesai</option>
-            <option value="upcoming">Belum Mulai</option>
-        </select>
+        <x-ui.chips>
+            <button type="button" class="chip" :class="{ active: statusFilter === '' }" @click="statusFilter = ''; filterTable()">Semua</button>
+            <button type="button" class="chip" :class="{ active: statusFilter === 'active' }" @click="statusFilter = 'active'; filterTable()">Aktif</button>
+            <button type="button" class="chip" :class="{ active: statusFilter === 'completed' }" @click="statusFilter = 'completed'; filterTable()">Selesai</button>
+            <button type="button" class="chip" :class="{ active: statusFilter === 'upcoming' }" @click="statusFilter = 'upcoming'; filterTable()">Belum Mulai</button>
+        </x-ui.chips>
         <select class="filter-select" x-model="docFilter" @change="filterTable()">
             <option value="">Semua Dokumen</option>
             <option value="complete">Lengkap</option>
@@ -1139,15 +930,19 @@ table.participants-table > thead > tr > th {
                                     </div>
                                 </td>
                                 <td>
-                                    <span class="status-badge {{ $status }}">
-                                        @if($status === 'active')
-                                            <i class="fas fa-circle text-xs"></i> {{ $statusLabel }}
-                                        @elseif($status === 'completed')
-                                            <i class="fas fa-check-circle"></i> {{ $statusLabel }}
-                                        @else
-                                            <i class="fas fa-clock"></i> {{ $statusLabel }}
-                                        @endif
+                                    @if($status === 'active')
+                                    <span class="status-badge status-active">
+                                        <i class="fas fa-circle"></i> {{ $statusLabel }}
                                     </span>
+                                    @elseif($status === 'completed')
+                                    <span class="status-badge status-finished">
+                                        <i class="fas fa-check-circle"></i> {{ $statusLabel }}
+                                    </span>
+                                    @else
+                                    <span class="badge badge-warning">
+                                        <i class="fas fa-clock"></i> {{ $statusLabel }}
+                                    </span>
+                                    @endif
                                 </td>
                                 <td>
                                     <div class="doc-status">

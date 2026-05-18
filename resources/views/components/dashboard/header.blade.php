@@ -14,38 +14,85 @@
     $initials = count($names) >= 2
         ? strtoupper(substr($names[0], 0, 1) . substr($names[1], 0, 1))
         : strtoupper(substr($user->name ?? 'U', 0, 2));
+
+    $profileRoute = match($user->role ?? '') {
+        'admin'      => route('admin.profile'),
+        'pembimbing' => route('mentor.profil'),
+        default      => route('dashboard.profile'),
+    };
+
+    $contactWidget = null;
+    if ($user->role === 'peserta') {
+        $activeApp = $user->activeApplication;
+        if ($activeApp && $activeApp->divisionMentor) {
+            $mentorU = \App\Models\User::where('username', $activeApp->divisionMentor->nik_number)
+                ->where('role', 'pembimbing')
+                ->first();
+            if ($mentorU && ($mentorU->phone || $mentorU->email)) {
+                $contactWidget = [
+                    'label' => 'Kontak Mentor',
+                    'name'  => $activeApp->divisionMentor->mentor_name,
+                    'photo' => $mentorU->profile_picture,
+                    'phone' => $mentorU->phone,
+                    'email' => $mentorU->email,
+                ];
+            }
+        }
+    } elseif ($user->role === 'pembimbing') {
+        $admin = \App\Models\User::where('role', 'admin')->first();
+        if ($admin && ($admin->phone || $admin->email)) {
+            $contactWidget = [
+                'label' => 'Kontak Admin',
+                'name'  => $admin->name,
+                'photo' => $admin->profile_picture,
+                'phone' => $admin->phone,
+                'email' => $admin->email,
+            ];
+        }
+    }
 @endphp
 
 <header class="dashboard-header">
-    <div class="header-left">
-        {{-- Page Title --}}
-        <div class="page-title-section">
-            @if(isset($breadcrumbs) && count($breadcrumbs) > 0)
-                <nav class="breadcrumb-nav">
-                    @foreach($breadcrumbs as $index => $crumb)
-                        @if(is_array($crumb) && isset($crumb['url']))
-                            <a href="{{ $crumb['url'] }}" class="breadcrumb-link">{{ $crumb['label'] }}</a>
-                        @else
-                            <span class="breadcrumb-current">{{ is_array($crumb) ? $crumb['label'] : $crumb }}</span>
-                        @endif
-                        @if($index < count($breadcrumbs) - 1)
-                            <span class="breadcrumb-separator">
-                                <i class="fas fa-chevron-right"></i>
-                            </span>
-                        @endif
-                    @endforeach
-                </nav>
-            @endif
-
-            <h1 class="page-title">{{ $pageTitle ?? 'Dashboard' }}</h1>
-
-            @if(isset($pageSubtitle))
-                <p class="page-subtitle">{{ $pageSubtitle }}</p>
-            @endif
-        </div>
-    </div>
-
     <div class="header-right">
+        {{-- Contact Widget --}}
+        @if($contactWidget)
+        <div class="contact-widget">
+            <div class="contact-photo">
+                @if($contactWidget['photo'])
+                    <img src="{{ asset('storage/' . $contactWidget['photo']) }}" alt="{{ $contactWidget['name'] }}">
+                @else
+                    @php
+                        $cInitials = collect(explode(' ', $contactWidget['name']))->take(2)->map(fn($w) => strtoupper($w[0] ?? ''))->join('');
+                    @endphp
+                    <div class="contact-initials">{{ $cInitials }}</div>
+                @endif
+            </div>
+            <div class="contact-meta">
+                <div class="contact-tag">{{ $contactWidget['label'] }}</div>
+                <div class="contact-name">{{ Str::limit($contactWidget['name'], 18) }}</div>
+            </div>
+            <div class="contact-actions">
+                @if($contactWidget['phone'])
+                    @php
+                        $waNum  = preg_replace('/^0/', '62', preg_replace('/[^0-9]/', '', $contactWidget['phone']));
+                        $waText = urlencode('Halo, saya ' . $user->name . ' ingin bertanya mengenai magang.');
+                    @endphp
+                    <a href="https://wa.me/{{ $waNum }}?text={{ $waText }}"
+                       target="_blank" rel="noopener"
+                       class="contact-btn contact-wa" title="WhatsApp">
+                        <i class="fab fa-whatsapp"></i>
+                    </a>
+                @endif
+                @if($contactWidget['email'])
+                    <a href="mailto:{{ $contactWidget['email'] }}"
+                       class="contact-btn contact-mail" title="Email">
+                        <i class="fas fa-envelope"></i>
+                    </a>
+                @endif
+            </div>
+        </div>
+        @endif
+
         {{-- Date & Time --}}
         <div class="header-datetime">
             <span class="datetime-day" id="currentDay"></span>
@@ -121,6 +168,66 @@
             </div>
         </div>
 
+        {{-- User Avatar Dropdown (inline Alpine — avoids component conflict) --}}
+        @php
+            $roleLabel = match($user->role ?? '') {
+                'admin'      => 'Administrator',
+                'pembimbing' => 'Pembimbing Lapangan',
+                default      => 'Peserta Magang',
+            };
+        @endphp
+        <div class="user-dropdown-wrap" x-data="{ userOpen: false }" @keydown.escape.window="userOpen = false">
+
+            {{-- Trigger --}}
+            <button type="button" class="user-avatar-btn" @click="userOpen = !userOpen" :aria-expanded="userOpen">
+                <div class="user-avatar-circle">
+                    @if($user->profile_picture)
+                        <img src="{{ asset('storage/' . $user->profile_picture) }}" alt="{{ $user->name }}">
+                    @else
+                        {{ $initials }}
+                    @endif
+                </div>
+                <span class="user-avatar-name">{{ Str::limit($user->name, 16) }}</span>
+                <i class="fas fa-chevron-down user-avatar-chevron" :class="{ 'rotate-180': userOpen }"></i>
+            </button>
+
+            {{-- Menu --}}
+            <div class="user-dropdown-menu"
+                 x-show="userOpen"
+                 @click.outside="userOpen = false"
+                 x-transition:enter="ud-enter"
+                 x-transition:enter-start="ud-enter-start"
+                 x-transition:enter-end="ud-enter-end"
+                 x-transition:leave="ud-leave"
+                 x-transition:leave-start="ud-leave-start"
+                 x-transition:leave-end="ud-leave-end"
+                 style="display:none;">
+
+                {{-- Profile Header --}}
+                <div class="dd-profile-header">
+                    <div class="dd-avatar">
+                        @if($user->profile_picture)
+                            <img src="{{ asset('storage/' . $user->profile_picture) }}" alt="{{ $user->name }}">
+                        @else
+                            {{ $initials }}
+                        @endif
+                    </div>
+                    <div class="dd-info">
+                        <div class="dd-name">{{ Str::limit($user->name, 22) }}</div>
+                        <div class="dd-email">{{ $user->email }}</div>
+                        <span class="dd-role-badge">{{ $roleLabel }}</span>
+                    </div>
+                </div>
+
+                <a href="{{ $profileRoute }}" class="ud-item">
+                    <i class="fas fa-user"></i> Profil Saya
+                </a>
+                <a href="{{ route('password.change') }}" class="ud-item">
+                    <i class="fas fa-lock"></i> Ganti Password
+                </a>
+            </div>
+        </div>
+
     </div>
 </header>
 
@@ -136,70 +243,14 @@
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
     border-bottom: 1px solid var(--color-gray-100);
-    padding: 1rem 2rem;
+    padding: 0.75rem 2rem;
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: flex-end;
     z-index: var(--z-sticky);
-    min-height: 72px;
+    min-height: 60px;
 }
 
-/* ----- Left Section ----- */
-.header-left {
-    display: flex;
-    align-items: center;
-    gap: 1.5rem;
-}
-
-.page-title-section {
-    display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
-}
-
-.breadcrumb-nav {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    font-size: 0.8rem;
-    color: var(--color-gray-500);
-}
-
-.breadcrumb-link {
-    color: var(--color-gray-500);
-    text-decoration: none;
-    transition: color 0.2s;
-}
-
-.breadcrumb-link:hover {
-    color: var(--color-primary);
-}
-
-.breadcrumb-separator {
-    font-size: 0.6rem;
-    color: var(--color-gray-400);
-}
-
-.breadcrumb-current {
-    color: var(--color-gray-700);
-    font-weight: 500;
-}
-
-.page-title {
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: var(--color-gray-900);
-    margin: 0;
-    line-height: 1.3;
-}
-
-.page-subtitle {
-    font-size: 0.875rem;
-    color: var(--color-gray-500);
-    margin: 0;
-}
-
-/* ----- Right Section ----- */
 .header-right {
     display: flex;
     align-items: center;
@@ -409,20 +460,288 @@
     margin-right: 0.5rem;
 }
 
+/* Contact Widget */
+.contact-widget {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 5px 12px 5px 6px;
+    background: var(--color-gray-50);
+    border: 1px solid var(--color-gray-200);
+    border-radius: 12px;
+}
+
+.contact-photo {
+    width: 34px;
+    height: 34px;
+    border-radius: 8px;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.contact-photo img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.contact-initials {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 700;
+    color: #fff;
+    background: linear-gradient(135deg, #EE2E24 0%, #C41E1A 100%);
+}
+
+.contact-meta { min-width: 0; }
+
+.contact-tag {
+    font-size: 10px;
+    color: var(--color-gray-500);
+    font-weight: 600;
+    letter-spacing: .05em;
+    text-transform: uppercase;
+    line-height: 1;
+    margin-bottom: 3px;
+}
+
+.contact-name {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--color-gray-900);
+    white-space: nowrap;
+    line-height: 1;
+}
+
+.contact-actions {
+    display: flex;
+    gap: 4px;
+    margin-left: 4px;
+}
+
+.contact-btn {
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+    text-decoration: none;
+    transition: background .15s;
+    flex-shrink: 0;
+}
+
+.contact-wa   { background: #DCFCE7; color: #16A34A; }
+.contact-wa:hover  { background: #BBF7D0; }
+.contact-mail { background: #DBEAFE; color: #2563EB; }
+.contact-mail:hover { background: #BFDBFE; }
+
+/* User Avatar Dropdown */
+.user-avatar-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 5px 10px 5px 6px;
+    background: var(--color-gray-50);
+    border: 1px solid var(--color-gray-200);
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all .15s;
+    user-select: none;
+}
+.user-avatar-btn:hover { background: var(--color-gray-100); }
+
+.user-avatar-circle {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    overflow: hidden;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #EE2E24 0%, #C41E1A 100%);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+}
+.user-avatar-circle img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.user-avatar-name {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--color-gray-800);
+    white-space: nowrap;
+    max-width: 120px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.user-avatar-chevron {
+    font-size: 10px;
+    color: var(--color-gray-400);
+    transition: transform .15s;
+}
+
+/* Profile Dropdown Header */
+.dd-profile-header {
+    display: flex;
+    align-items: center;
+    gap: 0.875rem;
+    padding: 1rem 1.25rem;
+    background: linear-gradient(135deg, #FEF2F2 0%, #FFF7F7 100%);
+    border-bottom: 1px solid #E5E7EB;
+}
+
+.dd-avatar {
+    width: 46px;
+    height: 46px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #EE2E24, #C41E1A);
+    color: #fff;
+    font-weight: 700;
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    overflow: hidden;
+}
+
+.dd-avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+.dd-info { min-width: 0; flex: 1; }
+
+.dd-name {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #111827;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.dd-email {
+    font-size: 0.72rem;
+    color: #9CA3AF;
+    margin: 0.15rem 0 0.4rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.dd-role-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.15rem 0.55rem;
+    background: rgba(238,46,36,0.1);
+    color: #C41E1A;
+    border-radius: 9999px;
+    font-size: 0.63rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+/* User Dropdown Wrap & Menu */
+.user-dropdown-wrap {
+    position: relative;
+}
+
+.user-dropdown-menu {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    width: 260px;
+    background: #fff;
+    border-radius: 14px;
+    border: 1px solid #E5E7EB;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.12);
+    overflow: hidden;
+    z-index: 300;
+}
+
+.ud-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1.25rem;
+    color: #4B5563;
+    font-size: 0.875rem;
+    text-decoration: none;
+    transition: all 0.15s;
+    cursor: pointer;
+    background: none;
+    border: none;
+    width: 100%;
+    text-align: left;
+    font-family: inherit;
+}
+
+.ud-item i {
+    width: 16px;
+    color: #9CA3AF;
+    font-size: 0.875rem;
+    flex-shrink: 0;
+}
+
+.ud-item:hover {
+    background: #F9FAFB;
+    color: #EE2E24;
+}
+
+.ud-item:hover i {
+    color: #EE2E24;
+}
+
+.ud-danger {
+    color: #DC2626;
+}
+
+.ud-danger i {
+    color: #DC2626;
+}
+
+.ud-danger:hover {
+    background: #FEF2F2;
+    color: #B91C1C;
+}
+
+.ud-danger:hover i {
+    color: #B91C1C;
+}
+
+.ud-divider {
+    height: 1px;
+    background: #E5E7EB;
+    margin: 0.25rem 0;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
     .dashboard-header {
-        padding: 1rem;
+        padding: 0.75rem 1rem;
         padding-left: 70px;
     }
 
-    .header-datetime {
-        display: none;
-    }
+    .header-datetime { display: none; }
+    .contact-widget  { display: none; }
 
-    .page-title {
-        font-size: 1.25rem;
-    }
+    .user-avatar-name,
+    .user-avatar-chevron { display: none; }
+
+    .user-avatar-btn { padding: 5px 6px; }
 
     .notification-dropdown {
         width: 300px;
