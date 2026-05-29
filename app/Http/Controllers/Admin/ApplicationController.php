@@ -3,11 +3,12 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Mail\AcceptanceLetterMail;
 use App\Models\DivisiAdmin;
 use App\Models\InternshipApplication;
-use App\Mail\AcceptanceLetterMail;
 use App\Services\Application\InternshipApplicationService;
 use App\Services\Document\FileUploadService;
+use App\Support\ApplicationRevisionFields;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
@@ -62,13 +63,22 @@ class ApplicationController extends Controller
     public function reject(Request $request, $id)
     {
         $request->validate([
-            'notes' => 'nullable|string',
+            'notes' => 'nullable|string|max:2000',
+            'revision_fields' => 'required|array|min:1',
+            'revision_fields.*' => 'in:'.implode(',', ApplicationRevisionFields::ALL),
+        ], [
+            'revision_fields.required' => 'Pilih minimal satu bagian yang perlu direvisi.',
+            'revision_fields.min' => 'Pilih minimal satu bagian yang perlu direvisi.',
         ]);
 
-        $this->applicationService->rejectApplication($id, $request->notes);
+        $this->applicationService->requestRevision(
+            $id,
+            $request->notes,
+            $request->revision_fields
+        );
 
         return redirect()->route('admin.applications')
-            ->with('success', 'Pengajuan magang berhasil ditolak.');
+            ->with('success', 'Pengajuan dikembalikan untuk revisi.');
     }
 
     /**
@@ -83,7 +93,7 @@ class ApplicationController extends Controller
         $this->applicationService->permanentRejectApplication($id, $request->notes);
 
         return redirect()->route('admin.applications')
-            ->with('success', 'Pengajuan magang berhasil ditolak secara permanen.');
+            ->with('success', 'Pengajuan magang berhasil ditolak. Peserta tidak dapat mendaftar lagi.');
     }
 
     /**
@@ -96,7 +106,7 @@ class ApplicationController extends Controller
 
         // Check if acceptance letter already exists
         if ($application->acceptance_letter_path) {
-            $pdfPath = storage_path('app/public/' . $application->acceptance_letter_path);
+            $pdfPath = storage_path('app/public/'.$application->acceptance_letter_path);
             if (file_exists($pdfPath)) {
                 $pdfContent = file_get_contents($pdfPath);
             } else {
@@ -110,8 +120,8 @@ class ApplicationController extends Controller
             $pdfContent = $pdf->output();
 
             // Save the PDF
-            $filename = 'surat_penerimaan_' . $application->id . '_' . time() . '.pdf';
-            $path = 'acceptance_letters/' . $filename;
+            $filename = 'surat_penerimaan_'.$application->id.'_'.time().'.pdf';
+            $path = 'acceptance_letters/'.$filename;
             Storage::disk('public')->put($path, $pdfContent);
 
             // Update application
@@ -124,10 +134,10 @@ class ApplicationController extends Controller
             Mail::to($application->user->email)->send(new AcceptanceLetterMail($application, $pdfContent));
 
             return redirect()->route('admin.applications')
-                ->with('success', 'Surat penerimaan magang berhasil dikirim ke email peserta: ' . $application->user->email);
+                ->with('success', 'Surat penerimaan magang berhasil dikirim ke email peserta: '.$application->user->email);
         } catch (\Exception $e) {
             return redirect()->route('admin.applications')
-                ->with('error', 'Gagal mengirim email: ' . $e->getMessage());
+                ->with('error', 'Gagal mengirim email: '.$e->getMessage());
         }
     }
 
@@ -142,14 +152,14 @@ class ApplicationController extends Controller
         // Get division admin data if available
         $divisionAdmin = null;
         if ($application->divisi_id) {
-            $divisionAdmin = DivisiAdmin::where('division_name', 'like', '%' . $divisi->name . '%')->first();
+            $divisionAdmin = DivisiAdmin::where('division_name', 'like', '%'.$divisi->name.'%')->first();
         }
 
         // Generate QR code
-        $qrText = "PESERTA MAGANG PT POS INDONESIA\n\nNama: " . $user->name .
-            "\nID Mahasiswa: " . $user->nim .
-            "\nUniversitas: " . $user->university .
-            "\nDivisi: " . $divisi->name .
+        $qrText = "PESERTA MAGANG PT POS INDONESIA\n\nNama: ".$user->name.
+            "\nID Mahasiswa: ".$user->nim.
+            "\nUniversitas: ".$user->university.
+            "\nDivisi: ".$divisi->name.
             "\n\nData ini valid dan dapat diverifikasi.";
 
         $qrSvg = QrCode::format('svg')
@@ -158,9 +168,9 @@ class ApplicationController extends Controller
             ->backgroundColor(0, 0, 0, 0)
             ->generate($qrText);
 
-        $qrBase64 = 'data:image/svg+xml;base64,' . base64_encode($qrSvg);
+        $qrBase64 = 'data:image/svg+xml;base64,'.base64_encode($qrSvg);
 
-        $nomorSurat = 'NOMOR-' . str_pad($application->id, 6, '0', STR_PAD_LEFT) . '/POS/V/' . date('Y');
+        $nomorSurat = 'NOMOR-'.str_pad($application->id, 6, '0', STR_PAD_LEFT).'/POS/V/'.date('Y');
 
         return [
             'nomor_surat_penerimaan' => $nomorSurat,
@@ -173,7 +183,7 @@ class ApplicationController extends Controller
             'nama_peserta' => $user->name,
             'nim' => $user->nim,
             'jurusan' => $user->major,
-            'jabatan' => $divisi->vp ? 'VP ' . str_replace('Divisi ', '', $divisi->name) : '',
+            'jabatan' => $divisi->vp ? 'VP '.str_replace('Divisi ', '', $divisi->name) : '',
             'nama_pic' => $divisi->vp ?? ($divisionAdmin ? $divisionAdmin->mentor_name : ''),
             'nippos' => $divisi->nippos ?? '',
             'start_date' => $application->start_date

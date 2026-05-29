@@ -441,6 +441,53 @@ class MentorDashboardController extends Controller
             ->with('biodata_success', 'Biodata kontak berhasil diperbarui.');
     }
 
+    public function uploadProfilePicture(Request $request)
+    {
+        $request->validate([
+            'profile_picture' => 'required|image|mimes:jpg,jpeg,png|max:2048',
+        ], [
+            'profile_picture.required' => 'File foto harus dipilih.',
+            'profile_picture.image' => 'File harus berupa gambar.',
+            'profile_picture.mimes' => 'Format file harus JPG, JPEG, atau PNG.',
+            'profile_picture.max' => 'Ukuran file maksimal 2MB.',
+        ]);
+
+        $user = Auth::user();
+
+        if ($user->profile_picture) {
+            Storage::disk('public')->delete($user->profile_picture);
+        }
+
+        $path = $request->file('profile_picture')->store('profile-pictures', 'public');
+        $user->profile_picture = $path;
+        $user->save();
+
+        if ($request->expectsJson()) {
+            return response()->json(['success' => true, 'message' => 'Foto profil berhasil diperbarui.']);
+        }
+
+        return redirect()->route('mentor.profil')
+            ->with('photo_success', 'Foto profil berhasil diperbarui.');
+    }
+
+    public function removeProfilePicture(Request $request)
+    {
+        $user = Auth::user();
+
+        if ($user->profile_picture) {
+            Storage::disk('public')->delete($user->profile_picture);
+            $user->profile_picture = null;
+            $user->save();
+        }
+
+        if ($request->expectsJson()) {
+            return response()->json(['success' => true, 'message' => 'Foto profil berhasil dihapus.']);
+        }
+
+        return redirect()->route('mentor.profil')
+            ->with('photo_success', 'Foto profil berhasil dihapus.');
+    }
+
     public function absensi()
     {
         $user = Auth::user();

@@ -565,10 +565,10 @@
             $statusLabel = ucfirst($latestApplication->status);
             $headerIconColor = 'amber';
 
-            if($latestApplication->status == 'rejected') {
-                $statusClass = 'status-rejected';
-                $statusIcon = 'fas fa-exclamation-triangle';
-                $statusLabel = 'Ditolak';
+            if(in_array($latestApplication->status, ['revision', 'rejected'], true)) {
+                $statusClass = 'status-revision';
+                $statusIcon = 'fas fa-redo';
+                $statusLabel = 'Memerlukan Revisi';
                 $headerIconColor = 'amber';
             } elseif($latestApplication->status == 'accepted') {
                 $statusClass = 'status-accepted';
@@ -638,10 +638,10 @@
             </div>
 
             {{-- Contextual Notes --}}
-            @if($latestApplication->status == 'rejected' && $latestApplication->notes)
+            @if(in_array($latestApplication->status, ['revision', 'rejected'], true) && $latestApplication->notes)
                 <div class="prev-notes-card rejection">
-                    <div class="notes-title" style="color: #dc2626;">
-                        <i class="fas fa-exclamation-circle"></i> Alasan Penolakan
+                    <div class="notes-title" style="color: #d97706;">
+                        <i class="fas fa-exclamation-circle"></i> Catatan Revisi
                     </div>
                     <p class="notes-text" style="color: #7f1d1d;">{{ $latestApplication->notes }}</p>
                 </div>

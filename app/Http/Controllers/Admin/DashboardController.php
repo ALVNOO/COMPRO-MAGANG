@@ -4,9 +4,9 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Divisi;
+use App\Models\InternshipApplication;
 use App\Models\Rule;
 use App\Models\User;
-use App\Models\InternshipApplication;
 use App\Services\Application\InternshipApplicationService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -45,9 +45,9 @@ class DashboardController extends Controller
             'profile_picture' => 'required|image|mimes:jpg,jpeg,png|max:2048',
         ], [
             'profile_picture.required' => 'File foto harus dipilih.',
-            'profile_picture.image'    => 'File harus berupa gambar.',
-            'profile_picture.mimes'    => 'Format file harus JPG, JPEG, atau PNG.',
-            'profile_picture.max'      => 'Ukuran file maksimal 2MB.',
+            'profile_picture.image' => 'File harus berupa gambar.',
+            'profile_picture.mimes' => 'Format file harus JPG, JPEG, atau PNG.',
+            'profile_picture.max' => 'Ukuran file maksimal 2MB.',
         ]);
 
         $user = Auth::user();
@@ -103,7 +103,7 @@ class DashboardController extends Controller
         // Additional statistics for enhanced dashboard
         $pendingCount = InternshipApplication::where('status', 'pending')->count();
         $acceptedCount = InternshipApplication::where('status', 'accepted')->count();
-        $rejectedCount = InternshipApplication::where('status', 'rejected')->count();
+        $revisionCount = InternshipApplication::whereIn('status', ['revision', 'rejected'])->count();
         $finishedCount = InternshipApplication::where('status', 'finished')->count();
 
         // Today's registrations
@@ -112,7 +112,7 @@ class DashboardController extends Controller
             ->count();
 
         // Active mentors (mentors with active participants)
-        $activeMentors = Divisi::whereHas('internshipApplications', function($q) {
+        $activeMentors = Divisi::whereHas('internshipApplications', function ($q) {
             $q->where('status', 'accepted');
         })->count();
 
@@ -123,7 +123,8 @@ class DashboardController extends Controller
         $statusDistribution = [
             'pending' => $pendingCount,
             'accepted' => $acceptedCount,
-            'rejected' => $rejectedCount,
+            'revision' => $revisionCount,
+            'rejected' => $revisionCount,
             'finished' => $finishedCount,
         ];
 
@@ -134,8 +135,8 @@ class DashboardController extends Controller
             ->groupBy('division_admin_id')
             ->with('divisionAdmin')
             ->get()
-            ->map(fn($item) => [
-                'name'  => $item->divisionAdmin->division_name ?? '—',
+            ->map(fn ($item) => [
+                'name' => $item->divisionAdmin->division_name ?? '—',
                 'count' => (int) $item->total,
             ])
             ->sortByDesc('count')
@@ -147,10 +148,10 @@ class DashboardController extends Controller
             ->orderByDesc('internship_applications_count')
             ->limit(10)
             ->get()
-            ->map(function($divisi) {
+            ->map(function ($divisi) {
                 return [
                     'name' => $divisi->name,
-                    'count' => $divisi->internship_applications_count
+                    'count' => $divisi->internship_applications_count,
                 ];
             });
 
@@ -171,7 +172,8 @@ class DashboardController extends Controller
             // New data for enhanced dashboard
             'pendingCount' => $pendingCount,
             'acceptedCount' => $acceptedCount,
-            'rejectedCount' => $rejectedCount,
+            'rejectedCount' => $revisionCount,
+            'revisionCount' => $revisionCount,
             'finishedCount' => $finishedCount,
             'todayRegistrations' => $todayRegistrations,
             'activeMentors' => $activeMentors,

@@ -14,10 +14,20 @@
             'icon' => 'fas fa-check',
             'label' => 'Diterima'
         ],
+        'revision' => [
+            'class' => 'status-badge status-revision',
+            'icon' => 'fas fa-redo',
+            'label' => 'Revisi'
+        ],
         'rejected' => [
             'class' => 'status-badge status-rejected',
             'icon' => 'fas fa-times',
             'label' => 'Ditolak'
+        ],
+        'permanently_rejected' => [
+            'class' => 'status-badge status-rejected',
+            'icon' => 'fas fa-ban',
+            'label' => 'Ditolak Permanen'
         ],
         'active' => [
             'class' => 'status-badge status-active',

@@ -742,7 +742,7 @@ document.addEventListener('DOMContentLoaded', function () {
             const fd = new FormData();
             fd.append('profile_picture', file);
             fd.append('_token', '{{ csrf_token() }}');
-            fetch('{{ route("profile.picture") }}', {
+            fetch('{{ route("mentor.profil.picture") }}', {
                 method: 'POST', body: fd,
                 headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' }
             })
@@ -757,7 +757,7 @@ document.addEventListener('DOMContentLoaded', function () {
         btnRemove.addEventListener('click', function () {
             if (!confirm('Hapus foto profil?')) return;
             btnRemove.disabled = true;
-            fetch('{{ route("profile.picture.remove") }}', {
+            fetch('{{ route("mentor.profil.picture.remove") }}', {
                 method: 'DELETE',
                 headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' }
             })

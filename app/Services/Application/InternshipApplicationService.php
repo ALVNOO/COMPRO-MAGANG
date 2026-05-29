@@ -4,8 +4,6 @@ namespace App\Services\Application;
 
 use App\Models\InternshipApplication;
 use App\Models\User;
-use App\Models\DivisiAdmin;
-use App\Models\DivisionMentor;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Collection;
 
@@ -53,7 +51,7 @@ class InternshipApplicationService
         $query = $user->internshipApplications()
             ->with(['divisionAdmin', 'divisionMentor', 'fieldOfInterest']);
 
-        if (!empty($statuses)) {
+        if (! empty($statuses)) {
             $query->whereIn('status', $statuses);
         }
 
@@ -70,24 +68,37 @@ class InternshipApplicationService
         $application->division_admin_id = $divisionId;
         $application->division_mentor_id = $mentorId;
         $application->status = 'accepted';
-        $application->notes = null; // Clear rejection notes if any
+        $application->notes = null;
+        $application->revision_fields = null;
         $application->save();
 
         return $application->fresh(['divisionAdmin', 'divisionMentor', 'user']);
     }
 
     /**
-     * Reject an application with optional notes.
+     * Return an application for participant revision with notes and target fields.
+     *
+     * @param  list<string>  $revisionFields
      */
-    public function rejectApplication(int $applicationId, ?string $notes = null): InternshipApplication
+    public function requestRevision(int $applicationId, ?string $notes, array $revisionFields): InternshipApplication
     {
         $application = InternshipApplication::findOrFail($applicationId);
 
-        $application->status = 'rejected';
+        $application->status = 'revision';
         $application->notes = $notes;
+        $application->revision_fields = array_values(array_unique($revisionFields));
+        \App\Support\ApplicationRevisionFields::clearApplicationDataForFields($application, $revisionFields);
         $application->save();
 
         return $application->fresh(['user']);
+    }
+
+    /**
+     * @deprecated Use requestRevision() — kept for route/controller compatibility.
+     */
+    public function rejectApplication(int $applicationId, ?string $notes = null): InternshipApplication
+    {
+        return $this->requestRevision($applicationId, $notes, \App\Support\ApplicationRevisionFields::ALL);
     }
 
     /**
@@ -199,13 +210,13 @@ class InternshipApplicationService
     {
         $missing = [];
 
-        if (!$application->ktm_path) {
+        if (! $application->ktm_path) {
             $missing[] = 'KTM (Kartu Tanda Mahasiswa)';
         }
-        if (!$application->surat_permohonan_path) {
+        if (! $application->surat_permohonan_path) {
             $missing[] = 'Surat Permohonan';
         }
-        if (!$application->cv_path) {
+        if (! $application->cv_path) {
             $missing[] = 'CV';
         }
 
@@ -280,7 +291,7 @@ class InternshipApplicationService
             'cover_letter' => 'cover_letter_path',
         ];
 
-        if (!isset($validDocuments[$documentType])) {
+        if (! isset($validDocuments[$documentType])) {
             throw new \InvalidArgumentException("Invalid document type: {$documentType}");
         }
 

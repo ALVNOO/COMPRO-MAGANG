@@ -22,6 +22,7 @@ class InternshipApplication extends Model
         'cv_path',
         'good_behavior_path',
         'notes',
+        'revision_fields',
         'start_date',
         'end_date',
         'assessment_report_path',
@@ -38,11 +39,46 @@ class InternshipApplication extends Model
     ];
 
     protected $casts = [
+        'revision_fields' => 'array',
         'start_date' => 'date',
         'end_date' => 'date',
         'final_evaluation_participant_uploaded_at' => 'datetime',
         'final_evaluation_admin_uploaded_at' => 'datetime',
     ];
+
+    /**
+     * Participant is fixing specific fields after admin requested revision.
+     */
+    public function isRevisionMode(): bool
+    {
+        return $this->status === 'pending'
+            && is_array($this->revision_fields)
+            && count($this->revision_fields) > 0;
+    }
+
+    public function isFieldEditable(string $field): bool
+    {
+        if (! $this->isRevisionMode()) {
+            return true;
+        }
+
+        return in_array($field, $this->revision_fields ?? [], true);
+    }
+
+    public function isSectionEditable(int $section): bool
+    {
+        if (! $this->isRevisionMode()) {
+            return true;
+        }
+
+        $map = \App\Support\ApplicationRevisionFields::sectionFieldMap();
+
+        if (! isset($map[$section])) {
+            return false;
+        }
+
+        return (bool) array_intersect($this->revision_fields ?? [], $map[$section]);
+    }
 
     /**
      * Whether a final evaluation PDF exists (uploaded by participant and/or admin).

@@ -5,6 +5,41 @@
 @push('head')
 <meta name="csrf-token" content="{{ csrf_token() }}">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css">
+<style>
+.revision-banner {
+    background: linear-gradient(135deg, #FFFBEB 0%, #FEF3C7 100%);
+    border: 1px solid #FCD34D;
+    border-radius: 12px;
+    padding: 1rem 1.25rem;
+    margin-bottom: 1rem;
+}
+.revision-banner h3 { font-size: 1rem; font-weight: 700; color: #92400E; margin: 0 0 0.35rem; }
+.revision-banner p { font-size: 0.875rem; color: #78350F; margin: 0 0 0.5rem; }
+.revision-banner ul { margin: 0; padding-left: 1.25rem; font-size: 0.875rem; color: #78350F; }
+.form-section.revision-locked .section-card { opacity: 0.72; position: relative; }
+.form-section.revision-locked .section-card::after {
+    content: 'Tidak perlu diubah';
+    position: absolute; top: 12px; right: 12px;
+    font-size: 0.7rem; font-weight: 600; color: #059669;
+    background: #ECFDF5; border: 1px solid #A7F3D0;
+    padding: 2px 8px; border-radius: 6px;
+}
+.upload-item.revision-locked { opacity: 0.65; pointer-events: none; }
+.upload-item.revision-locked::after {
+    content: 'OK';
+    position: absolute; top: 8px; right: 8px;
+    font-size: 0.65rem; font-weight: 700; color: #059669;
+    background: #ECFDF5; padding: 2px 6px; border-radius: 4px;
+}
+.upload-item { position: relative; }
+.nav-pill.revision-locked-pill { opacity: 0.6; }
+.nav-pill.revision-required::after {
+    content: '!';
+    margin-left: 4px;
+    color: #D97706;
+    font-weight: 700;
+}
+</style>
 @endpush
 
 @section('content')
@@ -35,8 +70,8 @@
 
             <div class="preaccept-header-main">
                 <div class="preaccept-header-text">
-                    <h1>Lengkapi Data Pengajuan</h1>
-                    <p>Data akan tersimpan otomatis saat Anda mengisi form</p>
+                    <h1>{{ ($revisionMode ?? false) ? 'Perbaiki Data Pengajuan' : 'Lengkapi Data Pengajuan' }}</h1>
+                    <p>{{ ($revisionMode ?? false) ? 'Hanya bagian yang diminta admin yang perlu diperbaiki' : 'Data akan tersimpan otomatis saat Anda mengisi form' }}</p>
                 </div>
 
                 <!-- Progress Circle -->
@@ -141,8 +176,23 @@
             </div>
             @endif
 
+            @if($revisionMode ?? false)
+            <div class="revision-banner">
+                <h3>Mode Revisi Pengajuan</h3>
+                @if($application->notes)
+                    <p><strong>Catatan admin:</strong> {{ $application->notes }}</p>
+                @endif
+                <p>Perbaiki bagian berikut:</p>
+                <ul>
+                    @foreach($revisionFieldLabels as $label)
+                        <li>{{ $label }}</li>
+                    @endforeach
+                </ul>
+            </div>
+            @endif
+
             <!-- Section 1: Data Diri -->
-            <section class="form-section active" id="section1">
+            <section class="form-section active {{ ($revisionMode ?? false) && !in_array(1, $revisionSections ?? [], true) ? 'revision-locked' : '' }} {{ ($revisionMode ?? false) && in_array(1, $revisionSections ?? [], true) ? 'revision-required' : '' }}" id="section1" data-section="1">
                 <div class="section-card">
                     <div class="section-card-header">
                         <div class="section-card-icon">
@@ -364,7 +414,7 @@
             </section>
 
             <!-- Section 2: Bidang Minat -->
-            <section class="form-section" id="section2">
+            <section class="form-section {{ ($revisionMode ?? false) && !in_array(2, $revisionSections ?? [], true) ? 'revision-locked' : '' }} {{ ($revisionMode ?? false) && in_array(2, $revisionSections ?? [], true) ? 'revision-required' : '' }}" id="section2" data-section="2">
                 <div class="section-card">
                     <div class="section-card-header">
                         <div class="section-card-icon icon-purple">
@@ -385,7 +435,7 @@
                             <label class="field-option @if($application && $application->field_of_interest_id == $field->id) selected @endif">
                                 <input type="radio" name="field_of_interest_id" value="{{ $field->id }}"
                                     @if($application && $application->field_of_interest_id == $field->id) checked @endif
-                                    data-field="interest">
+                                    data-field="field_of_interest">
                                 <div class="field-option-content">
                                     <div class="field-option-icon" style="background: {{ $field->color ?? '#EE2E24' }}">
                                         <i class="{{ $field->icon ?? 'fas fa-briefcase' }}"></i>
@@ -434,7 +484,7 @@
             </section>
 
             <!-- Section 3: Upload Dokumen -->
-            <section class="form-section" id="section3">
+            <section class="form-section {{ ($revisionMode ?? false) && !in_array(3, $revisionSections ?? [], true) ? 'revision-locked' : '' }} {{ ($revisionMode ?? false) && in_array(3, $revisionSections ?? [], true) ? 'revision-required' : '' }}" id="section3" data-section="3">
                 <div class="section-card">
                     <div class="section-card-header">
                         <div class="section-card-icon icon-blue">
@@ -452,7 +502,7 @@
                     <div class="section-card-body">
                         <div class="uploads-list">
                             <!-- KTM -->
-                            <div class="upload-item @if($application && $application->ktm_path) completed @endif" id="upload-ktm">
+                            <div class="upload-item @if($application && $application->ktm_path) completed @endif @if(($revisionMode ?? false) && !in_array('ktm', $revisionFields ?? [], true)) revision-locked @endif" id="upload-ktm" data-revision-field="ktm">
                                 <div class="upload-item-icon">
                                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                         <rect x="2" y="4" width="20" height="16" rx="2"/>
@@ -492,7 +542,7 @@
                             </div>
 
                             <!-- Surat Permohonan -->
-                            <div class="upload-item @if($application && $application->surat_permohonan_path) completed @endif" id="upload-surat_permohonan">
+                            <div class="upload-item @if($application && $application->surat_permohonan_path) completed @endif @if(($revisionMode ?? false) && !in_array('surat_permohonan', $revisionFields ?? [], true)) revision-locked @endif" id="upload-surat_permohonan" data-revision-field="surat_permohonan">
                                 <div class="upload-item-icon">
                                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                         <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
@@ -533,7 +583,7 @@
                             </div>
 
                             <!-- CV -->
-                            <div class="upload-item @if($application && $application->cv_path) completed @endif" id="upload-cv">
+                            <div class="upload-item @if($application && $application->cv_path) completed @endif @if(($revisionMode ?? false) && !in_array('cv', $revisionFields ?? [], true)) revision-locked @endif" id="upload-cv" data-revision-field="cv">
                                 <div class="upload-item-icon">
                                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                         <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
@@ -572,7 +622,7 @@
                             </div>
 
                             <!-- Surat Berkelakuan Baik -->
-                            <div class="upload-item @if($application && $application->good_behavior_path) completed @endif" id="upload-good_behavior">
+                            <div class="upload-item @if($application && $application->good_behavior_path) completed @endif @if(($revisionMode ?? false) && !in_array('good_behavior', $revisionFields ?? [], true)) revision-locked @endif" id="upload-good_behavior" data-revision-field="good_behavior">
                                 <div class="upload-item-icon">
                                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                         <circle cx="12" cy="8" r="7"/>
@@ -632,7 +682,7 @@
             </section>
 
             <!-- Section 4: Jadwal Magang -->
-            <section class="form-section" id="section4">
+            <section class="form-section {{ ($revisionMode ?? false) && !in_array(4, $revisionSections ?? [], true) ? 'revision-locked' : '' }} {{ ($revisionMode ?? false) && in_array(4, $revisionSections ?? [], true) ? 'revision-required' : '' }}" id="section4" data-section="4">
                 <div class="section-card">
                     <div class="section-card-header">
                         <div class="section-card-icon icon-green">
@@ -842,6 +892,14 @@
 // Configuration
 const AUTOSAVE_DELAY = 800;
 const CSRF_TOKEN = document.querySelector('meta[name="csrf-token"]')?.content;
+@php
+    $revisionConfig = [
+        'active' => $revisionMode ?? false,
+        'fields' => $revisionFields ?? [],
+        'sections' => $revisionSections ?? [],
+    ];
+@endphp
+const REVISION_CONFIG = @json($revisionConfig);
 
 // State
 let saveTimeout = null;
@@ -877,6 +935,10 @@ function initializeApp() {
     // Setup submit confirmation
     setupSubmitConfirmation();
 
+    initRevisionMode();
+
+    syncFieldOfInterestHidden();
+
     // Calculate initial progress
     updateProgress();
 
@@ -898,6 +960,10 @@ function setupAutoSave() {
     const profileFields = document.querySelectorAll('input[data-field="profile"]');
 
     profileFields.forEach(input => {
+        if (REVISION_CONFIG.active && !REVISION_CONFIG.fields.includes('profile')) {
+            return;
+        }
+
         input.addEventListener('input', function() {
             clearTimeout(saveTimeout);
             
@@ -1017,6 +1083,10 @@ function buildProfileFormData() {
 }
 
 function saveProfileData() {
+    if (REVISION_CONFIG.active && !REVISION_CONFIG.fields.includes('profile')) {
+        return;
+    }
+
     const formData = buildProfileFormData();
 
     showSaveIndicator('saving');
@@ -1312,7 +1382,7 @@ function removeProfilePicture() {
 
 // ===== FIELD SELECTION =====
 function setupFieldSelection() {
-    const fieldOptions = document.querySelectorAll('input[data-field="interest"]');
+    const fieldOptions = document.querySelectorAll('input[data-field="field_of_interest"]');
 
     fieldOptions.forEach(radio => {
         radio.addEventListener('change', function() {
@@ -1334,13 +1404,45 @@ function setupFieldSelection() {
     });
 }
 
+function syncFieldOfInterestHidden() {
+    const checked = document.querySelector('input[data-field="field_of_interest"]:checked');
+    const hidden = document.getElementById('hidden_field_id');
+    if (checked && hidden) {
+        hidden.value = checked.value;
+    }
+}
+
 function saveFieldSelection(fieldId) {
+    if (REVISION_CONFIG.active && !REVISION_CONFIG.fields.includes('field_of_interest')) {
+        return;
+    }
+
+    syncFieldOfInterestHidden();
     showSaveIndicator('saving');
 
-    // Save via the complete form endpoint or a dedicated endpoint
-    // For now, we update the hidden field and it will be saved on final submit
-    showSaveIndicator('saved');
-    updateProgress();
+    const formData = new FormData();
+    formData.append('_token', CSRF_TOKEN);
+    formData.append('field_of_interest_id', fieldId);
+
+    fetch('{{ route("dashboard.pre-acceptance.field") }}', {
+        method: 'POST',
+        body: formData,
+        headers: { 'X-Requested-With': 'XMLHttpRequest' },
+    })
+    .then(response => response.json().catch(() => ({ success: true })))
+    .then(data => {
+        if (data && data.success === false) {
+            showSaveIndicator('error');
+            showToast(data.message || 'Gagal menyimpan bidang minat.', 'error');
+            return;
+        }
+        showSaveIndicator('saved');
+        updateProgress();
+    })
+    .catch(() => {
+        showSaveIndicator('error');
+        showToast('Gagal menyimpan bidang minat.', 'error');
+    });
 }
 
 // Date inputs
@@ -1447,6 +1549,12 @@ function updateDateInfo() {
 function handleFileUpload(input, fieldName) {
     if (!input.files || !input.files[0]) return;
 
+    if (REVISION_CONFIG.active && !REVISION_CONFIG.fields.includes(fieldName)) {
+        showToast('Dokumen ini tidak perlu direvisi.', 'error');
+        input.value = '';
+        return;
+    }
+
     const file = input.files[0];
     const uploadItem = document.getElementById('upload-' + fieldName);
     const statusEl = document.getElementById(fieldName + '-status');
@@ -1527,9 +1635,30 @@ function setupNavigation() {
     });
 }
 
+function isRevisionSectionEditable(sectionNumber) {
+    return !REVISION_CONFIG.active || REVISION_CONFIG.sections.includes(sectionNumber);
+}
+
+function shouldValidateProfileBeforeSection(sectionNumber) {
+    if (sectionNumber <= 1) {
+        return false;
+    }
+
+    // Mode revisi: lewati validasi profil jika data diri tidak diminta direvisi
+    if (REVISION_CONFIG.active && !REVISION_CONFIG.sections.includes(1)) {
+        return false;
+    }
+
+    return true;
+}
+
 function goToSection(sectionNumber) {
-    // Jika ingin pindah ke langkah > 1, pastikan NIM valid dan tidak duplikat
-    if (sectionNumber > 1) {
+    if (!isRevisionSectionEditable(sectionNumber)) {
+        showToast('Bagian ini tidak perlu direvisi.', 'info');
+        return;
+    }
+
+    if (shouldValidateProfileBeforeSection(sectionNumber)) {
         validateProfileBeforeNavigation(sectionNumber);
         return;
     }
@@ -1604,7 +1733,42 @@ function validateProfileBeforeNavigation(targetSection) {
 }
 
 // Progress tracking
+function initRevisionMode() {
+    if (!REVISION_CONFIG.active) return;
+
+    document.querySelectorAll('.form-section.revision-locked').forEach(section => {
+        section.querySelectorAll('input, textarea, select').forEach(el => {
+            el.disabled = true;
+        });
+        section.querySelectorAll('label.btn-upload').forEach(el => {
+            el.style.pointerEvents = 'none';
+        });
+    });
+
+    REVISION_CONFIG.sections.forEach(sec => {
+        const pill = document.getElementById('navPill' + sec);
+        if (pill) pill.classList.add('revision-required');
+    });
+
+    [1, 2, 3, 4].forEach(sec => {
+        if (!REVISION_CONFIG.sections.includes(sec)) {
+            const pill = document.getElementById('navPill' + sec);
+            if (pill) pill.classList.add('revision-locked-pill');
+        }
+    });
+
+    if (REVISION_CONFIG.sections.length > 0) {
+        const firstSection = Math.min(...REVISION_CONFIG.sections);
+        setActiveSection(firstSection);
+    }
+}
+
 function updateProgress() {
+    if (REVISION_CONFIG.active) {
+        updateRevisionProgress();
+        return;
+    }
+
     const profileFields = ['name', 'nim', 'university', 'major', 'phone', 'ktp_number'];
     const documents = ['ktm', 'surat_permohonan', 'cv', 'good_behavior'];
 
@@ -1622,7 +1786,7 @@ function updateProgress() {
     });
 
     // Count field selection
-    const fieldSelected = document.querySelector('input[data-field="interest"]:checked');
+    const fieldSelected = document.querySelector('input[data-field="field_of_interest"]:checked');
     if (fieldSelected) completed++;
 
     // Count documents
@@ -1686,6 +1850,91 @@ function updateProgress() {
         submitSection.classList.remove('complete');
         progressCircle.classList.remove('celebrated');
         clearSubmitParticles();
+    }
+}
+
+function updateRevisionProgress() {
+    const fields = REVISION_CONFIG.fields;
+    let completed = 0;
+    let total = 0;
+
+    const profileFields = ['name', 'nim', 'university', 'major', 'phone', 'ktp_number'];
+    const documents = ['ktm', 'surat_permohonan', 'cv', 'good_behavior'];
+
+    if (fields.includes('profile')) {
+        total += 6;
+        profileFields.forEach(field => {
+            const input = document.getElementById(field);
+            if (input && input.value.trim()) completed++;
+        });
+        updateSectionStatus(1, completed >= 6);
+    } else {
+        updateSectionStatus(1, true);
+    }
+
+    if (fields.includes('field_of_interest')) {
+        total += 1;
+        const fieldSelected = document.querySelector('input[data-field="field_of_interest"]:checked');
+        if (fieldSelected) completed++;
+        updateSectionStatus(2, fieldSelected !== null);
+    } else {
+        updateSectionStatus(2, true);
+    }
+
+    let docsComplete = 0;
+    let docsRequired = 0;
+    documents.forEach(doc => {
+        if (!fields.includes(doc)) return;
+        docsRequired++;
+        const uploadItem = document.getElementById('upload-' + doc);
+        if (uploadItem && uploadItem.classList.contains('completed')) {
+            completed++;
+            docsComplete++;
+        }
+    });
+    if (docsRequired > 0) {
+        total += docsRequired;
+        updateSectionStatus(3, docsComplete === docsRequired);
+    } else {
+        updateSectionStatus(3, true);
+    }
+
+    if (fields.includes('dates')) {
+        total += 2;
+        let datesDone = 0;
+        if (document.getElementById('start_date')?.value) { completed++; datesDone++; }
+        if (document.getElementById('end_date')?.value) { completed++; datesDone++; }
+        updateSectionStatus(4, datesDone === 2);
+    } else {
+        updateSectionStatus(4, true);
+    }
+
+    const percent = total > 0 ? Math.round((completed / total) * 100) : 100;
+    document.getElementById('progressPercent').textContent = percent;
+    const circle = document.getElementById('progressCircleFill');
+    const progressCircle = document.getElementById('progressCircle');
+    const circumference = 2 * Math.PI * 45;
+    const offset = circumference - (percent / 100) * circumference;
+    circle.style.strokeDasharray = circumference;
+    circle.style.strokeDashoffset = offset;
+    updateProgressColor(percent);
+
+    const submitBtn = document.getElementById('submitBtn');
+    const submitSection = document.getElementById('submitSection');
+    if (percent === 100) {
+        submitBtn.disabled = false;
+        submitBtn.classList.add('ready');
+        submitSection.classList.add('complete');
+        if (!progressCircle.classList.contains('celebrated')) {
+            progressCircle.classList.add('celebrated', 'celebrate');
+            createSubmitParticles();
+            setTimeout(() => progressCircle.classList.remove('celebrate'), 1000);
+        }
+    } else {
+        submitBtn.disabled = true;
+        submitBtn.classList.remove('ready');
+        submitSection.classList.remove('complete');
+        progressCircle.classList.remove('celebrated');
     }
 }
 
@@ -1781,10 +2030,22 @@ function setupSubmitConfirmation() {
                 showToast('Mohon lengkapi semua data sebelum mengajukan magang.', 'error');
                 return;
             }
+            syncFieldOfInterestHidden();
+
+            const checkedField = document.querySelector('input[data-field="field_of_interest"]:checked');
+            if (!checkedField) {
+                showToast('Silakan pilih bidang peminatan terlebih dahulu.', 'error');
+                goToSection(2);
+                return;
+            }
+
             showConfirmDialog(
                 'Konfirmasi Pengajuan',
                 'Apakah Anda yakin ingin mengajukan magang? Data yang sudah dikirim tidak dapat diubah.',
-                () => form.submit()
+                () => {
+                    syncFieldOfInterestHidden();
+                    form.submit();
+                }
             );
         });
     }

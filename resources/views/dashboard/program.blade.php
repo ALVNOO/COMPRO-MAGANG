@@ -12,8 +12,8 @@
     $role = 'participant';
     $pageTitle = 'Program';
 
-    $rejectedApplication = $user->internshipApplications()->where('status', 'rejected')->latest()->first();
-    $hasRejectedApplication = $user->internshipApplications()->where('status', 'rejected')->exists();
+    $revisionApplication = $user->internshipApplications()->whereIn('status', ['revision', 'rejected'])->latest()->first();
+    $hasRevisionApplication = $user->internshipApplications()->whereIn('status', ['revision', 'rejected'])->exists();
 @endphp
 
 @push('styles')
@@ -518,17 +518,16 @@
 </div>
 
 {{-- Status Alerts --}}
-@if($rejectedApplication && !$hasAccepted && !$hasFinished)
+@if($revisionApplication && !$hasAccepted && !$hasFinished)
 <div class="alert-card warning">
     <div class="alert-icon">
         <i class="fas fa-exclamation-triangle"></i>
     </div>
     <div class="alert-content">
-        <strong>Pengajuan Sebelumnya Ditolak</strong>
+        <strong>Pengajuan Memerlukan Revisi</strong>
         <p>
-            <strong>Divisi sebelumnya:</strong> {{ $rejectedApplication->divisi->name ?? '-' }}<br>
-            <strong>Alasan:</strong> {{ $rejectedApplication->notes ?? '-' }}<br>
-            <span style="color: #6b7280;">Anda dapat mengajukan ulang untuk divisi yang sama atau berbeda.</span>
+            <strong>Catatan admin:</strong> {{ $revisionApplication->notes ?? '-' }}<br>
+            <span style="color: #6b7280;">Buka halaman Status Pengajuan untuk memperbaiki dan mengirim ulang.</span>
         </p>
     </div>
 </div>

@@ -2,10 +2,10 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
-use App\Models\User;
-use App\Models\InternshipApplication;
 use App\Models\Divisi;
+use App\Models\InternshipApplication;
+use App\Models\User;
+use Illuminate\Database\Seeder;
 
 class TestingDataSeeder extends Seeder
 {
@@ -34,7 +34,7 @@ class TestingDataSeeder extends Seeder
             InternshipApplication::create([
                 'user_id' => $user->id,
                 'divisi_id' => $divisi->id,
-                'status' => 'rejected',
+                'status' => 'revision',
                 'notes' => 'Pengajuan ditolak karena kuota divisi sudah penuh. Silakan pilih divisi lain atau ajukan ulang di periode berikutnya.',
                 'cover_letter_path' => 'cover_letters/sample.pdf',
             ]);
@@ -45,4 +45,4 @@ class TestingDataSeeder extends Seeder
         $this->command->info('Username: testuser');
         $this->command->info('Password: password');
     }
-} 
+}

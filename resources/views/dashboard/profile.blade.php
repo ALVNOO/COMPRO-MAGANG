@@ -542,8 +542,10 @@
                         <div class="ro-value">
                             @if($application->status == 'accepted')
                                 <span class="status-badge status-accepted"><i class="fas fa-check-circle"></i> Diterima</span>
-                            @elseif($application->status == 'rejected')
-                                <span class="status-badge status-rejected"><i class="fas fa-times-circle"></i> Ditolak</span>
+                            @elseif(in_array($application->status, ['revision', 'rejected'], true))
+                                <span class="status-badge status-revision"><i class="fas fa-redo"></i> Memerlukan Revisi</span>
+                            @elseif($application->status == 'permanently_rejected')
+                                <span class="status-badge status-rejected"><i class="fas fa-ban"></i> Ditolak Permanen</span>
                             @elseif($application->status == 'finished')
                                 <span class="status-badge status-finished"><i class="fas fa-flag-checkered"></i> Selesai</span>
                             @else

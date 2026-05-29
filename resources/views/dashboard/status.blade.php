@@ -24,13 +24,15 @@
         @php
             $isAccepted = in_array($application->status, ['accepted', 'finished']);
             $isPending = $application->status == 'pending';
-            $isRejected = $application->status == 'rejected';
+            $isNeedsRevision = in_array($application->status, ['revision', 'rejected'], true);
+            $isPermanentlyRejected = $application->status == 'permanently_rejected';
             $isFinished = $application->status == 'finished';
+            $isOutcomeNegative = $isNeedsRevision || $isPermanentlyRejected;
 
             $currentStep = 1;
             if($isPending) $currentStep = 2;
             if($isAccepted) $currentStep = 3;
-            if($isRejected) $currentStep = 3;
+            if($isOutcomeNegative) $currentStep = 3;
             if($isFinished) $currentStep = 4;
 
             // Calculate dates
@@ -53,12 +55,14 @@
                         <p class="sp-hero-meta">{{ $user->nim ?? '' }}@if($user->nim && $user->university) &middot; @endif{{ $user->university ?? '' }}</p>
                     </div>
                 </div>
-                <div class="sp-badge sp-badge-{{ $application->status }}">
+                <div class="sp-badge sp-badge-{{ $isNeedsRevision ? 'revision' : $application->status }}">
                     @if($isPending)
                         <span class="sp-badge-dot"></span> Menunggu Review
                     @elseif($isAccepted && !$isFinished)
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg> Diterima
-                    @elseif($isRejected)
+                    @elseif($isNeedsRevision)
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg> Memerlukan Revisi
+                    @elseif($isPermanentlyRejected)
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg> Ditolak
                     @elseif($isFinished)
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg> Selesai
@@ -78,9 +82,9 @@
                     <div class="sp-prog-dot">2</div>
                     <span class="sp-prog-label">Review</span>
                 </div>
-                <div class="sp-prog-step {{ $currentStep >= 3 && !$isRejected ? 'done' : '' }} {{ ($isAccepted && !$isFinished) ? 'active' : '' }} {{ $isRejected ? 'fail' : '' }}">
+                <div class="sp-prog-step {{ $currentStep >= 3 && !$isOutcomeNegative ? 'done' : '' }} {{ ($isAccepted && !$isFinished) ? 'active' : '' }} {{ $isNeedsRevision ? 'warn' : '' }} {{ $isPermanentlyRejected ? 'fail' : '' }}">
                     <div class="sp-prog-bar"><div class="sp-prog-bar-fill" style="width: {{ $isFinished ? '100' : '0' }}%"></div></div>
-                    <div class="sp-prog-dot">{{ $isRejected ? '✕' : '3' }}</div>
+                    <div class="sp-prog-dot">@if($isPermanentlyRejected)✕@elseif($isNeedsRevision)!@else 3 @endif</div>
                     <span class="sp-prog-label">Status</span>
                 </div>
                 <div class="sp-prog-step {{ $isFinished ? 'done' : '' }}">
@@ -103,14 +107,58 @@
         @if(!$isAccepted)
             {{-- ===== PENDING / REJECTED STATE ===== --}}
 
-            @if($isRejected)
+            @if($isNeedsRevision)
                 @php
-                    $canReapply = $user->canReapplyForInternship();
+                    $canRevise = $user->canReapplyForInternship();
                 @endphp
+                <div class="sp-revision-card sp-anim sp-anim-2">
+                    <div class="sp-revision-header">
+                        <div class="sp-revision-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                        </div>
+                        <div>
+                            <h3 class="sp-revision-title">Pengajuan Memerlukan Revisi</h3>
+                            <p class="sp-revision-date">Dikembalikan pada {{ $application->updated_at->format('d M Y, H:i') }} WIB</p>
+                        </div>
+                    </div>
+
+                    @if(!empty($application->revision_fields))
+                    <div class="sp-revision-fields">
+                        <div class="sp-revision-notes-label">Bagian yang Perlu Diperbaiki</div>
+                        <ul class="sp-revision-fields-list">
+                            @foreach(\App\Support\ApplicationRevisionFields::labelsForFields($application->revision_fields) as $label)
+                                <li>{{ $label }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                    @endif
+
+                    <div class="sp-revision-notes">
+                        <div class="sp-revision-notes-label">Catatan Revisi dari Admin</div>
+                        <div class="sp-revision-notes-text">{{ $application->notes ?? 'Tidak ada catatan yang diberikan. Hubungi admin untuk informasi lebih lanjut.' }}</div>
+                    </div>
+
+                    <div class="sp-revision-action">
+                        @if($canRevise)
+                            <div class="sp-reapply-ready">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                <span>Silakan perbaiki bagian yang diminta lalu kirim ulang pengajuan</span>
+                            </div>
+                            <form method="POST" action="{{ route('dashboard.reapply') }}">
+                                @csrf
+                                <button type="submit" class="sp-btn sp-btn-amber">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                                    Revisi
+                                </button>
+                            </form>
+                        @endif
+                    </div>
+                </div>
+            @elseif($isPermanentlyRejected)
                 <div class="sp-rejection-card sp-anim sp-anim-2">
                     <div class="sp-rejection-header">
                         <div class="sp-rejection-icon">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
                         </div>
                         <div>
                             <h3 class="sp-rejection-title">Pengajuan Magang Ditolak</h3>
@@ -124,19 +172,10 @@
                     </div>
 
                     <div class="sp-rejection-reapply">
-                        @if($canReapply)
-                            <div class="sp-reapply-ready">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                                <span>Anda sudah dapat mendaftar kembali</span>
-                            </div>
-                            <form method="POST" action="{{ route('dashboard.reapply') }}">
-                                @csrf
-                                <button type="submit" class="sp-btn sp-btn-red">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
-                                    Daftar Kembali
-                                </button>
-                            </form>
-                        @endif
+                        <p class="sp-permanent-notice">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/></svg>
+                            Anda tidak dapat mendaftar magang di aplikasi ini lagi.
+                        </p>
                     </div>
                 </div>
             @endif
@@ -218,7 +257,15 @@
                                     <div class="sp-tl-date">{{ $application->created_at->format('d M Y, H:i') }} WIB</div>
                                 </div>
                             </div>
-                            @if($isRejected)
+                            @if($isNeedsRevision)
+                                <div class="sp-tl-item">
+                                    <div class="sp-tl-dot amber"></div>
+                                    <div>
+                                        <div class="sp-tl-title">Memerlukan Revisi</div>
+                                        <div class="sp-tl-date">{{ $application->updated_at->format('d M Y, H:i') }} WIB</div>
+                                    </div>
+                                </div>
+                            @elseif($isPermanentlyRejected)
                                 <div class="sp-tl-item">
                                     <div class="sp-tl-dot amber"></div>
                                     <div>

@@ -884,7 +884,7 @@
     <x-ui.chips>
         <button type="button" class="chip" :class="{ active: status === '' }" @click="status = ''; filterTable()">Semua</button>
         <button type="button" class="chip" :class="{ active: status === 'pending' }" @click="status = 'pending'; filterTable()">Pending</button>
-        <button type="button" class="chip" :class="{ active: status === 'rejected' }" @click="status = 'rejected'; filterTable()">Revisi</button>
+        <button type="button" class="chip" :class="{ active: status === 'revision' }" @click="status = 'revision'; filterTable()">Revisi</button>
     </x-ui.chips>
 </div>
 
@@ -929,7 +929,7 @@
                     <td style="text-align:left;">
                         <strong>{{ $app->user->name ?? '-' }}</strong>
                         <div style="font-size: 0.75rem; color: #6b7280;">{{ $app->user->nim ?? '-' }}</div>
-                        @if($app->user && $app->user->internshipApplications()->where('status', 'rejected')->exists())
+                        @if($app->user && $app->user->internshipApplications()->whereIn('status', ['revision', 'rejected'])->exists())
                             <span style="display: inline-flex; align-items: center; gap: 4px; margin-top: 4px; padding: 2px 8px; background: rgba(245, 158, 11, 0.1); color: #D97706; font-size: 0.7rem; font-weight: 600; border-radius: 6px;">
                                 <i class="fas fa-redo" style="font-size: 0.6rem;"></i> Pendaftar Ulang
                             </span>
@@ -944,7 +944,7 @@
                                 <i class="fas fa-clock"></i> Pending
                             @elseif($app->status === 'accepted')
                                 <i class="fas fa-check"></i> Diterima
-                            @elseif($app->status === 'rejected')
+                            @elseif($app->status === 'revision' || $app->status === 'rejected')
                                 <i class="fas fa-redo"></i> Revisi
                             @elseif($app->status === 'permanently_rejected')
                                 <i class="fas fa-ban"></i> Ditolak Permanen
@@ -992,6 +992,7 @@ $applicationsJson = $applications->map(function($app) {
         'id' => $app->id,
         'status' => $app->status,
         'notes' => $app->notes,
+        'revision_fields' => $app->revision_fields ?? [],
         'user' => [
             'name' => $app->user->name ?? '-',
             'nim' => $app->user->nim ?? '-',
@@ -1000,7 +1001,7 @@ $applicationsJson = $applications->map(function($app) {
             'phone' => $app->user->phone ?? '-',
             'ktp_number' => $app->user->ktp_number ?? '-',
             'profile_picture' => $app->user->profile_picture ? asset('storage/' . $app->user->profile_picture) : null,
-            'is_reapplicant' => $app->user->internshipApplications()->where('status', 'rejected')->exists(),
+            'is_reapplicant' => $app->user->internshipApplications()->whereIn('status', ['revision', 'rejected'])->exists(),
         ],
         'field' => $app->fieldOfInterest->name ?? '-',
         'start_date' => $app->start_date ? \Carbon\Carbon::parse($app->start_date)->format('d M Y') : '-',
@@ -1085,6 +1086,7 @@ function openDetailModal(appId) {
         const map = {
             pending:              ['fa-clock',        'Pending'],
             accepted:             ['fa-check',        'Diterima'],
+            revision:             ['fa-redo',         'Revisi'],
             rejected:             ['fa-redo',         'Revisi'],
             permanently_rejected: ['fa-ban',          'Ditolak Permanen'],
             finished:             ['fa-check-double', 'Selesai'],
@@ -1228,8 +1230,20 @@ function openDetailModal(appId) {
                                 <i class="fas fa-info-circle" style="margin-right:4px;"></i>
                                 Peserta masih dapat mendaftar ulang setelah revisi.
                             </div>
-                            <form action="${app.reject_url}" method="POST" style="display:flex;flex-direction:column;gap:0.75rem;flex:1;">
+                            <form action="${app.reject_url}" method="POST" style="display:flex;flex-direction:column;gap:0.75rem;flex:1;" onsubmit="return validateRevisionForm(this)">
                                 <input type="hidden" name="_token" value="${csrfToken}">
+                                <div class="form-field">
+                                    <label>Bagian yang Perlu Direvisi <span style="color:#EF4444;">*</span></label>
+                                    <div class="revision-checkboxes" style="display:flex;flex-direction:column;gap:0.35rem;font-size:0.8rem;">
+                                        <label style="display:flex;align-items:center;gap:0.5rem;cursor:pointer;"><input type="checkbox" name="revision_fields[]" value="profile"> Data diri (biodata)</label>
+                                        <label style="display:flex;align-items:center;gap:0.5rem;cursor:pointer;"><input type="checkbox" name="revision_fields[]" value="field_of_interest"> Bidang peminatan</label>
+                                        <label style="display:flex;align-items:center;gap:0.5rem;cursor:pointer;"><input type="checkbox" name="revision_fields[]" value="dates"> Jadwal magang</label>
+                                        <label style="display:flex;align-items:center;gap:0.5rem;cursor:pointer;"><input type="checkbox" name="revision_fields[]" value="ktm"> KTM</label>
+                                        <label style="display:flex;align-items:center;gap:0.5rem;cursor:pointer;"><input type="checkbox" name="revision_fields[]" value="surat_permohonan"> Surat permohonan</label>
+                                        <label style="display:flex;align-items:center;gap:0.5rem;cursor:pointer;"><input type="checkbox" name="revision_fields[]" value="cv"> CV</label>
+                                        <label style="display:flex;align-items:center;gap:0.5rem;cursor:pointer;"><input type="checkbox" name="revision_fields[]" value="good_behavior"> Surat berkelakuan baik (SKCK)</label>
+                                    </div>
+                                </div>
                                 <div class="form-field" style="display:flex;flex-direction:column;flex:1;">
                                     <label>Catatan Revisi <span style="color:#94a3b8;">(Opsional)</span></label>
                                     <textarea name="notes" placeholder="Tuliskan catatan untuk peserta..." style="flex:1;min-height:60px;border-color:#fcd34d;"></textarea>
@@ -1254,7 +1268,7 @@ function openDetailModal(appId) {
                                     <textarea name="notes" placeholder="Masukkan alasan penolakan permanen..." style="flex:1;min-height:60px;"></textarea>
                                 </div>
                                 <button type="submit" class="btn-permanent-reject">
-                                    <i class="fas fa-ban"></i> Tolak Permanen
+                                    <i class="fas fa-ban"></i> Tolak
                                 </button>
                             </form>
                         </div>
@@ -1266,6 +1280,7 @@ function openDetailModal(appId) {
         // Non-pending: show status info panel
         const iconMap = {
             accepted:             { cls: 'accepted',  icon: 'fa-check-circle',   msg: 'Pengajuan telah diterima' },
+            revision:             { cls: 'rejected',  icon: 'fa-redo',           msg: 'Dikembalikan untuk revisi' },
             rejected:             { cls: 'rejected',  icon: 'fa-redo',           msg: 'Dikembalikan untuk revisi' },
             permanently_rejected: { cls: 'rejected',  icon: 'fa-ban',            msg: 'Ditolak permanen' },
             finished:             { cls: 'finished',  icon: 'fa-flag-checkered', msg: 'Magang telah selesai' },
@@ -1277,8 +1292,8 @@ function openDetailModal(appId) {
                 <div class="status-info-panel">
                     <div class="si-icon ${si.cls}"><i class="fas ${si.icon}"></i></div>
                     <div class="si-label">${si.msg}</div>
-                    ${(app.status === 'rejected' || app.status === 'permanently_rejected') && app.notes
-                        ? `<div class="rejection-note"><strong>Catatan:</strong> ${app.notes}</div>`
+                    ${(app.status === 'revision' || app.status === 'rejected' || app.status === 'permanently_rejected') && (app.notes || (app.revision_fields && app.revision_fields.length))
+                        ? `<div class="rejection-note">${app.revision_fields && app.revision_fields.length ? '<strong>Bagian revisi:</strong> ' + app.revision_fields.map(f => ({profile:'Data diri',field_of_interest:'Bidang minat',dates:'Jadwal',ktm:'KTM',surat_permohonan:'Surat permohonan',cv:'CV',good_behavior:'SKCK'}[f] || f)).join(', ') + '<br>' : ''}${app.notes ? '<strong>Catatan:</strong> ' + app.notes : ''}</div>`
                         : ''}
                 </div>
             </div>
@@ -1317,6 +1332,15 @@ function switchTab(tab, appId) {
         tabReject.className = 'action-tab active-reject';
         panelReject.classList.add('visible');
     }
+}
+
+function validateRevisionForm(form) {
+    const checked = form.querySelectorAll('input[name="revision_fields[]"]:checked');
+    if (checked.length === 0) {
+        alert('Pilih minimal satu bagian yang perlu direvisi.');
+        return false;
+    }
+    return true;
 }
 
 function closeDetailModal() {

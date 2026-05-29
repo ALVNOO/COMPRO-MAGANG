@@ -10,6 +10,7 @@ use App\Models\FieldOfInterest;
 use App\Models\InternshipApplication;
 use App\Models\User;
 use App\Services\Document\FileUploadService;
+use App\Support\ApplicationRevisionFields;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -143,7 +144,7 @@ class DashboardController extends Controller
             ->update(['status' => 'finished']);
         $application = $user->internshipApplications()
             ->with('divisi.subDirektorat.direktorat', 'fieldOfInterest', 'divisionMentor.division', 'divisionAdmin')
-            ->whereIn('status', ['pending', 'accepted', 'finished'])
+            ->whereIn('status', ['pending', 'accepted', 'finished', 'revision', 'rejected', 'permanently_rejected'])
             ->latest()
             ->first();
         if (! $application) {
@@ -491,25 +492,34 @@ class DashboardController extends Controller
     {
         $user = Auth::user();
 
-        // Check if user already has a pending application
+        if (! $user->canReapplyForInternship()) {
+            return redirect()->route('dashboard.status')
+                ->with('error', 'Anda tidak dapat merevisi pengajuan saat ini.');
+        }
+
         $existingPending = $user->internshipApplications()
             ->where('status', 'pending')
             ->first();
 
         if ($existingPending) {
-            // Already has pending, just redirect to pre-acceptance
             return redirect()->route('dashboard.pre-acceptance');
         }
 
-        // Create a new pending application (biodata stays on user model,
-        // but documents/field_of_interest/dates are fresh)
-        InternshipApplication::create([
-            'user_id' => $user->id,
-            'status' => 'pending',
-        ]);
+        $application = $user->internshipApplications()
+            ->whereIn('status', ['revision', 'rejected'])
+            ->latest()
+            ->first();
+
+        if (! $application) {
+            return redirect()->route('dashboard.status')
+                ->with('error', 'Tidak ada pengajuan yang perlu direvisi.');
+        }
+
+        $application->status = 'pending';
+        $application->save();
 
         return redirect()->route('dashboard.pre-acceptance')
-            ->with('info', 'Silakan lengkapi kembali bidang minat, dokumen, dan tanggal pengajuan Anda.');
+            ->with('info', 'Silakan perbaiki bagian yang diminta admin, lalu kirim ulang pengajuan Anda.');
     }
 
     public function acknowledgePersyaratanTambahan(Request $request)
@@ -663,7 +673,20 @@ class DashboardController extends Controller
 
         $fields = FieldOfInterest::active()->ordered()->get();
 
-        return view('dashboard.pre-acceptance', compact('user', 'application', 'fields'));
+        $revisionMode = $application->isRevisionMode();
+        $revisionFields = $revisionMode ? ($application->revision_fields ?? []) : [];
+        $revisionFieldLabels = ApplicationRevisionFields::labelsForFields($revisionFields);
+        $revisionSections = ApplicationRevisionFields::sectionsForFields($revisionFields);
+
+        return view('dashboard.pre-acceptance', compact(
+            'user',
+            'application',
+            'fields',
+            'revisionMode',
+            'revisionFields',
+            'revisionFieldLabels',
+            'revisionSections'
+        ));
     }
 
     /**
@@ -691,6 +714,11 @@ class DashboardController extends Controller
     public function updateProfile(Request $request)
     {
         $user = Auth::user();
+
+        $application = $user->internshipApplications()->where('status', 'pending')->latest()->first();
+        if ($application?->isRevisionMode() && ! $application->isFieldEditable(ApplicationRevisionFields::PROFILE)) {
+            return $this->revisionFieldDeniedResponse($request);
+        }
 
         try {
             $request->validate([
@@ -782,6 +810,10 @@ class DashboardController extends Controller
             throw $e;
         }
 
+        if ($fieldName && $application->isRevisionMode() && ! $application->isFieldEditable($fieldName)) {
+            return $this->revisionFieldDeniedResponse($request);
+        }
+
         // Upload file individual
         if ($fieldName && $request->hasFile('file')) {
             $file = $request->file('file');
@@ -849,6 +881,10 @@ class DashboardController extends Controller
             ->latest()
             ->first();
 
+        if ($application?->isRevisionMode() && ! $application->isFieldEditable(ApplicationRevisionFields::DATES)) {
+            return $this->revisionFieldDeniedResponse($request);
+        }
+
         // Jika belum ada application, buat baru
         if (! $application) {
             $application = InternshipApplication::create([
@@ -909,6 +945,10 @@ class DashboardController extends Controller
             ]);
         }
 
+        if ($application->isRevisionMode() && ! $application->isFieldEditable(ApplicationRevisionFields::FIELD_OF_INTEREST)) {
+            return $this->revisionFieldDeniedResponse($request);
+        }
+
         try {
             $request->validate([
                 'field_of_interest_id' => 'required|exists:field_of_interests,id',
@@ -949,53 +989,36 @@ class DashboardController extends Controller
             ->latest()
             ->first();
 
-        // Cek kelengkapan profil
-        $profileComplete = (bool) ($user->name && $user->nim && $user->university && $user->major && $user->phone && $user->ktp_number);
-
-        // Cek kelengkapan dokumen
-        $documentsComplete = false;
-        if ($existingApplication) {
-            $documentsComplete = (bool) ($existingApplication->ktm_path && $existingApplication->surat_permohonan_path && $existingApplication->cv_path && $existingApplication->good_behavior_path);
+        if (! $existingApplication) {
+            return back()->with('error', 'Pengajuan tidak ditemukan.');
         }
 
-        // Cek kelengkapan tanggal
-        $datesComplete = false;
-        if ($existingApplication) {
-            $datesComplete = (bool) ($existingApplication->start_date && $existingApplication->end_date);
-        }
-
-        if (! $profileComplete || ! $documentsComplete || ! $datesComplete) {
-            return back()->with('error', 'Silakan lengkapi data diri, semua dokumen, dan waktu magang terlebih dahulu.');
-        }
-
-        // Validasi field of interest
-        $request->validate([
-            'field_of_interest_id' => 'required',
-        ], [
-            'field_of_interest_id.required' => 'Silakan pilih bidang peminatan terlebih dahulu.',
-        ]);
-
-        $fieldOfInterestId = $request->field_of_interest_id;
-
-        // Jika sudah ada application pending, update
-        if ($existingApplication) {
-            $existingApplication->field_of_interest_id = $fieldOfInterestId;
-            $existingApplication->status = 'pending';
-            $existingApplication->save();
-        } else {
-            // Buat application baru dengan status pending
-            InternshipApplication::create([
-                'user_id' => $user->id,
-                'field_of_interest_id' => $fieldOfInterestId,
-                'status' => 'pending',
-                'ktm_path' => null,
-                'surat_permohonan_path' => null,
-                'cv_path' => null,
-                'good_behavior_path' => null,
+        if (! $existingApplication->isRevisionMode()) {
+            $request->validate([
+                'field_of_interest_id' => 'required|exists:field_of_interests,id',
+            ], [
+                'field_of_interest_id.required' => 'Silakan pilih bidang peminatan terlebih dahulu.',
             ]);
+
+            $existingApplication->field_of_interest_id = $request->field_of_interest_id;
+            $existingApplication->save();
         }
 
-        return redirect()->route('dashboard')->with('success', 'Pengajuan magang Anda telah dikirim! Silakan tunggu konfirmasi dari pembimbing. Anda dapat melihat status pengajuan di menu Status Pengajuan.');
+        $validationErrors = ApplicationRevisionFields::validationErrors($user, $existingApplication->fresh());
+        if ($validationErrors !== []) {
+            return back()->with('error', $validationErrors[0]);
+        }
+
+        $wasRevision = $existingApplication->isRevisionMode();
+        $existingApplication->revision_fields = null;
+        $existingApplication->status = 'pending';
+        $existingApplication->save();
+
+        $message = $wasRevision
+            ? 'Revisi pengajuan Anda telah dikirim ulang. Silakan tunggu review admin.'
+            : 'Pengajuan magang Anda telah dikirim! Silakan tunggu konfirmasi admin. Anda dapat melihat status di menu Status Pengajuan.';
+
+        return redirect()->route('dashboard.status')->with('success', $message);
     }
 
     /**
@@ -1078,5 +1101,19 @@ class DashboardController extends Controller
         }
 
         return back()->with('success', 'Foto profil berhasil dihapus!');
+    }
+
+    /**
+     * @return \Illuminate\Http\JsonResponse|\Illuminate\Http\RedirectResponse
+     */
+    private function revisionFieldDeniedResponse(Request $request)
+    {
+        $message = 'Bagian ini tidak perlu direvisi.';
+
+        if ($request->expectsJson()) {
+            return response()->json(['success' => false, 'message' => $message], 403);
+        }
+
+        return back()->with('error', $message);
     }
 }

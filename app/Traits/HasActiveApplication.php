@@ -77,7 +77,7 @@ trait HasActiveApplication
             return false;
         }
 
-        return !$this->isPermanentlyRejected();
+        return ! $this->isPermanentlyRejected();
     }
 
     /**
@@ -91,23 +91,17 @@ trait HasActiveApplication
     }
 
     /**
-     * Check if user can reapply after rejection (1 month cooldown).
+     * Check if user can revise their application after admin requests revision.
      */
     public function canReapplyForInternship(): bool
     {
-        // User dapat mengajukan ulang selama:
-        // - Tidak ada pengajuan pending, dan
-        // - Tidak sedang memiliki pengajuan dengan status accepted, dan
-        // - Tidak di-blacklist (permanently_rejected)
         if ($this->hasPendingApplication() || $this->isPermanentlyRejected()) {
             return false;
         }
 
-        $hasAccepted = $this->internshipApplications()
-            ->where('status', 'accepted')
-            ->exists();
+        $latest = $this->internshipApplications()->latest()->first();
 
-        return !$hasAccepted;
+        return $latest && in_array($latest->status, ['revision', 'rejected'], true);
     }
 
     /**

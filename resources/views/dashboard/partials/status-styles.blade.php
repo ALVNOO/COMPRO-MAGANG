@@ -169,6 +169,8 @@
 .sp-badge-pending { background: rgba(217,119,6,.15); color: #FBBF24; }
 .sp-badge-accepted { background: rgba(5,150,105,.15); color: #34D399; }
 .sp-badge-rejected { background: rgba(239,68,68,.15); color: #F87171; }
+.sp-badge-revision { background: rgba(217,119,6,.15); color: #FBBF24; }
+.sp-badge-permanently_rejected { background: rgba(239,68,68,.15); color: #F87171; }
 .sp-badge-finished { background: rgba(37,99,235,.15); color: #60A5FA; }
 
 /* Progress bar (in hero) */
@@ -238,6 +240,12 @@
     box-shadow: 0 0 12px rgba(238,46,36,.3);
 }
 
+.sp-prog-step.warn .sp-prog-dot {
+    background: #D97706;
+    color: #fff;
+    border-color: #D97706;
+}
+
 .sp-prog-step.fail .sp-prog-dot {
     background: #EF4444;
     color: #fff;
@@ -255,6 +263,7 @@
 }
 .sp-prog-step.done .sp-prog-label,
 .sp-prog-step.active .sp-prog-label { color: rgba(255,255,255,.7); }
+.sp-prog-step.warn .sp-prog-label { color: #FBBF24; }
 .sp-prog-step.fail .sp-prog-label { color: #F87171; }
 
 /* ==========================================
@@ -682,6 +691,17 @@
     color: white;
 }
 
+.sp-btn-amber {
+    background: var(--amber);
+    color: white;
+}
+.sp-btn-amber:hover {
+    background: #B45309;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(217,119,6,.25);
+    color: white;
+}
+
 .sp-btn-outline {
     background: transparent;
     color: var(--slate-600);
@@ -1023,6 +1043,96 @@
 .sp-btn-email:hover { background: #BFDBFE; color: #1D4ED8; }
 
 /* ==========================================
+   REVISION CARD
+   ========================================== */
+.sp-revision-card {
+    background: white;
+    border: 1px solid #FDE68A;
+    border-radius: var(--r-lg);
+    padding: 24px;
+    margin-bottom: 12px;
+}
+
+.sp-revision-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    margin-bottom: 20px;
+}
+
+.sp-revision-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    background: #D97706;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    color: white;
+}
+.sp-revision-icon svg { width: 22px; height: 22px; }
+
+.sp-revision-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: #92400E;
+}
+
+.sp-revision-date {
+    font-size: 13px;
+    color: #B45309;
+    margin-top: 2px;
+}
+
+.sp-revision-fields {
+    background: #fff;
+    border: 1px dashed #FCD34D;
+    border-radius: var(--r);
+    padding: 14px 16px;
+    margin-bottom: 16px;
+}
+
+.sp-revision-fields-list {
+    margin: 8px 0 0;
+    padding-left: 18px;
+    font-size: 14px;
+    color: #78350F;
+    line-height: 1.7;
+}
+
+.sp-revision-notes {
+    background: #FFFBEB;
+    border: 1px solid #FDE68A;
+    border-radius: var(--r);
+    padding: 16px;
+    margin-bottom: 20px;
+}
+
+.sp-revision-notes-label {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+    color: #92400E;
+    margin-bottom: 6px;
+}
+
+.sp-revision-notes-text {
+    font-size: 14px;
+    color: #78350F;
+    line-height: 1.6;
+}
+
+.sp-revision-action {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+/* ==========================================
    REJECTION CARD
    ========================================== */
 .sp-rejection-card {
@@ -1115,6 +1225,21 @@
 }
 .sp-reapply-wait svg { width: 18px; height: 18px; color: var(--amber); }
 .sp-reapply-wait strong { color: var(--slate-700); }
+
+.sp-permanent-notice {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0;
+    font-size: 13px;
+    font-weight: 600;
+    color: #991B1B;
+}
+.sp-permanent-notice svg {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+}
 
 .sp-btn-disabled {
     background: var(--slate-200);
@@ -1261,7 +1386,8 @@
     }
     .sp-mentor-card { flex-direction: column; align-items: center; text-align: center; }
     .sp-mentor-details { align-items: center; }
-    .sp-rejection-reapply { flex-direction: column; align-items: flex-start; }
+    .sp-rejection-reapply,
+    .sp-revision-action { flex-direction: column; align-items: flex-start; }
 }
 @media (max-width: 640px) {
     .sp {

@@ -1,7 +1,7 @@
 <?php
 
 use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
@@ -11,11 +11,23 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // SQLite does not support ALTER COLUMN for enum; use a raw DB statement for MySQL/MariaDB.
-        // For SQLite (tests) this is a no-op since SQLite stores enums as TEXT.
-        if (config('database.default') !== 'sqlite') {
-            \DB::statement("ALTER TABLE internship_applications MODIFY COLUMN status ENUM('pending','accepted','rejected','finished','postponed','permanently_rejected') NOT NULL DEFAULT 'pending'");
+        $driver = Schema::getConnection()->getDriverName();
+
+        if ($driver === 'pgsql') {
+            DB::statement('ALTER TABLE internship_applications DROP CONSTRAINT IF EXISTS internship_applications_status_check');
+
+            DB::statement(
+                "ALTER TABLE internship_applications ADD CONSTRAINT internship_applications_status_check CHECK (status IN ('pending', 'accepted', 'rejected', 'finished', 'postponed', 'permanently_rejected'))"
+            );
+
+            return;
         }
+
+        if ($driver === 'sqlite') {
+            return;
+        }
+
+        DB::statement("ALTER TABLE internship_applications MODIFY COLUMN status ENUM('pending','accepted','rejected','finished','postponed','permanently_rejected') NOT NULL DEFAULT 'pending'");
     }
 
     /**
@@ -23,8 +35,26 @@ return new class extends Migration
      */
     public function down(): void
     {
-        if (config('database.default') !== 'sqlite') {
-            \DB::statement("ALTER TABLE internship_applications MODIFY COLUMN status ENUM('pending','accepted','rejected','finished','postponed') NOT NULL DEFAULT 'pending'");
+        $driver = Schema::getConnection()->getDriverName();
+
+        if ($driver === 'pgsql') {
+            DB::table('internship_applications')
+                ->where('status', 'permanently_rejected')
+                ->update(['status' => 'rejected']);
+
+            DB::statement('ALTER TABLE internship_applications DROP CONSTRAINT IF EXISTS internship_applications_status_check');
+
+            DB::statement(
+                "ALTER TABLE internship_applications ADD CONSTRAINT internship_applications_status_check CHECK (status IN ('pending', 'accepted', 'rejected', 'finished', 'postponed'))"
+            );
+
+            return;
         }
+
+        if ($driver === 'sqlite') {
+            return;
+        }
+
+        DB::statement("ALTER TABLE internship_applications MODIFY COLUMN status ENUM('pending','accepted','rejected','finished','postponed') NOT NULL DEFAULT 'pending'");
     }
 };

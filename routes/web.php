@@ -333,6 +333,14 @@ Route::middleware(['auth', 'throttle:global'])
             MentorDashboardController::class,
             'updateBiodata',
         ])->name('mentor.profil.biodata');
+        Route::post('/profil/picture', [
+            MentorDashboardController::class,
+            'uploadProfilePicture',
+        ])->name('mentor.profil.picture')->middleware('throttle:form-submission');
+        Route::delete('/profil/picture', [
+            MentorDashboardController::class,
+            'removeProfilePicture',
+        ])->name('mentor.profil.picture.remove');
         // Menu absensi
         Route::get('/absensi', [
             AttendanceController::class,
