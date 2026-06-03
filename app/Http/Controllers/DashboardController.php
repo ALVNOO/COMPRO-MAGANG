@@ -696,16 +696,113 @@ class DashboardController extends Controller
     {
         $user = Auth::user();
         $application = $user->internshipApplications()
-            ->whereIn('status', ['accepted', 'finished'])
+            ->where('status', 'accepted')
             ->latest()
             ->first();
 
-        if ($application && ! $application->dashboard_entered_at) {
-            $application->dashboard_entered_at = now();
-            $application->save();
+        if (! $application) {
+            return redirect()->route('dashboard.status')
+                ->with('error', 'Tidak ada pengajuan magang yang diterima.');
         }
 
+        if ($application->dashboard_entered_at) {
+            return redirect()->route('dashboard');
+        }
+
+        if (! $application->hasPreInternshipDocumentsCollected()) {
+            return redirect()->route('dashboard.status')
+                ->with('error', 'Unggah Surat Penerimaan, Surat Izin Masuk Lokasi, dan Pakta Integritas terlebih dahulu sebelum melanjutkan.');
+        }
+
+        $application->dashboard_entered_at = now();
+        $application->save();
+
         return redirect()->route('dashboard');
+    }
+
+    /**
+     * Upload Surat Penerimaan (peserta) pada halaman status.
+     */
+    public function uploadStatusAcceptanceLetter(Request $request)
+    {
+        return $this->uploadPreInternshipDocument(
+            $request,
+            'acceptance_letter',
+            'uploadAcceptanceLetter',
+            'acceptance_letter_path',
+            'Surat Penerimaan berhasil diunggah.'
+        );
+    }
+
+    /**
+     * Upload Surat Izin Masuk Lokasi (peserta) pada halaman status.
+     */
+    public function uploadStatusLocationPermissionLetter(Request $request)
+    {
+        return $this->uploadPreInternshipDocument(
+            $request,
+            'location_permission_letter',
+            'uploadLocationPermissionLetter',
+            'location_permission_letter_path',
+            'Surat Izin Masuk Lokasi berhasil diunggah.'
+        );
+    }
+
+    /**
+     * Upload Pakta Integritas (peserta) pada halaman status.
+     */
+    public function uploadStatusIntegrityPact(Request $request)
+    {
+        return $this->uploadPreInternshipDocument(
+            $request,
+            'integrity_pact',
+            'uploadIntegrityPact',
+            'integrity_pact_path',
+            'Pakta Integritas berhasil diunggah.'
+        );
+    }
+
+    /**
+     * @param  'uploadAcceptanceLetter'|'uploadLocationPermissionLetter'|'uploadIntegrityPact'  $uploadMethod
+     */
+    private function uploadPreInternshipDocument(
+        Request $request,
+        string $inputName,
+        string $uploadMethod,
+        string $pathAttribute,
+        string $successMessage
+    ) {
+        $application = Auth::user()
+            ->internshipApplications()
+            ->where('status', 'accepted')
+            ->latest()
+            ->first();
+
+        if (! $application) {
+            return redirect()->route('dashboard.status')
+                ->with('error', 'Tidak ada pengajuan magang yang diterima.');
+        }
+
+        if ($application->dashboard_entered_at) {
+            return redirect()->route('dashboard.status')
+                ->with('error', 'Dokumen tidak dapat diubah setelah Anda masuk ke dashboard magang.');
+        }
+
+        $request->validate([
+            $inputName => 'required|file|mimes:pdf|max:2048',
+        ]);
+
+        /** @var FileUploadService $files */
+        $files = app(FileUploadService::class);
+        $path = $files->{$uploadMethod}(
+            $request->file($inputName),
+            $application->{$pathAttribute}
+        );
+
+        $application->{$pathAttribute} = $path;
+        $application->save();
+
+        return redirect()->route('dashboard.status')->with('success', $successMessage);
     }
 
     /**

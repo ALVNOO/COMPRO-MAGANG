@@ -1295,6 +1295,237 @@
 }
 
 /* ==========================================
+   REQUIRED DOCUMENTS (Pre Siap Magang)
+   ========================================== */
+.sp-req-docs {
+    margin-top: 8px;
+    padding: 20px;
+    background: #fff;
+    border: 1px solid var(--slate-200, #e5e7eb);
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(15, 23, 42, 0.04);
+}
+
+.sp-req-docs-head {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    margin-bottom: 18px;
+    flex-wrap: wrap;
+}
+
+.sp-req-docs-head-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    background: rgba(238, 46, 36, 0.1);
+    color: #EE2E24;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.sp-req-docs-head-icon svg {
+    width: 22px;
+    height: 22px;
+}
+
+.sp-req-docs-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--slate-800, #1f2937);
+    margin: 0 0 4px;
+}
+
+.sp-req-docs-sub {
+    font-size: 0.82rem;
+    color: var(--slate-500, #6b7280);
+    margin: 0;
+    line-height: 1.45;
+    max-width: 520px;
+}
+
+.sp-req-docs-progress {
+    margin-left: auto;
+    text-align: center;
+    padding: 8px 14px;
+    background: #f9fafb;
+    border-radius: 10px;
+    border: 1px solid #e5e7eb;
+}
+
+.sp-req-docs-progress-count {
+    display: block;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #EE2E24;
+    line-height: 1.2;
+}
+
+.sp-req-docs-progress-label {
+    font-size: 0.68rem;
+    color: #9ca3af;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.sp-req-docs-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.sp-req-doc-card {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 14px;
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.sp-req-doc-card.is-done {
+    border-color: rgba(34, 197, 94, 0.35);
+    background: rgba(34, 197, 94, 0.04);
+}
+
+.sp-req-doc-card-top {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+}
+
+.sp-req-doc-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.9rem;
+    flex-shrink: 0;
+}
+
+.sp-req-doc-icon.pending {
+    background: rgba(156, 163, 175, 0.15);
+    color: #6b7280;
+}
+
+.sp-req-doc-icon.done {
+    background: rgba(34, 197, 94, 0.15);
+    color: #16a34a;
+}
+
+.sp-req-doc-name {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: #374151;
+    line-height: 1.3;
+}
+
+.sp-req-doc-status {
+    font-size: 0.72rem;
+    color: #9ca3af;
+    margin-top: 2px;
+}
+
+.sp-req-doc-card.is-done .sp-req-doc-status {
+    color: #16a34a;
+}
+
+.sp-req-doc-view {
+    font-size: 0.72rem;
+    font-weight: 500;
+    color: #2563eb;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.sp-req-doc-view:hover {
+    text-decoration: underline;
+}
+
+.sp-req-doc-form {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 6px;
+    margin-top: auto;
+}
+
+.sp-req-doc-file {
+    position: relative;
+    min-width: 0;
+}
+
+.sp-req-doc-file input[type="file"] {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    cursor: pointer;
+    width: 100%;
+    height: 100%;
+}
+
+.sp-req-doc-file-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    min-height: 34px;
+    padding: 0 8px;
+    font-size: 0.7rem;
+    font-weight: 500;
+    color: #4b5563;
+    background: #fff;
+    border: 1px dashed #d1d5db;
+    border-radius: 8px;
+    pointer-events: none;
+}
+
+.sp-req-doc-submit {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    padding: 0 12px;
+    min-height: 34px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: #fff;
+    background: linear-gradient(135deg, #EE2E24, #C41E1A);
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.sp-req-doc-submit:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(238, 46, 36, 0.25);
+}
+
+.sp-req-docs-warning {
+    margin: 14px 0 0;
+    padding: 10px 12px;
+    font-size: 0.8rem;
+    color: #92400e;
+    background: #fffbeb;
+    border: 1px solid #fde68a;
+    border-radius: 10px;
+    line-height: 1.45;
+}
+
+.sp-req-docs-warning i {
+    margin-right: 6px;
+}
+
+/* ==========================================
    SIAP MAGANG BUTTON (Bottom CTA)
    ========================================== */
 .sp-siap-magang {
@@ -1328,6 +1559,22 @@
 
 .sp-btn-siap-magang:active {
     transform: translateY(-1px) scale(0.99);
+}
+
+.sp-btn-siap-magang:disabled {
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+    opacity: 0.55;
+}
+
+.sp-btn-siap-magang:disabled .sp-btn-siap-bg {
+    background: linear-gradient(135deg, #9ca3af, #6b7280);
+}
+
+.sp-btn-siap-magang:disabled:hover {
+    transform: none;
+    box-shadow: none;
 }
 
 .sp-btn-siap-bg {
@@ -1372,6 +1619,10 @@
     font-weight: 500;
 }
 
+.sp-siap-hint-warn {
+    color: #b45309;
+}
+
 .sp-anim-5 { animation-delay: .25s; }
 
 /* ==========================================
@@ -1388,6 +1639,8 @@
     .sp-mentor-details { align-items: center; }
     .sp-rejection-reapply,
     .sp-revision-action { flex-direction: column; align-items: flex-start; }
+    .sp-req-docs-grid { grid-template-columns: 1fr; }
+    .sp-req-docs-progress { margin-left: 0; width: 100%; }
 }
 @media (max-width: 640px) {
     .sp {

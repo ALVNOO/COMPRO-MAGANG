@@ -513,21 +513,35 @@
                 </div>
             </div>
 
-            {{-- Siap Magang Button (at the very bottom, only for accepted users who haven't entered dashboard) --}}
+            {{-- Dokumen wajib + Siap Magang (hanya peserta accepted yang belum masuk dashboard) --}}
             @if($isAccepted && !$isFinished && !$application->dashboard_entered_at)
-            <div class="sp-siap-magang sp-anim sp-anim-5">
-                <form method="POST" action="{{ route('dashboard.enter') }}">
-                    @csrf
-                    <button type="submit" class="sp-btn-siap-magang">
-                        <span class="sp-btn-siap-bg"></span>
-                        <span class="sp-btn-siap-content">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
-                            Siap Magang
-                        </span>
-                    </button>
-                </form>
-                <p class="sp-siap-hint">Klik tombol di atas untuk membuka akses penuh ke dashboard magang Anda</p>
-            </div>
+                @include('dashboard.partials.status-required-documents')
+
+                @php
+                    $canEnterDashboard = $application->hasPreInternshipDocumentsCollected();
+                @endphp
+                <div class="sp-siap-magang sp-anim sp-anim-5">
+                    <form method="POST" action="{{ route('dashboard.enter') }}">
+                        @csrf
+                        <button
+                            type="submit"
+                            class="sp-btn-siap-magang"
+                            @disabled(!$canEnterDashboard)
+                            @if(!$canEnterDashboard) title="Unggah ketiga dokumen wajib terlebih dahulu" @endif
+                        >
+                            <span class="sp-btn-siap-bg"></span>
+                            <span class="sp-btn-siap-content">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                                Siap Magang
+                            </span>
+                        </button>
+                    </form>
+                    @if($canEnterDashboard)
+                        <p class="sp-siap-hint">Klik tombol di atas untuk membuka akses penuh ke dashboard magang Anda</p>
+                    @else
+                        <p class="sp-siap-hint sp-siap-hint-warn">Lengkapi pengumpulan dokumen wajib di atas untuk mengaktifkan tombol Siap Magang</p>
+                    @endif
+                </div>
             @endif
 
         @endif

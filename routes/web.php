@@ -127,6 +127,18 @@ Route::middleware(['auth', 'throttle:global'])->group(function () {
         DashboardController::class,
         'submitAdditionalDocuments',
     ])->name('dashboard.status.upload-additional');
+    Route::post('/dashboard/status/upload-acceptance-letter', [
+        DashboardController::class,
+        'uploadStatusAcceptanceLetter',
+    ])->name('dashboard.status.upload-acceptance-letter')->middleware('throttle:form-submission');
+    Route::post('/dashboard/status/upload-location-permission-letter', [
+        DashboardController::class,
+        'uploadStatusLocationPermissionLetter',
+    ])->name('dashboard.status.upload-location-permission-letter')->middleware('throttle:form-submission');
+    Route::post('/dashboard/status/upload-integrity-pact', [
+        DashboardController::class,
+        'uploadStatusIntegrityPact',
+    ])->name('dashboard.status.upload-integrity-pact')->middleware('throttle:form-submission');
     Route::get('/dashboard/assignments', [
         DashboardController::class,
         'assignments',

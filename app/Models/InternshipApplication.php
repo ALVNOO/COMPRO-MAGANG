@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Storage;
 
 class InternshipApplication extends Model
 {
@@ -102,6 +103,26 @@ class InternshipApplication extends Model
         }
 
         return null;
+    }
+
+    /**
+     * Whether a stored file exists on the public disk.
+     */
+    public function hasStoredDocument(?string $path): bool
+    {
+        return $path !== null
+            && $path !== ''
+            && Storage::disk('public')->exists($path);
+    }
+
+    /**
+     * Whether participant has uploaded all required pre-internship documents.
+     */
+    public function hasPreInternshipDocumentsCollected(): bool
+    {
+        return $this->hasStoredDocument($this->acceptance_letter_path)
+            && $this->hasStoredDocument($this->location_permission_letter_path)
+            && $this->hasStoredDocument($this->integrity_pact_path);
     }
 
     /**
