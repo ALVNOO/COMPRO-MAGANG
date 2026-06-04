@@ -211,18 +211,17 @@ class LogbookController extends Controller
             ->with(['user'])
             ->get();
         
-        $participants = collect();
-        foreach ($applications as $app) {
-            $logbooks = Logbook::where('user_id', $app->user_id)
-                ->orderBy('date', 'desc')
-                ->get();
-            
-            $participants->push([
-                'user' => $app->user,
-                'logbooks' => $logbooks,
-            ]);
-        }
-        
+        // Batch-load all logbooks in 1 query instead of N queries
+        $userIds    = $applications->pluck('user_id');
+        $logbookMap = Logbook::whereIn('user_id', $userIds)
+            ->orderBy('date', 'desc')
+            ->get()->groupBy('user_id');
+
+        $participants = $applications->map(fn($app) => [
+            'user'     => $app->user,
+            'logbooks' => $logbookMap->get($app->user_id, collect()),
+        ]);
+
         return view('logbook.mentor', compact('participants'));
     }
     
@@ -261,19 +260,18 @@ class LogbookController extends Controller
         
         $applications = $query->get();
         
-        $participants = collect();
-        foreach ($applications as $app) {
-            $logbooks = Logbook::where('user_id', $app->user_id)
-                ->orderBy('date', 'desc')
-                ->get();
-            
-            $participants->push([
-                'user' => $app->user,
-                'application' => $app,
-                'logbooks' => $logbooks,
-            ]);
-        }
-        
+        // Batch-load all logbooks in 1 query instead of N queries
+        $userIds    = $applications->pluck('user_id');
+        $logbookMap = Logbook::whereIn('user_id', $userIds)
+            ->orderBy('date', 'desc')
+            ->get()->groupBy('user_id');
+
+        $participants = $applications->map(fn($app) => [
+            'user'        => $app->user,
+            'application' => $app,
+            'logbooks'    => $logbookMap->get($app->user_id, collect()),
+        ]);
+
         return view('logbook.admin', compact('participants', 'divisions', 'mentors', 'filterDivision', 'filterMentor'));
     }
     

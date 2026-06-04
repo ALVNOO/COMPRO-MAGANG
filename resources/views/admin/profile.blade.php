@@ -554,6 +554,54 @@
             </div>
         </div>
 
+        {{-- Headquarters Email Form --}}
+        <div class="info-card">
+            <div class="card-head">
+                <div class="card-head-icon" style="background:rgba(59,130,246,.08);color:#3B82F6;"><i class="fas fa-building"></i></div>
+                <div>
+                    <div class="card-head-title">Email Kantor Pusat</div>
+                    <div class="card-head-sub">Alamat email tujuan pengiriman permohonan PKL ke pusat</div>
+                </div>
+            </div>
+            <div class="card-body">
+                @if(session('hq_email_success'))
+                    <div class="alert alert-compact alert-success" style="margin-bottom:1rem;">
+                        <div class="alert-icon-box"><i class="fas fa-check"></i></div>
+                        <div class="alert-content"><div class="alert-title">{{ session('hq_email_success') }}</div></div>
+                    </div>
+                @endif
+                @if($errors->hq_email->any())
+                    <div class="alert alert-compact alert-danger" style="margin-bottom:1rem;">
+                        <div class="alert-icon-box"><i class="fas fa-times"></i></div>
+                        <div class="alert-content"><div class="alert-title">{{ $errors->hq_email->first() }}</div></div>
+                    </div>
+                @endif
+
+                <form method="POST" action="{{ route('admin.profile.headquarters_email') }}">
+                    @csrf
+                    <div class="form-field">
+                        <label class="f-label" for="headquarters_email">Email Kantor Pusat</label>
+                        <div class="f-wrap">
+                            <input type="email" id="headquarters_email" name="headquarters_email"
+                                   class="f-input @if($errors->hq_email->has('headquarters_email')) is-invalid @endif"
+                                   placeholder="Contoh: internship_mgt@telkom.co.id"
+                                   value="{{ old('headquarters_email', $user->headquarters_email) }}">
+                            <i class="fas fa-envelope f-icon"></i>
+                        </div>
+                        @if($errors->hq_email->has('headquarters_email'))
+                            <div class="f-error">{{ $errors->hq_email->first('headquarters_email') }}</div>
+                        @endif
+                        <div style="font-size:.72rem;color:#9CA3AF;margin-top:.35rem;">
+                            Email ini akan digunakan sebagai tujuan pengiriman permohonan PKL dari halaman Daftar Peserta.
+                        </div>
+                    </div>
+                    <button type="submit" class="btn-save" style="background:#3B82F6;">
+                        <i class="fas fa-check"></i> Simpan
+                    </button>
+                </form>
+            </div>
+        </div>
+
         {{-- Security Links --}}
         <div class="info-card">
             <div class="card-head">

@@ -890,7 +890,8 @@ table.participants-table > thead > tr > th {
 @endpush
 
 @section('content')
-<div class="participants-page" x-data="participantsManager()">
+<div class="participants-page" x-data="participantsManager()"
+     x-init="adminHqEmail = {{ json_encode($adminHqEmail ?? '') }}">
     <x-dashboard.page-context-bar
         title="Daftar Peserta Magang"
         description="Kelola data dan dokumen peserta magang yang sudah diterima"
@@ -963,6 +964,14 @@ table.participants-table > thead > tr > th {
             <div class="legend-item">
                 <i class="fas fa-edit"></i>
                 <span>Dokumen sedang direvisi</span>
+            </div>
+            <div class="legend-item">
+                <i class="fas fa-paper-plane" style="color:#3b82f6;"></i>
+                <span>Email ke pusat sudah dikirim</span>
+            </div>
+            <div class="legend-item">
+                <i class="fas fa-paper-plane" style="color:#d1d5db;"></i>
+                <span>Email ke pusat belum dikirim</span>
             </div>
         </div>
     </div>
@@ -1039,12 +1048,13 @@ table.participants-table > thead > tr > th {
                                 $hasCertificate = $peserta->certificates && $peserta->certificates->count() > 0;
                                 $certificate = $hasCertificate ? $peserta->certificates->first() : null;
                                 $isDocComplete = $app->acceptance_letter_path && $hasCertificate && $app->completion_letter_path;
-                                $mentorOptions = $app->divisionAdmin && $app->divisionAdmin->mentors
-                                    ? $app->divisionAdmin->mentors->map(fn($mentor) => [
-                                        'id' => $mentor->id,
-                                        'name' => $mentor->mentor_name,
-                                    ])->values()->toArray()
-                                    : [];
+                                $divMentors    = $app->division_admin_id
+                                    ? ($mentorsByDivision[$app->division_admin_id] ?? collect())
+                                    : collect();
+                                $mentorOptions = $divMentors->map(fn($mentor) => [
+                                    'id'   => $mentor->id,
+                                    'name' => $mentor->mentor_name,
+                                ])->values()->toArray();
                             @endphp
                             <tr class="participant-row"
                                 data-name="{{ strtolower($peserta->name) }}"
@@ -1152,6 +1162,20 @@ table.participants-table > thead > tr > th {
                                                 <i class="fas fa-certificate"></i>
                                             </span>
                                         @endif
+
+                                        {{-- 7. Email Kantor Pusat --}}
+                                        @if($app->headquarters_email_sent_at)
+                                            <span class="doc-icon" data-hq-email-icon="{{ $app->id }}" data-sent="1"
+                                                  style="background:rgba(59,130,246,.1);color:#3b82f6;"
+                                                  title="Email ke pusat sudah dikirim: {{ $app->headquarters_email_sent_at->format('d M Y H:i') }}">
+                                                <i class="fas fa-paper-plane"></i>
+                                            </span>
+                                        @else
+                                            <span class="doc-icon missing" data-hq-email-icon="{{ $app->id }}" data-sent="0"
+                                                  title="Email ke pusat belum dikirim">
+                                                <i class="fas fa-paper-plane"></i>
+                                            </span>
+                                        @endif
                                     </div>
                                 </td>
                                 <td>
@@ -1187,6 +1211,20 @@ table.participants-table > thead > tr > th {
                                             'locationPermissionPath' => $app->location_permission_letter_path,
                                             'hasIntegrityPact' => $app->hasStoredDocument($app->integrity_pact_path),
                                             'integrityPactPath' => $app->integrity_pact_path,
+                                            'hqEmailSent' => (bool)$app->headquarters_email_sent_at,
+                                            'hqEmailSentAt' => $app->headquarters_email_sent_at ? $app->headquarters_email_sent_at->format('d M Y, H:i') : null,
+                                            'nim' => $peserta->nim ?? '-',
+                                            'major' => $peserta->major ?? '-',
+                                            'university' => $peserta->university ?? '-',
+                                            'mentorNik' => $app->divisionMentor->nik_number ?? '-',
+                                            'hasSuratPermohonan' => !empty($app->surat_permohonan_path),
+                                            'suratPermohonanUrl' => $app->surat_permohonan_path ? asset('storage/'.$app->surat_permohonan_path) : null,
+                                            'hasCv' => !empty($app->cv_path),
+                                            'cvUrl' => $app->cv_path ? asset('storage/'.$app->cv_path) : null,
+                                            'hasGoodBehavior' => !empty($app->good_behavior_path),
+                                            'goodBehaviorUrl' => $app->good_behavior_path ? asset('storage/'.$app->good_behavior_path) : null,
+                                            'hasKtm' => !empty($app->ktm_path),
+                                            'ktmUrl' => $app->ktm_path ? asset('storage/'.$app->ktm_path) : null,
                                         ]) }})"
                                     >
                                         <i class="fas fa-folder-open"></i> Kelola
@@ -1458,6 +1496,131 @@ table.participants-table > thead > tr > th {
                         </div>
                     </div>
                 </div>
+
+                {{-- Kirim Email Kantor Pusat --}}
+                <div class="modal-section">
+                    <div class="modal-section-title">Kirim Email ke Kantor Pusat</div>
+                    <div style="border:1.5px solid rgba(59,130,246,.2);border-radius:14px;overflow:hidden;">
+
+                        {{-- ── Status bar ── --}}
+                        <div style="display:flex;align-items:center;gap:.75rem;padding:.875rem 1rem;background:rgba(59,130,246,.04);border-bottom:1px solid rgba(59,130,246,.1);">
+                            <div style="width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:.85rem;flex-shrink:0;"
+                                 :style="selectedParticipant?.hqEmailSent ? 'background:rgba(59,130,246,.12);color:#3b82f6;' : 'background:rgba(156,163,175,.1);color:#9ca3af;'">
+                                <i class="fas fa-paper-plane"></i>
+                            </div>
+                            <div style="flex:1;">
+                                <div style="font-size:.85rem;font-weight:700;color:#1f2937;"
+                                     x-text="selectedParticipant?.hqEmailSent ? 'Email sudah pernah dikirim' : 'Belum dikirim ke kantor pusat'">
+                                </div>
+                                <div style="font-size:.72rem;color:#6b7280;" x-show="selectedParticipant?.hqEmailSent">
+                                    Terakhir: <span x-text="selectedParticipant?.hqEmailSentAt"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style="padding:.875rem 1rem;">
+
+                            {{-- ── Warning: no HQ email ── --}}
+                            <template x-if="!adminHqEmail">
+                                <div style="display:flex;align-items:center;gap:.5rem;padding:.625rem .875rem;background:#fef3c7;border:1px solid #fcd34d;border-radius:8px;margin-bottom:.875rem;">
+                                    <i class="fas fa-exclamation-triangle" style="color:#d97706;font-size:.8rem;flex-shrink:0;"></i>
+                                    <span style="font-size:.8rem;color:#92400e;">Email kantor pusat belum dikonfigurasi.
+                                        <a href="{{ route('admin.profile') }}" style="font-weight:700;color:#b45309;text-decoration:underline;">Isi di Profil Admin</a>
+                                    </span>
+                                </div>
+                            </template>
+
+                            <template x-if="adminHqEmail">
+                                <div>
+                                    {{-- ── Email header preview ── --}}
+                                    <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:.875rem 1rem;margin-bottom:.75rem;font-size:.8rem;">
+                                        <div style="display:grid;grid-template-columns:52px 1fr;gap:.35rem .625rem;line-height:1.4;">
+                                            <span style="color:#9ca3af;font-weight:600;text-transform:uppercase;font-size:.67rem;padding-top:.15rem;">Kepada</span>
+                                            <span style="color:#1e40af;font-weight:700;" x-text="adminHqEmail"></span>
+
+                                            <span style="color:#9ca3af;font-weight:600;text-transform:uppercase;font-size:.67rem;padding-top:.15rem;">CC</span>
+                                            <span style="color:#374151;" x-text="selectedParticipant?.email || '-'"></span>
+
+                                            <span style="color:#9ca3af;font-weight:600;text-transform:uppercase;font-size:.67rem;padding-top:.15rem;">Subjek</span>
+                                            <span style="color:#374151;">Permohonan PKL di PT. Telkom Indonesia (Persero) Wilayah Sulbagsel</span>
+                                        </div>
+
+                                        <div style="height:1px;background:#e2e8f0;margin:.625rem 0;"></div>
+
+                                        {{-- Body summary --}}
+                                        <div style="color:#6b7280;font-size:.78rem;line-height:1.6;">
+                                            <div style="margin-bottom:.3rem;"><em>Dengan hormat, Menindaklanjuti pengajuan mahasiswa PKL…</em></div>
+                                            <div><strong style="color:#374151;" x-text="selectedParticipant?.name?.toUpperCase()"></strong>
+                                                &nbsp;/ NIM. <span x-text="selectedParticipant?.nim || '-'"></span></div>
+                                            <div x-text="(selectedParticipant?.major || '-') + ' — ' + (selectedParticipant?.university || '-')"></div>
+                                            <div>Mentor: <strong style="color:#374151;" x-text="selectedParticipant?.currentMentorName?.toUpperCase() || '-'"></strong>
+                                                &nbsp;/ NIK. <span x-text="selectedParticipant?.mentorNik || '-'"></span></div>
+                                            <div x-text="'Periode: ' + (selectedParticipant?.startDate||'-') + ' s.d. ' + (selectedParticipant?.endDate||'-')"></div>
+                                        </div>
+                                    </div>
+
+                                    {{-- ── Dokumen — otomatis diunduh ke browser ── --}}
+                                    <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:.875rem 1rem;margin-bottom:.875rem;">
+                                        <div style="font-size:.75rem;font-weight:700;color:#374151;margin-bottom:.5rem;display:flex;align-items:center;gap:.4rem;">
+                                            <i class="fas fa-download" style="color:#6b7280;"></i>
+                                            Dokumen yang akan diunduh otomatis
+                                        </div>
+                                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:.3rem .5rem;margin-bottom:.625rem;">
+                                            <div style="display:flex;align-items:center;gap:.4rem;"
+                                                 :style="selectedParticipant?.hasSuratPermohonan ? 'color:#16a34a;' : 'color:#9ca3af;'">
+                                                <i :class="selectedParticipant?.hasSuratPermohonan ? 'fas fa-file-pdf' : 'fas fa-times-circle'" style="font-size:.8rem;flex-shrink:0;"></i>
+                                                <span style="font-size:.77rem;">Surat Permohonan</span>
+                                            </div>
+                                            <div style="display:flex;align-items:center;gap:.4rem;"
+                                                 :style="selectedParticipant?.hasCv ? 'color:#16a34a;' : 'color:#9ca3af;'">
+                                                <i :class="selectedParticipant?.hasCv ? 'fas fa-file-pdf' : 'fas fa-times-circle'" style="font-size:.8rem;flex-shrink:0;"></i>
+                                                <span style="font-size:.77rem;">Curriculum Vitae</span>
+                                            </div>
+                                            <div style="display:flex;align-items:center;gap:.4rem;"
+                                                 :style="selectedParticipant?.hasGoodBehavior ? 'color:#16a34a;' : 'color:#9ca3af;'">
+                                                <i :class="selectedParticipant?.hasGoodBehavior ? 'fas fa-file-pdf' : 'fas fa-times-circle'" style="font-size:.8rem;flex-shrink:0;"></i>
+                                                <span style="font-size:.77rem;">Surat Berperilaku Baik</span>
+                                            </div>
+                                            <div style="display:flex;align-items:center;gap:.4rem;"
+                                                 :style="selectedParticipant?.hasKtm ? 'color:#16a34a;' : 'color:#9ca3af;'">
+                                                <i :class="selectedParticipant?.hasKtm ? 'fas fa-file-pdf' : 'fas fa-times-circle'" style="font-size:.8rem;flex-shrink:0;"></i>
+                                                <span style="font-size:.77rem;">KTP / KTM</span>
+                                            </div>
+                                        </div>
+                                        <div style="font-size:.72rem;color:#1e40af;background:#eff6ff;border-radius:7px;padding:.45rem .625rem;display:flex;align-items:flex-start;gap:.35rem;">
+                                            <i class="fas fa-circle-info" style="flex-shrink:0;margin-top:.1rem;"></i>
+                                            <span>Email client terbuka otomatis dan dokumen mulai terunduh. <strong>Drag file dari download bar → ke jendela email → klik Kirim.</strong></span>
+                                        </div>
+                                    </div>
+
+                                    {{-- ── Success flash ── --}}
+                                    <div x-show="hqEmailJustSent" x-cloak
+                                         style="display:flex;align-items:flex-start;gap:.5rem;padding:.625rem .875rem;background:#ecfdf5;border:1px solid #6ee7b7;border-radius:8px;margin-bottom:.75rem;">
+                                        <i class="fas fa-check-circle" style="color:#059669;font-size:.9rem;flex-shrink:0;margin-top:.1rem;"></i>
+                                        <div style="font-size:.8rem;color:#065f46;line-height:1.5;">
+                                            Email client sudah terbuka &amp; dokumen sedang diunduh.<br>
+                                            <strong>Drag dari download bar → email → Kirim.</strong>
+                                        </div>
+                                    </div>
+
+                                    {{-- ── Main action button ── --}}
+                                    <div style="display:flex;justify-content:flex-end;">
+                                        <button
+                                            type="button"
+                                            class="upload-btn"
+                                            style="background:linear-gradient(135deg,#3b82f6 0%,#1d4ed8 100%);gap:.5rem;padding:.6rem 1.25rem;"
+                                            @click="sendHqEmail(selectedParticipant)"
+                                        >
+                                            <i class="fas fa-paper-plane"></i>
+                                            <span x-text="selectedParticipant?.hqEmailSent ? 'Kirim Ulang Email' : 'Buka Email &amp; Unduh Lampiran'"></span>
+                                        </button>
+                                    </div>
+                                </div>
+                            </template>
+
+                        </div>{{-- end padding div --}}
+                    </div>{{-- end border card --}}
+                </div>
             </div>
         </div>
     </div>
@@ -1475,6 +1638,8 @@ function participantsManager() {
         selectedParticipant: null,
         visibleCount: 0,
         totalCount: 0,
+        adminHqEmail: '',
+        hqEmailJustSent: false,
 
         init() {
             const rows = document.querySelectorAll('.participant-row');
@@ -1487,15 +1652,9 @@ function participantsManager() {
                     return;
                 }
                 const lbl = inp.closest('.doc-upload-pick')?.querySelector('[data-doc-upload-label]');
-                if (!lbl) {
-                    return;
-                }
+                if (!lbl) return;
                 const file = inp.files?.[0];
-                if (!file) {
-                    lbl.textContent = 'Pilih PDF';
-
-                    return;
-                }
+                if (!file) { lbl.textContent = 'Pilih PDF'; return; }
                 lbl.textContent = file.name.length > 16 ? `${file.name.slice(0, 14)}…` : file.name;
             });
         },
@@ -1503,37 +1662,31 @@ function participantsManager() {
         filterTable() {
             const rows = document.querySelectorAll('.participant-row');
             let visible = 0;
-
             rows.forEach(row => {
-                const name = row.dataset.name || '';
-                const email = row.dataset.email || '';
+                const name     = row.dataset.name     || '';
+                const email    = row.dataset.email    || '';
                 const division = row.dataset.division || '';
-                const status = row.dataset.status || '';
-                const doc = row.dataset.doc || '';
+                const status   = row.dataset.status   || '';
+                const doc      = row.dataset.doc      || '';
 
                 const matchesSearch = !this.searchQuery ||
                     name.includes(this.searchQuery.toLowerCase()) ||
                     email.includes(this.searchQuery.toLowerCase()) ||
                     division.includes(this.searchQuery.toLowerCase());
-
                 const matchesStatus = !this.statusFilter || status === this.statusFilter;
-                const matchesDoc = !this.docFilter || doc === this.docFilter;
+                const matchesDoc    = !this.docFilter    || doc === this.docFilter;
 
                 if (matchesSearch && matchesStatus && matchesDoc) {
-                    row.style.display = '';
-                    visible++;
+                    row.style.display = ''; visible++;
                 } else {
                     row.style.display = 'none';
                 }
             });
-
             this.visibleCount = visible;
         },
 
         resetFilters() {
-            this.searchQuery = '';
-            this.statusFilter = '';
-            this.docFilter = '';
+            this.searchQuery = ''; this.statusFilter = ''; this.docFilter = '';
             this.filterTable();
         },
 
@@ -1541,11 +1694,10 @@ function participantsManager() {
             this.$el.querySelectorAll('.doc-upload-pick-input').forEach((inp) => {
                 inp.value = '';
                 const lbl = inp.closest('.doc-upload-pick')?.querySelector('[data-doc-upload-label]');
-                if (lbl) {
-                    lbl.textContent = 'Pilih PDF';
-                }
+                if (lbl) lbl.textContent = 'Pilih PDF';
             });
             this.selectedParticipant = participant;
+            this.hqEmailJustSent = false;
             this.showModal = true;
             document.body.style.overflow = 'hidden';
         },
@@ -1553,8 +1705,100 @@ function participantsManager() {
         closeModal() {
             this.showModal = false;
             this.selectedParticipant = null;
+            this.hqEmailJustSent = false;
             document.body.style.overflow = '';
-        }
+        },
+
+        buildMailtoBody(p) {
+            return `Dengan hormat,
+
+Menindaklanjuti pengajuan mahasiswa PKL di PT. Telkom Indonesia (Persero) Wilayah Sulbagsel, dengan ini kami ajukan permohonan mahasiswa PKL di PT. Telkom Indonesia (Persero) Wilayah Sulbagsel berlokasi di Kantor Telkom Witel Sulbagsel, Jl. Balaikota No.4, Kec. Ujung Pandang, Makassar, Sulawesi Selatan. Terlampir nama yang kami ajukan sbb:
+
+NO  | PESERTA                                                                          | MENTOR                                    | PERIODE PKL                              | LOKASI PKL
+1.  | ${(p.name||'').toUpperCase()} / NIM. ${p.nim||'-'}, ${p.major||'-'}, ${p.university||'-'} | ${(p.currentMentorName||'-').toUpperCase()} / NIK. ${p.mentorNik||'-'} | ${p.startDate||'-'} s.d. ${p.endDate||'-'} | ${p.division||'-'} - Telkom Witel Sulbagsel
+
+Berikut kami lampirkan berkas permohonan mahasiswa berupa :
+- Surat Permohonan
+- Curriculum Vitae
+- Surat Berperilaku Baik dari Kampus
+- KTP/KTM
+
+Demikian Surat Permohonan PKL di PT. Telkom Indonesia (Persero) Wilayah Sulbagsel ini kami sampaikan. Mohon untuk dapat ditindaklanjuti (diijinkan/tidak diijinkan) terkait permohonan PKL yang kami ajukan. Atas perhatian bapak/ibu kami ucapkan terima kasih.
+
+Salam hormat,
+Finance & Human Capital SSGS - Telkom Witel Sulbagsel`;
+        },
+
+        triggerDownload(url, filename, delayMs) {
+            setTimeout(() => {
+                const a = document.createElement('a');
+                a.href     = url;
+                a.download = filename;
+                a.style.display = 'none';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+            }, delayMs);
+        },
+
+        async sendHqEmail(p) {
+            if (!this.adminHqEmail || !p) return;
+
+            // 1. Open email client via mailto: (To + CC + Subject + Body pre-filled)
+            const subject = 'Permohonan PKL di PT. Telkom Indonesia (Persero) Wilayah Sulbagsel';
+            const mailto  = `mailto:${encodeURIComponent(this.adminHqEmail)}`
+                          + `?cc=${encodeURIComponent(p.email || '')}`
+                          + `&subject=${encodeURIComponent(subject)}`
+                          + `&body=${encodeURIComponent(this.buildMailtoBody(p))}`;
+            window.location.href = mailto;
+
+            // 2. Auto-download each available document one by one (staggered so browser handles them)
+            const safeName = (p.name || 'Peserta').replace(/\s+/g, '_');
+            let delay = 800; // start after mailto has a moment to fire
+            const docs = [
+                { has: p.hasSuratPermohonan, url: p.suratPermohonanUrl, name: `Surat_Permohonan_${safeName}.pdf` },
+                { has: p.hasCv,              url: p.cvUrl,              name: `Curriculum_Vitae_${safeName}.pdf` },
+                { has: p.hasGoodBehavior,    url: p.goodBehaviorUrl,    name: `Surat_Berperilaku_Baik_${safeName}.pdf` },
+                { has: p.hasKtm,             url: p.ktmUrl,             name: `KTP_KTM_${safeName}.pdf` },
+            ];
+            docs.forEach(doc => {
+                if (doc.has && doc.url) {
+                    this.triggerDownload(doc.url, doc.name, delay);
+                    delay += 700; // stagger each download by 700 ms
+                }
+            });
+
+            // 3. Show success feedback immediately
+            this.hqEmailJustSent = true;
+
+            // 4. Record timestamp via AJAX (background, non-blocking)
+            try {
+                const csrf = document.querySelector('meta[name="csrf-token"]')?.content ?? '';
+                const res  = await fetch(`/admin/participants/${p.id}/send-headquarters-email`, {
+                    method:  'POST',
+                    headers: {
+                        'X-CSRF-TOKEN':     csrf,
+                        'Accept':           'application/json',
+                        'X-Requested-With': 'XMLHttpRequest',
+                    },
+                });
+                const data = await res.json();
+                if (data.success) {
+                    this.selectedParticipant.hqEmailSent   = true;
+                    this.selectedParticipant.hqEmailSentAt = data.sent_at;
+                    const icon = document.querySelector(`[data-hq-email-icon="${p.id}"]`);
+                    if (icon) {
+                        icon.className        = 'doc-icon';
+                        icon.style.background = 'rgba(59,130,246,.1)';
+                        icon.style.color      = '#3b82f6';
+                        icon.setAttribute('data-sent', '1');
+                        icon.title = 'Email ke pusat sudah dikirim: ' + data.sent_at;
+                    }
+                }
+            } catch (e) {
+                // silently ignore — mailto already opened & downloads triggered
+            }
+        },
     }
 }
 

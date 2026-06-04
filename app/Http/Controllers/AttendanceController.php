@@ -3,13 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Models\Attendance;
-use App\Models\User;
-use App\Models\InternshipApplication;
 use App\Models\DivisiAdmin;
+use App\Models\DivisionMentor;
+use App\Models\InternshipApplication;
+use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
-use Carbon\Carbon;
 
 class AttendanceController extends Controller
 {
@@ -189,51 +190,34 @@ class AttendanceController extends Controller
             ->with(['user'])
             ->get();
         
-        $participants = collect();
-        foreach ($applications as $app) {
-            $attendance = Attendance::where('user_id', $app->user_id)
-                ->whereDate('date', $filterDate)
-                ->first();
-            
-            // Get last 7 working days (excluding Saturday and Sunday)
-            $workingDays = collect();
-            $currentDate = Carbon::parse($filterDate);
-            $daysBack = 0;
-            
-            while ($workingDays->count() < 7) {
-                $checkDate = $currentDate->copy()->subDays($daysBack);
-                // Skip Saturday (6) and Sunday (0)
-                if ($checkDate->dayOfWeek != Carbon::SATURDAY && $checkDate->dayOfWeek != Carbon::SUNDAY) {
-                    $workingDays->push($checkDate->toDateString());
-                }
-                $daysBack++;
-                // Safety check to avoid infinite loop
-                if ($daysBack > 20) break;
-            }
-            
-            // Sort working days from oldest to newest
-            $workingDays = $workingDays->sort()->values();
-            
-            $startDate = $workingDays->first();
-            $endDate = $workingDays->last();
-            
-            $last7Days = Attendance::where('user_id', $app->user_id)
-                ->whereDate('date', '>=', $startDate)
-                ->whereDate('date', '<=', $endDate)
-                ->orderBy('date', 'asc')
-                ->get();
-            
-            $participants->push([
-                'user' => $app->user,
-                'attendance' => $attendance,
-                'last7Days' => $last7Days,
-                'workingDays' => $workingDays,
-            ]);
-        }
-        
+        // Compute working days ONCE (same for all participants since filterDate is shared)
+        $workingDays = $this->computeWorkingDays($filterDate, 7);
+        $rangeStart  = $workingDays->first();
+        $rangeEnd    = $workingDays->last();
+
+        // Batch-load ALL attendance data in 2 queries instead of N*2
+        $userIds = $applications->pluck('user_id');
+
+        $todayMap = Attendance::whereIn('user_id', $userIds)
+            ->whereDate('date', $filterDate)
+            ->get()->keyBy('user_id');
+
+        $historyMap = Attendance::whereIn('user_id', $userIds)
+            ->whereDate('date', '>=', $rangeStart)
+            ->whereDate('date', '<=', $rangeEnd)
+            ->orderBy('date', 'asc')
+            ->get()->groupBy('user_id');
+
+        $participants = $applications->map(fn($app) => [
+            'user'        => $app->user,
+            'attendance'  => $todayMap->get($app->user_id),
+            'last7Days'   => $historyMap->get($app->user_id, collect()),
+            'workingDays' => $workingDays,
+        ]);
+
         return view('mentor.absensi', [
             'participants' => $participants,
-            'filterDate' => $filterDate,
+            'filterDate'   => $filterDate,
         ]);
     }
     
@@ -261,49 +245,52 @@ class AttendanceController extends Controller
         
         $applications = $query->get();
         
-        $participants = collect();
-        foreach ($applications as $app) {
-            $attendance = Attendance::where('user_id', $app->user_id)
-                ->whereDate('date', $filterDate)
-                ->first();
-            
-            // Get last 7 working days (excluding Saturday and Sunday)
-            $workingDays = collect();
-            $currentDate = Carbon::parse($filterDate);
-            $daysBack = 0;
-            
-            while ($workingDays->count() < 7) {
-                $checkDate = $currentDate->copy()->subDays($daysBack);
-                // Skip Saturday (6) and Sunday (0)
-                if ($checkDate->dayOfWeek != Carbon::SATURDAY && $checkDate->dayOfWeek != Carbon::SUNDAY) {
-                    $workingDays->push($checkDate->toDateString());
-                }
-                $daysBack++;
-                // Safety check to avoid infinite loop
-                if ($daysBack > 20) break;
-            }
-            
-            // Sort working days from oldest to newest
-            $workingDays = $workingDays->sort()->values();
-            
-            $startDate = $workingDays->first();
-            $endDate = $workingDays->last();
-            
-            $last7Days = Attendance::where('user_id', $app->user_id)
-                ->whereDate('date', '>=', $startDate)
-                ->whereDate('date', '<=', $endDate)
-                ->orderBy('date', 'asc')
-                ->get();
-            
-            $participants->push([
-                'user' => $app->user,
-                'application' => $app,
-                'attendance' => $attendance,
-                'last7Days' => $last7Days,
-                'workingDays' => $workingDays,
-            ]);
-        }
-        
+        // Compute working days ONCE; batch-load attendance in 2 queries
+        $workingDays = $this->computeWorkingDays($filterDate, 7);
+        $rangeStart  = $workingDays->first();
+        $rangeEnd    = $workingDays->last();
+
+        $userIds = $applications->pluck('user_id');
+
+        $todayMap = Attendance::whereIn('user_id', $userIds)
+            ->whereDate('date', $filterDate)
+            ->get()->keyBy('user_id');
+
+        $historyMap = Attendance::whereIn('user_id', $userIds)
+            ->whereDate('date', '>=', $rangeStart)
+            ->whereDate('date', '<=', $rangeEnd)
+            ->orderBy('date', 'asc')
+            ->get()->groupBy('user_id');
+
+        $participants = $applications->map(fn($app) => [
+            'user'        => $app->user,
+            'application' => $app,
+            'attendance'  => $todayMap->get($app->user_id),
+            'last7Days'   => $historyMap->get($app->user_id, collect()),
+            'workingDays' => $workingDays,
+        ]);
+
         return view('attendance.admin', compact('participants', 'filterDate', 'filterDivision', 'divisions'));
+    }
+
+    /**
+     * Return the last N working days (Mon–Fri) ending on $filterDate, oldest first.
+     * Extracted so it is computed once per request, not per participant.
+     */
+    private function computeWorkingDays(string $filterDate, int $count): \Illuminate\Support\Collection
+    {
+        $days    = collect();
+        $current = Carbon::parse($filterDate);
+        $back    = 0;
+
+        while ($days->count() < $count) {
+            $date = $current->copy()->subDays($back++);
+            if (! $date->isWeekend()) {
+                $days->push($date->toDateString());
+            }
+            if ($back > 30) break; // safety cap
+        }
+
+        return $days->sort()->values();
     }
 }

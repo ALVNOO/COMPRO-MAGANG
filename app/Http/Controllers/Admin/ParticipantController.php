@@ -13,6 +13,7 @@ use App\Services\NotificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 class ParticipantController extends Controller
 {
@@ -32,15 +33,26 @@ class ParticipantController extends Controller
             })
             ->with([
                 'internshipApplications' => function ($query) {
+                    // Load divisionAdmin WITHOUT .mentors — mentors are pre-loaded below
+                    // via a single grouped query instead of once per participant.
                     $query->whereIn('status', ['accepted', 'finished'])
-                        ->with(['divisionAdmin.mentors', 'divisionMentor']);
+                        ->with(['divisionAdmin', 'divisionMentor']);
                 },
                 'certificates',
                 'assignments',
             ])
             ->get();
 
-        return view('admin.participants', compact('participants'));
+        // Pre-load mentors for each division in ONE query grouped by division_id.
+        // This replaces the N redundant mentor loads that happened when participants
+        // shared the same division (divisionAdmin.mentors eager-loaded per participant).
+        $divisionIds    = $participants->flatMap->internshipApplications->pluck('division_admin_id')->unique()->filter();
+        $mentorsByDivision = \App\Models\DivisionMentor::whereIn('division_id', $divisionIds)
+            ->get()->groupBy('division_id');
+
+        $adminHqEmail = Auth::user()->headquarters_email;
+
+        return view('admin.participants', compact('participants', 'mentorsByDivision', 'adminHqEmail'));
     }
 
     /**
@@ -293,5 +305,112 @@ class ParticipantController extends Controller
 
         return redirect()->route('admin.participants')
             ->with('success', 'Mentor peserta berhasil diperbarui tanpa mengubah progres magang.');
+    }
+
+    /**
+     * Record that the HQ email was initiated (mailto opened + docs downloaded by browser).
+     */
+    public function sendHeadquartersEmail(Request $request, $applicationId)
+    {
+        $application = InternshipApplication::findOrFail($applicationId);
+        $application->headquarters_email_sent_at = now();
+        $application->save();
+
+        return response()->json([
+            'success' => true,
+            'sent_at' => $application->headquarters_email_sent_at->format('d M Y, H:i'),
+        ]);
+    }
+
+    /**
+     * Generate a pre-filled .eml draft file as fallback for clients that need manual sending.
+     */
+    public function downloadHqEmailDraft(Request $request, $applicationId)
+    {
+        $admin = Auth::user();
+
+        if (empty($admin->headquarters_email)) {
+            return redirect()->route('admin.participants')
+                ->with('error', 'Email kantor pusat belum dikonfigurasi. Silakan isi di halaman Profil Admin.');
+        }
+
+        $application = InternshipApplication::with(['user', 'divisionAdmin', 'divisionMentor'])
+            ->findOrFail($applicationId);
+
+        $user    = $application->user;
+        $to      = $admin->headquarters_email;
+        $cc      = $user->email ?? '';
+        $subject = 'Permohonan PKL di PT. Telkom Indonesia (Persero) Wilayah Sulbagsel';
+
+        $htmlBody = view('emails.headquarters_internship', [
+            'participantName'    => $user->name,
+            'participantNim'     => $user->nim ?? '-',
+            'participantFaculty' => $user->major ?? '-',
+            'participantUniv'    => $user->university ?? '-',
+            'mentorName'         => $application->divisionMentor->mentor_name ?? '-',
+            'mentorNik'          => $application->divisionMentor->nik_number ?? '-',
+            'startDate'          => $application->start_date?->translatedFormat('d F Y') ?? '-',
+            'endDate'            => $application->end_date?->translatedFormat('d F Y') ?? '-',
+            'divisionName'       => $application->divisionAdmin->division_name ?? '-',
+        ])->render();
+
+        $boundary       = 'boundary_' . md5(uniqid());
+        $date           = now()->format('D, d M Y H:i:s O');
+        $encodedSubject = '=?UTF-8?B?' . base64_encode($subject) . '?=';
+
+        // ── MIME envelope ─────────────────────────────────────────────
+        $eml  = "MIME-Version: 1.0\r\n";
+        $eml .= "Date: {$date}\r\n";
+        $eml .= "To: {$to}\r\n";
+        if ($cc) {
+            $eml .= "CC: {$cc}\r\n";
+        }
+        $eml .= "Subject: {$encodedSubject}\r\n";
+        $eml .= "Content-Type: multipart/mixed; boundary=\"{$boundary}\"\r\n";
+        $eml .= "\r\n";
+
+        // ── HTML body part ────────────────────────────────────────────
+        $eml .= "--{$boundary}\r\n";
+        $eml .= "Content-Type: text/html; charset=UTF-8\r\n";
+        $eml .= "Content-Transfer-Encoding: base64\r\n";
+        $eml .= "\r\n";
+        $eml .= chunk_split(base64_encode($htmlBody), 76, "\r\n");
+
+        // ── Attachment parts ──────────────────────────────────────────
+        $safeName = str_replace([' ', '/', '\\'], '_', $user->name ?? 'Peserta');
+        $docs = [
+            'surat_permohonan_path' => "Surat_Permohonan_{$safeName}.pdf",
+            'cv_path'               => "Curriculum_Vitae_{$safeName}.pdf",
+            'good_behavior_path'    => "Surat_Berperilaku_Baik_{$safeName}.pdf",
+            'ktm_path'              => "KTP_KTM_{$safeName}.pdf",
+        ];
+
+        foreach ($docs as $field => $filename) {
+            $path = $application->$field;
+            if ($path && Storage::disk('public')->exists($path)) {
+                $content = Storage::disk('public')->get($path);
+                $eml .= "--{$boundary}\r\n";
+                $eml .= "Content-Type: application/pdf\r\n";
+                $eml .= "Content-Transfer-Encoding: base64\r\n";
+                $eml .= "Content-Disposition: attachment; filename=\"{$filename}\"\r\n";
+                $eml .= "\r\n";
+                $eml .= chunk_split(base64_encode($content), 76, "\r\n");
+            }
+        }
+
+        $eml .= "--{$boundary}--\r\n";
+
+        // Record that the draft was prepared
+        $application->headquarters_email_sent_at = now();
+        $application->save();
+
+        $downloadName = "Permohonan_PKL_{$safeName}.eml";
+
+        return response($eml, 200, [
+            'Content-Type'        => 'message/rfc822',
+            'Content-Disposition' => "attachment; filename=\"{$downloadName}\"",
+            'Content-Length'      => strlen($eml),
+            'Cache-Control'       => 'no-store',
+        ]);
     }
 }

@@ -203,7 +203,7 @@ Route::middleware(['auth', 'throttle:global'])->group(function () {
             Route::get('/unread-count', [
                 NotificationController::class,
                 'unreadCount',
-            ])->name('unread-count');
+            ])->name('unread-count')->middleware('throttle:notification-poll');
             Route::get('/recent', [
                 NotificationController::class,
                 'recent',
@@ -401,7 +401,7 @@ Route::middleware(['auth', 'throttle:global'])
         ])->name('mentor.evaluasi-akhir.download');
     });
 
-Route::middleware(['auth', 'throttle:global'])
+Route::middleware(['auth', 'admin', 'throttle:global'])
     ->prefix('admin')
     ->name('admin.')
     ->group(function () {
@@ -483,6 +483,14 @@ Route::middleware(['auth', 'throttle:global'])
             AdminParticipantController::class,
             'changeMentor',
         ])->name('participants.change-mentor')->middleware('throttle:form-submission');
+        Route::post('/participants/{applicationId}/send-headquarters-email', [
+            AdminParticipantController::class,
+            'sendHeadquartersEmail',
+        ])->name('participants.send-headquarters-email')->middleware('throttle:form-submission');
+        Route::get('/participants/{applicationId}/hq-email-draft', [
+            AdminParticipantController::class,
+            'downloadHqEmailDraft',
+        ])->name('participants.hq-email-draft');
 
         Route::get('/final-evaluation', [
             AdminFinalEvaluationController::class,
@@ -675,6 +683,10 @@ Route::middleware(['auth', 'throttle:global'])
             AdminDashboardController::class,
             'updateBiodata',
         ])->name('profile.biodata');
+        Route::post('/profile/headquarters-email', [
+            AdminDashboardController::class,
+            'updateHeadquartersEmail',
+        ])->name('profile.headquarters_email');
         Route::post('/profile/picture', [
             AdminDashboardController::class,
             'uploadProfilePicture',

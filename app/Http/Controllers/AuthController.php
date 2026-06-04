@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Mail\TwoFactorResetMail;
 use App\Models\InternshipApplication;
+use App\Services\CircuitBreakerService;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -399,7 +400,16 @@ class AuthController extends Controller
 
         $token = $user->generateTwoFactorResetToken();
 
-        Mail::to($user->email)->send(new TwoFactorResetMail($user, $token));
+        $circuit = new CircuitBreakerService('smtp_mail', failureThreshold: 3, cooldownSeconds: 120);
+
+        $sent = $circuit->call(
+            action: fn() => Mail::to($user->email)->send(new TwoFactorResetMail($user, $token)),
+            fallback: fn() => 'circuit_open',
+        );
+
+        if ($sent === 'circuit_open') {
+            return back()->with('error', 'Server email sedang bermasalah. Silakan coba lagi beberapa menit.');
+        }
 
         return view('auth.2fa-reset-sent', ['email' => $user->email]);
     }

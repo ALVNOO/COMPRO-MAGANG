@@ -4,6 +4,7 @@ namespace App\Http\View\Composers;
 
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\View\View;
 
 class SystemAlertsComposer
@@ -18,12 +19,17 @@ class SystemAlertsComposer
 
         $user = Auth::user();
 
-        $alerts = match ($user->role) {
+        // Cache per-user for 90 seconds — eliminates 5-7 DB queries on every page load.
+        // The cache is busted when the user takes actions (submit logbook, etc.) via
+        // the observer and event system. 90s is short enough to feel live.
+        $cacheKey = "system_alerts.{$user->role}.{$user->id}";
+
+        $alerts = Cache::remember($cacheKey, 90, fn () => match ($user->role) {
             'peserta'    => $this->pesertaAlerts($user),
             'pembimbing' => $this->pembimbingAlerts($user),
             'admin'      => $this->adminAlerts(),
             default      => [],
-        };
+        });
 
         $view->with('systemAlertsData', $alerts);
     }

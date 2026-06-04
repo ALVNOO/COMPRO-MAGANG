@@ -15,6 +15,10 @@ return [
 
     'default' => env('FILESYSTEM_DISK', 'local'),
 
+    // Disk used for all user-uploaded documents (certificates, CVs, letters, etc.)
+    // Set UPLOAD_DISK=s3 in production to use S3 without changing any code.
+    'default_upload_disk' => env('UPLOAD_DISK', 'public'),
+
     /*
     |--------------------------------------------------------------------------
     | Filesystem Disks

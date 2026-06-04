@@ -11,9 +11,13 @@ use Illuminate\Mail\Mailables\Attachment;
 use Illuminate\Queue\SerializesModels;
 use App\Models\InternshipApplication;
 
-class AcceptanceLetterMail extends Mailable
+class AcceptanceLetterMail extends Mailable implements ShouldQueue
 {
     use Queueable, SerializesModels;
+
+    public int $tries = 3;
+    public array $backoff = [60, 300];
+    public int $timeout = 60;
 
     public $application;
     public $pdfContent;

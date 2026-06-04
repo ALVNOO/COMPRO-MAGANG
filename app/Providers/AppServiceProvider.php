@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use App\Models\InternshipApplication;
+use App\Observers\InternshipApplicationObserver;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
@@ -24,6 +26,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        InternshipApplication::observe(InternshipApplicationObserver::class);
+
         $this->configureRateLimiting();
 
         // Production: paksa semua URL pakai HTTPS agar browser tidak tampilkan "form is not secure"
@@ -95,6 +99,13 @@ class AppServiceProvider extends ServiceProvider
         // Global: 60 requests per minute per IP for all authenticated routes
         RateLimiter::for('global', function (Request $request) {
             return Limit::perMinute(60)->by($request->ip());
+        });
+
+        // Notification poll: lightweight endpoint polled frequently by Alpine.js
+        // Higher limit to avoid false 429s, but still protected from abuse
+        RateLimiter::for('notification-poll', function (Request $request) {
+            $key = ($request->user()?->id ?: 'guest').'|'.$request->ip();
+            return Limit::perMinute(30)->by($key);
         });
     }
 }

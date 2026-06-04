@@ -3,6 +3,9 @@ import laravel from 'laravel-vite-plugin';
 import tailwindcss from '@tailwindcss/vite';
 
 export default defineConfig({
+    // Set ASSET_URL in production to serve compiled assets from a CDN.
+    // e.g. ASSET_URL=https://cdn.example.com — Laravel's asset() helper picks this up too.
+    base: process.env.ASSET_URL ? process.env.ASSET_URL + '/' : '/',
     plugins: [
         laravel({
             input: [

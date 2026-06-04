@@ -44,6 +44,7 @@ class User extends Authenticatable
         "device_fingerprint",
         "two_factor_reset_token",
         "two_factor_reset_token_expires_at",
+        "headquarters_email",
     ];
 
     /**

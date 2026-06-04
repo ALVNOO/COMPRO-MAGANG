@@ -37,6 +37,7 @@ class InternshipApplication extends Model
         'final_evaluation_participant_uploaded_at',
         'final_evaluation_admin_path',
         'final_evaluation_admin_uploaded_at',
+        'headquarters_email_sent_at',
     ];
 
     protected $casts = [
@@ -45,6 +46,7 @@ class InternshipApplication extends Model
         'end_date' => 'date',
         'final_evaluation_participant_uploaded_at' => 'datetime',
         'final_evaluation_admin_uploaded_at' => 'datetime',
+        'headquarters_email_sent_at' => 'datetime',
     ];
 
     /**

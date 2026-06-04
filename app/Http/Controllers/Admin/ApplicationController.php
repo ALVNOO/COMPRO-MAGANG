@@ -2,11 +2,14 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Events\ApplicationApproved;
+use App\Events\ApplicationStatusChanged;
 use App\Http\Controllers\Controller;
 use App\Mail\AcceptanceLetterMail;
 use App\Models\DivisiAdmin;
 use App\Models\InternshipApplication;
 use App\Services\Application\InternshipApplicationService;
+use App\Services\CircuitBreakerService;
 use App\Services\Document\FileUploadService;
 use App\Support\ApplicationRevisionFields;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -47,11 +50,13 @@ class ApplicationController extends Controller
             'division_mentor_id' => 'nullable|exists:division_mentors,id',
         ]);
 
-        $this->applicationService->approveApplication(
+        $application = $this->applicationService->approveApplication(
             $id,
             $request->divisi_id,
             $request->division_mentor_id
         );
+
+        event(new ApplicationApproved($application));
 
         return redirect()->route('admin.applications')
             ->with('success', 'Pengajuan magang berhasil diterima.');
@@ -129,16 +134,21 @@ class ApplicationController extends Controller
             $application->save();
         }
 
-        // Send email
-        try {
-            Mail::to($application->user->email)->send(new AcceptanceLetterMail($application, $pdfContent));
+        // Send email via circuit breaker (SMTP failures won't cause an error page)
+        $circuit = new CircuitBreakerService('smtp_mail', failureThreshold: 3, cooldownSeconds: 120);
 
+        $sent = $circuit->call(
+            action: fn() => Mail::to($application->user->email)->send(new AcceptanceLetterMail($application, $pdfContent)),
+            fallback: fn() => 'circuit_open',
+        );
+
+        if ($sent === 'circuit_open') {
             return redirect()->route('admin.applications')
-                ->with('success', 'Surat penerimaan magang berhasil dikirim ke email peserta: '.$application->user->email);
-        } catch (\Exception $e) {
-            return redirect()->route('admin.applications')
-                ->with('error', 'Gagal mengirim email: '.$e->getMessage());
+                ->with('error', 'Server email sedang bermasalah. Surat penerimaan akan dikirim ulang otomatis saat server pulih. Peserta sudah tercatat sebagai diterima.');
         }
+
+        return redirect()->route('admin.applications')
+            ->with('success', 'Surat penerimaan magang berhasil dikirim ke email peserta: '.$application->user->email);
     }
 
     /**

@@ -6,6 +6,7 @@ use App\Models\InternshipApplication;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\Cache;
 
 class InternshipApplicationService
 {
@@ -227,26 +228,20 @@ class InternshipApplicationService
     }
 
     /**
-     * Get dashboard statistics.
+     * Get dashboard statistics (cached for 5 minutes, busted by InternshipApplicationObserver).
      */
     public function getDashboardStats(): array
     {
-        $totalParticipants = User::where('role', 'peserta')
-            ->whereHas('internshipApplications', function ($q) {
-                $q->where('status', 'accepted');
-            })
-            ->count();
-
-        $totalApplications = InternshipApplication::count();
-        $totalFinishedParticipants = InternshipApplication::where('status', 'finished')->count();
-        $pendingApplications = InternshipApplication::where('status', 'pending')->count();
-
-        return [
-            'total_participants' => $totalParticipants,
-            'total_applications' => $totalApplications,
-            'total_finished' => $totalFinishedParticipants,
-            'pending_applications' => $pendingApplications,
-        ];
+        return Cache::remember('admin.dashboard.stats', 300, function () {
+            return [
+                'total_participants' => User::where('role', 'peserta')
+                    ->whereHas('internshipApplications', fn($q) => $q->where('status', 'accepted'))
+                    ->count(),
+                'total_applications'        => InternshipApplication::count(),
+                'total_finished'            => InternshipApplication::where('status', 'finished')->count(),
+                'pending_applications'      => InternshipApplication::where('status', 'pending')->count(),
+            ];
+        });
     }
 
     /**

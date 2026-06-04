@@ -11,6 +11,7 @@ use App\Services\Application\InternshipApplicationService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
@@ -37,6 +38,20 @@ class DashboardController extends Controller
 
         return redirect()->route('admin.profile')
             ->with('biodata_success', 'Nomor WhatsApp berhasil diperbarui.');
+    }
+
+    public function updateHeadquartersEmail(Request $request)
+    {
+        $request->validateWithBag('hq_email', [
+            'headquarters_email' => 'nullable|email|max:255',
+        ]);
+
+        $user = Auth::user();
+        $user->headquarters_email = $request->headquarters_email;
+        $user->save();
+
+        return redirect()->route('admin.profile')
+            ->with('hq_email_success', 'Email kantor pusat berhasil diperbarui.');
     }
 
     public function uploadProfilePicture(Request $request)
@@ -94,11 +109,13 @@ class DashboardController extends Controller
         $stats = $this->applicationService->getDashboardStats();
         $recentApplications = $this->applicationService->getRecentPendingApplications(10);
 
-        $divisions = Divisi::withCount(['internshipApplications' => function ($q) {
-            $q->whereIn('status', ['accepted', 'finished']);
-        }])->get();
+        $divisions = Cache::remember('admin.divisions.withcount', 300, fn() =>
+            Divisi::withCount(['internshipApplications' => fn($q) =>
+                $q->whereIn('status', ['accepted', 'finished'])
+            ])->get()
+        );
 
-        $rule = Rule::first();
+        $rule = Cache::remember('admin.rule', 3600, fn() => Rule::first());
 
         // Additional statistics for enhanced dashboard
         $pendingCount = InternshipApplication::where('status', 'pending')->count();

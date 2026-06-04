@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Jobs\SendNotificationJob;
 use App\Models\Notification;
 use App\Models\User;
 
@@ -10,17 +11,9 @@ class NotificationService
     /**
      * Create a notification for a user.
      */
-    public static function create(User $user, string $type, string $title, string $message, string $icon = 'info', ?string $link = null, ?array $data = null)
+    public static function create(User $user, string $type, string $title, string $message, string $icon = 'info', ?string $link = null, ?array $data = null): void
     {
-        return Notification::create([
-            'user_id' => $user->id,
-            'type' => $type,
-            'title' => $title,
-            'message' => $message,
-            'icon' => $icon,
-            'link' => $link,
-            'data' => $data,
-        ]);
+        SendNotificationJob::dispatch($user->id, $type, $title, $message, $icon, $link, $data);
     }
 
     /**
