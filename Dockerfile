@@ -4,10 +4,11 @@ FROM php:8.4-fpm-alpine AS base
 RUN apk add --no-cache \
         libpng-dev libjpeg-turbo-dev freetype-dev \
         libzip-dev libxml2-dev oniguruma-dev \
+        postgresql-dev \
         nginx supervisor curl
 
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
- && docker-php-ext-install pdo_mysql pdo_sqlite gd zip bcmath mbstring xml opcache
+ && docker-php-ext-install pdo_pgsql pgsql gd zip bcmath mbstring xml opcache
 
 # Redis PHP extension
 RUN apk add --no-cache --virtual .build-deps $PHPIZE_DEPS \
