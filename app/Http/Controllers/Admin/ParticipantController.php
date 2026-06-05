@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Mail\HeadquartersInternshipMail;
 use App\Models\Certificate;
 use App\Models\DivisionMentor;
 use App\Models\InternshipApplication;
@@ -14,7 +13,6 @@ use App\Services\NotificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 
 class ParticipantController extends Controller
@@ -310,38 +308,17 @@ class ParticipantController extends Controller
     }
 
     /**
-     * Send the HQ internship email directly via SMTP using the HeadquartersInternshipMail Mailable.
+     * Record that the HQ email compose window was opened (Gmail tab opened + docs downloaded).
      */
     public function sendHeadquartersEmail(Request $request, $applicationId)
     {
-        $admin = Auth::user();
+        $application = InternshipApplication::findOrFail($applicationId);
+        $application->headquarters_email_sent_at = now();
+        $application->save();
 
-        if (empty($admin->headquarters_email)) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Email kantor pusat belum dikonfigurasi. Silakan isi di halaman Profil Admin.',
-            ], 422);
-        }
-
-        $application = InternshipApplication::with(['user', 'divisionAdmin', 'divisionMentor'])
-            ->findOrFail($applicationId);
-
-        try {
-            Mail::to($admin->headquarters_email)
-                ->send(new HeadquartersInternshipMail($application));
-
-            $application->headquarters_email_sent_at = now();
-            $application->save();
-
-            return response()->json([
-                'success' => true,
-                'sent_at' => $application->headquarters_email_sent_at->format('d M Y, H:i'),
-            ]);
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Gagal mengirim email: ' . $e->getMessage(),
-            ], 500);
-        }
+        return response()->json([
+            'success' => true,
+            'sent_at' => $application->headquarters_email_sent_at->format('d M Y, H:i'),
+        ]);
     }
 }

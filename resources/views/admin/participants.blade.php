@@ -1559,11 +1559,11 @@ table.participants-table > thead > tr > th {
                                         </div>
                                     </div>
 
-                                    {{-- ── Lampiran yang akan dikirim ── --}}
+                                    {{-- ── Dokumen — otomatis diunduh ke browser ── --}}
                                     <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:.875rem 1rem;margin-bottom:.875rem;">
                                         <div style="font-size:.75rem;font-weight:700;color:#374151;margin-bottom:.5rem;display:flex;align-items:center;gap:.4rem;">
-                                            <i class="fas fa-paperclip" style="color:#6b7280;"></i>
-                                            Lampiran yang akan dikirim
+                                            <i class="fas fa-download" style="color:#6b7280;"></i>
+                                            Dokumen yang akan diunduh otomatis
                                         </div>
                                         <div style="display:grid;grid-template-columns:1fr 1fr;gap:.3rem .5rem;margin-bottom:.625rem;">
                                             <div style="display:flex;align-items:center;gap:.4rem;"
@@ -1589,7 +1589,7 @@ table.participants-table > thead > tr > th {
                                         </div>
                                         <div style="font-size:.72rem;color:#1e40af;background:#eff6ff;border-radius:7px;padding:.45rem .625rem;display:flex;align-items:flex-start;gap:.35rem;">
                                             <i class="fas fa-circle-info" style="flex-shrink:0;margin-top:.1rem;"></i>
-                                            <span>Email dikirim langsung dari server beserta lampiran dokumen. Tidak perlu email client.</span>
+                                            <span>Gmail terbuka otomatis di tab baru dan dokumen mulai terunduh. <strong>Drag file dari download bar → ke jendela Gmail → klik Kirim.</strong></span>
                                         </div>
                                     </div>
 
@@ -1598,15 +1598,9 @@ table.participants-table > thead > tr > th {
                                          style="display:flex;align-items:flex-start;gap:.5rem;padding:.625rem .875rem;background:#ecfdf5;border:1px solid #6ee7b7;border-radius:8px;margin-bottom:.75rem;">
                                         <i class="fas fa-check-circle" style="color:#059669;font-size:.9rem;flex-shrink:0;margin-top:.1rem;"></i>
                                         <div style="font-size:.8rem;color:#065f46;line-height:1.5;">
-                                            Email berhasil dikirim ke kantor pusat beserta lampiran dokumen.
+                                            Gmail sudah terbuka &amp; dokumen sedang diunduh.<br>
+                                            <strong>Drag dari download bar → Gmail → Kirim.</strong>
                                         </div>
-                                    </div>
-
-                                    {{-- ── Error flash ── --}}
-                                    <div x-show="hqEmailError" x-cloak
-                                         style="display:flex;align-items:flex-start;gap:.5rem;padding:.625rem .875rem;background:#fef2f2;border:1px solid #fca5a5;border-radius:8px;margin-bottom:.75rem;">
-                                        <i class="fas fa-exclamation-circle" style="color:#dc2626;font-size:.9rem;flex-shrink:0;margin-top:.1rem;"></i>
-                                        <div style="font-size:.8rem;color:#991b1b;line-height:1.5;" x-text="hqEmailError"></div>
                                     </div>
 
                                     {{-- ── Main action button ── --}}
@@ -1615,16 +1609,10 @@ table.participants-table > thead > tr > th {
                                             type="button"
                                             class="upload-btn"
                                             style="background:linear-gradient(135deg,#3b82f6 0%,#1d4ed8 100%);gap:.5rem;padding:.6rem 1.25rem;"
-                                            :disabled="hqEmailSending"
                                             @click="sendHqEmail(selectedParticipant)"
                                         >
-                                            <template x-if="hqEmailSending">
-                                                <i class="fas fa-circle-notch fa-spin"></i>
-                                            </template>
-                                            <template x-if="!hqEmailSending">
-                                                <i class="fas fa-paper-plane"></i>
-                                            </template>
-                                            <span x-text="hqEmailSending ? 'Mengirim...' : (selectedParticipant?.hqEmailSent ? 'Kirim Ulang Email' : 'Kirim Email ke Kantor Pusat')"></span>
+                                            <i class="fas fa-paper-plane"></i>
+                                            <span x-text="selectedParticipant?.hqEmailSent ? 'Kirim Ulang Email' : 'Buka Gmail &amp; Unduh Lampiran'"></span>
                                         </button>
                                     </div>
                                 </div>
@@ -1710,8 +1698,6 @@ function participantsManager() {
             });
             this.selectedParticipant = participant;
             this.hqEmailJustSent = false;
-            this.hqEmailSending  = false;
-            this.hqEmailError    = null;
             this.showModal = true;
             document.body.style.overflow = 'hidden';
         },
@@ -1755,16 +1741,38 @@ Finance & Human Capital SSGS - Telkom Witel Sulbagsel`;
             }, delayMs);
         },
 
-        hqEmailSending: false,
-        hqEmailError: null,
-
         async sendHqEmail(p) {
-            if (!this.adminHqEmail || !p || this.hqEmailSending) return;
+            if (!this.adminHqEmail || !p) return;
 
-            this.hqEmailSending = true;
-            this.hqEmailError   = null;
-            this.hqEmailJustSent = false;
+            // 1. Buka Gmail compose di tab baru (To + CC + Subject + Body pre-filled)
+            const subject = 'Permohonan PKL di PT. Telkom Indonesia (Persero) Wilayah Sulbagsel';
+            const gmailUrl = 'https://mail.google.com/mail/?view=cm&fs=1'
+                + '&to='   + encodeURIComponent(this.adminHqEmail)
+                + '&cc='   + encodeURIComponent(p.email || '')
+                + '&su='   + encodeURIComponent(subject)
+                + '&body=' + encodeURIComponent(this.buildMailtoBody(p));
+            window.open(gmailUrl, '_blank');
 
+            // 2. Auto-download tiap dokumen secara staggered
+            const safeName = (p.name || 'Peserta').replace(/\s+/g, '_');
+            let delay = 600;
+            const docs = [
+                { has: p.hasSuratPermohonan, url: p.suratPermohonanUrl, name: `Surat_Permohonan_${safeName}.pdf` },
+                { has: p.hasCv,              url: p.cvUrl,              name: `Curriculum_Vitae_${safeName}.pdf` },
+                { has: p.hasGoodBehavior,    url: p.goodBehaviorUrl,    name: `Surat_Berperilaku_Baik_${safeName}.pdf` },
+                { has: p.hasKtm,             url: p.ktmUrl,             name: `KTP_KTM_${safeName}.pdf` },
+            ];
+            docs.forEach(doc => {
+                if (doc.has && doc.url) {
+                    this.triggerDownload(doc.url, doc.name, delay);
+                    delay += 700;
+                }
+            });
+
+            // 3. Tampilkan feedback sukses
+            this.hqEmailJustSent = true;
+
+            // 4. Catat timestamp via AJAX (background)
             try {
                 const csrf = document.querySelector('meta[name="csrf-token"]')?.content ?? '';
                 const res  = await fetch(`/admin/participants/${p.id}/send-headquarters-email`, {
@@ -1779,7 +1787,6 @@ Finance & Human Capital SSGS - Telkom Witel Sulbagsel`;
                 if (data.success) {
                     this.selectedParticipant.hqEmailSent   = true;
                     this.selectedParticipant.hqEmailSentAt = data.sent_at;
-                    this.hqEmailJustSent = true;
                     const icon = document.querySelector(`[data-hq-email-icon="${p.id}"]`);
                     if (icon) {
                         icon.className        = 'doc-icon';
@@ -1788,13 +1795,9 @@ Finance & Human Capital SSGS - Telkom Witel Sulbagsel`;
                         icon.setAttribute('data-sent', '1');
                         icon.title = 'Email ke pusat sudah dikirim: ' + data.sent_at;
                     }
-                } else {
-                    this.hqEmailError = data.message || 'Gagal mengirim email.';
                 }
             } catch (e) {
-                this.hqEmailError = 'Terjadi kesalahan jaringan. Silakan coba lagi.';
-            } finally {
-                this.hqEmailSending = false;
+                // silently ignore — Gmail sudah terbuka & dokumen sedang diunduh
             }
         },
     }
