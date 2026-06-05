@@ -47,10 +47,13 @@ RUN mkdir -p /var/log/supervisor \
  && chown -R www-data:www-data storage bootstrap/cache \
  && chmod -R 755 storage bootstrap/cache
 
-COPY docker/nginx.conf      /etc/nginx/nginx.conf
+COPY docker/nginx.conf       /etc/nginx/nginx.conf
 COPY docker/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
-COPY docker/php.ini         /usr/local/etc/php/conf.d/custom.ini
+COPY docker/php.ini          /usr/local/etc/php/conf.d/custom.ini
+COPY docker/entrypoint.sh    /entrypoint.sh
+
+RUN chmod +x /entrypoint.sh
 
 EXPOSE 80
 
-CMD ["/usr/bin/supervisord", "-n", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
+CMD ["/entrypoint.sh"]
