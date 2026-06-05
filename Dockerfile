@@ -43,7 +43,8 @@ COPY --from=vendor /var/www/html/vendor ./vendor
 COPY --from=assets /build/public/build ./public/build
 COPY . .
 
-RUN chown -R www-data:www-data storage bootstrap/cache \
+RUN mkdir -p /var/log/supervisor \
+ && chown -R www-data:www-data storage bootstrap/cache \
  && chmod -R 755 storage bootstrap/cache
 
 COPY docker/nginx.conf      /etc/nginx/nginx.conf
