@@ -1246,12 +1246,13 @@ input[type="date"] {
     gap: 0.625rem;
 }
 
-/* Section card */
+/* Section card — overflow:clip agar border-radius tetap rapi
+   tapi TIDAK membentuk scroll context yang menghalangi child scroll */
 .cek-section {
     background: #fff;
     border-radius: 12px;
     border: 1px solid #f0f0f0;
-    overflow: hidden;
+    overflow: clip;
     flex-shrink: 0;
 }
 
@@ -1278,7 +1279,9 @@ input[type="date"] {
     gap: 0.375rem;
 }
 
-/* Scrollable content areas per section */
+/* ── Per-section scroll: section-body menjadi scroll container ── */
+
+/* Deskripsi: section body scroll (content pre-wrap bisa panjang) */
 .cek-desc-content {
     font-size: 0.875rem;
     color: #374151;
@@ -1289,42 +1292,46 @@ input[type="date"] {
     margin: 0;
 }
 
-/* Daftar submission peserta — scroll jika banyak revisi */
+/* File & Pengumpulan: section body scroll untuk daftar revisi */
+#cekFilesSection > .cek-section-body {
+    max-height: 250px;
+    overflow-y: auto;
+    padding-right: 0.5rem;
+}
+
+/* Feedback: section body scroll untuk teks panjang */
+#cekExistingFeedbackSection > .cek-section-body {
+    max-height: 120px;
+    overflow-y: auto;
+}
+
+/* Submissions list — hanya flex column + gap, scroll dihandle parent */
 #cekSubmissionsList {
     display: flex;
     flex-direction: column;
     gap: 0.375rem;
-    max-height: 220px;
-    overflow-y: auto;
-    padding-right: 2px;
 }
 
-/* Feedback text — scroll jika panjang */
-.cek-feedback-box {
-    max-height: 100px;
-    overflow-y: auto;
-}
-
-/* Custom thin scrollbar untuk section */
+/* Custom thin scrollbar */
 .cek-desc-content::-webkit-scrollbar,
-#cekSubmissionsList::-webkit-scrollbar,
-.cek-feedback-box::-webkit-scrollbar {
+#cekFilesSection > .cek-section-body::-webkit-scrollbar,
+#cekExistingFeedbackSection > .cek-section-body::-webkit-scrollbar {
     width: 4px;
 }
 .cek-desc-content::-webkit-scrollbar-track,
-#cekSubmissionsList::-webkit-scrollbar-track,
-.cek-feedback-box::-webkit-scrollbar-track {
+#cekFilesSection > .cek-section-body::-webkit-scrollbar-track,
+#cekExistingFeedbackSection > .cek-section-body::-webkit-scrollbar-track {
     background: transparent;
 }
 .cek-desc-content::-webkit-scrollbar-thumb,
-#cekSubmissionsList::-webkit-scrollbar-thumb,
-.cek-feedback-box::-webkit-scrollbar-thumb {
+#cekFilesSection > .cek-section-body::-webkit-scrollbar-thumb,
+#cekExistingFeedbackSection > .cek-section-body::-webkit-scrollbar-thumb {
     background: #d1d5db;
     border-radius: 4px;
 }
 .cek-desc-content::-webkit-scrollbar-thumb:hover,
-#cekSubmissionsList::-webkit-scrollbar-thumb:hover,
-.cek-feedback-box::-webkit-scrollbar-thumb:hover {
+#cekFilesSection > .cek-section-body::-webkit-scrollbar-thumb:hover,
+#cekExistingFeedbackSection > .cek-section-body::-webkit-scrollbar-thumb:hover {
     background: #9ca3af;
 }
 
@@ -1424,7 +1431,6 @@ input[type="date"] {
     line-height: 1.65;
     padding-left: 0.75rem;
     border-left: 3px solid #EE2E24;
-    /* max-height & overflow-y diatur di atas bersama scroll blocks */
 }
 
 /* ── Footer ── */
