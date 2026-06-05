@@ -23,3 +23,30 @@ Homestead.json
 Homestead.yaml
 Thumbs.db
 composer.lock
+
+# Development & IDE tools
+/.cursor
+/.claude
+/.agents
+/skills-lock.json
+
+# Internal project documentation (not for production)
+/archive
+/bahan
+/docs
+/Telkom Magang Design System
+
+# Development notes
+ADMIN_REDESIGN_PROGRESS.md
+ANGGARAN.md
+CLAUDE.md
+DIAGRAM_*.md
+ERD_*.md
+INDEX_DIAGRAM_UML.md
+MANUAL_BOOK_*.md
+PROPOSAL.md
+PROPOSAL_SISTEM_PENERIMAAN_MAGANG.md
+SETUP_EMAIL_SMTP.md
+SRS.md
+SRS.md.backup
+UAT_DOCUMENT.md
