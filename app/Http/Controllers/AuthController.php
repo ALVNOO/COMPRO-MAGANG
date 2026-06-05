@@ -213,6 +213,14 @@ class AuthController extends Controller
     {
         $user = Auth::user();
 
+        // Jika 2FA sudah aktif tapi session belum diverifikasi → tolak akses setup.
+        // Ini mencegah penyerang yang tahu email+password men-scan ulang QR code
+        // sebelum melewati verifikasi 2FA yang sudah ada.
+        if ($user->hasTwoFactorEnabled() && !session('2fa_verified')) {
+            return redirect()->route('2fa.verify')
+                ->with('error', 'Verifikasi 2FA Anda terlebih dahulu sebelum mengubah pengaturan 2FA.');
+        }
+
         // Generate secret jika belum ada
         if (empty($user->two_factor_secret)) {
             $user->generateTwoFactorSecret();
@@ -235,6 +243,12 @@ class AuthController extends Controller
     public function enable2fa(Request $request)
     {
         $user = Auth::user();
+
+        // Sama seperti setup2fa: blokir jika 2FA sudah aktif tapi belum diverifikasi sesi ini.
+        if ($user->hasTwoFactorEnabled() && !session('2fa_verified')) {
+            return redirect()->route('2fa.verify')
+                ->with('error', 'Verifikasi 2FA Anda terlebih dahulu sebelum mengubah pengaturan 2FA.');
+        }
 
         $request->validate([
             "code" => "required|numeric|digits:6",
