@@ -487,10 +487,6 @@ Route::middleware(['auth', 'admin', 'throttle:global'])
             AdminParticipantController::class,
             'sendHeadquartersEmail',
         ])->name('participants.send-headquarters-email')->middleware('throttle:form-submission');
-        Route::get('/participants/{applicationId}/hq-email-draft', [
-            AdminParticipantController::class,
-            'downloadHqEmailDraft',
-        ])->name('participants.hq-email-draft');
 
         Route::get('/final-evaluation', [
             AdminFinalEvaluationController::class,
