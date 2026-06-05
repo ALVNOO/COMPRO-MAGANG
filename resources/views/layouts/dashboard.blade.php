@@ -8,6 +8,9 @@
     <!-- Vite Assets -->
     @vite(['resources/css/peserta-dashboard.css', 'resources/js/peserta-dashboard.js'])
 
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
     <style>
         /* Thunderbird Color Scheme Variables */
         :root {

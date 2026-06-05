@@ -9,6 +9,9 @@
     <!-- Vite Assets -->
     @vite(['resources/css/mentor-dashboard.css', 'resources/js/mentor-dashboard.js'])
 
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
     @yield('styles')
     <style>
         @keyframes sk-pulse { 0%,100%{opacity:1} 50%{opacity:.4} }

@@ -9,6 +9,9 @@
     @vite(['resources/css/admin-dashboard.css', 'resources/js/admin-dashboard.js'])
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
     <style>
         body, html {font-family: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';}
 
