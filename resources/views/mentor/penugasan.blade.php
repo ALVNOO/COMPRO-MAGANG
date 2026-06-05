@@ -1252,6 +1252,7 @@ input[type="date"] {
     border-radius: 12px;
     border: 1px solid #f0f0f0;
     overflow: hidden;
+    flex-shrink: 0;
 }
 
 .cek-section-header {
@@ -1277,6 +1278,7 @@ input[type="date"] {
     gap: 0.375rem;
 }
 
+/* Scrollable content areas per section */
 .cek-desc-content {
     font-size: 0.875rem;
     color: #374151;
@@ -1285,6 +1287,45 @@ input[type="date"] {
     max-height: 110px;
     overflow-y: auto;
     margin: 0;
+}
+
+/* Daftar submission peserta — scroll jika banyak revisi */
+#cekSubmissionsList {
+    display: flex;
+    flex-direction: column;
+    gap: 0.375rem;
+    max-height: 220px;
+    overflow-y: auto;
+    padding-right: 2px;
+}
+
+/* Feedback text — scroll jika panjang */
+.cek-feedback-box {
+    max-height: 100px;
+    overflow-y: auto;
+}
+
+/* Custom thin scrollbar untuk section */
+.cek-desc-content::-webkit-scrollbar,
+#cekSubmissionsList::-webkit-scrollbar,
+.cek-feedback-box::-webkit-scrollbar {
+    width: 4px;
+}
+.cek-desc-content::-webkit-scrollbar-track,
+#cekSubmissionsList::-webkit-scrollbar-track,
+.cek-feedback-box::-webkit-scrollbar-track {
+    background: transparent;
+}
+.cek-desc-content::-webkit-scrollbar-thumb,
+#cekSubmissionsList::-webkit-scrollbar-thumb,
+.cek-feedback-box::-webkit-scrollbar-thumb {
+    background: #d1d5db;
+    border-radius: 4px;
+}
+.cek-desc-content::-webkit-scrollbar-thumb:hover,
+#cekSubmissionsList::-webkit-scrollbar-thumb:hover,
+.cek-feedback-box::-webkit-scrollbar-thumb:hover {
+    background: #9ca3af;
 }
 
 /* File rows */
@@ -1383,6 +1424,7 @@ input[type="date"] {
     line-height: 1.65;
     padding-left: 0.75rem;
     border-left: 3px solid #EE2E24;
+    /* max-height & overflow-y diatur di atas bersama scroll blocks */
 }
 
 /* ── Footer ── */
