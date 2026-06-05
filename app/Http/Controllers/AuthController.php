@@ -49,6 +49,7 @@ class AuthController extends Controller
             if ($user && Hash::check($request->password, $user->password)) {
                 Auth::login($user);
                 $request->session()->regenerate();
+                session()->forget('2fa_verified'); // Pastikan sesi 2FA lama tidak terbawa
 
                 // Pembimbing: Cek 2FA
                 // Jika belum setup, paksa ke setup
@@ -78,6 +79,7 @@ class AuthController extends Controller
 
             if (Auth::attempt($credentials)) {
                 $request->session()->regenerate();
+                session()->forget('2fa_verified'); // Pastikan sesi 2FA lama tidak terbawa
 
                 $user = Auth::user();
 
