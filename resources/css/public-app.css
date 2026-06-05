@@ -9,8 +9,6 @@
 /* Import UX Utilities */
 @import './ux-utilities.css';
 
-/* Import Font Awesome */
-@import '@fortawesome/fontawesome-free/css/all.min.css';
 
 /* ============================================
    BASE STYLES & RESET

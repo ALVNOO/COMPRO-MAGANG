@@ -6,9 +6,6 @@
 /* Import Design System as single source of truth */
 @import './design-system.css';
 
-/* Import Font Awesome for icons */
-@import '@fortawesome/fontawesome-free/css/all.min.css';
-
 /* Import Google Fonts - Inter */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
