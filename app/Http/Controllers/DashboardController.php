@@ -916,21 +916,22 @@ class DashboardController extends Controller
             $file = $request->file('file');
             $path = '';
 
+            $uploadDisk = config('filesystems.default_upload_disk', 'public');
             switch ($fieldName) {
                 case 'ktm':
-                    $path = $file->store('documents/ktm', 'public');
+                    $path = $file->store('documents/ktm', $uploadDisk);
                     $application->ktm_path = $path;
                     break;
                 case 'surat_permohonan':
-                    $path = $file->store('documents/surat_permohonan', 'public');
+                    $path = $file->store('documents/surat_permohonan', $uploadDisk);
                     $application->surat_permohonan_path = $path;
                     break;
                 case 'cv':
-                    $path = $file->store('documents/cv', 'public');
+                    $path = $file->store('documents/cv', $uploadDisk);
                     $application->cv_path = $path;
                     break;
                 case 'good_behavior':
-                    $path = $file->store('documents/good_behavior', 'public');
+                    $path = $file->store('documents/good_behavior', $uploadDisk);
                     $application->good_behavior_path = $path;
                     break;
             }
@@ -949,17 +950,18 @@ class DashboardController extends Controller
         }
 
         // Upload semua file sekaligus (fallback)
+        $uploadDisk = config('filesystems.default_upload_disk', 'public');
         if ($request->hasFile('ktm')) {
-            $application->ktm_path = $request->file('ktm')->store('documents/ktm', 'public');
+            $application->ktm_path = $request->file('ktm')->store('documents/ktm', $uploadDisk);
         }
         if ($request->hasFile('surat_permohonan')) {
-            $application->surat_permohonan_path = $request->file('surat_permohonan')->store('documents/surat_permohonan', 'public');
+            $application->surat_permohonan_path = $request->file('surat_permohonan')->store('documents/surat_permohonan', $uploadDisk);
         }
         if ($request->hasFile('cv')) {
-            $application->cv_path = $request->file('cv')->store('documents/cv', 'public');
+            $application->cv_path = $request->file('cv')->store('documents/cv', $uploadDisk);
         }
         if ($request->hasFile('good_behavior')) {
-            $application->good_behavior_path = $request->file('good_behavior')->store('documents/good_behavior', 'public');
+            $application->good_behavior_path = $request->file('good_behavior')->store('documents/good_behavior', $uploadDisk);
         }
 
         $application->save();
