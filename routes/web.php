@@ -463,6 +463,10 @@ Route::middleware(['auth', 'admin', 'throttle:global'])
             AdminParticipantController::class,
             'downloadAssessmentReport',
         ])->name('participants.download-assessment-report');
+        Route::get('/participants/{applicationId}/download-document/{type}', [
+            AdminParticipantController::class,
+            'downloadApplicationDocument',
+        ])->name('participants.download-application-document');
         Route::post('/participants/{applicationId}/upload-completion-letter', [
             AdminParticipantController::class,
             'uploadCompletionLetter',

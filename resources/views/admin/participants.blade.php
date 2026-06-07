@@ -1218,13 +1218,13 @@ table.participants-table > thead > tr > th {
                                             'university' => $peserta->university ?? '-',
                                             'mentorNik' => $app->divisionMentor->nik_number ?? '-',
                                             'hasSuratPermohonan' => !empty($app->surat_permohonan_path),
-                                            'suratPermohonanUrl' => $app->surat_permohonan_path ? asset('storage/'.$app->surat_permohonan_path) : null,
+                                            'suratPermohonanUrl' => $app->surat_permohonan_path ? route('admin.participants.download-application-document', ['applicationId' => $app->id, 'type' => 'surat_permohonan']) : null,
                                             'hasCv' => !empty($app->cv_path),
-                                            'cvUrl' => $app->cv_path ? asset('storage/'.$app->cv_path) : null,
+                                            'cvUrl' => $app->cv_path ? route('admin.participants.download-application-document', ['applicationId' => $app->id, 'type' => 'cv']) : null,
                                             'hasGoodBehavior' => !empty($app->good_behavior_path),
-                                            'goodBehaviorUrl' => $app->good_behavior_path ? asset('storage/'.$app->good_behavior_path) : null,
+                                            'goodBehaviorUrl' => $app->good_behavior_path ? route('admin.participants.download-application-document', ['applicationId' => $app->id, 'type' => 'good_behavior']) : null,
                                             'hasKtm' => !empty($app->ktm_path),
-                                            'ktmUrl' => $app->ktm_path ? asset('storage/'.$app->ktm_path) : null,
+                                            'ktmUrl' => $app->ktm_path ? route('admin.participants.download-application-document', ['applicationId' => $app->id, 'type' => 'ktm']) : null,
                                         ]) }})"
                                     >
                                         <i class="fas fa-folder-open"></i> Kelola

@@ -308,6 +308,39 @@ class ParticipantController extends Controller
     }
 
     /**
+     * Download one of the applicant's original documents (surat_permohonan, cv, good_behavior, ktm).
+     */
+    public function downloadApplicationDocument($applicationId, $type)
+    {
+        $application = InternshipApplication::with('user')->findOrFail($applicationId);
+
+        $map = [
+            'surat_permohonan' => ['path' => $application->surat_permohonan_path, 'label' => 'Surat_Permohonan'],
+            'cv'               => ['path' => $application->cv_path,               'label' => 'Curriculum_Vitae'],
+            'good_behavior'    => ['path' => $application->good_behavior_path,    'label' => 'Surat_Berperilaku_Baik'],
+            'ktm'              => ['path' => $application->ktm_path,              'label' => 'KTP_KTM'],
+        ];
+
+        if (! isset($map[$type])) {
+            abort(404);
+        }
+
+        $filePath = $map[$type]['path'];
+
+        if (! $filePath || ! $this->fileUploadService->exists($filePath)) {
+            return redirect()->route('admin.participants')
+                ->with('error', 'File dokumen tidak ditemukan.');
+        }
+
+        $safeName = str_replace(' ', '_', $application->user->name ?? 'Peserta');
+
+        return $this->fileUploadService->download(
+            $filePath,
+            $map[$type]['label'].'_'.$safeName.'.pdf'
+        );
+    }
+
+    /**
      * Record that the HQ email compose window was opened (Gmail tab opened + docs downloaded).
      */
     public function sendHeadquartersEmail(Request $request, $applicationId)
