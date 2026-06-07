@@ -50,6 +50,7 @@ RUN mkdir -p /var/log/supervisor \
 COPY docker/nginx.conf       /etc/nginx/nginx.conf
 COPY docker/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 COPY docker/php.ini          /usr/local/etc/php/conf.d/custom.ini
+COPY docker/php-fpm.conf     /usr/local/etc/php-fpm.d/zz-app.conf
 COPY docker/entrypoint.sh    /entrypoint.sh
 
 RUN chmod +x /entrypoint.sh
