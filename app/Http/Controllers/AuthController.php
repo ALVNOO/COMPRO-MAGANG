@@ -301,7 +301,7 @@ class AuthController extends Controller
         // Check if device is trusted first
         if (!$user->requires2faVerification($request)) {
             session(["2fa_verified" => true]);
-            return redirect()->intended($this->getDashboardUrl($user));
+            return $this->redirectToIntendedOrDashboard($user);
         }
 
         return view("auth.2fa-verify");
@@ -329,7 +329,7 @@ class AuthController extends Controller
                 $user->trustDevice($deviceFingerprint, 1); // Trust for 1 day
             }
 
-            return redirect()->intended($this->getDashboardUrl($user));
+            return $this->redirectToIntendedOrDashboard($user);
         }
 
         // Handle different error types
@@ -373,6 +373,26 @@ class AuthController extends Controller
         return redirect()
             ->back()
             ->with("info", "Tidak ada perangkat terpercaya yang terdaftar.");
+    }
+
+    /**
+     * Redirect to intended URL, but skip AJAX/JSON endpoints that should never
+     * be used as a post-login landing page (e.g. /notifications/recent stored
+     * as intended URL when the browser polled while the session was expired).
+     */
+    private function redirectToIntendedOrDashboard($user)
+    {
+        $dashboard = $this->getDashboardUrl($user);
+        $intended  = session()->pull('url.intended', $dashboard);
+
+        $ajaxSegments = ['/notifications/recent', '/notifications/unread-count', '/api/'];
+        foreach ($ajaxSegments as $segment) {
+            if (str_contains($intended, $segment)) {
+                return redirect($dashboard);
+            }
+        }
+
+        return redirect($intended);
     }
 
     /**
