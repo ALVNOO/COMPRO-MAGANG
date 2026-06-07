@@ -228,32 +228,34 @@ Route::middleware(['auth', 'throttle:global'])->group(function () {
         'completeTour',
     ])->name('dashboard.tour.complete');
 
-    // Attendance routes (Peserta)
-    Route::get('/attendance', [AttendanceController::class, 'index'])->name(
-        'attendance.index',
-    );
-    Route::post('/attendance/check-in', [
-        AttendanceController::class,
-        'checkIn',
-    ])->name('attendance.check-in')->middleware('throttle:form-submission');
-    Route::post('/attendance/absent', [
-        AttendanceController::class,
-        'absent',
-    ])->name('attendance.absent')->middleware('throttle:form-submission');
+    // Attendance routes (Peserta only)
+    Route::middleware('peserta')->group(function () {
+        Route::get('/attendance', [AttendanceController::class, 'index'])->name(
+            'attendance.index',
+        );
+        Route::post('/attendance/check-in', [
+            AttendanceController::class,
+            'checkIn',
+        ])->name('attendance.check-in')->middleware('throttle:form-submission');
+        Route::post('/attendance/absent', [
+            AttendanceController::class,
+            'absent',
+        ])->name('attendance.absent')->middleware('throttle:form-submission');
 
-    // Logbook routes (Peserta)
-    Route::get('/logbook', [LogbookController::class, 'index'])->name(
-        'logbook.index',
-    );
-    Route::post('/logbook', [LogbookController::class, 'store'])->name(
-        'logbook.store',
-    )->middleware('throttle:form-submission');
-    Route::put('/logbook/{id}', [LogbookController::class, 'update'])->name(
-        'logbook.update',
-    )->middleware('throttle:form-submission');
-    Route::delete('/logbook/{id}', [LogbookController::class, 'destroy'])->name(
-        'logbook.destroy',
-    )->middleware('throttle:form-submission');
+        // Logbook routes (Peserta only)
+        Route::get('/logbook', [LogbookController::class, 'index'])->name(
+            'logbook.index',
+        );
+        Route::post('/logbook', [LogbookController::class, 'store'])->name(
+            'logbook.store',
+        )->middleware('throttle:form-submission');
+        Route::put('/logbook/{id}', [LogbookController::class, 'update'])->name(
+            'logbook.update',
+        )->middleware('throttle:form-submission');
+        Route::delete('/logbook/{id}', [LogbookController::class, 'destroy'])->name(
+            'logbook.destroy',
+        )->middleware('throttle:form-submission');
+    });
 
     // Change password routes
     Route::get('/dashboard/change-password', [
@@ -275,7 +277,7 @@ Route::middleware(['auth', 'throttle:global'])->group(function () {
 });
 
 // Mentor (Pembimbing) dashboard routes
-Route::middleware(['auth', 'throttle:global'])
+Route::middleware(['auth', 'mentor', 'throttle:global'])
     ->prefix('mentor')
     ->group(function () {
         // Dashboard utama pembimbing
