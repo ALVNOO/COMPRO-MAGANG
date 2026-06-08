@@ -482,7 +482,9 @@
                             <div class="applicant-info">
                                 <div class="applicant-avatar">
                                     @if($app->user->profile_picture)
-                                        <img src="{{ asset('storage/' . $app->user->profile_picture) }}" alt="{{ $app->user->name }}">
+                                        <img src="{{ asset('storage/' . $app->user->profile_picture) }}" alt="{{ $app->user->name }}"
+                                             onerror="this.style.display='none';this.nextElementSibling.style.display=''">
+                                        <span style="display:none">{{ strtoupper(substr($app->user->name ?? 'U', 0, 1)) }}</span>
                                     @else
                                         {{ strtoupper(substr($app->user->name ?? 'U', 0, 1)) }}
                                     @endif

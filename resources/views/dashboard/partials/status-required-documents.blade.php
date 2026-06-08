@@ -18,7 +18,7 @@
         </div>
         <div>
             <h3 class="sp-req-docs-title">Pengumpulan Dokumen Wajib</h3>
-            <p class="sp-req-docs-sub">Unggah ketiga dokumen berikut (format PDF, maks. 2 MB) sebelum melanjutkan ke dashboard magang.</p>
+            <p class="sp-req-docs-sub">Klik tombol unggah dan pilih file PDF — dokumen langsung terunggah otomatis (maks. 2 MB).</p>
         </div>
         <div class="sp-req-docs-progress" aria-label="Progres pengumpulan dokumen">
             <span class="sp-req-docs-progress-count">{{ $uploadedCount }}/3</span>
@@ -27,6 +27,7 @@
     </div>
 
     <div class="sp-req-docs-grid">
+
         {{-- Surat Penerimaan --}}
         <div class="sp-req-doc-card {{ $hasAcceptanceUploaded ? 'is-done' : '' }}">
             <div class="sp-req-doc-card-top">
@@ -44,21 +45,31 @@
                     </div>
                 </div>
             </div>
-            @if($hasAcceptanceUploaded)
-                <a href="{{ asset('storage/' . $application->acceptance_letter_path) }}" target="_blank" rel="noopener" class="sp-req-doc-view">
-                    <i class="fas fa-eye"></i> Lihat dokumen
-                </a>
-            @endif
-            <form method="POST" action="{{ route('dashboard.status.upload-acceptance-letter') }}" enctype="multipart/form-data" class="sp-req-doc-form">
-                @csrf
-                <label class="sp-req-doc-file">
-                    <input type="file" name="acceptance_letter" accept=".pdf,application/pdf" {{ $hasAcceptanceUploaded ? '' : 'required' }}>
-                    <span class="sp-req-doc-file-btn"><i class="fas fa-file-pdf"></i> {{ $hasAcceptanceUploaded ? 'Ganti file' : 'Pilih PDF' }}</span>
-                </label>
-                <button type="submit" class="sp-req-doc-submit">
-                    <i class="fas fa-upload"></i> Unggah
-                </button>
-            </form>
+
+            <div class="sp-req-doc-footer">
+                @if($hasAcceptanceUploaded)
+                    <a href="{{ asset('storage/' . $application->acceptance_letter_path) }}"
+                       target="_blank" rel="noopener" class="sp-req-doc-view">
+                        <i class="fas fa-eye"></i> Lihat dokumen
+                    </a>
+                @endif
+                <form method="POST" action="{{ route('dashboard.status.upload-acceptance-letter') }}"
+                      enctype="multipart/form-data" class="sp-req-doc-form">
+                    @csrf
+                    <label class="sp-req-doc-upload-label {{ $hasAcceptanceUploaded ? 'is-replace' : '' }}">
+                        <input type="file" name="acceptance_letter" accept=".pdf,application/pdf" class="sp-req-doc-input">
+                        <span class="sp-req-doc-upload-btn">
+                            @if($hasAcceptanceUploaded)
+                                <i class="fas fa-sync-alt"></i>
+                                <span class="sp-req-doc-file-label">Ganti Dokumen</span>
+                            @else
+                                <i class="fas fa-upload"></i>
+                                <span class="sp-req-doc-file-label">Unggah PDF</span>
+                            @endif
+                        </span>
+                    </label>
+                </form>
+            </div>
         </div>
 
         {{-- Surat Izin Masuk Lokasi --}}
@@ -78,21 +89,31 @@
                     </div>
                 </div>
             </div>
-            @if($hasLocationUploaded)
-                <a href="{{ asset('storage/' . $application->location_permission_letter_path) }}" target="_blank" rel="noopener" class="sp-req-doc-view">
-                    <i class="fas fa-eye"></i> Lihat dokumen
-                </a>
-            @endif
-            <form method="POST" action="{{ route('dashboard.status.upload-location-permission-letter') }}" enctype="multipart/form-data" class="sp-req-doc-form">
-                @csrf
-                <label class="sp-req-doc-file">
-                    <input type="file" name="location_permission_letter" accept=".pdf,application/pdf" {{ $hasLocationUploaded ? '' : 'required' }}>
-                    <span class="sp-req-doc-file-btn"><i class="fas fa-file-pdf"></i> {{ $hasLocationUploaded ? 'Ganti file' : 'Pilih PDF' }}</span>
-                </label>
-                <button type="submit" class="sp-req-doc-submit">
-                    <i class="fas fa-upload"></i> Unggah
-                </button>
-            </form>
+
+            <div class="sp-req-doc-footer">
+                @if($hasLocationUploaded)
+                    <a href="{{ asset('storage/' . $application->location_permission_letter_path) }}"
+                       target="_blank" rel="noopener" class="sp-req-doc-view">
+                        <i class="fas fa-eye"></i> Lihat dokumen
+                    </a>
+                @endif
+                <form method="POST" action="{{ route('dashboard.status.upload-location-permission-letter') }}"
+                      enctype="multipart/form-data" class="sp-req-doc-form">
+                    @csrf
+                    <label class="sp-req-doc-upload-label {{ $hasLocationUploaded ? 'is-replace' : '' }}">
+                        <input type="file" name="location_permission_letter" accept=".pdf,application/pdf" class="sp-req-doc-input">
+                        <span class="sp-req-doc-upload-btn">
+                            @if($hasLocationUploaded)
+                                <i class="fas fa-sync-alt"></i>
+                                <span class="sp-req-doc-file-label">Ganti Dokumen</span>
+                            @else
+                                <i class="fas fa-upload"></i>
+                                <span class="sp-req-doc-file-label">Unggah PDF</span>
+                            @endif
+                        </span>
+                    </label>
+                </form>
+            </div>
         </div>
 
         {{-- Pakta Integritas --}}
@@ -112,22 +133,33 @@
                     </div>
                 </div>
             </div>
-            @if($hasIntegrityUploaded)
-                <a href="{{ asset('storage/' . $application->integrity_pact_path) }}" target="_blank" rel="noopener" class="sp-req-doc-view">
-                    <i class="fas fa-eye"></i> Lihat dokumen
-                </a>
-            @endif
-            <form method="POST" action="{{ route('dashboard.status.upload-integrity-pact') }}" enctype="multipart/form-data" class="sp-req-doc-form">
-                @csrf
-                <label class="sp-req-doc-file">
-                    <input type="file" name="integrity_pact" accept=".pdf,application/pdf" {{ $hasIntegrityUploaded ? '' : 'required' }}>
-                    <span class="sp-req-doc-file-btn"><i class="fas fa-file-pdf"></i> {{ $hasIntegrityUploaded ? 'Ganti file' : 'Pilih PDF' }}</span>
-                </label>
-                <button type="submit" class="sp-req-doc-submit">
-                    <i class="fas fa-upload"></i> Unggah
-                </button>
-            </form>
+
+            <div class="sp-req-doc-footer">
+                @if($hasIntegrityUploaded)
+                    <a href="{{ asset('storage/' . $application->integrity_pact_path) }}"
+                       target="_blank" rel="noopener" class="sp-req-doc-view">
+                        <i class="fas fa-eye"></i> Lihat dokumen
+                    </a>
+                @endif
+                <form method="POST" action="{{ route('dashboard.status.upload-integrity-pact') }}"
+                      enctype="multipart/form-data" class="sp-req-doc-form">
+                    @csrf
+                    <label class="sp-req-doc-upload-label {{ $hasIntegrityUploaded ? 'is-replace' : '' }}">
+                        <input type="file" name="integrity_pact" accept=".pdf,application/pdf" class="sp-req-doc-input">
+                        <span class="sp-req-doc-upload-btn">
+                            @if($hasIntegrityUploaded)
+                                <i class="fas fa-sync-alt"></i>
+                                <span class="sp-req-doc-file-label">Ganti Dokumen</span>
+                            @else
+                                <i class="fas fa-upload"></i>
+                                <span class="sp-req-doc-file-label">Unggah PDF</span>
+                            @endif
+                        </span>
+                    </label>
+                </form>
+            </div>
         </div>
+
     </div>
 
     @unless($allRequiredDocsCollected)

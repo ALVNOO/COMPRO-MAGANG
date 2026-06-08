@@ -433,7 +433,9 @@
         <div class="photo-card-top">
             <div class="avatar-ring">
                 @if($user->profile_picture)
-                    <img src="{{ asset('storage/' . $user->profile_picture) }}" alt="{{ $user->name }}">
+                    <img src="{{ asset('storage/' . $user->profile_picture) }}" alt="{{ $user->name }}"
+                         onerror="this.style.display='none';this.nextElementSibling.style.display=''">
+                    <span style="display:none">{{ $initials }}</span>
                 @else
                     {{ $initials }}
                 @endif

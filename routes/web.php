@@ -207,7 +207,7 @@ Route::middleware(['auth', 'throttle:global'])->group(function () {
             Route::get('/recent', [
                 NotificationController::class,
                 'recent',
-            ])->name('recent');
+            ])->name('recent')->middleware('throttle:notification-poll');
             Route::post('/{id}/read', [
                 NotificationController::class,
                 'markAsRead',

@@ -68,6 +68,6 @@ class Notification extends Model
      */
     public function getTimeAgoAttribute()
     {
-        return Carbon::parse($this->created_at)->diffForHumans();
+        return Carbon::parse($this->created_at)->locale('id')->diffForHumans();
     }
 }

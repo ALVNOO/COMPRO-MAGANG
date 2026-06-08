@@ -779,11 +779,17 @@ class DashboardController extends Controller
             ->first();
 
         if (! $application) {
+            if ($request->expectsJson()) {
+                return response()->json(['success' => false, 'message' => 'Tidak ada pengajuan magang yang diterima.'], 422);
+            }
             return redirect()->route('dashboard.status')
                 ->with('error', 'Tidak ada pengajuan magang yang diterima.');
         }
 
         if ($application->dashboard_entered_at) {
+            if ($request->expectsJson()) {
+                return response()->json(['success' => false, 'message' => 'Dokumen tidak dapat diubah setelah Anda masuk ke dashboard magang.'], 422);
+            }
             return redirect()->route('dashboard.status')
                 ->with('error', 'Dokumen tidak dapat diubah setelah Anda masuk ke dashboard magang.');
         }
@@ -801,6 +807,14 @@ class DashboardController extends Controller
 
         $application->{$pathAttribute} = $path;
         $application->save();
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => $successMessage,
+                'url'     => asset('storage/' . $path),
+            ]);
+        }
 
         return redirect()->route('dashboard.status')->with('success', $successMessage);
     }
@@ -1158,13 +1172,15 @@ class DashboardController extends Controller
             throw $e;
         }
 
+        $uploadDisk = config('filesystems.default_upload_disk', 'public');
+
         // Hapus foto profil lama jika ada
         if ($user->profile_picture) {
-            Storage::disk('public')->delete($user->profile_picture);
+            Storage::disk($uploadDisk)->delete($user->profile_picture);
         }
 
         // Simpan foto profil baru
-        $path = $request->file('profile_picture')->store('profile-pictures', 'public');
+        $path = $request->file('profile_picture')->store('profile-pictures', $uploadDisk);
         $user->profile_picture = $path;
         $user->save();
 

@@ -29,7 +29,6 @@
 
             init() {
                 this.loadNotifications();
-                // Refresh notifications every 30 seconds
                 setInterval(() => {
                     if (!this.open) {
                         this.loadNotifications();
@@ -41,7 +40,7 @@
                 this.open = !this.open;
                 if (this.open) {
                     this.loadNotifications();
-                    this.showAll = false; // Reset expanded state when closing
+                    this.showAll = false;
                 }
             },
 
@@ -49,38 +48,32 @@
                 try {
                     this.loading = true;
                     const response = await fetch('{{ route("notifications.recent") }}');
-                    if (!response.ok) {
-                        throw new Error('Network response was not ok');
-                    }
+                    if (!response.ok) throw new Error('Network response was not ok');
+
                     const data = await response.json();
-                    let notifs = data.notifications || [];
-                    let count  = data.unread_count || 0;
+                    let dbNotifs = data.notifications || [];
+                    let dbCount  = data.unread_count || 0;
 
-                    // Prepend any page-injected system alerts (e.g. pending assignments)
-                    const sysAlerts = window.__systemAlerts || [];
-                    if (sysAlerts.length > 0) {
-                        notifs = [...sysAlerts, ...notifs];
-                        count  += sysAlerts.length;
-                    }
+                    // Merge system alerts (page-injected, role-specific)
+                    const sysAlerts = (window.__systemAlerts || []).filter(a => !a.is_read);
+                    const allNotifs = [...sysAlerts, ...dbNotifs];
 
-                    this.notifications    = notifs;
-                    this.allNotifications = notifs;
-                    this.unreadCount      = count;
+                    this.notifications    = allNotifs;
+                    this.allNotifications = allNotifs;
+                    this.unreadCount      = dbCount + sysAlerts.length;
                     this.loading = false;
                 } catch (error) {
                     console.error('Error loading notifications:', error);
                     this.loading = false;
-                    // Still show system alerts even if API fails
                     const sysAlerts = window.__systemAlerts || [];
                     this.notifications    = sysAlerts;
                     this.allNotifications = sysAlerts;
-                    this.unreadCount      = sysAlerts.length;
+                    this.unreadCount      = sysAlerts.filter(a => !a.is_read).length;
                 }
             },
 
             async toggleShowAll() {
                 if (!this.showAll) {
-                    // Load all notifications
                     await this.loadAllNotifications();
                 }
                 this.showAll = !this.showAll;
@@ -92,28 +85,34 @@
                     const response = await fetch('/notifications?format=json');
                     if (response.ok) {
                         const data = await response.json();
-                        this.allNotifications = data.notifications || this.notifications;
+                        // Keep system alerts visible when expanded
+                        const sysAlerts = (window.__systemAlerts || []).filter(a => !a.is_read);
+                        const dbNotifs  = data.notifications || [];
+                        this.allNotifications = [...sysAlerts, ...dbNotifs];
                     } else {
-                        // Fallback: use recent notifications
                         this.allNotifications = this.notifications;
                     }
                     this.loadingAll = false;
                 } catch (error) {
                     console.error('Error loading all notifications:', error);
-                    // Fallback: use recent notifications
                     this.allNotifications = this.notifications;
                     this.loadingAll = false;
                 }
             },
 
-            async markAsRead(notificationId, event) {
-                if (event) {
-                    event.preventDefault();
-                    const notification = this.allNotifications.find(n => n.id === notificationId) ||
-                                       this.notifications.find(n => n.id === notificationId);
-                    if (notification && !notification.is_read) {
+            async markAsRead(notificationId, event, link) {
+                if (!event) return;
+                event.preventDefault();
+
+                const isSysAlert = typeof notificationId === 'string' && notificationId.startsWith('sys-');
+                const notification = this.allNotifications.find(n => n.id === notificationId)
+                                  || this.notifications.find(n => n.id === notificationId);
+
+                if (notification && !notification.is_read) {
+                    // Only hit the API for real DB notifications
+                    if (!isSysAlert) {
                         try {
-                            const response = await fetch(`/notifications/${notificationId}/read`, {
+                            await fetch(`/notifications/${notificationId}/read`, {
                                 method: 'POST',
                                 headers: {
                                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
@@ -121,14 +120,23 @@
                                     'Accept': 'application/json',
                                 },
                             });
-                            if (response.ok) {
-                                notification.is_read = true;
-                                this.unreadCount = Math.max(0, this.unreadCount - 1);
-                            }
                         } catch (error) {
                             console.error('Error marking notification as read:', error);
                         }
+                    } else {
+                        // Mark system alert as read in memory so it disappears on next refresh
+                        if (window.__systemAlerts) {
+                            const sys = window.__systemAlerts.find(a => a.id === notificationId);
+                            if (sys) sys.is_read = true;
+                        }
                     }
+                    notification.is_read = true;
+                    this.unreadCount = Math.max(0, this.unreadCount - 1);
+                }
+
+                // Navigate to the link after marking as read
+                if (link && link !== '#') {
+                    window.location.href = link;
                 }
             },
 
@@ -143,17 +151,21 @@
                         },
                     });
                     if (response.ok) {
-                        this.allNotifications.forEach(n => {
-                            n.is_read = true;
-                        });
-                        this.notifications.forEach(n => {
-                            n.is_read = true;
-                        });
+                        this.allNotifications.forEach(n => { n.is_read = true; });
+                        this.notifications.forEach(n => { n.is_read = true; });
+                        // Also clear system alerts from memory
+                        if (window.__systemAlerts) {
+                            window.__systemAlerts.forEach(a => { a.is_read = true; });
+                        }
                         this.unreadCount = 0;
                     }
                 } catch (error) {
                     console.error('Error marking all as read:', error);
                 }
+            },
+
+            badgeLabel() {
+                return this.unreadCount > 99 ? '99+' : this.unreadCount;
             },
 
             getIconClass(icon) {

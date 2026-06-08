@@ -1450,19 +1450,29 @@
     text-decoration: underline;
 }
 
-.sp-req-doc-form {
-    display: grid;
-    grid-template-columns: 1fr auto;
-    gap: 6px;
+/* Footer: lihat + upload button row */
+.sp-req-doc-footer {
+    display: flex;
+    align-items: center;
+    gap: 8px;
     margin-top: auto;
+    flex-wrap: wrap;
 }
 
-.sp-req-doc-file {
-    position: relative;
+.sp-req-doc-form {
+    flex: 1;
     min-width: 0;
 }
 
-.sp-req-doc-file input[type="file"] {
+/* Upload label — wraps the hidden file input */
+.sp-req-doc-upload-label {
+    position: relative;
+    display: block;
+    cursor: pointer;
+    width: 100%;
+}
+
+.sp-req-doc-upload-label input[type="file"] {
     position: absolute;
     inset: 0;
     opacity: 0;
@@ -1471,43 +1481,101 @@
     height: 100%;
 }
 
-.sp-req-doc-file-btn {
+/* Primary upload button — red, consistent with btn-save/btn-upload in the app */
+.sp-req-doc-upload-btn {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 5px;
-    min-height: 34px;
-    padding: 0 8px;
-    font-size: 0.7rem;
-    font-weight: 500;
-    color: #4b5563;
-    background: #fff;
-    border: 1px dashed #d1d5db;
-    border-radius: 8px;
-    pointer-events: none;
-}
-
-.sp-req-doc-submit {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 4px;
-    padding: 0 12px;
-    min-height: 34px;
-    font-size: 0.72rem;
+    gap: 6px;
+    width: 100%;
+    min-height: 36px;
+    padding: 0 14px;
+    font-size: 0.75rem;
     font-weight: 600;
     color: #fff;
     background: linear-gradient(135deg, #EE2E24, #C41E1A);
-    border: none;
     border-radius: 8px;
-    cursor: pointer;
+    pointer-events: none;
+    transition: opacity 0.15s, transform 0.15s;
+    overflow: hidden;
     white-space: nowrap;
-    transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
 
-.sp-req-doc-submit:hover {
+.sp-req-doc-upload-label:hover .sp-req-doc-upload-btn {
+    opacity: 0.88;
     transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(238, 46, 36, 0.25);
+}
+
+.sp-req-doc-file-label {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 120px;
+}
+
+/* Ganti Dokumen variant — small secondary button */
+.sp-req-doc-upload-label.is-replace {
+    width: auto;
+    flex-shrink: 0;
+}
+
+.sp-req-doc-upload-label.is-replace .sp-req-doc-upload-btn {
+    background: transparent;
+    color: #6b7280;
+    border: 1.5px solid #d1d5db;
+    font-size: 0.7rem;
+    font-weight: 500;
+    min-height: 28px;
+    padding: 0 10px;
+    width: auto;
+}
+
+.sp-req-doc-upload-label.is-replace:hover .sp-req-doc-upload-btn {
+    color: #EE2E24;
+    border-color: #EE2E24;
+    background: #fff8f8;
+    opacity: 1;
+    transform: none;
+}
+
+/* Loading state when uploading */
+.sp-req-doc-card.is-uploading {
+    pointer-events: none;
+}
+
+.sp-req-doc-card.is-uploading .sp-req-doc-upload-btn {
+    opacity: 0.65;
+}
+
+/* Toast notification */
+.sp-doc-toast {
+    position: fixed;
+    bottom: 28px;
+    right: 28px;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 18px;
+    border-radius: 10px;
+    font-size: 0.82rem;
+    font-weight: 500;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+    animation: sp-up 0.25s cubic-bezier(.16,1,.3,1) both;
+    transition: opacity 0.25s ease;
+    max-width: 320px;
+}
+
+.sp-doc-toast--success {
+    background: #ecfdf5;
+    color: #065f46;
+    border: 1px solid #a7f3d0;
+}
+
+.sp-doc-toast--error {
+    background: #fef2f2;
+    color: #991b1b;
+    border: 1px solid #fca5a5;
 }
 
 .sp-req-docs-warning {

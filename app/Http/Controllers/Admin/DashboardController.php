@@ -67,11 +67,13 @@ class DashboardController extends Controller
 
         $user = Auth::user();
 
+        $uploadDisk = config('filesystems.default_upload_disk', 'public');
+
         if ($user->profile_picture) {
-            Storage::disk('public')->delete($user->profile_picture);
+            Storage::disk($uploadDisk)->delete($user->profile_picture);
         }
 
-        $path = $request->file('profile_picture')->store('profile-pictures', 'public');
+        $path = $request->file('profile_picture')->store('profile-pictures', $uploadDisk);
         $user->profile_picture = $path;
         $user->save();
 

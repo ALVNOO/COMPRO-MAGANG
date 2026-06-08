@@ -1763,7 +1763,9 @@ input[type="date"] {
                     <div class="participant-header">
                         <div class="participant-avatar">
                             @if($participant->user->profile_picture)
-                                <img src="{{ asset('storage/' . $participant->user->profile_picture) }}" alt="{{ $participant->user->name }}">
+                                <img src="{{ asset('storage/' . $participant->user->profile_picture) }}" alt="{{ $participant->user->name }}"
+                                     onerror="this.style.display='none';this.nextElementSibling.style.display=''">
+                                <span style="display:none">{{ strtoupper(substr($participant->user->name ?? 'U', 0, 1)) }}</span>
                             @else
                                 {{ strtoupper(substr($participant->user->name ?? 'U', 0, 1)) }}
                             @endif

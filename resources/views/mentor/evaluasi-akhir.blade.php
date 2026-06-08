@@ -421,7 +421,9 @@
                 <div class="eval-card-head">
                     <div class="eval-avatar">
                         @if(!empty($app->user->profile_picture))
-                            <img src="{{ asset('storage/' . $app->user->profile_picture) }}" alt="{{ $app->user->name }}">
+                            <img src="{{ asset('storage/' . $app->user->profile_picture) }}" alt="{{ $app->user->name }}"
+                                 onerror="this.style.display='none';this.nextElementSibling.style.display=''">
+                            <span style="display:none">{{ $initial }}</span>
                         @else
                             {{ $initial }}
                         @endif

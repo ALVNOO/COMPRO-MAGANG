@@ -101,9 +101,9 @@
 
         {{-- Notifications --}}
         <div class="header-notifications" x-data="window.notificationDropdown()">
-            <button class="notification-btn" @click="toggleDropdown()">
+            <button class="notification-btn" @click="toggleDropdown()" :class="{ 'has-unread': unreadCount > 0 }">
                 <i class="fas fa-bell"></i>
-                <span class="notification-badge" x-show="unreadCount > 0" x-text="unreadCount"></span>
+                <span class="notification-badge" x-show="unreadCount > 0" x-text="badgeLabel()"></span>
             </button>
 
             <div class="notification-dropdown" 
@@ -140,14 +140,15 @@
                     </template>
                     <template x-if="!loading && !loadingAll">
                         <template x-for="notification in allNotifications" :key="notification.id">
-                            <a :href="notification.link || '#'" 
+                            <a :href="notification.link || '#'"
                                class="notification-item"
                                :class="{ 'unread': !notification.is_read }"
-                               @click="markAsRead(notification.id, $event)">
+                               @click="markAsRead(notification.id, $event, notification.link)">
                                 <div class="notification-icon" :class="notification.icon">
                                     <i :class="getIconClass(notification.icon)"></i>
                                 </div>
                                 <div class="notification-content">
+                                    <p class="notification-title" x-show="notification.title" x-text="notification.title"></p>
                                     <p class="notification-text" x-text="notification.message"></p>
                                     <span class="notification-time" x-text="notification.time_ago"></span>
                                 </div>
@@ -305,6 +306,20 @@
     color: var(--color-gray-900);
 }
 
+@keyframes bell-ring {
+    0%, 100% { transform: rotate(0deg); }
+    20%       { transform: rotate(-12deg); }
+    40%       { transform: rotate(12deg); }
+    60%       { transform: rotate(-8deg); }
+    80%       { transform: rotate(8deg); }
+}
+
+.notification-btn.has-unread i {
+    animation: bell-ring 2.5s ease-in-out 0.5s 2;
+    display: inline-block;
+    transform-origin: top center;
+}
+
 .notification-badge {
     position: absolute;
     top: -4px;
@@ -425,9 +440,17 @@
     min-width: 0;
 }
 
+.notification-title {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--color-gray-900);
+    margin: 0 0 0.15rem 0;
+    line-height: 1.3;
+}
+
 .notification-text {
-    font-size: 0.875rem;
-    color: var(--color-gray-700);
+    font-size: 0.825rem;
+    color: var(--color-gray-600);
     margin: 0 0 0.25rem 0;
     line-height: 1.4;
 }

@@ -121,8 +121,19 @@ class User extends Authenticatable
         return $this->hasMany(Logbook::class);
     }
 
-    // Notification methods are provided by the Notifiable trait
-    // No need to override them here
+    /**
+     * Custom notifications relationship (overrides Notifiable trait's morphMany).
+     * The app uses a custom notifications table with user_id, not the Laravel morph schema.
+     */
+    public function notifications()
+    {
+        return $this->hasMany(\App\Models\Notification::class);
+    }
+
+    public function unreadNotificationsCount(): int
+    {
+        return $this->notifications()->where('is_read', false)->count();
+    }
 
     // Cek apakah role wajib 2FA
     public function requiresTwoFactor()
