@@ -1748,9 +1748,10 @@ input[type="date"] {
         </div>
         <div class="participants-grid">
             @foreach($participants as $participant)
+                @if(!$participant->user) @continue @endif
                 @php
                     $totalTugas = $participant->user->assignments->count();
-                    $tugasSelesai = $participant->user->assignments->where('grade', '!=', null)->count();
+                    $tugasSelesai = $participant->user->assignments->whereNotNull('grade')->count();
                     $rataRata = $participant->user->assignments->whereNotNull('grade')->avg('grade');
 
                     $hasStarted = true;
@@ -2295,7 +2296,7 @@ input[type="date"] {
                     <div class="cek-nilai-row">
                         <div style="width:115px; flex-shrink:0;">
                             <label class="cek-form-label">Nilai (0–100) <span class="required">*</span></label>
-                            <input type="number" name="grade" class="form-control" min="0" max="100" required
+                            <input type="number" name="grade" class="form-control" min="0" max="100" step="1" required
                                 placeholder="85" id="cekNilaiInput"
                                 style="text-align:center; font-weight:700; font-family:'JetBrains Mono',monospace; font-size:.9rem;">
                         </div>
@@ -2475,6 +2476,7 @@ document.addEventListener('keydown', function(e) {
 var taskDataStore = @php
     $store = [];
     foreach ($participants as $participant) {
+        if (!$participant->user) continue;
         foreach ($participant->user->assignments as $assignment) {
             $hasSub = $assignment->submissions && $assignment->submissions->count() > 0;
             $latestSub = $hasSub ? $assignment->submissions->sortByDesc('submitted_at')->first() : null;

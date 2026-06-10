@@ -870,14 +870,13 @@ class MentorDashboardController extends Controller
                 try {
                     $user = \App\Models\User::find($userId);
                     if ($user) {
-                        $notification = \App\Services\NotificationService::assignmentCreated($user, $assignment);
-                        Log::info('Notification created for user '.$userId.', notification ID: '.$notification->id);
+                        \App\Services\NotificationService::assignmentCreated($user, $assignment);
+                        Log::info('Notification dispatched for user '.$userId);
                     } else {
                         Log::warning('User not found for notification: '.$userId);
                     }
-                } catch (\Exception $notifError) {
+                } catch (\Throwable $notifError) {
                     Log::error('Error creating notification for assignment: '.$notifError->getMessage());
-                    Log::error('Stack trace: '.$notifError->getTraceAsString());
                 }
 
                 $successCount++;
@@ -922,10 +921,10 @@ class MentorDashboardController extends Controller
             // Nilai tidak diubah
         } else {
             $request->validate([
-                'grade' => 'required|numeric|min:0|max:100',
+                'grade' => 'required|integer|min:0|max:100',
                 'feedback' => 'nullable|string',
             ]);
-            $assignment->grade = $request->grade;
+            $assignment->grade = (int) $request->grade;
             $assignment->feedback = $request->feedback;
         }
         $assignment->save();
