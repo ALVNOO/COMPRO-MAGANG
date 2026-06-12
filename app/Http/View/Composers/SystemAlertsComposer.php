@@ -165,7 +165,7 @@ class SystemAlertsComposer
         if ($participantUserIds->isNotEmpty()) {
             $logbookItems = \App\Models\Logbook::whereIn('user_id', $participantUserIds)
                 ->where('date', '>=', now()->subDays(3))->with('user')
-                ->orderByDesc('date')->limit(5)->get()
+                ->orderByDesc('date')->limit(5)->get()->toBase()
                 ->map(fn ($l) => [
                     'id'      => 'sys-act-log-'.$l->id,
                     'message' => ($l->user->name ?? '-').': Submit logbook harian',
@@ -178,7 +178,7 @@ class SystemAlertsComposer
 
             $submissionItems = \App\Models\AssignmentSubmission::whereIn('user_id', $participantUserIds)
                 ->where('submitted_at', '>=', now()->subDays(3))
-                ->with(['user', 'assignment'])->orderByDesc('submitted_at')->limit(5)->get()
+                ->with(['user', 'assignment'])->orderByDesc('submitted_at')->limit(5)->get()->toBase()
                 ->map(fn ($s) => [
                     'id'      => 'sys-act-sub-'.$s->id,
                     'message' => ($s->user->name ?? '-').': Mengumpulkan — '.\Illuminate\Support\Str::limit($s->assignment->title ?? '-', 40),
